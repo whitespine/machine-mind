@@ -10,15 +10,15 @@ import { INpcTemplateData } from './NpcTemplate'
 import { INpcData } from './Npc'
 
 export {
-  INpcFeatureData,
-  INpcReactionData,
-  INpcSystemData,
-  INpcDamageData,
-  INpcWeaponData,
-  INpcStats,
-  INpcClassData,
-  INpcTemplateData,
-  INpcItemSaveData,
-  INpcTechData,
-  INpcData,
+    INpcFeatureData,
+    INpcReactionData,
+    INpcSystemData,
+    INpcDamageData,
+    INpcWeaponData,
+    INpcStats,
+    INpcClassData,
+    INpcTemplateData,
+    INpcItemSaveData,
+    INpcTechData,
+    INpcData,
 }

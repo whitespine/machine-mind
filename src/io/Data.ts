@@ -14,95 +14,95 @@ let electron: typeof import('electron')
 let userDataPath: string
 
 if (PLATFORM == 'electron') {
-  fs = require('fs')
-  electron = require('electron')
-  userDataPath = path.join((electron.app || electron.remote.app).getPath('userData'), 'data')
+    fs = require('fs')
+    electron = require('electron')
+    userDataPath = path.join((electron.app || electron.remote.app).getPath('userData'), 'data')
 }
 
 const ensureDataDir = function(): void {
-  switch (PLATFORM) {
-    case 'web':
-      return
-    case 'electron':
-      const dataPathExists = fs.existsSync(userDataPath)
-      if (!dataPathExists) {
-        fs.mkdirSync(userDataPath)
-        ExtLog(`Created user data directory at ${userDataPath}`)
-      }
-      break
-    default:
-      throw new Error(platformNotSupportedMessage)
-  }
+    switch (PLATFORM) {
+        case 'web':
+            return
+        case 'electron':
+            const dataPathExists = fs.existsSync(userDataPath)
+            if (!dataPathExists) {
+                fs.mkdirSync(userDataPath)
+                ExtLog(`Created user data directory at ${userDataPath}`)
+            }
+            break
+        default:
+            throw new Error(platformNotSupportedMessage)
+    }
 }
 
 const writeFile = async function(name: string, data: string): Promise<void> {
-  switch (PLATFORM) {
-    case 'web':
-      localStorage.setItem(name, data)
-      break
-    case 'electron':
-      await promisify(fs.writeFile)(path.resolve(userDataPath, name), data)
-      break
-    default:
-      throw new Error(platformNotSupportedMessage)
-  }
+    switch (PLATFORM) {
+        case 'web':
+            localStorage.setItem(name, data)
+            break
+        case 'electron':
+            await promisify(fs.writeFile)(path.resolve(userDataPath, name), data)
+            break
+        default:
+            throw new Error(platformNotSupportedMessage)
+    }
 }
 
 const readFile = async function(name: string): Promise<string> {
-  switch (PLATFORM) {
-    case 'web':
-      return localStorage.getItem(name)
-    case 'electron':
-      return await promisify(fs.readFile)(path.resolve(userDataPath, name), 'utf-8')
-    default:
-      throw new Error(platformNotSupportedMessage)
-  }
+    switch (PLATFORM) {
+        case 'web':
+            return localStorage.getItem(name)
+        case 'electron':
+            return await promisify(fs.readFile)(path.resolve(userDataPath, name), 'utf-8')
+        default:
+            throw new Error(platformNotSupportedMessage)
+    }
 }
 
 const exists = async function(name: string): Promise<boolean> {
-  switch (PLATFORM) {
-    case 'web':
-      return Boolean(localStorage.getItem(name))
-    case 'electron':
-      return await promisify(fs.exists)(path.resolve(userDataPath, name))
-    default:
-      throw new Error(platformNotSupportedMessage)
-  }
+    switch (PLATFORM) {
+        case 'web':
+            return Boolean(localStorage.getItem(name))
+        case 'electron':
+            return await promisify(fs.exists)(path.resolve(userDataPath, name))
+        default:
+            throw new Error(platformNotSupportedMessage)
+    }
 }
 
 const saveData = async function<T>(fileName: string, data: T): Promise<void> {
-  return writeFile(fileName, JSON.stringify(data))
+    return writeFile(fileName, JSON.stringify(data))
 }
 
 const loadData = async function<T>(fileName: string): Promise<T[]> {
-  const fileExists = await exists(fileName)
-  if (fileExists) {
-    const dataText = await readFile(fileName)
-    return (JSON.parse(dataText) || []) as T[]
-  } else {
-    return []
-  }
+    const fileExists = await exists(fileName)
+    if (fileExists) {
+        const dataText = await readFile(fileName)
+        return (JSON.parse(dataText) || []) as T[]
+    } else {
+        return []
+    }
 }
 
 const importData = async function<T>(file: File): Promise<T> {
-  const text = await PromisifyFileReader.readAsText(file)
-  return JSON.parse(text) as T
+    const text = await PromisifyFileReader.readAsText(file)
+    return JSON.parse(text) as T
 }
 
 const dataPathMap = {
-  web: 'localStorage',
-  electron: userDataPath,
+    web: 'localStorage',
+    electron: userDataPath,
 }
 
 const USER_DATA_PATH = dataPathMap[PLATFORM]
 
 export {
-  ensureDataDir,
-  writeFile,
-  readFile,
-  saveData,
-  loadData,
-  importData,
-  exists,
-  USER_DATA_PATH,
+    ensureDataDir,
+    writeFile,
+    readFile,
+    saveData,
+    loadData,
+    importData,
+    exists,
+    USER_DATA_PATH,
 }

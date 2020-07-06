@@ -11,16 +11,16 @@ import { NpcTemplate } from './NpcTemplate'
 import { Npc } from './Npc'
 
 export {
-  NpcFeatureType,
-  NpcFeature,
-  NpcReaction,
-  NpcSystem,
-  NpcTrait,
-  NpcWeapon,
-  NpcStats,
-  NpcClass,
-  NpcTemplate,
-  NpcItem,
-  NpcTech,
-  Npc,
+    NpcFeatureType,
+    NpcFeature,
+    NpcReaction,
+    NpcSystem,
+    NpcTrait,
+    NpcWeapon,
+    NpcStats,
+    NpcClass,
+    NpcTemplate,
+    NpcItem,
+    NpcTech,
+    Npc,
 }
