@@ -10,8 +10,8 @@
     "unit-test": "jest unit",
     "commit": "git-cz",
     "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'",
-    "build": "tsc",
-    "build:watch": "tsc -w",
+    "build": "tsc && tscpaths -p ./tsconfig.json -s ./src -o ./dist",
+    "build:watch": "tsc -w --noEmit",
     "lint": "tslint -p tsconfig.json",
     "link": "npm run build && npm link",
     "prepare": "npm run build",
@@ -54,6 +54,7 @@
     "standard-changelog": "^2.0.21",
     "ts-jest": "^25.0.0",
     "ts-loader": "^6.2.1",
+    "tscpaths": "0.0.9",
     "typescript": "^3.7.5",
     "typescript-json-schema": "^0.42.0"
   },

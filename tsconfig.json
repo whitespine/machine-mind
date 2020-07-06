@@ -18,15 +18,23 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
-    "lib": ["esnext", "es2018.promise", "DOM"]
+    "lib": [
+      "esnext",
+      "es2018.promise",
+      "DOM"
+    ]
   },
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "tests/**/*.tsx",
+    "tests/**/*.tsx"
   ],
-  "exclude": ["node_modules"],
-  "allowJs": true,
+  "exclude": [
+    "node_modules"
+  ],
+  "allowJs": true
 }
