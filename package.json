@@ -1,0 +1,60 @@
+{
+  "name": "compcon_data",
+  "version": "0.1.0",
+  "description": "Backing data types for compcon",
+  "license": "GPL-3.0-or-later",
+  "author": "WHITESPINE, for now",
+  "scripts": {
+    "unit-test": "jest unit",
+    "commit": "git-cz",
+    "release": "./build_scripts/release.sh",
+    "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'"
+  },
+  "dependencies": {
+    "jszip": "^3.2.2",
+    "lodash": "^4.17.11",
+    "typeit": "^6.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/preset-env": "^7.7.6",
+    "@types/jest": "^24.0.13",
+    "@types/jszip": "^3.1.6",
+    "@types/lodash": "^4.14.123",
+    "@types/node": "12",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "@vue/test-utils": "^1.0.0-beta.30",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.6",
+    "commitizen": "^4.0.3",
+    "core-js": "3",
+    "cz-customizable": "^6.2.0",
+    "deepmerge": "^4.2.2",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-loader": "^3.0.3",
+    "fibers": "^4.0.2",
+    "file-loader": "^5.0.2",
+    "jest": "^25.1.0",
+    "jest-mock-random": "^1.0.2",
+    "lancer-data": "^2.0.33",
+    "prettier": "^1.18.2",
+    "pretty-quick": "^1.11.1",
+    "raw-loader": "^4.0.0",
+    "source-map-support": "^0.5.10",
+    "standard-changelog": "^2.0.21",
+    "ts-jest": "^25.0.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.5",
+    "typescript-json-schema": "^0.42.0"
+  },
+  "resolutions": {
+    "prosemirror-model": "1.8.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
+  }
+}
