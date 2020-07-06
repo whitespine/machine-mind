@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { MechEquipment, SystemType, ItemType } from "@/class";
 import { IMechEquipmentData } from "@/interface";
 

@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { MechWeapon, Tag } from "@/class";
 
 interface ICoreData {

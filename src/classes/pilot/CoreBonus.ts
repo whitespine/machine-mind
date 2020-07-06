@@ -1,5 +1,5 @@
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { ICompendiumItemData } from "@/interface";
 
 interface ICoreBonusData extends ICompendiumItemData {

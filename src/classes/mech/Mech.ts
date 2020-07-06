@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import uuid from "uuid/v4";
 import _ from "lodash";
 import { Rules, Pilot, Frame, MechLoadout, MechSystem, IntegratedMount, CoreBonus } from "@/class";

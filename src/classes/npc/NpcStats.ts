@@ -1,5 +1,5 @@
 import { NpcClass } from "./";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import _ from "lodash";
 
 interface INpcStats {

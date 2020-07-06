@@ -4,7 +4,7 @@ import PromisifyFileReader from "promisify-file-reader";
 import Extlog from "./ExtLog";
 import Startup from "./Startup";
 import Vue from "vue";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 
 const files = [
     "user.config",

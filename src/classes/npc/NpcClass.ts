@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { NpcFeature } from "./";
 

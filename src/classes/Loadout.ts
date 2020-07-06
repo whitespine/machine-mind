@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import uuid from "uuid/v4";
 
 const ordArr = [

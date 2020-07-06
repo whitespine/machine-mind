@@ -1,6 +1,6 @@
 import uuid from "uuid/v4";
 import { Npc, EncounterSide, MissionStepType } from "@/class";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { Capacitor } from "@/io/platform";
 import { getImagePath, ImageTag } from "@/io/ImageManagement";
 import { IMissionStep } from "./IMissionStep";

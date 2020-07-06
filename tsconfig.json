@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "noEmit": false,
-    "declaration": false,
+    "declaration": true,
     "types": [
       "jest"
     ],

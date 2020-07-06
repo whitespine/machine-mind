@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { CompendiumItem, Tag } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 

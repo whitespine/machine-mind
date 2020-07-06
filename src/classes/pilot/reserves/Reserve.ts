@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { ReserveType } from "@/class";
 import { reserves } from "lancer-data";
 

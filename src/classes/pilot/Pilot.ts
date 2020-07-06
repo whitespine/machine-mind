@@ -18,7 +18,7 @@ import {
     CompendiumItem,
     ContentPack,
 } from "@/class";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import gistApi from "@/io/apis/gist";
 import { Capacitor } from "@/io/platform";
 import { getImagePath, ImageTag } from "@/io/ImageManagement";

@@ -1,5 +1,5 @@
 import uuid from "uuid/v4";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { Encounter, Rest } from "@/class";
 import { IMissionStep } from "./IMissionStep";
 

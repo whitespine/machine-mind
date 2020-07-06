@@ -1,7 +1,7 @@
 import { Vue } from "@/io/platform";
 import { MechWeapon, FittingSize } from "@/class";
 import _ from "lodash";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { WeaponMod } from "@/class";
 
 class WeaponSlot {

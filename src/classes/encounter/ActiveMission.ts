@@ -1,5 +1,5 @@
 import uuid from "uuid/v4";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
 import { IMissionData, INpcData } from "@/interface";
 import { IMissionStep } from "./IMissionStep";

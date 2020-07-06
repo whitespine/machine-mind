@@ -1,7 +1,7 @@
 // Wrapper class for items assigned to an NPC
 
 import { NpcFeature } from "./";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 
 export interface INpcItemSaveData {
     itemID: string;

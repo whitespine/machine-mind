@@ -1,4 +1,4 @@
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { ItemType } from "@/class";
 import { ICounterData } from "@/interface";
 import _ from "lodash";

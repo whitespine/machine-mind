@@ -1,5 +1,5 @@
 import { ItemType } from "@/class";
-import { store } from "@/store";
+import { store } from "@/io/platform";
 import { ICompendiumItemData } from "@/interface";
 
 export interface ITagCompendiumData extends ICompendiumItemData {
