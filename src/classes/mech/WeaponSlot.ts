@@ -1,4 +1,4 @@
-import Vue from "vue";
+import {Vue} from "@/io/platform";
 import { MechWeapon, FittingSize } from "@/class";
 import _ from "lodash";
 import { store } from "@/store";

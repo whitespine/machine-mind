@@ -1,3 +1,4 @@
+/*
 import { readFile, writeFile } from "./Data";
 import PromisifyFileReader from "promisify-file-reader";
 import Extlog from "./ExtLog";
@@ -52,3 +53,5 @@ const clearAllData = async function(): Promise<void> {
 };
 
 export { exportV1Pilots, exportAll, importAll, clearAllData };
+
+*/

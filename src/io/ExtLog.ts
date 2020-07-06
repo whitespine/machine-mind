@@ -1,6 +1,5 @@
-import path from "path";
-import { writeFile, readFile, exists, USER_DATA_PATH, ensureDataDir } from "./Data";
 
+/*
 const LOG_FILE_NAME = "compcon_data.log";
 const LOG_FILE_PATH = path.join(USER_DATA_PATH, LOG_FILE_NAME);
 
@@ -42,5 +41,8 @@ async function ExtLog(s: string): Promise<void> {
 
     console.log("%cCOMP/CON", logPrefixStyles.join(";"), s);
 }
+*/
+
+declare function ExtLog(s: string): Promise<void>;
 
 export default ExtLog;

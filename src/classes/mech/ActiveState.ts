@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import Vue from "vue";
+import { Vue } from "@/io/platform";
 import { Mech } from "@/class";
 
 class ActiveState {

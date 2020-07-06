@@ -1,6 +1,6 @@
 import uuid from "uuid/v4";
 import { store } from "@/store";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor } from "@/io/platform";
 import { getImagePath, ImageTag } from "@/io/ImageManagement";
 import { NpcStats, NpcClass, NpcTemplate, NpcFeature, NpcItem } from "./";
 import { INpcStats, INpcItemSaveData } from "./interfaces";

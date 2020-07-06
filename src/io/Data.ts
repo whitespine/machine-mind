@@ -1,3 +1,18 @@
+abstract class DataShell {
+    abstract ensureDataDir(): void;
+    abstract async writeFile(name: string, data: string): Promise<void>;
+    abstract async readFile(name: string): Promise<string>;
+    abstract async saveData<T>(fileName: string, data: T): Promise<void>;
+    abstract async loadData<T>(fileName: string): Promise<T[]>;
+    abstract async importData<T>(file: File): Promise<T>;
+    abstract async exists(name: string): Promise<boolean>;
+    abstract get USER_DATA_PATH();
+}
+
+// compcon provides implementation here
+declare function Data(): DataShell;
+
+/*
 import { Capacitor } from "@capacitor/core";
 import path from "path";
 import { promisify } from "util";
@@ -96,13 +111,8 @@ const dataPathMap = {
 
 const USER_DATA_PATH = dataPathMap[PLATFORM];
 
+*/
 export {
-    ensureDataDir,
-    writeFile,
-    readFile,
-    saveData,
-    loadData,
-    importData,
-    exists,
-    USER_DATA_PATH,
+    DataShell,
+    Data,
 };

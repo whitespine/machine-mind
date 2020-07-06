@@ -1,3 +1,4 @@
+/*
 import { EventEmitter } from "events";
 import { Capacitor } from "@capacitor/core";
 import Vue from "vue";
@@ -93,3 +94,5 @@ export class UpdateChecker extends EventEmitter {
 }
 
 export default new UpdateChecker();
+
+*/

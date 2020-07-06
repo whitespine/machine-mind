@@ -20,7 +20,7 @@ import {
 } from "@/class";
 import { store } from "@/store";
 import gistApi from "@/io/apis/gist";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor } from "@/io/platform";
 import { getImagePath, ImageTag } from "@/io/ImageManagement";
 import { ICounterData } from "@/interface";
 

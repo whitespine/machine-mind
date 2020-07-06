@@ -8,7 +8,9 @@
     "unit-test": "jest unit",
     "commit": "git-cz",
     "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'",
-    "build": "tsc"
+    "build": "tsc",
+    "build:watch": "tsc -w"
+
   },
   "dependencies": {
     "axios": "^0.19.2",
