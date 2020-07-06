@@ -34,7 +34,6 @@ export {
 }
 */
 
-
 // we rely on compcon to fill this
 // This is dumb, honestly.
 export var store: any = null;

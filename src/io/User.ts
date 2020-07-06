@@ -1,7 +1,7 @@
 import path from "path";
 import extlog from "./ExtLog";
 import uuid from "uuid/v4";
-import {Data} from "./Data";
+import { Data } from "./Data";
 
 const CONFIG_FILE_NAME = "user.config";
 

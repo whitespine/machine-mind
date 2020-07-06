@@ -112,7 +112,4 @@ const dataPathMap = {
 const USER_DATA_PATH = dataPathMap[PLATFORM];
 
 */
-export {
-    DataShell,
-    Data,
-};
+export { DataShell, Data };

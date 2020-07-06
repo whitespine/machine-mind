@@ -1,4 +1,3 @@
-
 /*
 const LOG_FILE_NAME = "compcon_data.log";
 const LOG_FILE_PATH = path.join(USER_DATA_PATH, LOG_FILE_NAME);
