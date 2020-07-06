@@ -20,7 +20,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "lib": ["esnext", "es2018.promise"]
+    "lib": ["esnext", "es2018.promise", "DOM"]
   },
   "include": [
     "src/**/*.ts",

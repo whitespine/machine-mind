@@ -7,10 +7,11 @@
   "scripts": {
     "unit-test": "jest unit",
     "commit": "git-cz",
-    "release": "./build_scripts/release.sh",
-    "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'"
+    "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'",
+    "build": "tsc"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "jszip": "^3.2.2",
     "lodash": "^4.17.11",
     "typeit": "^6.0.3"

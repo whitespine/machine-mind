@@ -1,112 +1,112 @@
 /* eslint-disable @typescript-eslint/indent */
-import { Pilot, RangeType } from '@/class'
-import Mech from '@/classes/mech/Mech'
+import { Pilot, RangeType } from "@/class";
+import Mech from "@/classes/mech/Mech";
 
 interface IRoll20Data {
     ////////
     // PILOT
     ////////
     pilot: {
-        name: string
-        level: number
+        name: string;
+        level: number;
         // Player: does not apply
-        callsign: string
-        background: string
+        callsign: string;
+        background: string;
         //
-        hp: number
+        hp: number;
         // Mech skills
-        hull: number
-        agility: number
-        systems: number
-        engineering: number
+        hull: number;
+        agility: number;
+        systems: number;
+        engineering: number;
         // Triggers
         triggers: {
-            name: string
-            bonus: number
-        }[]
-        notes: string
+            name: string;
+            bonus: number;
+        }[];
+        notes: string;
         //
-        backstory: string
-        appearance: string
-        gear: string
+        backstory: string;
+        appearance: string;
+        gear: string;
         armor: {
-            name: string
-            armor: number
-            evade: number
-            edef: number
-            speed: number
-            bonusHP: number
-        }
+            name: string;
+            armor: number;
+            evade: number;
+            edef: number;
+            speed: number;
+            bonusHP: number;
+        };
         weapons: {
-            name: string
-            range: number
-            damage: string
-            type: string
-            tags: string
-        }[]
+            name: string;
+            range: number;
+            damage: string;
+            type: string;
+            tags: string;
+        }[];
         //
         licenses: {
-            name: string
-            rank: number
-        }[]
-        coreBonuses: string
-    }
+            name: string;
+            rank: number;
+        }[];
+        coreBonuses: string;
+    };
     //   reserves: string
     ////////
     // TALENTS
     ////////
     talents: {
-        name: string
+        name: string;
         ranks: {
-            name: string
-            description: string
-        }[]
-        currentRank: number
-    }[]
+            name: string;
+            description: string;
+        }[];
+        currentRank: number;
+    }[];
     ////////
     // FRAME
     ////////
     frame: {
-        name: string
-        type: string
-        size: number
-        sp: number
-        armor: number
-        evasion: number
-        edefense: number
-        speed: number
-        sensors: number
-        techAttack: number
-        mounts: string[]
+        name: string;
+        type: string;
+        size: number;
+        sp: number;
+        armor: number;
+        evasion: number;
+        edefense: number;
+        speed: number;
+        sensors: number;
+        techAttack: number;
+        mounts: string[];
         weapons: {
-            name: string
-            type: string
-            range: number
-            altRanges: string
-            damage: string
-            damageType: string
-            tags: string
-            notes: string
-        }[]
-        corePassive: string
-        coreActive: string
+            name: string;
+            type: string;
+            range: number;
+            altRanges: string;
+            damage: string;
+            damageType: string;
+            tags: string;
+            notes: string;
+        }[];
+        corePassive: string;
+        coreActive: string;
         traits: {
-            name: string
-            description: string
-        }[]
+            name: string;
+            description: string;
+        }[];
         systems: {
-            name: string
-            tags: string
-            sp: number
-            effect: string
-        }[]
-    }
+            name: string;
+            tags: string;
+            sp: number;
+            effect: string;
+        }[];
+    };
 }
 
 function strip(text: string): string {
-    text = text.replace(/<br\/?>/gi, '\n')
-    const doc = new DOMParser().parseFromString(text, 'text/html')
-    return doc.body.textContent || ''
+    text = text.replace(/<br\/?>/gi, "\n");
+    const doc = new DOMParser().parseFromString(text, "text/html");
+    return doc.body.textContent || "";
 }
 
 export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
@@ -132,8 +132,8 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
             backstory: pilot.History,
             appearance: pilot.TextAppearance,
             gear: pilot.Loadout.Gear.map(gear =>
-                gear ? gear.Name + (gear.MaxUses ? ` x${gear.MaxUses}` : '') : ''
-            ).join('\n'),
+                gear ? gear.Name + (gear.MaxUses ? ` x${gear.MaxUses}` : "") : ""
+            ).join("\n"),
             armor: pilot.Loadout.Armor.map(armor =>
                 armor
                     ? {
@@ -152,9 +152,9 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
                           name: weapon.Name,
                           // filter out blast since it's never used as the only "range" really
                           range: weapon.Range.filter(r => r.Type != RangeType.Blast)[0].Max,
-                          damage: weapon.Damage.map(dmg => dmg.Value).join('+'),
+                          damage: weapon.Damage.map(dmg => dmg.Value).join("+"),
                           type: weapon.DefaultDamageType,
-                          tags: weapon.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(', '),
+                          tags: weapon.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(", "),
                       }
                     : null
             ).slice(0, 2),
@@ -162,7 +162,7 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
                 name: `${l.License.Source} ${l.License.Name}`,
                 rank: l.Rank,
             })),
-            coreBonuses: pilot.CoreBonuses.map(cb => cb.Name + '\n' + cb.Description).join('\n'),
+            coreBonuses: pilot.CoreBonuses.map(cb => cb.Name + "\n" + cb.Description).join("\n"),
         },
         //
         //
@@ -178,7 +178,7 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
         //
         frame: {
             name: mech.Name,
-            type: mech.Frame.ID === 'everest' ? 'GMS EVEREST' : mech.Frame.Name.toUpperCase(),
+            type: mech.Frame.ID === "everest" ? "GMS EVEREST" : mech.Frame.Name.toUpperCase(),
             size: mech.Size,
             sp: mech.MaxSP,
             armor: mech.Armor,
@@ -194,10 +194,10 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
                 range: weapon.Range.filter(r => r.Type != RangeType.Blast)[0].Max,
                 altRanges: weapon.Range.filter(r => r.Type != RangeType.Range)
                     .map(r => r.Text)
-                    .join('|'),
-                damage: weapon.Damage.map(dmg => dmg.Value).join('|'),
-                damageType: weapon.Damage.map(dmg => dmg.Type).join('|'),
-                tags: weapon.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(', '),
+                    .join("|"),
+                damage: weapon.Damage.map(dmg => dmg.Value).join("|"),
+                damageType: weapon.Damage.map(dmg => dmg.Type).join("|"),
+                tags: weapon.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(", "),
                 notes: weapon.Note,
             })),
             corePassive: `${mech.Frame.CoreSystem.PassiveName}\n${mech.Frame.CoreSystem.PassiveEffect}`,
@@ -208,11 +208,11 @@ export default function pilotToRoll20(pilot: Pilot, mech: Mech): IRoll20Data {
             })),
             systems: mech.ActiveLoadout.Systems.map(system => ({
                 name: system.Name,
-                tags: system.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(', '),
+                tags: system.Tags.map(tag => tag.GetName(pilot.LimitedBonus)).join(", "),
                 sp: system.SP,
-                effect: system.Effect.map(effect => effect.toString()).join('\n'),
+                effect: system.Effect.map(effect => effect.toString()).join("\n"),
             })),
         },
-    }
-    return output
+    };
+    return output;
 }

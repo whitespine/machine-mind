@@ -1,14 +1,14 @@
-import { NpcFeatureType, NpcFeature } from './NpcFeature'
-import { NpcReaction } from './NpcReaction'
-import { NpcSystem } from './NpcSystem'
-import { NpcTech } from './NpcTech'
-import NpcTrait from './NpcTrait'
-import { NpcItem } from './NpcItem'
-import { NpcWeapon } from './NpcWeapon'
-import { NpcStats } from './NpcStats'
-import { NpcClass } from './NpcClass'
-import { NpcTemplate } from './NpcTemplate'
-import { Npc } from './Npc'
+import { NpcFeatureType, NpcFeature } from "./NpcFeature";
+import { NpcReaction } from "./NpcReaction";
+import { NpcSystem } from "./NpcSystem";
+import { NpcTech } from "./NpcTech";
+import NpcTrait from "./NpcTrait";
+import { NpcItem } from "./NpcItem";
+import { NpcWeapon } from "./NpcWeapon";
+import { NpcStats } from "./NpcStats";
+import { NpcClass } from "./NpcClass";
+import { NpcTemplate } from "./NpcTemplate";
+import { Npc } from "./Npc";
 
 export {
     NpcFeatureType,
@@ -23,4 +23,4 @@ export {
     NpcItem,
     NpcTech,
     Npc,
-}
+};

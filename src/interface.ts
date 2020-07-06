@@ -19,26 +19,26 @@ import {
     ITechEffectData,
     IProfileEffectData,
     IOffensiveEffectData,
-} from './classes/effects/interfaces'
-import { ICompendiumItemData } from './classes/CompendiumItem'
-import { ILicensedItemData } from './classes/LicensedItem'
-import { ICoreData } from './classes/mech/CoreSystem'
-import { IFrameData, IFrameStats } from './classes/mech/Frame'
-import { IMechEquipmentData } from './classes/mech/MechEquipment'
-import { IDamageData } from './classes/Damage'
-import { IRangeData } from './classes/Range'
-import { IMechSystemData } from './classes/mech/MechSystem'
-import { IWeaponModData } from './classes/mech/WeaponMod'
-import { ICoreBonusData } from './classes/pilot/CoreBonus'
-import { IPilotEquipmentData } from './classes/pilot/PilotEquipment'
-import { IPilotArmorData } from './classes/pilot/PilotArmor'
-import { IPilotWeaponData } from './classes/pilot/PilotWeapon'
-import { IPilotGearData } from './classes/pilot/PilotGear'
-import { IManufacturerData } from './classes/Manufacturer'
-import { IFactionData } from './classes/Faction'
-import { ITalentData } from './classes/pilot/Talent'
-import { ISkillData } from './classes/pilot/Skill'
-import { IMechWeaponData } from './classes/mech/MechWeapon'
+} from "./classes/effects/interfaces";
+import { ICompendiumItemData } from "./classes/CompendiumItem";
+import { ILicensedItemData } from "./classes/LicensedItem";
+import { ICoreData } from "./classes/mech/CoreSystem";
+import { IFrameData, IFrameStats } from "./classes/mech/Frame";
+import { IMechEquipmentData } from "./classes/mech/MechEquipment";
+import { IDamageData } from "./classes/Damage";
+import { IRangeData } from "./classes/Range";
+import { IMechSystemData } from "./classes/mech/MechSystem";
+import { IWeaponModData } from "./classes/mech/WeaponMod";
+import { ICoreBonusData } from "./classes/pilot/CoreBonus";
+import { IPilotEquipmentData } from "./classes/pilot/PilotEquipment";
+import { IPilotArmorData } from "./classes/pilot/PilotArmor";
+import { IPilotWeaponData } from "./classes/pilot/PilotWeapon";
+import { IPilotGearData } from "./classes/pilot/PilotGear";
+import { IManufacturerData } from "./classes/Manufacturer";
+import { IFactionData } from "./classes/Faction";
+import { ITalentData } from "./classes/pilot/Talent";
+import { ISkillData } from "./classes/pilot/Skill";
+import { IMechWeaponData } from "./classes/mech/MechWeapon";
 import {
     INpcFeatureData,
     INpcReactionData,
@@ -51,11 +51,11 @@ import {
     INpcItemSaveData,
     INpcTechData,
     INpcData,
-} from './classes/npc/interfaces'
-import { IEncounterData, IMissionData, IActiveMissionData } from './classes/encounter/interfaces'
-import { IContentPackManifest, IContentPack } from './classes/ContentPack'
-import { ICounterData } from './classes/Counter'
-import { ITagCompendiumData } from './classes/Tag'
+} from "./classes/npc/interfaces";
+import { IEncounterData, IMissionData, IActiveMissionData } from "./classes/encounter/interfaces";
+import { IContentPackManifest, IContentPack } from "./classes/ContentPack";
+import { ICounterData } from "./classes/Counter";
+import { ITagCompendiumData } from "./classes/Tag";
 
 export {
     IAIData,
@@ -110,4 +110,4 @@ export {
     ITagCompendiumData,
     IInvadeOptionData,
     ITechEffectData,
-}
+};
