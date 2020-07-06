@@ -4,13 +4,18 @@
   "description": "Backing data types for compcon",
   "license": "GPL-3.0-or-later",
   "author": "WHITESPINE, for now",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "unit-test": "jest unit",
     "commit": "git-cz",
     "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'",
     "build": "tsc",
-    "build:watch": "tsc -w"
-
+    "build:watch": "tsc -w",
+    "lint": "tslint -p tsconfig.json",
+    "link": "npm run build && npm link",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint"
   },
   "dependencies": {
     "axios": "^0.19.2",
