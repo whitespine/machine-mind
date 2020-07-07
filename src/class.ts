@@ -5,6 +5,7 @@
 // first in this file.
 
 export { Rules } from "./classes/utility/Rules";
+export { ItemFilter } from "./classes/utility/ItemFilter";
 export {
     MountType,
     FittingSize,

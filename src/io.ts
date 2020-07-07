@@ -1,22 +1,26 @@
-import { IUserProfile } from "@/interface";
 import { Pilot } from "@/class";
 import { getVersion } from "jest";
 
 // Interface store interaction
 export var store: StoreShim;
 
-export abstract class StoreShim {
-    abstract save(): void;
-    abstract saveMissionData(): void;
-    abstract saveActiveMissionData(): void;
-    abstract saveEncounterData(): void;
-    abstract getItemCollection<T>(category: string): Array<T>;
-    abstract saveNpcData(): void;
-    abstract getUserProfile(): IUserProfile;
-    abstract referenceByID(category: string, id: string): any;
-    abstract instantiate(category: string, data: string): any;
-    abstract addPilot(pilot: Pilot): any;
-    abstract getVersion: string;
+
+export interface HasID {
+    ID: string;
+}
+
+export interface StoreShim {
+     save(): void;
+     saveMissionData(): void;
+     saveActiveMissionData(): void;
+     saveEncounterData(): void;
+     getItemCollection<T>(category: string): Array<T>;
+     saveNpcData(): void;
+     getUserProfile(): HasID;
+     referenceByID(category: string, id: string): any;
+     instantiate(category: string, data: string): any;
+     addPilot(pilot: Pilot): any;
+     getVersion: string;
 }
 
 export function setup_store_shim(_store: StoreShim) {
@@ -26,16 +30,15 @@ export function setup_store_shim(_store: StoreShim) {
 // Interface image management
 export var imageManagement: ImageShim;
 
-export abstract class ImageShim {
-    abstract getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean): string;
-    abstract validateImageFolders(): Promise<void>;
-    abstract getImagePaths(
+export interface ImageShim {
+     getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean): string;
+     validateImageFolders(): Promise<void>;
+     getImagePaths(
         subdir: ImageTag,
-        fileName: string,
         defaults?: boolean
     ): Promise<string[]>;
-    abstract addImage(subdir: ImageTag, imagePath: string): Promise<void>;
-    abstract removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
+     addImage(subdir: ImageTag, imagePath: string): Promise<void>;
+     removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
 }
 
 export enum ImageTag {

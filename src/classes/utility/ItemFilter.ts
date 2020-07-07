@@ -1,6 +1,6 @@
 import { MechEquipment, CompendiumItem } from "@/class";
 
-class ItemFilter {
+export class ItemFilter {
     public static Filter(items: CompendiumItem[], filter: any): CompendiumItem[] {
         Object.keys(filter).forEach(p => {
             if (p === "Tags") {

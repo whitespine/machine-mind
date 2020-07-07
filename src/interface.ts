@@ -61,7 +61,6 @@ export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
-export { IUserProfile } from "./classes/utility/UserProfile";
 
 export * from "./classes/GeneralInterfaces";
 /*
