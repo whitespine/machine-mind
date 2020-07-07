@@ -1,7 +1,7 @@
 import { CompendiumItem, Tag } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { IEquipmentData, ITagData } from "../GeneralInterfaces";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 interface IPilotEquipmentData extends ICompendiumItemData {
     type?: string;

@@ -2,7 +2,7 @@ import uuid from "uuid/v4";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
 import { IMissionData, INpcData, IMissionStep } from "@/interface";
 import { EncounterSide } from "../enums";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export interface IActiveMissionData {
     mission: IMissionData;

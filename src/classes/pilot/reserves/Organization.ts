@@ -1,5 +1,5 @@
 import { OrgType } from "@/class";
-import { store } from "@/io";
+import { store } from "@/hooks";
 import { IOrganizationData } from "@/classes/GeneralInterfaces";
 
 export class Organization {

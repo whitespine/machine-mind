@@ -1,4 +1,4 @@
-import { imageManagement, ImageTag } from "@/io";
+import { imageManagement, ImageTag } from "@/hooks";
 
 interface IFactionData {
     id: string;

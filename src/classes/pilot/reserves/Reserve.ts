@@ -1,7 +1,7 @@
 //
 import { ReserveType } from "@/class";
 import { reserves } from "lancer-data";
-import { store } from "@/io";
+import { store } from "@/hooks";
 import { IReserveData } from "@/classes/GeneralInterfaces";
 
 export class Reserve {

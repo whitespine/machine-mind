@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { LicensedItem, Frame, Manufacturer } from "@/class";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export class License {
     private _frame_id: string;

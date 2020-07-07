@@ -4,26 +4,25 @@ import { getVersion } from "jest";
 // Interface store interaction
 export var store: StoreShim;
 
-
 export interface HasID {
     ID: string;
 }
 
 export interface StoreShim {
-     save(): void;
-     saveMissionData(): void;
-     saveActiveMissionData(): void;
-     saveEncounterData(): void;
-     getItemCollection<T>(category: string): Array<T>;
-     saveNpcData(): void;
-     getUserProfile(): HasID;
-     referenceByID(category: string, id: string): any;
-     instantiate(category: string, data: string): any;
-     addPilot(pilot: Pilot): any;
-     getEncounters(): Encounter[];
-     getNpcs(): Npc[];
-     getPilots(): Pilot[];
-     getVersion: string;
+    save(): void;
+    saveMissionData(): void;
+    saveActiveMissionData(): void;
+    saveEncounterData(): void;
+    getItemCollection<T>(category: string): Array<T>;
+    saveNpcData(): void;
+    getUserProfile(): HasID;
+    referenceByID(category: string, id: string): any;
+    instantiate(category: string, data: string): any;
+    addPilot(pilot: Pilot): any;
+    getEncounters(): Encounter[];
+    getNpcs(): Npc[];
+    getPilots(): Pilot[];
+    getVersion: string;
 }
 
 export function setup_store_shim(_store: StoreShim) {
@@ -34,14 +33,11 @@ export function setup_store_shim(_store: StoreShim) {
 export var imageManagement: ImageShim;
 
 export interface ImageShim {
-     getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean): string;
-     validateImageFolders(): Promise<void>;
-     getImagePaths(
-        subdir: ImageTag,
-        defaults?: boolean
-    ): Promise<string[]>;
-     addImage(subdir: ImageTag, imagePath: string): Promise<void>;
-     removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
+    getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean): string;
+    validateImageFolders(): Promise<void>;
+    getImagePaths(subdir: ImageTag, defaults?: boolean): Promise<string[]>;
+    addImage(subdir: ImageTag, imagePath: string): Promise<void>;
+    removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
 }
 
 export enum ImageTag {
@@ -75,4 +71,12 @@ export var is_web: boolean;
 
 export function set_is_web(yes: boolean) {
     is_web = yes;
+}
+
+// Logging, as necessary
+type Logger = (...data: any[]) => void;
+export var logger: Logger = () => {};
+
+export function set_logger(_logger: Logger) {
+    logger = _logger;
 }

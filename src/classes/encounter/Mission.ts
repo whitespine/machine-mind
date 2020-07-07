@@ -2,7 +2,7 @@ import uuid from "uuid/v4";
 
 import { Encounter, Rest } from "@/class";
 import { IMissionStep } from "./IMissionStep";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 enum MissionStepType {
     Encounter = "Encounter",
@@ -106,7 +106,8 @@ class Mission {
     }
 
     public ValidateSteps(): void {
-        const ids = store.getEncounters()
+        const ids = store
+            .getEncounters()
             .map((x: Encounter) => x.ID)
             .concat(this._rests.map(x => x.ID));
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));

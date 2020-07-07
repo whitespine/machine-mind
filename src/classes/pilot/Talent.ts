@@ -1,6 +1,6 @@
 import { CompendiumItem } from "@/class";
 import { ICompendiumItemData } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 interface ITalentRank {
     name: string;

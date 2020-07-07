@@ -1,7 +1,7 @@
 import { ItemType } from "@/class";
 import { ICounterData } from "@/interface";
 import _ from "lodash";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew

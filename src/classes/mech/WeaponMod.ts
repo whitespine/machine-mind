@@ -9,7 +9,7 @@ import {
     SystemType,
 } from "@/class";
 import { IDamageData, ITagData, IEquipmentData, IRangeData, IMechEquipmentData } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 interface IWeaponModData extends IMechEquipmentData {
     sp: number;

@@ -1,7 +1,7 @@
 import uuid from "uuid/v4";
 
 import { MechWeapon, WeaponSlot, MountType, FittingSize, WeaponSize } from "@/class";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export abstract class Mount {
     private _mount_type: MountType;

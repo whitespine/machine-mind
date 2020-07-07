@@ -12,7 +12,7 @@ import {
     WeaponType,
 } from "@/class";
 import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 // TODO:
 // class WeaponAmmo {}

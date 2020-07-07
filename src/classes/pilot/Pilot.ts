@@ -29,7 +29,7 @@ import {
     IPilotData,
     ICounterSaveData,
 } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export class Pilot {
     private _cloudID: string;

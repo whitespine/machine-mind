@@ -1,5 +1,5 @@
 import { NpcFeature } from "./";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export interface INpcTemplateData {
     id: string;

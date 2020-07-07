@@ -1,7 +1,7 @@
 import { ItemType } from "@/class";
 
 import { ICompendiumItemData, ITagData } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export interface ITagCompendiumData extends ICompendiumItemData {
     id: string;

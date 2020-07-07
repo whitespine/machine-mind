@@ -1,5 +1,5 @@
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 import { ICompendiumItemData } from "@/interface";
 

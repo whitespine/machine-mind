@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { VueSet } from "@/io";
+import { VueSet } from "@/hooks";
 import { Mech } from "@/class";
 import { IMechState, IHistoryItem } from "@/interface";
 

@@ -1,6 +1,6 @@
 import { MechWeapon, Tag } from "@/class";
 import { ITagData } from "@/interface";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 interface ICoreData {
     name: string;

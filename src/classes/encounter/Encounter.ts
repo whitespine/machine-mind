@@ -1,9 +1,9 @@
 import uuid from "uuid/v4";
 import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
 
-import { imageManagement, ImageTag } from "@/io";
+import { imageManagement, ImageTag } from "@/hooks";
 import { IMissionStep } from "./IMissionStep";
-import { store, is_web } from "@/io";
+import { store, is_web } from "@/hooks";
 
 interface IEncounterData {
     id: string;

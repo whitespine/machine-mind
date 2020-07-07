@@ -1,10 +1,10 @@
-import { VueSet } from "@/io";
+import { VueSet } from "@/hooks";
 import { MechWeapon, FittingSize } from "@/class";
 import { IWeaponSlotData } from "@/interface";
 import _ from "lodash";
 
 import { WeaponMod } from "@/class";
-import { store } from "@/io";
+import { store } from "@/hooks";
 
 export class WeaponSlot {
     private _size: FittingSize;

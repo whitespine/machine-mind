@@ -10,8 +10,8 @@ import {
     CoreBonus,
     ActiveState,
 } from "@/class";
-import { imageManagement, ImageTag } from "@/io";
-import { store } from "@/io";
+import { imageManagement, ImageTag } from "@/hooks";
+import { store } from "@/hooks";
 import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from "@/interface";
 
 export class Mech implements IActor {
