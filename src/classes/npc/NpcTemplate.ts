@@ -1,5 +1,6 @@
-import { store } from "@/io/platform";
+
 import { NpcFeature } from "./";
+import { store } from '@/io';
 
 export interface INpcTemplateData {
     id: string;
@@ -47,10 +48,10 @@ export class NpcTemplate {
     }
 
     public get BaseFeatures(): NpcFeature[] {
-        return this._base_features.map(x => store.getters.referenceByID("NpcFeatures", x));
+        return this._base_features.map(x => store.referenceByID("NpcFeatures", x));
     }
 
     public get OptionalFeatures(): NpcFeature[] {
-        return this._optional_features.map(x => store.getters.referenceByID("NpcFeatures", x));
+        return this._optional_features.map(x => store.referenceByID("NpcFeatures", x));
     }
 }

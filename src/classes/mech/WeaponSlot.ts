@@ -1,10 +1,12 @@
-import { Vue } from "@/io/platform";
+import { VueSet } from "@/io";
 import { MechWeapon, FittingSize } from "@/class";
+import { IWeaponSlotData } from "@/interface";
 import _ from "lodash";
-import { store } from "@/io/platform";
-import { WeaponMod } from "@/class";
 
-class WeaponSlot {
+import { WeaponMod } from "@/class";
+import { store } from '@/io';
+
+export class WeaponSlot {
     private _size: FittingSize;
     private _weapon: MechWeapon | null;
 
@@ -14,7 +16,7 @@ class WeaponSlot {
     }
 
     private save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public get Size(): FittingSize {
@@ -31,12 +33,12 @@ class WeaponSlot {
 
     public EquipWeapon(weapon: MechWeapon): void {
         const w = _.cloneDeep(weapon);
-        Vue.set(this, "_weapon", w);
+        VueSet(this, "_weapon", w);
         this.save();
     }
 
     public UnequipWeapon(): void {
-        Vue.set(this, "_weapon", null);
+        VueSet(this, "_weapon", null);
         this.save();
     }
 
@@ -57,4 +59,3 @@ class WeaponSlot {
     }
 }
 
-export default WeaponSlot;

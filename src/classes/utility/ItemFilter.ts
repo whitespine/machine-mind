@@ -13,5 +13,3 @@ class ItemFilter {
         return items;
     }
 }
-
-export default ItemFilter;

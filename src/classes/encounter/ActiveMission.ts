@@ -1,9 +1,8 @@
 import uuid from "uuid/v4";
-import { store } from "@/io/platform";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
-import { IMissionData, INpcData } from "@/interface";
-import { IMissionStep } from "./IMissionStep";
+import { IMissionData, INpcData , IMissionStep} from "@/interface";
 import { EncounterSide } from "../enums";
+import { store } from '@/io';
 
 export interface IActiveMissionData {
     mission: IMissionData;
@@ -46,7 +45,7 @@ export class ActiveMission {
     }
 
     private save(): void {
-        store.dispatch("mission/saveActiveMissionData");
+        store.saveActiveMissionData();
     }
 
     public get ID(): string {
@@ -204,7 +203,7 @@ export class ActiveMission {
     }
 
     public get Pilots(): Pilot[] {
-        return store.getters["getPilots"].filter((x: Pilot) =>
+        return store["getPilots"].filter((x: Pilot) =>
             this._pilotIDs.some(y => y === x.ID)
         );
     }

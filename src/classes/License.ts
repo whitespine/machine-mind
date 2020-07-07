@@ -1,8 +1,9 @@
-import { store } from "@/io/platform";
+
 import _ from "lodash";
 import { LicensedItem, Frame, Manufacturer } from "@/class";
+import { store } from '@/io';
 
-class License {
+export class License {
     private _frame_id: string;
     private _source: string;
     private _name: string;
@@ -15,12 +16,12 @@ class License {
         this._name = frame.Name;
         this._brew = frame.Brew || "Core";
 
-        const items: LicensedItem[] = _.cloneDeep(store.getters.getItemCollection("MechWeapons"))
+        const items: LicensedItem[] = _.cloneDeep(store.getItemCollection("MechWeapons"))
             .concat(
-                store.getters.getItemCollection("WeaponMods"),
-                store.getters.getItemCollection("MechSystems")
+                store.getItemCollection("WeaponMods"),
+                store.getItemCollection("MechSystems")
             )
-            .filter((x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase());
+            .filter((x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()) as LicensedItem[];
 
         this._unlocks = [
             items.filter(x => x.LicenseLevel === 1),
@@ -41,7 +42,7 @@ class License {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.getters.referenceByID("Manufacturers", this._source);
+        return store.referenceByID("Manufacturers", this._source);
     }
 
     public get FrameID(): string {
@@ -65,8 +66,6 @@ class License {
     }
 
     public static Deserialize(frameId: string): License {
-        return new License(store.getters.referenceByID("Frames", frameId));
+        return new License(store.referenceByID("Frames", frameId));
     }
 }
-
-export default License;

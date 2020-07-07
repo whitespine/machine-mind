@@ -1,6 +1,7 @@
 import { Mount, MechWeapon, MountType } from "@/class";
+import { IMechWeaponSaveData } from '@/interface';
 
-class IntegratedMount extends Mount {
+export class IntegratedMount extends Mount {
     private _item_source: string;
 
     public constructor(intWeapon: MechWeapon, itemSource: string) {
@@ -31,4 +32,3 @@ class IntegratedMount extends Mount {
     }
 }
 
-export default IntegratedMount;

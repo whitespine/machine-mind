@@ -1,5 +1,7 @@
-import { store } from "@/io/platform";
+
 import { MechWeapon, Tag } from "@/class";
+import { ITagData } from '@/interface';
+import { store } from '@/io';
 
 interface ICoreData {
     name: string;
@@ -43,12 +45,12 @@ class CoreSystem {
 
     public get Integrated(): MechWeapon | null {
         if (!this._integrated) return null;
-        return store.getters.referenceByID("MechWeapons", this._integrated);
+        return store.referenceByID("MechWeapons", this._integrated);
     }
 
     public getIntegrated(): MechWeapon | null {
         if (!this._integrated) return null;
-        return store.getters.instantiate("MechWeapons", this._integrated);
+        return store.instantiate("MechWeapons", this._integrated);
     }
 
     public get PassiveName(): string | null {

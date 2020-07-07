@@ -1,4 +1,5 @@
 import { License } from "@/class";
+import { IRankedData } from '../GeneralInterfaces';
 
 class PilotLicense {
     private license: License;
@@ -46,4 +47,4 @@ class PilotLicense {
     }
 }
 
-export default PilotLicense;
+export { PilotLicense };

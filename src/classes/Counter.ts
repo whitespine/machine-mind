@@ -1,3 +1,5 @@
+import { ICounterSaveData } from '@/interface';
+
 /* eslint-disable @typescript-eslint/camelcase */
 interface ICounterData {
     id: string;

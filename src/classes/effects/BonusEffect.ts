@@ -1,5 +1,5 @@
-import { ItemEffect, IEffectData } from "./ItemEffect";
-import { ActivationType, EffectType } from "@/class";
+import { IEffectData } from "@/interface";
+import { ActivationType, EffectType, ItemEffect } from "@/class";
 
 interface IBonusEffectData extends IEffectData {
     detail: string;

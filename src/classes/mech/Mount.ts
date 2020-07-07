@@ -1,8 +1,9 @@
 import uuid from "uuid/v4";
-import { store } from "@/io/platform";
-import { MechWeapon, WeaponSlot, MountType, FittingSize, WeaponSize } from "@/class";
 
-abstract class Mount {
+import { MechWeapon, WeaponSlot, MountType, FittingSize, WeaponSize } from "@/class";
+import { store } from '@/io';
+
+export abstract class Mount {
     private _mount_type: MountType;
     private _id: string;
     protected lock: boolean;
@@ -49,7 +50,7 @@ abstract class Mount {
     }
 
     protected save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     protected getID(): void {
@@ -92,4 +93,3 @@ abstract class Mount {
     }
 }
 
-export default Mount;

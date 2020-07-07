@@ -1,7 +1,8 @@
 // Wrapper class for items assigned to an NPC
 
 import { NpcFeature } from "./";
-import { store } from "@/io/platform";
+import { store } from '@/io';
+
 
 export interface INpcItemSaveData {
     itemID: string;
@@ -40,7 +41,7 @@ export class NpcItem {
     }
 
     private save(): void {
-        store.dispatch("npc/saveNpcData");
+        store.saveNpcData();
     }
 
     public get Feature(): NpcFeature {
@@ -133,7 +134,7 @@ export class NpcItem {
 
     public static Deserialize(data: INpcItemSaveData): NpcItem {
         const item = new NpcItem(
-            store.getters.referenceByID("NpcFeatures", data.itemID),
+            store.referenceByID("NpcFeatures", data.itemID),
             data.tier
         );
         item._flavor_description = data.description;

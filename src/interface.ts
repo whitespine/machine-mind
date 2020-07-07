@@ -4,7 +4,7 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 // first in this file.
 
-import {
+export {
     IAIData,
     IBasicEffectData,
     IChargeData,
@@ -20,26 +20,26 @@ import {
     IProfileEffectData,
     IOffensiveEffectData,
 } from "./classes/effects/interfaces";
-import { ICompendiumItemData } from "./classes/CompendiumItem";
-import { ILicensedItemData } from "./classes/LicensedItem";
-import { ICoreData } from "./classes/mech/CoreSystem";
-import { IFrameData, IFrameStats } from "./classes/mech/Frame";
-import { IMechEquipmentData } from "./classes/mech/MechEquipment";
-import { IDamageData } from "./classes/Damage";
-import { IRangeData } from "./classes/Range";
-import { IMechSystemData } from "./classes/mech/MechSystem";
-import { IWeaponModData } from "./classes/mech/WeaponMod";
-import { ICoreBonusData } from "./classes/pilot/CoreBonus";
-import { IPilotEquipmentData } from "./classes/pilot/PilotEquipment";
-import { IPilotArmorData } from "./classes/pilot/PilotArmor";
-import { IPilotWeaponData } from "./classes/pilot/PilotWeapon";
-import { IPilotGearData } from "./classes/pilot/PilotGear";
-import { IManufacturerData } from "./classes/Manufacturer";
-import { IFactionData } from "./classes/Faction";
-import { ITalentData } from "./classes/pilot/Talent";
-import { ISkillData } from "./classes/pilot/Skill";
-import { IMechWeaponData } from "./classes/mech/MechWeapon";
-import {
+export { ICompendiumItemData } from "./classes/CompendiumItem";
+export { ILicensedItemData } from "./classes/LicensedItem";
+export { ICoreData } from "./classes/mech/CoreSystem";
+export { IFrameData, IFrameStats } from "./classes/mech/Frame";
+export { IMechEquipmentData } from "./classes/mech/MechEquipment";
+export { IDamageData } from "./classes/Damage";
+export { IRangeData } from "./classes/Range";
+export { IMechSystemData } from "./classes/mech/MechSystem";
+export { IWeaponModData } from "./classes/mech/WeaponMod";
+export { ICoreBonusData } from "./classes/pilot/CoreBonus";
+export { IPilotEquipmentData } from "./classes/pilot/PilotEquipment";
+export { IPilotArmorData } from "./classes/pilot/PilotArmor";
+export { IPilotWeaponData } from "./classes/pilot/PilotWeapon";
+export { IPilotGearData } from "./classes/pilot/PilotGear";
+export { IManufacturerData } from "./classes/Manufacturer";
+export { IFactionData } from "./classes/Faction";
+export { ITalentData } from "./classes/pilot/Talent";
+export { ISkillData } from "./classes/pilot/Skill";
+export { IMechWeaponData } from "./classes/mech/MechWeapon";
+export {
     INpcFeatureData,
     INpcReactionData,
     INpcSystemData,
@@ -52,14 +52,19 @@ import {
     INpcTechData,
     INpcData,
 } from "./classes/npc/interfaces";
-import { IEncounterData } from "./classes/encounter/Encounter";
-import { IMissionData } from "./classes/encounter/Mission";
-import { IActiveMissionData } from "./classes/encounter/ActiveMission";
+export { IEncounterData } from "./classes/encounter/Encounter";
+export { IMissionData } from "./classes/encounter/Mission";
+export { IMissionStep } from "./classes/encounter/IMissionStep";
+export { IActor } from "./classes/encounter/IActor";
+export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 
-import { IContentPackManifest, IContentPack } from "./classes/ContentPack";
-import { ICounterData } from "./classes/Counter";
-import { ITagCompendiumData } from "./classes/Tag";
+export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
+export { ICounterData } from "./classes/Counter";
+export { ITagCompendiumData } from "./classes/Tag";
+export { IUserProfile } from "./classes/utility/UserProfile";
 
+export * from "./classes/GeneralInterfaces";
+/*
 export {
     IAIData,
     IBasicEffectData,
@@ -90,6 +95,8 @@ export {
     IPilotGearData,
     IManufacturerData,
     IFactionData,
+    IMissionStep,
+    IActor,
     ITalentData,
     ISkillData,
     IMechWeaponData,
@@ -114,3 +121,4 @@ export {
     IInvadeOptionData,
     ITechEffectData,
 };
+*/

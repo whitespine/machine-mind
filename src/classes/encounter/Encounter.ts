@@ -1,9 +1,9 @@
 import uuid from "uuid/v4";
-import { Npc, EncounterSide, MissionStepType } from "@/class";
-import { store } from "@/io/platform";
-import { Capacitor } from "@/io/platform";
-import { getImagePath, ImageTag } from "@/io/ImageManagement";
+import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
+
+import {imageManagement, ImageTag } from "@/io";
 import { IMissionStep } from "./IMissionStep";
+import { store, is_web } from '@/io';
 
 interface IEncounterData {
     id: string;
@@ -50,13 +50,13 @@ class Encounter implements IMissionStep {
         this._environment_details = "";
         this._cloud_map = "";
         this._local_map = "";
-        this._sitrep = store.getters.getItemCollection("Sitreps")[0];
+        this._sitrep = store.getItemCollection("Sitreps")[0] as Sitrep;
         this._npcs = [];
         this._reinforcements = [];
     }
 
     private save(): void {
-        store.dispatch("encounter/saveEncounterData");
+        store.saveEncounterData();
     }
 
     public get ID(): string {
@@ -156,7 +156,7 @@ class Encounter implements IMissionStep {
     public Npcs(side: EncounterSide): Npc[] {
         const npcs = [];
         this.npcIDBySide(side).forEach(id => {
-            const n = store.getters["npc/getNpcs"].find((x: Npc) => x.ID === id);
+            const n = store["npc/getNpcs"].find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -190,7 +190,7 @@ class Encounter implements IMissionStep {
     public Reinforcements(side: EncounterSide): Npc[] {
         const npcs = [];
         this.reinforcementIDBySide(side).forEach(id => {
-            const n = store.getters["npc/getNpcs"].find((x: Npc) => x.ID === id);
+            const n = store["npc/getNpcs"].find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -240,9 +240,9 @@ class Encounter implements IMissionStep {
 
     public get Map(): string {
         if (this._cloud_map) return this._cloud_map;
-        else if (Capacitor.platform !== "web" && this._local_map)
-            return getImagePath(ImageTag.Map, this._local_map);
-        else return getImagePath(ImageTag.Map, "nodata.png", true);
+        else if (!is_web && this._local_map)
+            return imageManagement.getImagePath(ImageTag.Map, this._local_map);
+        else return imageManagement.getImagePath(ImageTag.Map, "nodata.png", true);
     }
 
     public static Serialize(enc: Encounter): IEncounterData {

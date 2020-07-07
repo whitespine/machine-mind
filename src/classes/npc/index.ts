@@ -2,7 +2,7 @@ import { NpcFeatureType, NpcFeature } from "./NpcFeature";
 import { NpcReaction } from "./NpcReaction";
 import { NpcSystem } from "./NpcSystem";
 import { NpcTech } from "./NpcTech";
-import NpcTrait from "./NpcTrait";
+import { NpcTrait } from "./NpcTrait";
 import { NpcItem } from "./NpcItem";
 import { NpcWeapon } from "./NpcWeapon";
 import { NpcStats } from "./NpcStats";

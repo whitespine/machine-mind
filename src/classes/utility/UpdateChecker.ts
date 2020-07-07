@@ -93,6 +93,6 @@ export class UpdateChecker extends EventEmitter {
     }
 }
 
-export default new UpdateChecker();
+export new UpdateChecker();
 
 */

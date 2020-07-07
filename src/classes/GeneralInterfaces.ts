@@ -1,31 +1,30 @@
-// global declaration file for common interfaces that are used too often to warrant placing in @/interfaces
-declare interface IImageContainer {
+export interface IImageContainer {
     SetLocalImage(): any;
     SetCloudImage(): any;
     Image: string;
 }
 
-interface INotificationVariant {
+export interface INotificationVariant {
     color: string;
     icon: string;
     prefix?: string;
     timeout?: number;
 }
-interface INotification {
+export interface INotification {
     id: string;
     variant: string;
     text: string;
     onClick?: () => void;
 }
 
-declare interface IErrorReport {
+export interface IErrorReport {
     time: Date;
     message: string;
     component?: string;
     stack: string;
 }
 
-declare interface IDiceStats {
+export interface IDiceStats {
     min: number;
     max: number;
     mean: number;
@@ -33,7 +32,7 @@ declare interface IDiceStats {
     diceString: string;
 }
 
-declare interface Id20RollResult {
+export interface Id20RollResult {
     total: number;
     rawDieRoll: number;
     staticBonus: number;
@@ -42,7 +41,7 @@ declare interface Id20RollResult {
     accuracyResult: number;
 }
 
-declare interface IDamageRollResult {
+export interface IDamageRollResult {
     diceString: string;
     total: number;
     rawDieRolls: number[];
@@ -50,7 +49,7 @@ declare interface IDamageRollResult {
     parseError: boolean;
 }
 
-declare interface IRankedData {
+export interface IRankedData {
     id: string;
     rank: number;
     custom?: boolean;
@@ -58,7 +57,7 @@ declare interface IRankedData {
     custom_detail?: string;
 }
 
-declare interface IEquipmentData {
+export interface IEquipmentData {
     id: string;
     destroyed: boolean;
     cascading: boolean;
@@ -69,19 +68,19 @@ declare interface IEquipmentData {
     customDamageType?: string;
 }
 
-declare interface IMechWeaponSaveData extends IEquipmentData {
+export interface IMechWeaponSaveData extends IEquipmentData {
     loaded: boolean;
     mod?: IEquipmentData;
     customDamageType?: string;
     maxUseOverride?: number;
 }
 
-declare interface ICounterSaveData {
+export interface ICounterSaveData {
     id: string;
     val: number;
 }
 
-declare interface IPilotData {
+export interface IPilotData {
     id: string;
     campaign: string;
     group: string;
@@ -120,7 +119,7 @@ declare interface IPilotData {
     brews: string[];
 }
 
-declare interface IReserveData {
+export interface IReserveData {
     id: string;
     type?: string;
     name?: string;
@@ -132,7 +131,7 @@ declare interface IReserveData {
     used: boolean;
 }
 
-declare interface IProjectData extends IReserveData {
+export interface IProjectData extends IReserveData {
     complicated: boolean;
     can_finish: boolean;
     finished: boolean;
@@ -140,7 +139,7 @@ declare interface IProjectData extends IReserveData {
     requirements: string[];
 }
 
-declare interface IOrganizationData {
+export interface IOrganizationData {
     name: string;
     purpose: string;
     description: string;
@@ -149,7 +148,7 @@ declare interface IOrganizationData {
     actions: string;
 }
 
-declare interface IPilotLoadoutData {
+export interface IPilotLoadoutData {
     id: string;
     name: string;
     armor: (IEquipmentData | null)[];
@@ -159,12 +158,12 @@ declare interface IPilotLoadoutData {
     extendedGear: (IEquipmentData | null)[];
 }
 
-declare interface IHistoryItem {
+export interface IHistoryItem {
     field: string;
     val?: any;
 }
 
-declare interface IMechState {
+export interface IMechState {
     stage: string;
     turn: number;
     move: number;
@@ -178,7 +177,7 @@ declare interface IMechState {
     history: IHistoryItem[];
 }
 
-declare interface IMechData {
+export interface IMechData {
     id: string;
     name: string;
     notes: string;
@@ -212,7 +211,7 @@ declare interface IMechData {
     state: IMechState;
 }
 
-declare interface IMechLoadoutData {
+export interface IMechLoadoutData {
     id: string;
     name: string;
     systems: IEquipmentData[];
@@ -223,7 +222,7 @@ declare interface IMechLoadoutData {
     integratedWeapon: IMountData;
 }
 
-declare interface IMountData {
+export interface IMountData {
     mount_type: string;
     lock: boolean;
     slots: IWeaponSlotData[];
@@ -231,17 +230,17 @@ declare interface IMountData {
     bonus_effects: string[];
 }
 
-declare interface IWeaponSlotData {
+export interface IWeaponSlotData {
     size: string;
     weapon: IMechWeaponSaveData | null;
 }
 
-declare interface ITagData {
+export interface ITagData {
     id: string;
     val?: string | number;
 }
 
-declare interface ILicenseRequirement {
+export interface ILicenseRequirement {
     source: string;
     name: string;
     rank: number;
@@ -249,60 +248,10 @@ declare interface ILicenseRequirement {
     missing?: boolean;
 }
 
-declare interface ISnackbarSettings {
+export interface ISnackbarSettings {
     text: string;
     multiline?: boolean;
     timeout?: number;
     color?: string;
     visible?: boolean;
-}
-
-declare interface Brew {
-    info: string;
-    dir: string;
-}
-
-declare interface PrintOptions {
-    mech_id: string;
-    loadout_index: number;
-    combo: boolean;
-}
-
-declare interface Faction {
-    id: string;
-    name: string;
-    description: string;
-    logo: string;
-    color: string;
-}
-
-declare interface Status {
-    name: string;
-    type: string;
-    icon: string;
-    effects: string[];
-}
-
-declare interface Environment {
-    id: string;
-    name: string;
-    description: string;
-}
-
-declare interface Sitrep {
-    id: string;
-    name: string;
-    description: string;
-    pcVictory: string;
-    enemyVictory: string;
-    noVictory?: string;
-    deployment?: string;
-    objective?: string;
-    controlZone?: string;
-    extraction?: string;
-}
-
-declare interface FrameTrait {
-    name: string;
-    description: string;
 }

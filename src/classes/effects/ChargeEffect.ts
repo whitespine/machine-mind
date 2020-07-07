@@ -1,6 +1,5 @@
-import { IRangeData, IDamageData } from "@/interface";
-import { ItemEffect, IEffectData } from "./ItemEffect";
-import { ActivationType, EffectType, Damage, Range, Tag } from "@/class";
+import { IEffectData, IRangeData, IDamageData, ITagData } from "@/interface";
+import { ActivationType, EffectType, ItemEffect, Damage, Range, Tag } from "@/class";
 
 enum ChargeType {
     Grenade = "Grenade",

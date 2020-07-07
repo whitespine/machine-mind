@@ -1,6 +1,7 @@
-import { store } from "@/io/platform";
+
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
-import { ICompendiumItemData } from "@/interface";
+import { ICompendiumItemData, ILicenseRequirement } from "@/interface";
+import { store } from '@/io';
 
 interface ILicensedItemData extends ICompendiumItemData {
     source: string;
@@ -26,7 +27,7 @@ abstract class LicensedItem extends CompendiumItem {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.getters.referenceByID("Manufacturers", this.Source);
+        return store.referenceByID("Manufacturers", this.Source);
     }
 
     public get License(): string {

@@ -646,7 +646,7 @@ const accentMap = {
     ƺ: "z",
 };
 
-export default function accentFold(s: string): string {
+export function accentFold(s: string): string {
     if (!s) {
         return "";
     }

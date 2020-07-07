@@ -1,6 +1,7 @@
 import { Rules, Skill, CustomSkill } from "@/class";
+import { IRankedData } from '../GeneralInterfaces';
 
-class PilotSkill {
+export class PilotSkill {
     private _skill: Skill | CustomSkill;
     private _rank: number;
     private _isCustom: boolean;
@@ -64,5 +65,3 @@ class PilotSkill {
         return new PilotSkill(Skill.Deserialize(itemData.id), itemData.rank);
     }
 }
-
-export default PilotSkill;

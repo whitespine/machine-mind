@@ -16,4 +16,3 @@ export class NpcTrait extends NpcFeature {
     }
 }
 
-export default NpcTrait;

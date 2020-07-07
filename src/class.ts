@@ -4,8 +4,8 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 // first in this file.
 
-import { Rules } from "./classes/utility/Rules";
-import {
+export { Rules } from "./classes/utility/Rules";
+export {
     MountType,
     FittingSize,
     WeaponSize,
@@ -21,8 +21,8 @@ import {
     OrgType,
     EncounterSide,
 } from "./classes/enums";
-import Tag from "./classes/Tag";
-import {
+// export Tag from "./classes/Tag";
+export {
     AIEffect,
     BasicEffect,
     ChargeType,
@@ -41,53 +41,56 @@ import {
     ProfileEffect,
     OffensiveEffect,
 } from "./classes/effects";
-import { CompendiumItem } from "./classes/CompendiumItem";
-import { LicensedItem } from "./classes/LicensedItem";
-import { CoreBonus } from "./classes/pilot/CoreBonus";
-import { Damage } from "./classes/Damage";
-import Loadout from "./classes/Loadout";
-import { Range } from "./classes/Range";
-import { Skill } from "./classes/pilot/Skill";
-import CustomSkill from "./classes/pilot/CustomSkill";
-import { Talent } from "./classes/pilot/Talent";
-import License from "./classes/License";
-import MechSkills from "./classes/pilot/MechSkills";
-import { PilotEquipment } from "./classes/pilot/PilotEquipment";
-import { PilotArmor } from "./classes/pilot/PilotArmor";
-import { PilotWeapon } from "./classes/pilot/PilotWeapon";
-import { PilotGear } from "./classes/pilot/PilotGear";
-import PilotLicense from "./classes/pilot/PilotLicense";
-import PilotLoadout from "./classes/pilot/PilotLoadout";
-import PilotSkill from "./classes/pilot/PilotSkill";
-import PilotTalent from "./classes/pilot/PilotTalent";
-import Pilot from "./classes/pilot/Pilot";
-import { CoreSystem } from "./classes/mech/CoreSystem";
-import { Frame } from "./classes/mech/Frame";
-import MechLoadout from "./classes/mech/MechLoadout";
-import { MechEquipment } from "./classes/mech/MechEquipment";
-import { MechSystem } from "./classes/mech/MechSystem";
-import { MechWeapon } from "./classes/mech/MechWeapon";
-import Mount from "./classes/mech/Mount";
-import IntegratedMount from "./classes/mech/IntegratedMount";
-import EquippableMount from "./classes/mech/EquippableMount";
-import { WeaponMod } from "./classes/mech/WeaponMod";
-import WeaponSlot from "./classes/mech/WeaponSlot";
-import Mech from "./classes/mech/Mech";
-import Reserve from "./classes/pilot/reserves/Reserve";
-import Project from "./classes/pilot/reserves/Project";
-import Organization from "./classes/pilot/reserves/Organization";
-import { Manufacturer } from "./classes/Manufacturer";
-import { Faction } from "./classes/Faction";
-import Statblock from "./classes/Statblock";
-import {
+export { CompendiumItem } from "./classes/CompendiumItem";
+export { LicensedItem } from "./classes/LicensedItem";
+export { CoreBonus } from "./classes/pilot/CoreBonus";
+export { Damage } from "./classes/Damage";
+export { Range } from "./classes/Range";
+export { Skill } from "./classes/pilot/Skill";
+export { PilotEquipment } from "./classes/pilot/PilotEquipment";
+export { PilotArmor } from "./classes/pilot/PilotArmor";
+export { PilotWeapon } from "./classes/pilot/PilotWeapon";
+export { PilotGear } from "./classes/pilot/PilotGear";
+export { ActiveState} from "./classes/mech/ActiveState";
+export { CoreSystem } from "./classes/mech/CoreSystem";
+export { Frame } from "./classes/mech/Frame";
+export { MechEquipment } from "./classes/mech/MechEquipment";
+export { MechSystem } from "./classes/mech/MechSystem";
+export { WeaponMod } from "./classes/mech/WeaponMod";
+export { MechWeapon } from "./classes/mech/MechWeapon";
+
+export { CustomSkill } from "./classes/pilot/CustomSkill";
+export {Loadout} from "./classes/Loadout";
+export { Talent } from "./classes/pilot/Talent";
+export {License} from "./classes/License";
+export {MechSkills} from "./classes/pilot/MechSkills";
+export {PilotLicense} from "./classes/pilot/PilotLicense";
+export {PilotLoadout} from "./classes/pilot/PilotLoadout";
+export {PilotSkill} from "./classes/pilot/PilotSkill";
+export {PilotTalent} from "./classes/pilot/PilotTalent";
+export {Pilot} from "./classes/pilot/Pilot";
+export {Tag} from "./classes/Tag";
+export {MechLoadout} from "./classes/mech/MechLoadout";
+export {Mount} from "./classes/mech/Mount";
+export {IntegratedMount} from "./classes/mech/IntegratedMount";
+export {EquippableMount} from "./classes/mech/EquippableMount";
+export {WeaponSlot} from "./classes/mech/WeaponSlot";
+export {Mech} from "./classes/mech/Mech";
+export {Reserve} from "./classes/pilot/reserves/Reserve";
+export {Project} from "./classes/pilot/reserves/Project";
+export {Organization} from "./classes/pilot/reserves/Organization";
+export { Manufacturer } from "./classes/Manufacturer";
+export { Faction } from "./classes/Faction";
+export { Statblock } from "./classes/Statblock";
+export {
     DiceRoller,
     D20RollResult,
     DamageRollResult,
     ParsedDieString,
     DieSet,
 } from "./classes/dice/DiceRoller";
-import { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
-import {
+export { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
+export {
     NpcFeatureType,
     NpcFeature,
     NpcTrait,
@@ -101,10 +104,12 @@ import {
     NpcItem,
     Npc,
 } from "./classes/npc";
-import { Encounter, Rest, Mission, ActiveMission, MissionStepType } from "./classes/encounter";
-import { ContentPack } from "./classes/ContentPack";
-import { Counter } from "./classes/Counter";
+export { Encounter, Rest, Mission, ActiveMission, MissionStepType } from "./classes/encounter";
+export { ContentPack } from "./classes/ContentPack";
+export { Counter } from "./classes/Counter";
 
+export * from "@/classes/GeneralClasses";
+/*
 export {
     Rules,
     AIEffect,
@@ -204,3 +209,4 @@ export {
     ContentPack,
     Counter,
 };
+*/

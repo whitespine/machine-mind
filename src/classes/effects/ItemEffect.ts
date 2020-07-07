@@ -13,6 +13,7 @@ import {
     OffensiveEffect,
     ProfileEffect,
 } from "@/class";
+import { ITagData } from '@/interface';
 
 enum EffectType {
     Generic = "Generic", // Covers old/fallback/simple

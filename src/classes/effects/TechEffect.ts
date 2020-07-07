@@ -1,5 +1,5 @@
-import { IEffectData, ItemEffect, ActivationType } from "./ItemEffect";
-import { EffectType } from "@/class";
+import { IEffectData } from "@/interface";
+import { ActivationType, EffectType, ItemEffect } from "@/class";
 
 interface IInvadeOptionData {
     name: string;

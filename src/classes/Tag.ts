@@ -1,6 +1,7 @@
 import { ItemType } from "@/class";
-import { store } from "@/io/platform";
-import { ICompendiumItemData } from "@/interface";
+
+import { ICompendiumItemData, ITagData } from "@/interface";
+import { store } from '@/io';
 
 export interface ITagCompendiumData extends ICompendiumItemData {
     id: string;
@@ -10,7 +11,7 @@ export interface ITagCompendiumData extends ICompendiumItemData {
     hidden?: boolean;
 }
 
-class Tag {
+export class Tag {
     private _id: string;
     private _name: string;
     private _description: string;
@@ -137,7 +138,7 @@ class Tag {
         const output = [] as Tag[];
         if (!data) return output;
         data.forEach(x => {
-            const t = store.getters.instantiate("Tags", x.id);
+            const t = store.instantiate("Tags", x.id);
             if (x.val) t.Value = x.val;
             output.push(t);
         });
@@ -145,4 +146,3 @@ class Tag {
     }
 }
 
-export default Tag;

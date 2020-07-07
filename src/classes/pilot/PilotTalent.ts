@@ -1,6 +1,7 @@
 import { Talent } from "@/class";
+import { IRankedData } from '../GeneralInterfaces';
 
-class PilotTalent {
+export class PilotTalent {
     private talent: Talent;
     private rank: number;
 
@@ -37,5 +38,3 @@ class PilotTalent {
         return new PilotTalent(Talent.Deserialize(itemData.id), itemData.rank);
     }
 }
-
-export default PilotTalent;

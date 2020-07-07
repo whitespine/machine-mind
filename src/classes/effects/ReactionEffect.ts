@@ -1,6 +1,5 @@
 import { IEffectData } from "@/interface";
-import { ItemEffect } from "./ItemEffect";
-import { ActivationType, EffectType } from "@/class";
+import { ActivationType, EffectType, ItemEffect } from "@/class";
 
 interface IReactionEffectData extends IEffectData {
     name: string;

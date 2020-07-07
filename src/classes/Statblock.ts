@@ -10,7 +10,7 @@ function linebreak(i: number, length: number): string {
     }
 }
 
-class Statblock {
+export class Statblock {
     public static Generate(pilot: Pilot, mech: Mech, discordEmoji: boolean): string {
         let output = "";
         if (pilot) {
@@ -253,4 +253,3 @@ class Statblock {
     }
 }
 
-export default Statblock;

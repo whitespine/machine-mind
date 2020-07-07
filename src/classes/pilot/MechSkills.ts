@@ -1,7 +1,8 @@
-import { store } from "@/io/platform";
-import { Rules, HASE } from "@/class";
 
-class MechSkills {
+import { Rules, HASE } from "@/class";
+import { store } from "@/io";
+
+export class MechSkills {
     private hull: number;
     private agi: number;
     private sys: number;
@@ -15,7 +16,7 @@ class MechSkills {
     }
 
     private save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public get Hull(): number {
@@ -80,5 +81,3 @@ class MechSkills {
         return new MechSkills(itemData[0], itemData[1], itemData[2], itemData[3]);
     }
 }
-
-export default MechSkills;

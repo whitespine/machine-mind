@@ -1,6 +1,7 @@
-import { store } from "@/io/platform";
+
 import { MechEquipment, SystemType, ItemType } from "@/class";
-import { IMechEquipmentData } from "@/interface";
+import { IMechEquipmentData, IEquipmentData } from "@/interface";
+import { store } from '@/io';
 
 interface IMechSystemData extends IMechEquipmentData {
     type: SystemType;
@@ -36,7 +37,7 @@ class MechSystem extends MechEquipment {
     }
 
     public static Deserialize(data: IEquipmentData): MechSystem {
-        const item = store.getters.instantiate("MechSystems", data.id) as MechSystem;
+        const item = store.instantiate("MechSystems", data.id) as MechSystem;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

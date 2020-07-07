@@ -1,6 +1,6 @@
-import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "@/class";
+import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem, FrameTrait } from "@/class";
 import { ILicensedItemData, ICoreData } from "@/interface";
-import { getImagePath, ImageTag } from "@/io/ImageManagement";
+import {imageManagement, ImageTag} from "@/io";
 
 interface IFrameStats {
     size: number;
@@ -144,7 +144,7 @@ class Frame extends LicensedItem {
 
     public get DefaultImage(): string {
         if (this._image_url) return this._image_url;
-        return getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
+        return imageManagement.getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
     }
 }
 

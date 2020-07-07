@@ -1,8 +1,10 @@
-import { store } from "@/io/platform";
+// 
 import { ReserveType } from "@/class";
 import { reserves } from "lancer-data";
+import { store } from '@/io';
+import { IReserveData } from '@/classes/GeneralInterfaces';
 
-class Reserve {
+export class Reserve {
     private _id: string;
     protected type: ReserveType;
     private _name: string;
@@ -26,7 +28,7 @@ class Reserve {
     }
 
     protected save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public get ID(): string {
@@ -125,4 +127,3 @@ class Reserve {
     }
 }
 
-export default Reserve;

@@ -1,5 +1,5 @@
 import { NpcFeature, NpcFeatureType } from ".";
-import { INpcFeatureData } from "./interfaces";
+import { INpcFeatureData, ITagData } from "@/interface";
 
 export interface INpcTechData extends INpcFeatureData {
     tags: ITagData[];

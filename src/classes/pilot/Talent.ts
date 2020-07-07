@@ -1,6 +1,6 @@
-import { store } from "@/io/platform";
 import { CompendiumItem } from "@/class";
 import { ICompendiumItemData } from "@/interface";
+import { store } from '@/io';
 
 interface ITalentRank {
     name: string;
@@ -30,7 +30,7 @@ class Talent extends CompendiumItem {
     }
 
     public static Deserialize(id: string): Talent {
-        return store.getters.referenceByID("Talents", id);
+        return store.referenceByID("Talents", id);
     }
 }
 

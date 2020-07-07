@@ -1,5 +1,6 @@
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
-import { store } from "@/io/platform";
+import { store } from "@/io";
+
 import { ICompendiumItemData } from "@/interface";
 
 interface ICoreBonusData extends ICompendiumItemData {
@@ -26,7 +27,7 @@ class CoreBonus extends CompendiumItem {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.getters.referenceByID("Manufacturers", this._source);
+        return store.referenceByID("Manufacturers", this._source);
     }
 
     public get Effect(): string {
@@ -42,7 +43,7 @@ class CoreBonus extends CompendiumItem {
     }
 
     public static Deserialize(id: string): CoreBonus {
-        return store.getters.referenceByID("CoreBonuses", id);
+        return store.referenceByID("CoreBonuses", id);
     }
 }
 

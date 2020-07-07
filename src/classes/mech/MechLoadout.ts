@@ -12,8 +12,12 @@ import {
     MechWeapon,
     WeaponMod,
 } from "@/class";
+import {
+    ILicenseRequirement
+} from "@/interface";
+import { IMechLoadoutData } from '@/interface';
 
-class MechLoadout extends Loadout {
+export class MechLoadout extends Loadout {
     private _integratedMounts: IntegratedMount[];
     private _equippableMounts: EquippableMount[];
     private _improvedArmament: EquippableMount;
@@ -265,4 +269,3 @@ class MechLoadout extends Loadout {
     }
 }
 
-export default MechLoadout;

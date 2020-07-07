@@ -1,11 +1,9 @@
 import uuid from "uuid/v4";
-import { store } from "@/io/platform";
-import { Capacitor } from "@/io/platform";
-import { getImagePath, ImageTag } from "@/io/ImageManagement";
+
+import { imageManagement, ImageTag, store, is_web } from "@/io";
 import { NpcStats, NpcClass, NpcTemplate, NpcFeature, NpcItem } from "./";
-import { INpcStats, INpcItemSaveData } from "./interfaces";
 import { EncounterSide } from "@/class";
-import { ICounterData } from "@/interface";
+import { ICounterData, ICounterSaveData, IActor, INpcStats, INpcItemSaveData } from "@/interface";
 
 export interface INpcData {
     active: boolean;
@@ -107,8 +105,8 @@ export class Npc implements IActor {
     }
 
     private save(): void {
-        if (this.Active) store.dispatch("mission/saveActiveMissionData");
-        else store.dispatch("npc/saveNpcData");
+        if (this.Active) store.saveActiveMissionData();
+        else store.saveNpcData();
     }
 
     public get ID(): string {
@@ -366,9 +364,9 @@ export class Npc implements IActor {
 
     public get Image(): string {
         if (this._cloud_image) return this._cloud_image;
-        else if (Capacitor.platform !== "web" && this._local_image)
-            return getImagePath(ImageTag.NPC, this._local_image);
-        else return getImagePath(ImageTag.Frame, "nodata.png", true);
+        else if (!is_web && this._local_image)
+            return imageManagement.getImagePath(ImageTag.NPC, this._local_image);
+        else return imageManagement.getImagePath(ImageTag.Frame, "nodata.png", true);
     }
 
     // -- COUNTERS ----------------------------------------------------------------------------------
@@ -650,7 +648,7 @@ export class Npc implements IActor {
     }
 
     public static Deserialize(data: INpcData): Npc {
-        const c = store.getters.referenceByID("NpcClasses", data.class);
+        const c = store.referenceByID("NpcClasses", data.class);
         const npc = new Npc(c);
         npc.Active = data.active;
         npc._id = data.id;
@@ -661,7 +659,7 @@ export class Npc implements IActor {
         npc._campaign = data.campaign || "";
         npc._user_labels = data.labels || [];
         npc._tag = data.tag;
-        npc._templates = data.templates.map(x => store.getters.referenceByID("NpcTemplates", x));
+        npc._templates = data.templates.map(x => store.referenceByID("NpcTemplates", x));
         npc._items = data.items.map(x => NpcItem.Deserialize(x));
         npc._stats = NpcStats.Deserialize(data.stats);
         npc.RecalcBonuses();

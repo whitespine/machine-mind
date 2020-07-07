@@ -7,8 +7,9 @@ import {
     Loadout,
     ItemType,
 } from "@/class";
+import { IPilotLoadoutData } from '../GeneralInterfaces';
 
-class PilotLoadout extends Loadout {
+export class PilotLoadout extends Loadout {
     private _armor: (PilotArmor | null)[];
     private _gear: (PilotGear | null)[];
     private _weapons: (PilotWeapon | null)[];
@@ -143,5 +144,3 @@ class PilotLoadout extends Loadout {
         return loadout;
     }
 }
-
-export default PilotLoadout;

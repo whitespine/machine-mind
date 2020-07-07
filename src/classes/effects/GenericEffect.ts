@@ -1,5 +1,5 @@
-import { ItemEffect } from "./ItemEffect";
-import { ActivationType, EffectType } from "@/class";
+import { IEffectData } from "@/interface";
+import { ActivationType, EffectType, ItemEffect } from "@/class";
 
 class GenericEffect extends ItemEffect {
     public readonly Detail: string;

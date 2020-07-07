@@ -1,4 +1,5 @@
 import { Tag } from "@/class";
+import { ITagData } from "@/interface";
 
 export enum NpcFeatureType {
     Trait = "Trait",

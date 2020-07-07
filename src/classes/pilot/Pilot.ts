@@ -17,14 +17,14 @@ import {
     Organization,
     CompendiumItem,
     ContentPack,
+    Faction,
 } from "@/class";
-import { store } from "@/io/platform";
-import gistApi from "@/io/apis/gist";
-import { Capacitor } from "@/io/platform";
-import { getImagePath, ImageTag } from "@/io/ImageManagement";
+import * as gistApi from "@/io/apis/gist";
 import { ICounterData } from "@/interface";
+import { IMechData, IOrganizationData, IReserveData, IRankedData, IPilotData, ICounterSaveData } from '@/interface';
+import { store } from '@/io';
 
-class Pilot {
+export class Pilot {
     private _cloudID: string;
     private _cloudOwnerID: string;
     private _lastCloudUpdate: string;
@@ -107,11 +107,11 @@ class Pilot {
 
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public SetBrewData(): void {
-        const packs = store.getters.getItemCollection("ContentPacks") as ContentPack[];
+        const packs = store.getItemCollection("ContentPacks") as ContentPack[];
 
         function collectBrewGroup(items: CompendiumItem[]): string[] {
             return items
@@ -226,12 +226,12 @@ class Pilot {
     }
 
     public get Faction(): Faction {
-        const factions = store.getters.getItemCollection("Factions");
-        return factions.find((x: Faction) => x.id === this._factionID);
+        const factions = store.getItemCollection("Factions") as Faction[];
+        return factions.find((x: Faction) => x.ID === this._factionID);
     }
 
     public set Faction(faction: Faction) {
-        this._factionID = faction.id;
+        this._factionID = faction.ID;
         this.save();
     }
 
@@ -275,6 +275,8 @@ class Pilot {
         this.save();
     }
 
+
+    /*
     public SetLocalImage(src: string): void {
         this._portrait = src;
         this.save();
@@ -291,9 +293,10 @@ class Pilot {
     public get Portrait(): string {
         if (this._cloud_portrait) return this._cloud_portrait;
         else if (Capacitor.platform !== "web" && this._portrait)
-            return getImagePath(ImageTag.Pilot, this._portrait);
-        else return getImagePath(ImageTag.Pilot, "nodata.png", true);
+            returnimageManagement.getImagePath(ImageTag.Pilot, this._portrait);
+        else returnimageManagement.getImagePath(ImageTag.Pilot, "nodata.png", true);
     }
+    */
 
     // -- Cloud -------------------------------------------------------------------------------------
     public get CloudImage(): string {
@@ -333,7 +336,7 @@ class Pilot {
     }
 
     public get IsUserOwned(): boolean {
-        return this.CloudOwnerID === store.getters.getUserProfile.ID;
+        return this.CloudOwnerID === store.getUserProfile().ID;
     }
 
     public SetCloudImage(src: string): void {
@@ -344,7 +347,7 @@ class Pilot {
     public async CloudSave(): Promise<any> {
         this.SetBrewData();
         if (!this.CloudOwnerID) {
-            this.CloudOwnerID = store.getters.getUserProfile.ID;
+            this.CloudOwnerID = store.getUserProfile().ID;
         }
         if (!this.CloudID) {
             return gistApi.newPilot(this).then((response: any) => {
@@ -373,7 +376,7 @@ class Pilot {
 
     public setCloudInfo(id: string): void {
         this.CloudID = id;
-        this.CloudOwnerID = store.getters.getUserProfile.ID;
+        this.CloudOwnerID = store.getUserProfile().ID;
         this.LastCloudUpdate = new Date().toString();
     }
 
@@ -1099,4 +1102,3 @@ class Pilot {
     }
 }
 
-export default Pilot;

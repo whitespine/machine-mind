@@ -1,4 +1,4 @@
-import { store } from "@/io/platform";
+
 import {
     Tag,
     WeaponType,
@@ -9,7 +9,8 @@ import {
     MechEquipment,
     SystemType,
 } from "@/class";
-import { IDamageData, IRangeData, IMechEquipmentData } from "@/interface";
+import { IDamageData, ITagData, IEquipmentData, IRangeData, IMechEquipmentData } from "@/interface";
+import { store } from '@/io';
 
 interface IWeaponModData extends IMechEquipmentData {
     sp: number;
@@ -88,7 +89,7 @@ class WeaponMod extends MechEquipment {
     }
 
     public static Deserialize(data: IEquipmentData): WeaponMod {
-        const item = store.getters.instantiate("WeaponMods", data.id) as WeaponMod;
+        const item = store.instantiate("WeaponMods", data.id) as WeaponMod;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

@@ -1,6 +1,6 @@
 import { ItemType } from "@/class";
 
-class CustomSkill {
+export class CustomSkill {
     private _name: string;
     private _description: string;
     private _detail: string;
@@ -53,5 +53,3 @@ class CustomSkill {
         return "Custom";
     }
 }
-
-export default CustomSkill;

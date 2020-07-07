@@ -1,7 +1,6 @@
 import { Range, Damage } from "@/class";
-import { IRangeData } from "@/interface";
 import { NpcFeature, NpcFeatureType } from ".";
-import { INpcFeatureData } from "./interfaces";
+import { INpcFeatureData, ITagData, IRangeData } from "@/interface";
 import { DamageType } from "../enums";
 
 export interface INpcDamageData {

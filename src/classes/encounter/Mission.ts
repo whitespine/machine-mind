@@ -1,7 +1,8 @@
 import uuid from "uuid/v4";
-import { store } from "@/io/platform";
+
 import { Encounter, Rest } from "@/class";
 import { IMissionStep } from "./IMissionStep";
+import { store } from '@/io';
 
 enum MissionStepType {
     Encounter = "Encounter",
@@ -38,7 +39,7 @@ class Mission {
     }
 
     private save(): void {
-        store.dispatch("mission/saveMissionData");
+        store.saveMissionData();
     }
 
     public get ID(): string {
@@ -96,7 +97,7 @@ class Mission {
 
     public get Encounters(): Encounter[] {
         const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
-        const enc = store.getters["encounter/getEncounters"];
+        const enc = store["encounter/getEncounters"];
         return ids.map(x => enc.find(y => y.ID === x));
     }
 
@@ -105,7 +106,7 @@ class Mission {
     }
 
     public ValidateSteps(): void {
-        const ids = store.getters["encounter/getEncounters"]
+        const ids = store["encounter/getEncounters"]
             .map((x: Encounter) => x.ID)
             .concat(this._rests.map(x => x.ID));
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));
@@ -118,7 +119,7 @@ class Mission {
     public Step(id: string): IMissionStep {
         const r = this._rests.find(x => x.ID === id);
         if (r) return r;
-        const enc = store.getters["encounter/getEncounters"];
+        const enc = store["encounter/getEncounters"];
         const rIdx = this._step_ids.indexOf(id);
         if (rIdx == -1) this.RemoveStep(rIdx);
         return enc.find(x => x.ID === id);

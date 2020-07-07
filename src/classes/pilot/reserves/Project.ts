@@ -1,6 +1,7 @@
 import { Reserve, ReserveType } from "@/class";
+import { IProjectData } from '@/classes/GeneralInterfaces';
 
-class Project extends Reserve {
+export class Project extends Reserve {
     private _complicated: boolean;
     private _can_finish: boolean;
     private _finished: boolean;
@@ -81,4 +82,3 @@ class Project extends Reserve {
     }
 }
 
-export default Project;

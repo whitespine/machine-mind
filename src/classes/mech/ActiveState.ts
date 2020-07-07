@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Vue } from "@/io/platform";
+import { VueSet } from "@/io";
 import { Mech } from "@/class";
+import { IMechState, IHistoryItem } from '@/interface';
 
 class ActiveState {
     public stage: string;
@@ -129,7 +130,7 @@ class ActiveState {
                 const bidx = this.mech.Resistances.findIndex(x => x === "Next Attack");
                 if (bidx > -1) this.mech.Resistances.splice(bidx, 1);
             default:
-                Vue.set(this, action.field, action.val);
+                VueSet(this, action.field, action.val);
                 break;
         }
     }

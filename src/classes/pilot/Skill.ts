@@ -1,6 +1,6 @@
-import { store } from "@/io/platform";
 import { CompendiumItem, SkillFamily, ItemType } from "@/class";
 import { ICompendiumItemData } from "@/interface";
+import { store } from '@/io';
 
 interface ISkillData extends ICompendiumItemData {
     detail: string;
@@ -31,7 +31,7 @@ class Skill extends CompendiumItem {
     }
 
     public static Deserialize(id: string): Skill {
-        return store.getters.referenceByID("Skills", id);
+        return store.referenceByID("Skills", id);
     }
 }
 

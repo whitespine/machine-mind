@@ -1,11 +1,12 @@
-import { store } from "@/io/platform";
+
 import uuid from "uuid/v4";
 import _ from "lodash";
-import { Rules, Pilot, Frame, MechLoadout, MechSystem, IntegratedMount, CoreBonus } from "@/class";
-import { getImagePath, ImageTag } from "@/io/ImageManagement";
-import { ActiveState } from "./ActiveState";
+import { Rules, Pilot, Frame, MechLoadout, MechSystem, IntegratedMount, CoreBonus, ActiveState } from "@/class";
+import {imageManagement, ImageTag} from "@/io";
+import { store } from '@/io';
+import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from '@/interface';
 
-class Mech implements IActor {
+export class Mech implements IActor {
     private _id: string;
     private _name: string;
     private _notes: string;
@@ -76,11 +77,11 @@ class Mech implements IActor {
         this._actions = 2;
         this._currentMove = this.Speed;
         this._state = new ActiveState(this);
-        this._cc_ver = store.getters.getVersion || "N/A";
+        this._cc_ver = store.getVersion || "N/A";
     }
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     // -- Info --------------------------------------------------------------------------------------
@@ -202,7 +203,7 @@ class Mech implements IActor {
 
     public get Portrait(): string {
         if (this._cloud_portrait) return this._cloud_portrait;
-        if (this._portrait) return getImagePath(ImageTag.Mech, this._portrait);
+        if (this._portrait) return imageManagement.getImagePath(ImageTag.Mech, this._portrait);
         return this.Frame.DefaultImage;
     }
 
@@ -800,12 +801,12 @@ class Mech implements IActor {
             intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated(), "CORE System"));
         }
         if (this._pilot.has("Talent", "t_nuclear_cavalier", 3)) {
-            const frWeapon = store.getters.referenceByID("MechWeapons", "mw_fuel_rod_gun");
+            const frWeapon = store.referenceByID("MechWeapons", "mw_fuel_rod_gun");
             intg.push(new IntegratedMount(frWeapon, "Nuclear Cavalier"));
         }
         if (this._pilot.has("Talent", "t_engineer")) {
             const id = `mw_prototype_${this._pilot.getTalentRank("t_engineer")}`;
-            const engWeapon = store.getters.referenceByID("MechWeapons", id);
+            const engWeapon = store.referenceByID("MechWeapons", id);
             intg.push(new IntegratedMount(engWeapon, "Engineer"));
         }
         return intg;
@@ -814,14 +815,14 @@ class Mech implements IActor {
     public get IntegratedSystems(): MechSystem[] {
         const intg = [];
         if (this._pilot.has("Talent", "t_walking_armory")) {
-            const arms = store.getters.instantiate(
+            const arms = store.instantiate(
                 "MechSystems",
                 `ms_walking_armory_${this._pilot.getTalentRank("t_walking_armory")}`
             );
             intg.push(arms);
         }
         if (this._pilot.has("Talent", "t_technophile")) {
-            const techno = store.getters.instantiate(
+            const techno = store.instantiate(
                 "MechSystems",
                 `ms_technophile_${this._pilot.getTalentRank("t_technophile")}`
             );
@@ -932,13 +933,13 @@ class Mech implements IActor {
             activations: m._activations,
             meltdown_imminent: m._meltdown_imminent,
             reactor_destroyed: m._reactor_destroyed,
-            cc_ver: store.getters.getVersion || "ERR",
+            cc_ver: store.getVersion || "ERR",
             state: ActiveState.Serialize(m._state),
         };
     }
 
     public static Deserialize(data: IMechData, pilot: Pilot): Mech {
-        const f = store.getters.referenceByID("Frames", data.frame);
+        const f = store.referenceByID("Frames", data.frame);
         const m = new Mech(f, pilot);
         m._id = data.id;
         m._name = data.name;
@@ -986,4 +987,3 @@ class Mech implements IActor {
     }
 }
 
-export default Mech;

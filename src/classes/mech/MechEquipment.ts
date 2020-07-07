@@ -1,5 +1,5 @@
 import { LicensedItem, Tag, ItemEffect } from "@/class";
-import { ILicensedItemData } from "@/interface";
+import { ILicensedItemData, ITagData } from "@/interface";
 
 interface IMechEquipmentData extends ILicensedItemData {
     sp: number;

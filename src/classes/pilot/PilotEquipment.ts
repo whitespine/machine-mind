@@ -1,6 +1,7 @@
-import { store } from "@/io/platform";
 import { CompendiumItem, Tag } from "@/class";
 import { ICompendiumItemData } from "@/interface";
+import { IEquipmentData, ITagData } from '../GeneralInterfaces';
+import { store } from '@/io';
 
 interface IPilotEquipmentData extends ICompendiumItemData {
     type?: string;
@@ -19,7 +20,7 @@ abstract class PilotEquipment extends CompendiumItem {
     }
 
     protected save(): void {
-        store.dispatch("saveData");
+       store.save();
     }
 
     public get Tags(): Tag[] {
@@ -46,7 +47,7 @@ abstract class PilotEquipment extends CompendiumItem {
 
     public static Deserialize(itemData: IEquipmentData | null): PilotEquipment | null {
         if (!itemData) return null;
-        const item = store.getters.instantiate("PilotGear", itemData.id);
+        const item = store.instantiate("PilotGear", itemData.id);
         item.current_uses = itemData.uses;
         item.note = itemData.note;
         item._flavor_name = itemData.flavorName;

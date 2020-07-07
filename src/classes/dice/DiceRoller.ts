@@ -1,3 +1,5 @@
+import { IDamageRollResult, Id20RollResult } from '@/interface';
+
 class DieSet {
     private _type: number;
     private _quantity: number;

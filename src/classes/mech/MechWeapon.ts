@@ -1,4 +1,4 @@
-import { store } from "@/io/platform";
+
 import _ from "lodash";
 import {
     Damage,
@@ -12,7 +12,8 @@ import {
     WeaponSize,
     WeaponType,
 } from "@/class";
-import { IDamageData, IMechEquipmentData, IRangeData } from "@/interface";
+import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData } from "@/interface";
+import { store } from '@/io';
 
 // TODO:
 // class WeaponAmmo {}
@@ -172,7 +173,7 @@ class MechWeapon extends MechEquipment {
     }
 
     public static Deserialize(data: IMechWeaponSaveData): MechWeapon {
-        const item = store.getters.instantiate("MechWeapons", data.id) as MechWeapon;
+        const item = store.instantiate("MechWeapons", data.id) as MechWeapon;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

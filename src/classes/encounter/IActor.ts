@@ -1,4 +1,4 @@
-declare interface IActor {
+export interface IActor {
     ID: string;
     EncounterName: string;
     Image: string;

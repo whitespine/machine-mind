@@ -1,5 +1,6 @@
-import { store } from "@/io/platform";
+
 import uuid from "uuid/v4";
+import { store } from '@/io';
 
 const ordArr = [
     "Primary",
@@ -14,7 +15,7 @@ const ordArr = [
     "Denary",
 ];
 
-abstract class Loadout {
+export abstract class Loadout {
     private _id: string;
     protected _name: string;
 
@@ -24,7 +25,7 @@ abstract class Loadout {
     }
 
     protected save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public get ID(): string {
@@ -50,5 +51,3 @@ abstract class Loadout {
         this.save();
     }
 }
-
-export default Loadout;

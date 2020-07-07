@@ -1,7 +1,8 @@
-import { store } from "@/io/platform";
+
 import { ItemType } from "@/class";
 import { ICounterData } from "@/interface";
 import _ from "lodash";
+import { store } from '@/io';
 
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
@@ -43,7 +44,7 @@ abstract class CompendiumItem {
     }
 
     protected save(): void {
-        store.dispatch("saveData");
+        store.save();
     }
 
     public get ID(): string {
