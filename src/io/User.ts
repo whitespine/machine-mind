@@ -1,7 +1,7 @@
 import path from "path";
 import extlog from "./ExtLog";
 import uuid from "uuid/v4";
-import { Data } from "./Data";
+import { writeFile, readFile, exists, USER_DATA_PATH } from './Data'
 
 const CONFIG_FILE_NAME = "user.config";
 
@@ -45,7 +45,7 @@ class UserProfile {
             theme: this.Theme,
         };
 
-        Data().writeFile(CONFIG_FILE_NAME, JSON.stringify(data, null, 2));
+        writeFile(CONFIG_FILE_NAME, JSON.stringify(data, null, 2));
     }
 
     public get ID(): string {
@@ -125,15 +125,15 @@ class UserProfile {
 }
 
 async function getUser(): Promise<UserProfile> {
-    const configFileExists = await Data().exists(CONFIG_FILE_NAME);
+    const configFileExists = await exists(CONFIG_FILE_NAME);
     if (!configFileExists) {
         try {
-            await Data().writeFile(CONFIG_FILE_NAME, JSON.stringify(new UserProfile(uuid())));
+            await writeFile(CONFIG_FILE_NAME, JSON.stringify(new UserProfile(uuid())));
             extlog("Created user profile");
         } catch (err) {
             extlog(
                 `Critical Error: COMP/CON unable to create user profile at ${path.join(
-                    Data().USER_DATA_PATH,
+                    USER_DATA_PATH(),
                     CONFIG_FILE_NAME
                 )}: \n ${err}`
             );
@@ -141,7 +141,7 @@ async function getUser(): Promise<UserProfile> {
         }
     }
 
-    const data = JSON.parse(await Data().readFile(CONFIG_FILE_NAME)) as IUserProfile;
+    const data = JSON.parse(await readFile(CONFIG_FILE_NAME)) as IUserProfile;
     return UserProfile.Deserialize(data);
 }
 

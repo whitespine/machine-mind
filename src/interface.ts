@@ -52,7 +52,10 @@ import {
     INpcTechData,
     INpcData,
 } from "./classes/npc/interfaces";
-import { IEncounterData, IMissionData, IActiveMissionData } from "./classes/encounter/interfaces";
+import { IEncounterData } from "./classes/encounter/Encounter";
+import { IMissionData } from "./classes/encounter/Mission";
+import { IActiveMissionData } from "./classes/encounter/ActiveMission";
+
 import { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 import { ICounterData } from "./classes/Counter";
 import { ITagCompendiumData } from "./classes/Tag";
