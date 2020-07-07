@@ -1,5 +1,5 @@
 import { Talent } from "@/class";
-import { IRankedData } from '../GeneralInterfaces';
+import { IRankedData } from "../GeneralInterfaces";
 
 export class PilotTalent {
     private talent: Talent;

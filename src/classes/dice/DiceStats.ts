@@ -1,5 +1,5 @@
 import { DiceRoller, ParsedDieString } from "@/class";
-import { IDiceStats } from '@/interface';
+import { IDiceStats } from "@/interface";
 
 class DiceStatsResult implements IDiceStats {
     private _diceString: string;

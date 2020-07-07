@@ -1,5 +1,5 @@
 import { Mount, MechWeapon, MountType } from "@/class";
-import { IMechWeaponSaveData } from '@/interface';
+import { IMechWeaponSaveData } from "@/interface";
 
 export class IntegratedMount extends Mount {
     private _item_source: string;
@@ -31,4 +31,3 @@ export class IntegratedMount extends Mount {
         return im;
     }
 }
-

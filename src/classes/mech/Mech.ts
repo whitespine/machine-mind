@@ -1,10 +1,18 @@
-
 import uuid from "uuid/v4";
 import _ from "lodash";
-import { Rules, Pilot, Frame, MechLoadout, MechSystem, IntegratedMount, CoreBonus, ActiveState } from "@/class";
-import {imageManagement, ImageTag} from "@/io";
-import { store } from '@/io';
-import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from '@/interface';
+import {
+    Rules,
+    Pilot,
+    Frame,
+    MechLoadout,
+    MechSystem,
+    IntegratedMount,
+    CoreBonus,
+    ActiveState,
+} from "@/class";
+import { imageManagement, ImageTag } from "@/io";
+import { store } from "@/io";
+import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from "@/interface";
 
 export class Mech implements IActor {
     private _id: string;
@@ -986,4 +994,3 @@ export class Mech implements IActor {
         return m;
     }
 }
-

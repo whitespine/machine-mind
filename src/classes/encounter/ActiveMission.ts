@@ -1,8 +1,8 @@
 import uuid from "uuid/v4";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
-import { IMissionData, INpcData , IMissionStep} from "@/interface";
+import { IMissionData, INpcData, IMissionStep } from "@/interface";
 import { EncounterSide } from "../enums";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export interface IActiveMissionData {
     mission: IMissionData;
@@ -203,9 +203,7 @@ export class ActiveMission {
     }
 
     public get Pilots(): Pilot[] {
-        return store["getPilots"].filter((x: Pilot) =>
-            this._pilotIDs.some(y => y === x.ID)
-        );
+        return store["getPilots"].filter((x: Pilot) => this._pilotIDs.some(y => y === x.ID));
     }
 
     public set Pilots(val: Pilot[]) {

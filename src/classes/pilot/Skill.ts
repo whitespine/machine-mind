@@ -1,6 +1,6 @@
 import { CompendiumItem, SkillFamily, ItemType } from "@/class";
 import { ICompendiumItemData } from "@/interface";
-import { store } from '@/io';
+import { store } from "@/io";
 
 interface ISkillData extends ICompendiumItemData {
     detail: string;

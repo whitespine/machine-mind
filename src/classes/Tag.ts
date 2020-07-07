@@ -1,7 +1,7 @@
 import { ItemType } from "@/class";
 
 import { ICompendiumItemData, ITagData } from "@/interface";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export interface ITagCompendiumData extends ICompendiumItemData {
     id: string;
@@ -145,4 +145,3 @@ export class Tag {
         return output;
     }
 }
-

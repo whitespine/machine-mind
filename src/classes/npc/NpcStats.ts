@@ -1,7 +1,7 @@
 import { NpcClass } from "./";
 
 import _ from "lodash";
-import { store } from '@/io';
+import { store } from "@/io";
 
 interface INpcStats {
     activations: number;

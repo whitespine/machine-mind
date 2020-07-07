@@ -1,5 +1,5 @@
 import { Rules, Skill, CustomSkill } from "@/class";
-import { IRankedData } from '../GeneralInterfaces';
+import { IRankedData } from "../GeneralInterfaces";
 
 export class PilotSkill {
     private _skill: Skill | CustomSkill;

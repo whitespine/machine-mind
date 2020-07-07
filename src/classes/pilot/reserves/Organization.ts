@@ -1,6 +1,6 @@
 import { OrgType } from "@/class";
-import { store } from '@/io';
-import { IOrganizationData } from '@/classes/GeneralInterfaces';
+import { store } from "@/io";
+import { IOrganizationData } from "@/classes/GeneralInterfaces";
 
 export class Organization {
     private _purpose: OrgType;
@@ -20,7 +20,7 @@ export class Organization {
     }
 
     private save(): void {
-       store.save();
+        store.save();
     }
 
     public get Type(): string {
@@ -98,4 +98,3 @@ export class Organization {
         return new Organization(data);
     }
 }
-

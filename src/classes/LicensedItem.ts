@@ -1,7 +1,6 @@
-
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
 import { ICompendiumItemData, ILicenseRequirement } from "@/interface";
-import { store } from '@/io';
+import { store } from "@/io";
 
 interface ILicensedItemData extends ICompendiumItemData {
     source: string;

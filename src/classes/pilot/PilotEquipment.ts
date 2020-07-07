@@ -1,7 +1,7 @@
 import { CompendiumItem, Tag } from "@/class";
 import { ICompendiumItemData } from "@/interface";
-import { IEquipmentData, ITagData } from '../GeneralInterfaces';
-import { store } from '@/io';
+import { IEquipmentData, ITagData } from "../GeneralInterfaces";
+import { store } from "@/io";
 
 interface IPilotEquipmentData extends ICompendiumItemData {
     type?: string;
@@ -20,7 +20,7 @@ abstract class PilotEquipment extends CompendiumItem {
     }
 
     protected save(): void {
-       store.save();
+        store.save();
     }
 
     public get Tags(): Tag[] {

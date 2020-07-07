@@ -1,5 +1,5 @@
 import { Reserve, ReserveType } from "@/class";
-import { IProjectData } from '@/classes/GeneralInterfaces';
+import { IProjectData } from "@/classes/GeneralInterfaces";
 
 export class Project extends Reserve {
     private _complicated: boolean;
@@ -81,4 +81,3 @@ export class Project extends Reserve {
         return new Project(data);
     }
 }
-

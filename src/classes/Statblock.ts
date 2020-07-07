@@ -252,4 +252,3 @@ export class Statblock {
         return output;
     }
 }
-

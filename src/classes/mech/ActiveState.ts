@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { VueSet } from "@/io";
 import { Mech } from "@/class";
-import { IMechState, IHistoryItem } from '@/interface';
+import { IMechState, IHistoryItem } from "@/interface";
 
 class ActiveState {
     public stage: string;

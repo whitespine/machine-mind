@@ -1,4 +1,4 @@
-import { ICounterSaveData } from '@/interface';
+import { ICounterSaveData } from "@/interface";
 
 /* eslint-disable @typescript-eslint/camelcase */
 interface ICounterData {

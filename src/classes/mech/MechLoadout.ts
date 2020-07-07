@@ -12,10 +12,8 @@ import {
     MechWeapon,
     WeaponMod,
 } from "@/class";
-import {
-    ILicenseRequirement
-} from "@/interface";
-import { IMechLoadoutData } from '@/interface';
+import { ILicenseRequirement } from "@/interface";
+import { IMechLoadoutData } from "@/interface";
 
 export class MechLoadout extends Loadout {
     private _integratedMounts: IntegratedMount[];
@@ -268,4 +266,3 @@ export class MechLoadout extends Loadout {
         return ml;
     }
 }
-

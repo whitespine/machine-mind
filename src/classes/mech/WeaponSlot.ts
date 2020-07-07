@@ -4,7 +4,7 @@ import { IWeaponSlotData } from "@/interface";
 import _ from "lodash";
 
 import { WeaponMod } from "@/class";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export class WeaponSlot {
     private _size: FittingSize;
@@ -58,4 +58,3 @@ export class WeaponSlot {
         return ws;
     }
 }
-

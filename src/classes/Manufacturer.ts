@@ -1,4 +1,4 @@
-import {imageManagement, ImageTag} from "@/io";
+import { imageManagement, ImageTag } from "@/io";
 
 interface IManufacturerData {
     id: string;
@@ -55,7 +55,8 @@ class Manufacturer {
 
     public get Logo(): string {
         if (this._logo_url) return this._logo_url;
-        else if (this._logo) return imageManagement.getImagePath(ImageTag.Logo, `${this._logo}.svg`, true);
+        else if (this._logo)
+            return imageManagement.getImagePath(ImageTag.Logo, `${this._logo}.svg`, true);
         else return ""; // TODO: placeholder logo?
     }
 }

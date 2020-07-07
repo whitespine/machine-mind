@@ -1,6 +1,14 @@
-import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem, FrameTrait } from "@/class";
+import {
+    Rules,
+    LicensedItem,
+    MountType,
+    ItemType,
+    MechType,
+    CoreSystem,
+    FrameTrait,
+} from "@/class";
 import { ILicensedItemData, ICoreData } from "@/interface";
-import {imageManagement, ImageTag} from "@/io";
+import { imageManagement, ImageTag } from "@/io";
 
 interface IFrameStats {
     size: number;

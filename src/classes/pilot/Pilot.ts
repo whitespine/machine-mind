@@ -21,8 +21,15 @@ import {
 } from "@/class";
 import * as gistApi from "@/io/apis/gist";
 import { ICounterData } from "@/interface";
-import { IMechData, IOrganizationData, IReserveData, IRankedData, IPilotData, ICounterSaveData } from '@/interface';
-import { store } from '@/io';
+import {
+    IMechData,
+    IOrganizationData,
+    IReserveData,
+    IRankedData,
+    IPilotData,
+    ICounterSaveData,
+} from "@/interface";
+import { store } from "@/io";
 
 export class Pilot {
     private _cloudID: string;
@@ -274,7 +281,6 @@ export class Pilot {
         this._history = _history;
         this.save();
     }
-
 
     /*
     public SetLocalImage(src: string): void {
@@ -1101,4 +1107,3 @@ export class Pilot {
         this._brews = data.brews || [];
     }
 }
-

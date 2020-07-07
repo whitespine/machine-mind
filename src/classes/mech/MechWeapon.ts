@@ -1,4 +1,3 @@
-
 import _ from "lodash";
 import {
     Damage,
@@ -13,7 +12,7 @@ import {
     WeaponType,
 } from "@/class";
 import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData } from "@/interface";
-import { store } from '@/io';
+import { store } from "@/io";
 
 // TODO:
 // class WeaponAmmo {}

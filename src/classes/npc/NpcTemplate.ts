@@ -1,6 +1,5 @@
-
 import { NpcFeature } from "./";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export interface INpcTemplateData {
     id: string;

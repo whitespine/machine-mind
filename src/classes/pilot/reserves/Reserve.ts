@@ -1,8 +1,8 @@
-// 
+//
 import { ReserveType } from "@/class";
 import { reserves } from "lancer-data";
-import { store } from '@/io';
-import { IReserveData } from '@/classes/GeneralInterfaces';
+import { store } from "@/io";
+import { IReserveData } from "@/classes/GeneralInterfaces";
 
 export class Reserve {
     private _id: string;
@@ -126,4 +126,3 @@ export class Reserve {
         return r;
     }
 }
-

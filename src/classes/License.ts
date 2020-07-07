@@ -1,7 +1,6 @@
-
 import _ from "lodash";
 import { LicensedItem, Frame, Manufacturer } from "@/class";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export class License {
     private _frame_id: string;
@@ -17,11 +16,10 @@ export class License {
         this._brew = frame.Brew || "Core";
 
         const items: LicensedItem[] = _.cloneDeep(store.getItemCollection("MechWeapons"))
-            .concat(
-                store.getItemCollection("WeaponMods"),
-                store.getItemCollection("MechSystems")
-            )
-            .filter((x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()) as LicensedItem[];
+            .concat(store.getItemCollection("WeaponMods"), store.getItemCollection("MechSystems"))
+            .filter(
+                (x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()
+            ) as LicensedItem[];
 
         this._unlocks = [
             items.filter(x => x.LicenseLevel === 1),

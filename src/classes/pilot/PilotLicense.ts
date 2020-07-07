@@ -1,5 +1,5 @@
 import { License } from "@/class";
-import { IRankedData } from '../GeneralInterfaces';
+import { IRankedData } from "../GeneralInterfaces";
 
 class PilotLicense {
     private license: License;

@@ -15,4 +15,3 @@ export class NpcTrait extends NpcFeature {
         return "cci-trait";
     }
 }
-

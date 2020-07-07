@@ -1,4 +1,3 @@
-
 import { Rules, HASE } from "@/class";
 import { store } from "@/io";
 

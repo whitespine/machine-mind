@@ -1,6 +1,5 @@
-
 import uuid from "uuid/v4";
-import { store } from '@/io';
+import { store } from "@/io";
 
 const ordArr = [
     "Primary",

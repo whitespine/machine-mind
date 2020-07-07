@@ -1,7 +1,6 @@
-
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { NpcFeature } from "./";
-import { store } from '@/io';
+import { store } from "@/io";
 
 export interface INpcClassData {
     id: string;

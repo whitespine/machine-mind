@@ -1,7 +1,6 @@
-
 import { MechEquipment, SystemType, ItemType } from "@/class";
 import { IMechEquipmentData, IEquipmentData } from "@/interface";
-import { store } from '@/io';
+import { store } from "@/io";
 
 interface IMechSystemData extends IMechEquipmentData {
     type: SystemType;
