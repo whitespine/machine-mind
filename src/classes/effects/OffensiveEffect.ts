@@ -1,5 +1,6 @@
 import { IEffectData } from "@/interface";
-import { ActivationType, EffectType, ItemEffect } from "@/class";
+import { ActivationType, EffectType,  } from "@/class";
+import { ItemEffect } from "./ItemEffect";
 
 interface IOffensiveEffectData extends IEffectData {
     attack?: string;

@@ -25,6 +25,7 @@ export {
 // export Tag from "./classes/Tag";
 export {
     AIEffect,
+    ItemEffect,
     BasicEffect,
     ChargeType,
     Charge,
@@ -34,7 +35,6 @@ export {
     GenericEffect,
     EffectType,
     ActivationType,
-    ItemEffect,
     BonusEffect,
     ProtocolEffect,
     ReactionEffect,

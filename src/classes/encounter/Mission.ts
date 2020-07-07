@@ -97,7 +97,7 @@ class Mission {
 
     public get Encounters(): Encounter[] {
         const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
-        const enc = store["encounter/getEncounters"];
+        const enc = store.getEncounters();
         return ids.map(x => enc.find(y => y.ID === x));
     }
 
@@ -106,7 +106,7 @@ class Mission {
     }
 
     public ValidateSteps(): void {
-        const ids = store["encounter/getEncounters"]
+        const ids = store.getEncounters()
             .map((x: Encounter) => x.ID)
             .concat(this._rests.map(x => x.ID));
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));
@@ -119,7 +119,7 @@ class Mission {
     public Step(id: string): IMissionStep {
         const r = this._rests.find(x => x.ID === id);
         if (r) return r;
-        const enc = store["encounter/getEncounters"];
+        const enc = store.getEncounters();
         const rIdx = this._step_ids.indexOf(id);
         if (rIdx == -1) this.RemoveStep(rIdx);
         return enc.find(x => x.ID === id);

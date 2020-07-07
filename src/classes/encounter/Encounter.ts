@@ -156,7 +156,7 @@ class Encounter implements IMissionStep {
     public Npcs(side: EncounterSide): Npc[] {
         const npcs = [];
         this.npcIDBySide(side).forEach(id => {
-            const n = store["npc/getNpcs"].find((x: Npc) => x.ID === id);
+            const n = store.getNpcs().find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -190,7 +190,7 @@ class Encounter implements IMissionStep {
     public Reinforcements(side: EncounterSide): Npc[] {
         const npcs = [];
         this.reinforcementIDBySide(side).forEach(id => {
-            const n = store["npc/getNpcs"].find((x: Npc) => x.ID === id);
+            const n = store.getNpcs().find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;

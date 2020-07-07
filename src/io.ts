@@ -1,4 +1,4 @@
-import { Pilot } from "@/class";
+import { Pilot, Npc, Encounter } from "@/class";
 import { getVersion } from "jest";
 
 // Interface store interaction
@@ -20,6 +20,9 @@ export interface StoreShim {
      referenceByID(category: string, id: string): any;
      instantiate(category: string, data: string): any;
      addPilot(pilot: Pilot): any;
+     getEncounters(): Encounter[];
+     getNpcs(): Npc[];
+     getPilots(): Pilot[];
      getVersion: string;
 }
 
