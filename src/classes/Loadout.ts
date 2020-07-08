@@ -24,7 +24,7 @@ export abstract class Loadout {
     }
 
     protected save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     public get ID(): string {

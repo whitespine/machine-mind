@@ -44,12 +44,12 @@ class CoreSystem {
 
     public get Integrated(): MechWeapon | null {
         if (!this._integrated) return null;
-        return store.referenceByID("MechWeapons", this._integrated);
+        return store.datastore.getReferenceByID("MechWeapons", this._integrated);
     }
 
     public getIntegrated(): MechWeapon | null {
         if (!this._integrated) return null;
-        return store.instantiate("MechWeapons", this._integrated);
+        return store.datastore.instantiate("MechWeapons", this._integrated);
     }
 
     public get PassiveName(): string | null {

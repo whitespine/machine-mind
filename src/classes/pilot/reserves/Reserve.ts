@@ -28,7 +28,7 @@ export class Reserve {
     }
 
     protected save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     public get ID(): string {

@@ -114,11 +114,11 @@ export class Pilot {
 
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     public SetBrewData(): void {
-        const packs = store.getItemCollection("ContentPacks") as ContentPack[];
+        const packs = store.datastore.getItemCollection("ContentPacks") as ContentPack[];
 
         function collectBrewGroup(items: CompendiumItem[]): string[] {
             return items
@@ -233,7 +233,7 @@ export class Pilot {
     }
 
     public get Faction(): Faction {
-        const factions = store.getItemCollection("Factions") as Faction[];
+        const factions = store.datastore.getItemCollection("Factions") as Faction[];
         return factions.find((x: Faction) => x.ID === this._factionID);
     }
 

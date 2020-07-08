@@ -20,7 +20,7 @@ abstract class PilotEquipment extends CompendiumItem {
     }
 
     protected save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     public get Tags(): Tag[] {
@@ -47,7 +47,7 @@ abstract class PilotEquipment extends CompendiumItem {
 
     public static Deserialize(itemData: IEquipmentData | null): PilotEquipment | null {
         if (!itemData) return null;
-        const item = store.instantiate("PilotGear", itemData.id);
+        const item = store.datastore.instantiate("PilotGear", itemData.id);
         item.current_uses = itemData.uses;
         item.note = itemData.note;
         item._flavor_name = itemData.flavorName;

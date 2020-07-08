@@ -36,7 +36,7 @@ class MechSystem extends MechEquipment {
     }
 
     public static Deserialize(data: IEquipmentData): MechSystem {
-        const item = store.instantiate("MechSystems", data.id) as MechSystem;
+        const item = store.datastore.instantiate("MechSystems", data.id) as MechSystem;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

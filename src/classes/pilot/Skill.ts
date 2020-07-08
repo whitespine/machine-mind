@@ -31,7 +31,7 @@ class Skill extends CompendiumItem {
     }
 
     public static Deserialize(id: string): Skill {
-        return store.referenceByID("Skills", id);
+        return store.datastore.getReferenceByID("Skills", id);
     }
 }
 

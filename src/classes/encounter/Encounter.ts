@@ -50,13 +50,13 @@ class Encounter implements IMissionStep {
         this._environment_details = "";
         this._cloud_map = "";
         this._local_map = "";
-        this._sitrep = store.getItemCollection("Sitreps")[0] as Sitrep;
+        this._sitrep = store.datastore.getItemCollection("Sitreps")[0] as Sitrep;
         this._npcs = [];
         this._reinforcements = [];
     }
 
     private save(): void {
-        store.saveEncounterData();
+        store.encounter.saveEncounterData();
     }
 
     public get ID(): string {
@@ -156,7 +156,7 @@ class Encounter implements IMissionStep {
     public Npcs(side: EncounterSide): Npc[] {
         const npcs = [];
         this.npcIDBySide(side).forEach(id => {
-            const n = store.getNpcs().find((x: Npc) => x.ID === id);
+            const n = store.npc.getNpcs().find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -190,7 +190,7 @@ class Encounter implements IMissionStep {
     public Reinforcements(side: EncounterSide): Npc[] {
         const npcs = [];
         this.reinforcementIDBySide(side).forEach(id => {
-            const n = store.getNpcs().find((x: Npc) => x.ID === id);
+            const n = store.npc.getNpcs().find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;

@@ -40,7 +40,7 @@ export class NpcItem {
     }
 
     private save(): void {
-        store.saveNpcData();
+        store.npc.saveNpcData();
     }
 
     public get Feature(): NpcFeature {
@@ -132,7 +132,10 @@ export class NpcItem {
     }
 
     public static Deserialize(data: INpcItemSaveData): NpcItem {
-        const item = new NpcItem(store.referenceByID("NpcFeatures", data.itemID), data.tier);
+        const item = new NpcItem(
+            store.datastore.getReferenceByID("NpcFeatures", data.itemID),
+            data.tier
+        );
         item._flavor_description = data.description;
         item._flavor_name = data.flavorName;
         item._destroyed = data.destroyed;

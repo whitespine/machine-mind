@@ -15,8 +15,11 @@ export class License {
         this._name = frame.Name;
         this._brew = frame.Brew || "Core";
 
-        const items: LicensedItem[] = _.cloneDeep(store.getItemCollection("MechWeapons"))
-            .concat(store.getItemCollection("WeaponMods"), store.getItemCollection("MechSystems"))
+        const items: LicensedItem[] = _.cloneDeep(store.datastore.getItemCollection("MechWeapons"))
+            .concat(
+                store.datastore.getItemCollection("WeaponMods"),
+                store.datastore.getItemCollection("MechSystems")
+            )
             .filter(
                 (x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()
             ) as LicensedItem[];
@@ -40,7 +43,7 @@ export class License {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.referenceByID("Manufacturers", this._source);
+        return store.datastore.getReferenceByID("Manufacturers", this._source);
     }
 
     public get FrameID(): string {
@@ -64,6 +67,6 @@ export class License {
     }
 
     public static Deserialize(frameId: string): License {
-        return new License(store.referenceByID("Frames", frameId));
+        return new License(store.datastore.getReferenceByID("Frames", frameId));
     }
 }

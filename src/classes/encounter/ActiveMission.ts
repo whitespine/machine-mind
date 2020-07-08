@@ -45,7 +45,7 @@ export class ActiveMission {
     }
 
     private save(): void {
-        store.saveActiveMissionData();
+        store.mission.saveActiveMissionData();
     }
 
     public get ID(): string {
@@ -203,7 +203,7 @@ export class ActiveMission {
     }
 
     public get Pilots(): Pilot[] {
-        return store.getPilots().filter((x: Pilot) => this._pilotIDs.some(y => y === x.ID));
+        return store.pilots.Pilots.filter((x: Pilot) => this._pilotIDs.some(y => y === x.ID));
     }
 
     public set Pilots(val: Pilot[]) {

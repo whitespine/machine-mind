@@ -88,7 +88,7 @@ class WeaponMod extends MechEquipment {
     }
 
     public static Deserialize(data: IEquipmentData): WeaponMod {
-        const item = store.instantiate("WeaponMods", data.id) as WeaponMod;
+        const item = store.datastore.instantiate("WeaponMods", data.id) as WeaponMod;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

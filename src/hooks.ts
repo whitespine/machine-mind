@@ -1,31 +1,17 @@
 import { Pilot, Npc, Encounter } from "@/class";
 import { getVersion } from "jest";
+import Vue from "vue";
+import { NpcStore } from "./store/npc";
+import { MissionStore } from "./store/mission";
+import { EncounterStore } from "./store/encounter";
+import { CompendiumStore } from "./store/compendium";
+import { PilotManagementStore } from "./store/pilot";
+import { StoreInterface } from "./store/store";
 
 // Interface store interaction
-export var store: StoreShim;
+export var store: StoreInterface;
 
-export interface HasID {
-    ID: string;
-}
-
-export interface StoreShim {
-    save(): void;
-    saveMissionData(): void;
-    saveActiveMissionData(): void;
-    saveEncounterData(): void;
-    getItemCollection<T>(category: string): Array<T>;
-    saveNpcData(): void;
-    getUserProfile(): HasID;
-    referenceByID(category: string, id: string): any;
-    instantiate(category: string, data: string): any;
-    addPilot(pilot: Pilot): any;
-    getEncounters(): Encounter[];
-    getNpcs(): Npc[];
-    getPilots(): Pilot[];
-    getVersion: string;
-}
-
-export function setup_store_shim(_store: StoreShim) {
+export function setup_store_shim(_store: StoreInterface) {
     store = _store;
 }
 
@@ -58,6 +44,9 @@ export function setup_image_shim(image: ImageShim) {
 }
 
 // Interface VueSet
+
+export var VueSet = Vue.set;
+/*
 export type VueSetter = (target: Object | Array<any>, item: string | number, val: any) => any;
 
 export var VueSet: VueSetter;
@@ -65,6 +54,9 @@ export var VueSet: VueSetter;
 export function setup_vue_shim(setter: VueSetter) {
     VueSet = setter;
 }
+*/
+
+// Interface Data save/load
 
 // Are we web?
 export var is_web: boolean;

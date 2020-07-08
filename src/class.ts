@@ -109,6 +109,12 @@ export { Encounter, Rest, Mission, ActiveMission, MissionStepType } from "./clas
 export { ContentPack } from "./classes/ContentPack";
 export { Counter } from "./classes/Counter";
 
+export { CompendiumStore } from "./store/compendium";
+export { PilotManagementStore } from "./store/pilot";
+export { NpcStore } from "./store/npc";
+export { EncounterStore } from "./store/encounter";
+export { MissionStore } from "./store/mission";
+
 export * from "@/classes/GeneralClasses";
 /*
 export {

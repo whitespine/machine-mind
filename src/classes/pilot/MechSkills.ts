@@ -15,7 +15,7 @@ export class MechSkills {
     }
 
     private save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     public get Hull(): number {

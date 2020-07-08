@@ -85,11 +85,11 @@ export class Mech implements IActor {
         this._actions = 2;
         this._currentMove = this.Speed;
         this._state = new ActiveState(this);
-        this._cc_ver = store.getVersion || "N/A";
+        this._cc_ver = store.datastore.getVersion || "N/A";
     }
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     // -- Info --------------------------------------------------------------------------------------
@@ -809,12 +809,12 @@ export class Mech implements IActor {
             intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated(), "CORE System"));
         }
         if (this._pilot.has("Talent", "t_nuclear_cavalier", 3)) {
-            const frWeapon = store.referenceByID("MechWeapons", "mw_fuel_rod_gun");
+            const frWeapon = store.datastore.getReferenceByID("MechWeapons", "mw_fuel_rod_gun");
             intg.push(new IntegratedMount(frWeapon, "Nuclear Cavalier"));
         }
         if (this._pilot.has("Talent", "t_engineer")) {
             const id = `mw_prototype_${this._pilot.getTalentRank("t_engineer")}`;
-            const engWeapon = store.referenceByID("MechWeapons", id);
+            const engWeapon = store.datastore.getReferenceByID("MechWeapons", id);
             intg.push(new IntegratedMount(engWeapon, "Engineer"));
         }
         return intg;
@@ -823,14 +823,14 @@ export class Mech implements IActor {
     public get IntegratedSystems(): MechSystem[] {
         const intg = [];
         if (this._pilot.has("Talent", "t_walking_armory")) {
-            const arms = store.instantiate(
+            const arms = store.datastore.instantiate(
                 "MechSystems",
                 `ms_walking_armory_${this._pilot.getTalentRank("t_walking_armory")}`
             );
             intg.push(arms);
         }
         if (this._pilot.has("Talent", "t_technophile")) {
-            const techno = store.instantiate(
+            const techno = store.datastore.instantiate(
                 "MechSystems",
                 `ms_technophile_${this._pilot.getTalentRank("t_technophile")}`
             );
@@ -941,13 +941,13 @@ export class Mech implements IActor {
             activations: m._activations,
             meltdown_imminent: m._meltdown_imminent,
             reactor_destroyed: m._reactor_destroyed,
-            cc_ver: store.getVersion || "ERR",
+            cc_ver: store.datastore.getVersion || "ERR",
             state: ActiveState.Serialize(m._state),
         };
     }
 
     public static Deserialize(data: IMechData, pilot: Pilot): Mech {
-        const f = store.referenceByID("Frames", data.frame);
+        const f = store.datastore.getReferenceByID("Frames", data.frame);
         const m = new Mech(f, pilot);
         m._id = data.id;
         m._name = data.name;

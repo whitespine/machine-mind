@@ -57,7 +57,6 @@ export { IMissionData } from "./classes/encounter/Mission";
 export { IMissionStep } from "./classes/encounter/IMissionStep";
 export { IActor } from "./classes/encounter/IActor";
 export { IActiveMissionData } from "./classes/encounter/ActiveMission";
-
 export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";

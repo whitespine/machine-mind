@@ -50,7 +50,7 @@ export abstract class Mount {
     }
 
     protected save(): void {
-        store.save();
+        store.pilots.savePilots();
     }
 
     protected getID(): void {

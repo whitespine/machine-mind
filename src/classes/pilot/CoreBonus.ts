@@ -27,7 +27,7 @@ class CoreBonus extends CompendiumItem {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.referenceByID("Manufacturers", this._source);
+        return store.datastore.getReferenceByID("Manufacturers", this._source);
     }
 
     public get Effect(): string {
@@ -43,7 +43,7 @@ class CoreBonus extends CompendiumItem {
     }
 
     public static Deserialize(id: string): CoreBonus {
-        return store.referenceByID("CoreBonuses", id);
+        return store.datastore.getReferenceByID("CoreBonuses", id);
     }
 }
 
