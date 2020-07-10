@@ -1,3 +1,4 @@
+/*
 import JSZip, { JSZipObject } from "jszip";
 import {
     IMechWeaponData,
@@ -118,3 +119,5 @@ const parseContentPack = async function(binString: string): Promise<IContentPack
 };
 
 export { parseContentPack };
+
+*/

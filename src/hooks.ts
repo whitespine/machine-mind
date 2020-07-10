@@ -1,17 +1,12 @@
-import { Pilot, Npc, Encounter } from "@/class";
-import { getVersion } from "jest";
-import Vue from "vue";
-import { NpcStore } from "./store/npc";
-import { MissionStore } from "./store/mission";
-import { EncounterStore } from "./store/encounter";
-import { CompendiumStore } from "./store/compendium";
-import { PilotManagementStore } from "./store/pilot";
-import { StoreInterface } from "./store/store";
+// import { Pilot, Npc, Encounter } from "@/class";
+// import { getVersion } from "jest";
+import * as StoreInterfaces from "./store/store";
+export { StoreInterfaces };
 
 // Interface store interaction
-export var store: StoreInterface;
+export var store: StoreInterfaces.Store;
 
-export function setup_store_shim(_store: StoreInterface) {
+export function setup_store_shim(_store: StoreInterfaces.Store) {
     store = _store;
 }
 
@@ -45,7 +40,7 @@ export function setup_image_shim(image: ImageShim) {
 
 // Interface VueSet
 
-export var VueSet = Vue.set;
+// export var VueSet = Vue.set;
 /*
 export type VueSetter = (target: Object | Array<any>, item: string | number, val: any) => any;
 

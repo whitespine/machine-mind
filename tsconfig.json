@@ -24,8 +24,7 @@
     },
     "lib": [
       "esnext",
-      "es2018.promise",
-      "DOM"
+      "es2018.promise"
     ]
   },
   "include": [

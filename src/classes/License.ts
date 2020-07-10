@@ -15,14 +15,13 @@ export class License {
         this._name = frame.Name;
         this._brew = frame.Brew || "Core";
 
-        const items: LicensedItem[] = _.cloneDeep(store.datastore.getItemCollection("MechWeapons"))
-            .concat(
-                store.datastore.getItemCollection("WeaponMods"),
-                store.datastore.getItemCollection("MechSystems")
-            )
-            .filter(
-                (x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()
-            ) as LicensedItem[];
+        const items: LicensedItem[] = _.cloneDeep([
+            ...store.datastore.getItemCollection("MechWeapons"),
+            ...store.datastore.getItemCollection("WeaponMods"),
+            ...store.datastore.getItemCollection("MechSystems"),
+        ]).filter(
+            (x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()
+        ) as LicensedItem[];
 
         this._unlocks = [
             items.filter(x => x.LicenseLevel === 1),

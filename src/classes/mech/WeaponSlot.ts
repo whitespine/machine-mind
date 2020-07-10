@@ -1,4 +1,3 @@
-import { VueSet } from "@/hooks";
 import { MechWeapon, FittingSize } from "@/class";
 import { IWeaponSlotData } from "@/interface";
 import _ from "lodash";
@@ -33,12 +32,12 @@ export class WeaponSlot {
 
     public EquipWeapon(weapon: MechWeapon): void {
         const w = _.cloneDeep(weapon);
-        VueSet(this, "_weapon", w);
+        this._weapon = weapon;
         this.save();
     }
 
     public UnequipWeapon(): void {
-        VueSet(this, "_weapon", null);
+        this._weapon = null;
         this.save();
     }
 

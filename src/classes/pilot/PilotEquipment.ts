@@ -47,9 +47,9 @@ abstract class PilotEquipment extends CompendiumItem {
 
     public static Deserialize(itemData: IEquipmentData | null): PilotEquipment | null {
         if (!itemData) return null;
-        const item = store.datastore.instantiate("PilotGear", itemData.id);
+        const item = store.datastore.instantiate("PilotEquipment", itemData.id);
         item.current_uses = itemData.uses;
-        item.note = itemData.note;
+        item._note = itemData.note;
         item._flavor_name = itemData.flavorName;
         item._flavor_description = itemData.flavorDescription;
         item._custom_damage_type = itemData.customDamageType || null;

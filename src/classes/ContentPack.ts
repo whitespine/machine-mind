@@ -107,66 +107,82 @@ export class ContentPack {
 
     private _data: IContentPackData;
 
-    private _Manufacturers: Manufacturer[] = [];
+    private _Manufacturers: Manufacturer[];
     public get Manufacturers(): Manufacturer[] {
         return this._Manufacturers;
     }
-    private _Factions: Faction[] = [];
+    private _Factions: Faction[];
     public get Factions(): Faction[] {
         return this._Factions;
     }
 
-    private _CoreBonuses: CoreBonus[] = [];
+    private _CoreBonuses: CoreBonus[];
     public get CoreBonuses(): CoreBonus[] {
         return this._CoreBonuses;
     }
 
-    private _Frames: Frame[] = [];
+    private _Frames: Frame[];
     public get Frames(): Frame[] {
         return this._Frames;
     }
 
-    private _MechWeapons: MechWeapon[] = [];
+    private _MechWeapons: MechWeapon[];
     public get MechWeapons(): MechWeapon[] {
         return this._MechWeapons;
     }
 
-    private _MechSystems: MechSystem[] = [];
+    private _MechSystems: MechSystem[];
     public get MechSystems(): MechSystem[] {
         return this._MechSystems;
     }
 
-    private _WeaponMods: WeaponMod[] = [];
+    private _WeaponMods: WeaponMod[];
     public get WeaponMods(): WeaponMod[] {
         return this._WeaponMods;
     }
 
-    private _PilotGear: PilotEquipment[] = [];
-    public get PilotGear(): PilotEquipment[] {
+    // Includes gear, weapons, and armor
+    private _PilotEquipment: PilotEquipment[];
+    public get PilotEquipment(): PilotEquipment[] {
+        return this._PilotEquipment;
+    }
+
+    private _PilotGear: PilotGear[];
+    public get PilotGear(): PilotGear[] {
         return this._PilotGear;
     }
 
-    private _Talents: Talent[] = [];
+    private _PilotWeapons: PilotWeapon[];
+    public get PilotWeapons(): PilotWeapon[] {
+        return this._PilotWeapons;
+    }
+
+    private _PilotArmor: PilotArmor[];
+    public get PilotArmor(): PilotArmor[] {
+        return this._PilotArmor;
+    }
+
+    private _Talents: Talent[];
     public get Talents(): Talent[] {
         return this._Talents;
     }
 
-    private _Tags: Tag[] = [];
+    private _Tags: Tag[];
     public get Tags(): Tag[] {
         return this._Tags;
     }
 
-    private _NpcClasses: NpcClass[] = [];
+    private _NpcClasses: NpcClass[];
     public get NpcClasses(): NpcClass[] {
         return this._NpcClasses;
     }
 
-    private _NpcTemplates: NpcTemplate[] = [];
+    private _NpcTemplates: NpcTemplate[];
     public get NpcTemplates(): NpcTemplate[] {
         return this._NpcTemplates;
     }
 
-    private _NpcFeatures: NpcFeature[] = [];
+    private _NpcFeatures: NpcFeature[];
     public get NpcFeatures(): NpcFeature[] {
         return this._NpcFeatures;
     }
@@ -194,12 +210,31 @@ export class ContentPack {
         this._MechWeapons = this._data.weapons?.map(x => new MechWeapon(x)) || [];
         this._MechSystems = this._data.systems?.map(x => new MechSystem(x)) || [];
         this._WeaponMods = this._data.mods?.map(x => new WeaponMod(x)) || [];
-        this._PilotGear =
-            this._data.pilotGear?.map(function(x) {
-                if (x.type === "weapon") return new PilotWeapon(x as IPilotWeaponData);
-                else if (x.type === "armor") return new PilotArmor(x as IPilotArmorData);
-                return new PilotGear(x as IPilotGearData);
-            }) || [];
+
+        this._PilotArmor = [];
+        this._PilotEquipment = [];
+        this._PilotGear = [];
+        this._PilotWeapons = [];
+
+        for (let igear of this._data.pilotGear || []) {
+            let equip: PilotEquipment;
+            if (igear.type === "weapon") {
+                let wep = new PilotWeapon(igear as IPilotWeaponData);
+                this._PilotWeapons.push(wep);
+                equip = wep;
+            } else if (igear.type === "armor") {
+                let arm = new PilotArmor(igear as IPilotArmorData);
+                this._PilotArmor.push(arm);
+                equip = arm;
+            } else {
+                // We assume gear otherwise. should maybe explicitly check
+                let gear = new PilotGear(igear as IPilotGearData);
+                equip = gear;
+                this._PilotGear.push(gear);
+            }
+            this._PilotEquipment.push(equip);
+        }
+
         this._Talents = this._data.talents?.map(x => new Talent(x)) || [];
         this._Tags = this._data.tags?.map(x => new Tag(x)) || [];
 

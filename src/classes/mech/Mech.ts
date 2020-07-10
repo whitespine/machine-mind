@@ -85,7 +85,7 @@ export class Mech implements IActor {
         this._actions = 2;
         this._currentMove = this.Speed;
         this._state = new ActiveState(this);
-        this._cc_ver = store.datastore.getVersion || "N/A";
+        this._cc_ver = store.getVersion || "N/A";
     }
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
@@ -941,7 +941,7 @@ export class Mech implements IActor {
             activations: m._activations,
             meltdown_imminent: m._meltdown_imminent,
             reactor_destroyed: m._reactor_destroyed,
-            cc_ver: store.datastore.getVersion || "ERR",
+            cc_ver: store.getVersion || "ERR",
             state: ActiveState.Serialize(m._state),
         };
     }

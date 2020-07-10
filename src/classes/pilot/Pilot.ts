@@ -118,7 +118,7 @@ export class Pilot {
     }
 
     public SetBrewData(): void {
-        const packs = store.datastore.getItemCollection("ContentPacks") as ContentPack[];
+        const packs = store.datastore.ContentPacks;
 
         function collectBrewGroup(items: CompendiumItem[]): string[] {
             return items
