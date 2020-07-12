@@ -177,7 +177,7 @@ class MechWeapon extends MechEquipment {
     }
 
     public static Deserialize(data: IMechWeaponSaveData): MechWeapon {
-        const item = store.datastore.instantiate("MechWeapons", data.id) as MechWeapon;
+        const item = store.compendium.instantiate("MechWeapons", data.id) as MechWeapon;
         item._uses = data.uses || 0;
         item._destroyed = data.destroyed || false;
         item._cascading = data.cascading || false;

@@ -133,7 +133,7 @@ export class NpcItem {
 
     public static Deserialize(data: INpcItemSaveData): NpcItem {
         const item = new NpcItem(
-            store.datastore.getReferenceByID("NpcFeatures", data.itemID),
+            store.compendium.getReferenceByID("NpcFeatures", data.itemID),
             data.tier
         );
         item._flavor_description = data.description;

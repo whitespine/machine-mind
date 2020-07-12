@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Encounter } from "@/class";
-import { AbsStoreModule } from "./store";
 import { IEncounterData } from "@/classes/encounter/Encounter";
 import { logger } from "@/hooks";
+import { AbsStoreModule } from './store_module';
 
 const ENCOUNTER_KEY = "ENCOUNTERS";
 

@@ -2,8 +2,7 @@
 import _ from "lodash";
 import { Pilot, PrintOptions } from "@/class";
 import { IPilotData } from "@/classes/GeneralInterfaces";
-import { PersistentStore } from "@/io/persistence";
-import { AbsStoreModule } from "./store";
+import { AbsStoreModule } from './store_module';
 
 const PilotKey = "PILOT_DATA";
 const PilotGroupKey = "PILOT_GROUPS";

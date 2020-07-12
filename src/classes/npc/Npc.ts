@@ -648,7 +648,7 @@ export class Npc implements IActor {
     }
 
     public static Deserialize(data: INpcData): Npc {
-        const c = store.datastore.getReferenceByID("NpcClasses", data.class);
+        const c = store.compendium.getReferenceByID("NpcClasses", data.class);
         const npc = new Npc(c);
         npc.Active = data.active;
         npc._id = data.id;
@@ -660,7 +660,7 @@ export class Npc implements IActor {
         npc._user_labels = data.labels || [];
         npc._tag = data.tag;
         npc._templates = data.templates.map(x =>
-            store.datastore.getReferenceByID("NpcTemplates", x)
+            store.compendium.getReferenceByID("NpcTemplates", x)
         );
         npc._items = data.items.map(x => NpcItem.Deserialize(x));
         npc._stats = NpcStats.Deserialize(data.stats);

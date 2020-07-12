@@ -74,11 +74,11 @@ export class NpcClass {
     }
 
     public get BaseFeatures(): NpcFeature[] {
-        return this._base_features.map(x => store.datastore.getReferenceByID("NpcFeatures", x));
+        return this._base_features.map(x => store.compendium.getReferenceByID("NpcFeatures", x));
     }
 
     public get OptionalFeatures(): NpcFeature[] {
-        return this._optional_features.map(x => store.datastore.getReferenceByID("NpcFeatures", x));
+        return this._optional_features.map(x => store.compendium.getReferenceByID("NpcFeatures", x));
     }
 
     public get Stats(): NpcClassStats {

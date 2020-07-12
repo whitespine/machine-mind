@@ -48,13 +48,13 @@ export class NpcTemplate {
 
     public get BaseFeatures(): NpcFeature[] {
         return this._base_features
-            .map(x => store.datastore.getReferenceByID("NpcFeatures", x))
+            .map(x => store.compendium.getReferenceByID("NpcFeatures", x))
             .filter(x => x) as NpcFeature[];
     }
 
     public get OptionalFeatures(): NpcFeature[] {
         return this._optional_features
-            .map(x => store.datastore.getReferenceByID("NpcFeatures", x))
+            .map(x => store.compendium.getReferenceByID("NpcFeatures", x))
             .filter(x => x) as NpcFeature[];
     }
 }

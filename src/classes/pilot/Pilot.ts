@@ -119,7 +119,7 @@ export class Pilot {
     }
 
     public SetBrewData(): void {
-        const packs = store.datastore.ContentPacks;
+        const packs = store.compendium.ContentPacks;
 
         function collectBrewGroup(items: CompendiumItem[]): string[] {
             return items
@@ -234,7 +234,7 @@ export class Pilot {
     }
 
     public get Faction(): Faction {
-        let v = store.datastore.getReferenceByID("Factions", this._factionID);
+        let v = store.compendium.getReferenceByID("Factions", this._factionID);
         return v;
     }
 

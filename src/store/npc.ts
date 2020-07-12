@@ -3,7 +3,7 @@ import _ from "lodash";
 import { Npc } from "@/class";
 import { PersistentStore } from "@/io/persistence";
 import { INpcData } from "@/classes/npc/Npc";
-import { AbsStoreModule } from "./store";
+import { AbsStoreModule } from "./store_module";
 import { logger } from "@/hooks";
 
 const NPC_KEY = "npc_data";

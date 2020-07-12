@@ -808,12 +808,12 @@ export class Mech implements IActor {
             intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated()!, "CORE System"));
         }
         if (this._pilot.has("Talent", "t_nuclear_cavalier", 3)) {
-            const frWeapon = store.datastore.getReferenceByID("MechWeapons", "mw_fuel_rod_gun");
+            const frWeapon = store.compendium.getReferenceByID("MechWeapons", "mw_fuel_rod_gun");
             intg.push(new IntegratedMount(frWeapon, "Nuclear Cavalier"));
         }
         if (this._pilot.has("Talent", "t_engineer")) {
             const id = `mw_prototype_${this._pilot.getTalentRank("t_engineer")}`;
-            const engWeapon = store.datastore.getReferenceByID("MechWeapons", id);
+            const engWeapon = store.compendium.getReferenceByID("MechWeapons", id);
             intg.push(new IntegratedMount(engWeapon, "Engineer"));
         }
         return intg;
@@ -822,14 +822,14 @@ export class Mech implements IActor {
     public get IntegratedSystems(): MechSystem[] {
         const intg: MechSystem[] = [];
         if (this._pilot.has("Talent", "t_walking_armory")) {
-            const arms = store.datastore.instantiate(
+            const arms = store.compendium.instantiate(
                 "MechSystems",
                 `ms_walking_armory_${this._pilot.getTalentRank("t_walking_armory")}`
             );
             intg.push(arms);
         }
         if (this._pilot.has("Talent", "t_technophile")) {
-            const techno = store.datastore.instantiate(
+            const techno = store.compendium.instantiate(
                 "MechSystems",
                 `ms_technophile_${this._pilot.getTalentRank("t_technophile")}`
             );
@@ -955,7 +955,7 @@ export class Mech implements IActor {
     }
 
     public static Deserialize(data: IMechData, pilot: Pilot): Mech {
-        const f = store.datastore.getReferenceByID("Frames", data.frame);
+        const f = store.compendium.getReferenceByID("Frames", data.frame);
         const m = new Mech(f, pilot);
         m._id = data.id;
         m._name = data.name;

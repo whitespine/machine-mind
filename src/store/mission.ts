@@ -3,7 +3,7 @@ import { Mission, ActiveMission } from "@/class";
 import { PersistentStore } from "@/io/persistence";
 import { IMissionData } from "@/classes/encounter/Mission";
 import { IActiveMissionData } from "@/classes/encounter/ActiveMission";
-import { AbsStoreModule } from "./store";
+import { AbsStoreModule } from "./store_module";
 
 const MISSION_KEY = "MISSIONS";
 const ACTIVE_MISSION_KEY = "ACTIVE_MISSIONS";

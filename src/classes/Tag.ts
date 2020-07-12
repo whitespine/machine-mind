@@ -138,7 +138,7 @@ export class Tag {
         const output = [] as Tag[];
         if (!data) return output;
         data.forEach(x => {
-            const t = store.datastore.instantiate("Tags", x.id);
+            const t = store.compendium.instantiate("Tags", x.id);
             if (x.val) t.Value = x.val;
             output.push(t);
         });

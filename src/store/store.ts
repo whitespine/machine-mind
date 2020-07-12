@@ -5,29 +5,38 @@ import { EncounterStore } from "./encounter";
 import { MissionStore } from "./mission";
 import { PersistentStore } from "@/io/persistence";
 
-// Base of all derived store modules. Just contextualizes persistence
-export abstract class AbsStoreModule {
-    protected persistence: PersistentStore;
-
-    constructor(persistence: PersistentStore) {
-        this.persistence = persistence;
-    }
-}
-
 export abstract class Store {
     // Substores
-    datastore: CompendiumStore;
+    compendium: CompendiumStore;
     pilots: PilotManagementStore;
     npc: NpcStore;
     encounter: EncounterStore;
     mission: MissionStore;
 
     constructor(persistence: PersistentStore) {
-        this.datastore = new CompendiumStore(persistence);
+        this.compendium = new CompendiumStore(persistence);
         this.pilots = new PilotManagementStore(persistence);
         this.npc = new NpcStore(persistence);
         this.encounter = new EncounterStore(persistence);
         this.mission = new MissionStore(persistence);
+    }
+
+    // Call void on all modules
+    public load_all(): void {
+        this.compendium.loadData().then(() => this.compendium.populate());
+        this.pilots.loadData();
+        this.npc.loadData();
+        this.encounter.loadData();
+        this.mission.loadData();
+    }
+
+    // Call save on all modules
+    public save_all(): void {
+        this.compendium.saveData();
+        this.pilots.saveData();
+        this.npc.saveData();
+        this.encounter.saveData();
+        this.mission.saveData();
     }
 
     // We need this for cloud identificaation stuff

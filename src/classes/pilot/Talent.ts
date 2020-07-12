@@ -30,7 +30,7 @@ class Talent extends CompendiumItem {
     }
 
     public static Deserialize(id: string): Talent {
-        let v = store.datastore.getReferenceByID("Talents", id);
+        let v = store.compendium.getReferenceByID("Talents", id);
         return v;
     }
 }

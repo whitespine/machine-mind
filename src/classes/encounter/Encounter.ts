@@ -49,7 +49,7 @@ class Encounter implements IMissionStep {
         this._environment_details = "";
         this._cloud_map = "";
         this._local_map = "";
-        this._sitrep = store.datastore.getItemCollection("Sitreps")[0] as Sitrep;
+        this._sitrep = store.compendium.getItemCollection("Sitreps")[0] as Sitrep;
         this._npcs = [];
         this._reinforcements = [];
     }
@@ -243,6 +243,7 @@ class Encounter implements IMissionStep {
     }
 
     public get Map(): string {
+        // TODO: Determine whether this is stable
         if (this._cloud_map) return this._cloud_map;
         else if (!is_web && this._local_map)
             return imageManagement.getImagePath(ImageTag.Map, this._local_map);

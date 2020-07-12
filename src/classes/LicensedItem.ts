@@ -26,7 +26,7 @@ abstract class LicensedItem extends CompendiumItem {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.datastore.getReferenceByID("Manufacturers", this.Source);
+        return store.compendium.getReferenceByID("Manufacturers", this.Source);
     }
 
     public get License(): string {

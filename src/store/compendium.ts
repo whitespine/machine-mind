@@ -26,12 +26,11 @@ import {
     License,
 } from "@/class";
 import { logger } from "@/hooks";
-import { ICoreBonusData } from "@/classes/pilot/CoreBonus";
-import { ItemType } from "@/classes/enums";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { PersistentStore } from "@/io/persistence";
 import { IContentPack } from "@/classes/ContentPack";
+import { AbsStoreModule } from './store_module';
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -150,13 +149,7 @@ export function getBaseContentPack(): ContentPack {
     });
 }
 
-export class CompendiumStore {
-    // We use this to save/load data
-    private persistence: PersistentStore;
-    constructor(persistence: PersistentStore) {
-        this.persistence = persistence;
-    }
-
+export class CompendiumStore extends AbsStoreModule {
     // Pack management - note that we break here from the compcon way of doing it, and do not automatically save content after changes, to be more consistent with other platforms
     public ContentPacks: ContentPack[] = []; // Currently loaded custom content packs.
 

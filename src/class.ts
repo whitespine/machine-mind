@@ -107,6 +107,7 @@ export {
 } from "./classes/npc";
 export { Encounter, Rest, Mission, ActiveMission, MissionStepType } from "./classes/encounter";
 export { ContentPack } from "./classes/ContentPack";
+export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
 export * from "@/classes/GeneralClasses";
 /*
