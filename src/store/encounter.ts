@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Encounter } from "@/class";
+import { AbsStoreModule } from "./store";
+import { IEncounterData } from "@/classes/encounter/Encounter";
+import { logger } from "@/hooks";
 
-export abstract class EncounterStore {
+const ENCOUNTER_KEY = "ENCOUNTERS";
+
+export class EncounterStore extends AbsStoreModule {
     private encounters: Encounter[] = [];
 
     // Retrieve current encounters
@@ -10,17 +15,39 @@ export abstract class EncounterStore {
     }
 
     // Duplicate a loaded encounter
-    abstract cloneEncounter(payload: Encounter): void;
+    public cloneEncounter(payload: Encounter): void {
+        let nv = Encounter.Deserialize(Encounter.Serialize(payload));
+        nv.Name = nv.Name + " (COPY)";
+        nv.RenewID();
+        this.addEncounter(nv);
+    }
 
     // Add a new encounter
-    abstract addEncounter(payload: Encounter): void;
+    public addEncounter(payload: Encounter): void {
+        this.encounters.push(payload);
+        this.saveData();
+    }
 
     // Delete an existing encounter
-    abstract deleteEncounter(payload: Encounter): void;
+    public deleteEncounter(payload: Encounter): void {
+        let idx = this.encounters.findIndex(e => e.ID === payload.ID);
+        if (idx > -1) {
+            this.encounters.splice(idx);
+            this.saveData();
+        } else {
+            logger(`No such encounter ${payload.Name}`);
+        }
+    }
 
     // Save all loaded encounters to persisten memory, overwriting previous data
-    abstract saveEncounterData(): Promise<void>;
+    public async saveData(): Promise<void> {
+        let raw = this.encounters.map(e => Encounter.Serialize(e));
+        await this.persistence.set_item(ENCOUNTER_KEY, raw);
+    }
 
     // Load all encounters from persistent storage
-    abstract loadEncounters(): Promise<void>;
+    public async loadData(): Promise<void> {
+        let raw = (await this.persistence.get_item(ENCOUNTER_KEY)) as IEncounterData[];
+        this.encounters = raw.map(d => Encounter.Deserialize(d));
+    }
 }

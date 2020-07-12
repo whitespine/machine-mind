@@ -46,7 +46,7 @@ export class ActiveMission {
     }
 
     private save(): void {
-        store.mission.saveActiveMissionData();
+        store.mission.saveData();
     }
 
     public get ID(): string {
@@ -171,7 +171,7 @@ export class ActiveMission {
 
     public MoveReinforcement(n: Npc): void {
         const idx = this._activeReinforcements.findIndex(x => x.ID === n.ID);
-        if(idx === -1) {
+        if (idx === -1) {
             logger(`Npc reinforcement ${n.Name} not found in this encounter`);
         }
         const r = this._activeReinforcements[idx];

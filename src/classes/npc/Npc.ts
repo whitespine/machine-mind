@@ -92,7 +92,7 @@ export class Npc implements IActor {
         this._statuses = [];
         this._conditions = [];
         this._resistances = [];
-        this.cc_ver = process.env.npm_package_version || "UNKNOWN";
+        this.cc_ver = store.getVersion || "UNKNOWN";
     }
 
     public get Active(): boolean {
@@ -105,7 +105,7 @@ export class Npc implements IActor {
     }
 
     private save(): void {
-        if (this.Active) store.mission.saveActiveMissionData();
+        if (this.Active) store.mission.saveData();
         else store.npc.saveData();
     }
 

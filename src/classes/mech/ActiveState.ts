@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Mech } from "@/class";
 import { IMechState, IHistoryItem } from "@/interface";
-import { Pilot } from '../pilot/Pilot';
+import { Pilot } from "../pilot/Pilot";
 
 class ActiveState {
     public stage: string;
@@ -62,8 +62,8 @@ class ActiveState {
         this.history = [];
         this.move = 0;
         this.actions = 2;
-        if(this.mech && !this.mech.Ejected) {
-            this.maxMove = this.mech.Speed ;
+        if (this.mech && !this.mech.Ejected) {
+            this.maxMove = this.mech.Speed;
         } else {
             this.mech.Pilot.Speed;
         }
@@ -76,79 +76,79 @@ class ActiveState {
 
     undo(): void {
         const action = this.history.pop();
-        if(!action) { 
+        if (!action) {
             return;
         }
         // These are mech only
-            switch (action.field) {
-                case "avoid_meltdown":
-                    this.mech.MeltdownImminent = true;
-                    return;
-                case "meltdown":
-                    this.mech.Destroyed = false;
-                    this.mech.ReactorDestroyed = false;
-                    return;
-                case "boost":
-                    this.maxMove -= this.mech.Ejected ? this.mech.Pilot.Speed : this.mech.Speed;
-                    if (this.move < this.maxMove) this.move === this.maxMove;
-                    this.actions += 1;
-                    return;
-                case "hide":
-                    const hidx = this.mech.Statuses.findIndex(x => x === "Hidden");
-                    if (hidx > -1) this.mech.Statuses.splice(hidx, 1);
-                    this.actions += 1;
-                    return;
-                case "dismount":
-                    this.actions += 1;
-                    return;
-                case "eject":
-                    this.mech.Ejected = false;
-                    this.actions += 1;
-                    return;
-                case "remount":
-                    this.mech.Ejected = true;
-                    this.actions += 2;
-                    return;
-                case "bombard":
-                    this.actions += 2;
-                    const abidx = this.mech.Pilot.Reserves.findIndex(
-                        x => x.ID === "reserve_bombardment"
-                    );
-                    if (abidx > -1) this.mech.Pilot.Reserves[abidx].Used = false;
-                    return;
-                case "depshield":
-                    const dsidx = this.mech.Pilot.Reserves.findIndex(
-                        x => x.ID === "reserve_bombardment" // TODO: This seems wrong
-                    );
-                    if (dsidx > -1) this.mech.Pilot.Reserves[dsidx].Used = false;
-                    return;
-                case "corebattery":
-                    const cdidx = this.mech.Pilot.Reserves.findIndex(
-                        x => x.ID === "reserve_bombardment" // TODO: This seems wrong
-                    );
-                    this.mech.CurrentCoreEnergy = 0;
-                    if (cdidx > -1) this.mech.Pilot.Reserves[cdidx].Used = false;
-                    return;
-                case "overcharge":
-                    this.mech.ReduceHeat(action.val, true);
-                    this.actions -= 1;
-                    return;
-                case "prepare":
-                    this.actions += 1;
-                    return;
-                case "shutdown":
-                    this.actions += 1;
-                    const sdidx = this.mech.Statuses.findIndex(x => x === "SHUT DOWN");
-                    if (sdidx > -1) this.mech.Statuses.splice(sdidx, 1);
-                    return;
-                case "braced":
-                    const bidx = this.mech.Resistances.findIndex(x => x === "Next Attack");
-                    if (bidx > -1) this.mech.Resistances.splice(bidx, 1);
-                    return;
-                default:
-                    this[action.field] = action.val;
-                    break;
-            } 
+        switch (action.field) {
+            case "avoid_meltdown":
+                this.mech.MeltdownImminent = true;
+                return;
+            case "meltdown":
+                this.mech.Destroyed = false;
+                this.mech.ReactorDestroyed = false;
+                return;
+            case "boost":
+                this.maxMove -= this.mech.Ejected ? this.mech.Pilot.Speed : this.mech.Speed;
+                if (this.move < this.maxMove) this.move === this.maxMove;
+                this.actions += 1;
+                return;
+            case "hide":
+                const hidx = this.mech.Statuses.findIndex(x => x === "Hidden");
+                if (hidx > -1) this.mech.Statuses.splice(hidx, 1);
+                this.actions += 1;
+                return;
+            case "dismount":
+                this.actions += 1;
+                return;
+            case "eject":
+                this.mech.Ejected = false;
+                this.actions += 1;
+                return;
+            case "remount":
+                this.mech.Ejected = true;
+                this.actions += 2;
+                return;
+            case "bombard":
+                this.actions += 2;
+                const abidx = this.mech.Pilot.Reserves.findIndex(
+                    x => x.ID === "reserve_bombardment"
+                );
+                if (abidx > -1) this.mech.Pilot.Reserves[abidx].Used = false;
+                return;
+            case "depshield":
+                const dsidx = this.mech.Pilot.Reserves.findIndex(
+                    x => x.ID === "reserve_bombardment" // TODO: This seems wrong
+                );
+                if (dsidx > -1) this.mech.Pilot.Reserves[dsidx].Used = false;
+                return;
+            case "corebattery":
+                const cdidx = this.mech.Pilot.Reserves.findIndex(
+                    x => x.ID === "reserve_bombardment" // TODO: This seems wrong
+                );
+                this.mech.CurrentCoreEnergy = 0;
+                if (cdidx > -1) this.mech.Pilot.Reserves[cdidx].Used = false;
+                return;
+            case "overcharge":
+                this.mech.ReduceHeat(action.val, true);
+                this.actions -= 1;
+                return;
+            case "prepare":
+                this.actions += 1;
+                return;
+            case "shutdown":
+                this.actions += 1;
+                const sdidx = this.mech.Statuses.findIndex(x => x === "SHUT DOWN");
+                if (sdidx > -1) this.mech.Statuses.splice(sdidx, 1);
+                return;
+            case "braced":
+                const bidx = this.mech.Resistances.findIndex(x => x === "Next Attack");
+                if (bidx > -1) this.mech.Resistances.splice(bidx, 1);
+                return;
+            default:
+                this[action.field] = action.val;
+                break;
+        }
     }
 
     quickAction() {

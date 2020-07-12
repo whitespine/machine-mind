@@ -46,7 +46,7 @@ class Frame extends LicensedItem {
     private _traits: FrameTrait[];
     private _core_system: CoreSystem;
     private _image_url: string | null;
-    private _other_art: { tag: ImageTag; src: string }[] ;
+    private _other_art: { tag: ImageTag; src: string }[];
 
     public constructor(frameData: IFrameData) {
         super(frameData);

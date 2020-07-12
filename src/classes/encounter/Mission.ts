@@ -39,7 +39,7 @@ class Mission {
     }
 
     private save(): void {
-        store.mission.saveMissionData();
+        store.mission.saveData();
     }
 
     public get ID(): string {

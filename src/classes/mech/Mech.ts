@@ -876,8 +876,11 @@ export class Mech implements IActor {
 
     public CloneLoadout(): void {
         const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout?.ID);
-        if(index > -1) {
-            const newLoadout = MechLoadout.Deserialize(MechLoadout.Serialize(this.ActiveLoadout!), this);
+        if (index > -1) {
+            const newLoadout = MechLoadout.Deserialize(
+                MechLoadout.Serialize(this.ActiveLoadout!),
+                this
+            );
             newLoadout.RenewID();
             newLoadout.Name += " (Copy)";
             this._loadouts.splice(index + 1, 0, newLoadout);
@@ -900,7 +903,9 @@ export class Mech implements IActor {
     }
 
     public get AppliedBonuses(): CoreBonus[] {
-        return _.flatten(this.ActiveLoadout?.AllEquippableMounts(true, true).map(x => x.Bonuses) || []);
+        return _.flatten(
+            this.ActiveLoadout?.AllEquippableMounts(true, true).map(x => x.Bonuses) || []
+        );
     }
 
     public get AvailableBonuses(): CoreBonus[] {

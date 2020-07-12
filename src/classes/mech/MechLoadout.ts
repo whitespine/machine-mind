@@ -75,7 +75,10 @@ export class MechLoadout extends Loadout {
         return ms;
     }
 
-    public AllEquippableMounts(improved?: boolean | null, integrated?: boolean | null): EquippableMount[] {
+    public AllEquippableMounts(
+        improved?: boolean | null,
+        integrated?: boolean | null
+    ): EquippableMount[] {
         let ms: EquippableMount[] = [];
         if (integrated) ms.push(this._integratedWeapon);
         if (improved && this._equippableMounts.length < 3) ms.push(this._improvedArmament);

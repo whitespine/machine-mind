@@ -1,22 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import _ from "lodash";
 import { Pilot, PrintOptions } from "@/class";
-import { IPilotData } from '@/classes/GeneralInterfaces';
-import { PersistentStore } from '@/io/persistence';
+import { IPilotData } from "@/classes/GeneralInterfaces";
+import { PersistentStore } from "@/io/persistence";
+import { AbsStoreModule } from "./store";
 
 const PilotKey = "PILOT_DATA";
 const PilotGroupKey = "PILOT_GROUPS";
 
-export abstract class PilotManagementStore {
+export class PilotManagementStore extends AbsStoreModule {
     private pilots: Pilot[] = [];
     private active_pilot: Pilot | null = null;
     private pilot_groups: string[] = [];
-    private loaded_mech_id = '';
-    private persistence: PersistentStore;
-
-    constructor(persistence: PersistentStore) {
-        this.persistence = persistence;
-    }
+    private loaded_mech_id = "";
 
     // Return the list of pilots
     public get Pilots(): Pilot[] {
@@ -50,15 +46,14 @@ export abstract class PilotManagementStore {
         const pilotData = Pilot.Serialize(pilot);
         const newPilot = Pilot.Deserialize(pilotData);
         newPilot.RenewID();
-        newPilot.Name += ' (CLONE)';
-        newPilot.Callsign += '*';
+        newPilot.Name += " (CLONE)";
+        newPilot.Callsign += "*";
         for (const mech of newPilot.Mechs) {
             mech.RenewID();
         }
         this.pilots.push(newPilot);
         this.saveData();
     }
-
 
     // Add a new pilot to the loaded data
     public addPilot(payload: Pilot): void {
@@ -74,12 +69,12 @@ export abstract class PilotManagementStore {
 
     // Delete a loaded pilot
     public deletePilot(pilot: Pilot): void {
-        const pilotIndex = this.Pilots.findIndex(x => x.ID === pilot.ID)
+        const pilotIndex = this.Pilots.findIndex(x => x.ID === pilot.ID);
         if (pilotIndex > -1) {
             this.Pilots.splice(pilotIndex, 1);
             this.saveData();
         } else {
-            throw console.error('Pilot not loaded!');
+            throw console.error("Pilot not loaded!");
         }
     }
 
@@ -103,7 +98,9 @@ export abstract class PilotManagementStore {
     }
 
     public async loadData(): Promise<void> {
-        this.pilots = (await this.persistence.get_item(PilotKey)).map((p: IPilotData) => Pilot.Deserialize(p));
+        this.pilots = (await this.persistence.get_item(PilotKey)).map((p: IPilotData) =>
+            Pilot.Deserialize(p)
+        );
         this.pilot_groups = await this.persistence.get_item(PilotGroupKey);
     }
 }

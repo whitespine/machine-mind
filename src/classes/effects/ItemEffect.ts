@@ -62,7 +62,7 @@ abstract class ItemEffect {
         return this.effectType;
     }
 
-    public get Activation(): ActivationType | null  {
+    public get Activation(): ActivationType | null {
         return this.activation || ActivationType.None;
     }
 

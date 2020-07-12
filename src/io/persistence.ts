@@ -1,4 +1,3 @@
-
 // Define this to give classes ability to save/load data
 
 export interface GetResult<T> {

@@ -40,8 +40,16 @@ class WeaponMod extends MechEquipment {
         this._restricted_mounts = weaponModData.restricted_mounts;
         this._tags = weaponModData.tags;
         this._added_tags = weaponModData.added_tags || [];
-        if (weaponModData.added_damage) {this._added_damage = new Damage(weaponModData.added_damage);} else {this._added_damage = null;}
-        if (weaponModData.added_range) {this._added_range = new Range(weaponModData.added_range); } else {this._added_range = null;}
+        if (weaponModData.added_damage) {
+            this._added_damage = new Damage(weaponModData.added_damage);
+        } else {
+            this._added_damage = null;
+        }
+        if (weaponModData.added_range) {
+            this._added_range = new Range(weaponModData.added_range);
+        } else {
+            this._added_range = null;
+        }
         this._item_type = ItemType.WeaponMod;
     }
 

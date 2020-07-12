@@ -59,7 +59,11 @@ export class PilotSkill {
     public static Deserialize(itemData: IRankedData): PilotSkill {
         if (itemData.custom)
             return new PilotSkill(
-                new CustomSkill(itemData.id, itemData.custom_desc || "", itemData.custom_detail || ""),
+                new CustomSkill(
+                    itemData.id,
+                    itemData.custom_desc || "",
+                    itemData.custom_detail || ""
+                ),
                 itemData.rank
             );
         return new PilotSkill(Skill.Deserialize(itemData.id), itemData.rank);

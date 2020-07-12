@@ -32,7 +32,7 @@ class Skill extends CompendiumItem {
 
     public static Deserialize(id: string): Skill {
         let v = store.datastore.getReferenceByID("Skills", id);
-            return v;
+        return v;
     }
 }
 

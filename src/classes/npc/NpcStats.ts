@@ -162,7 +162,7 @@ class NpcStats {
     }
 
     private save(): void {
-        if (this.Active) store.mission.saveActiveMissionData();
+        if (this.Active) store.mission.saveData();
     }
 
     public get Stats(): INpcStats {
@@ -341,7 +341,7 @@ class NpcStats {
     }
 
     public AddReaction(r: string): void {
-        if(!this._stats.reactions) {
+        if (!this._stats.reactions) {
             this._stats.reactions = [];
         }
         if (!this._stats.reactions.some(x => x === r)) {
@@ -351,7 +351,7 @@ class NpcStats {
     }
 
     public RemoveReaction(r: string): void {
-        const idx = this._stats.reactions?.findIndex(x => x === r) || -1; 
+        const idx = this._stats.reactions?.findIndex(x => x === r) || -1;
         if (idx > -1) this._stats.reactions!.splice(idx, 1);
         this.save();
     }

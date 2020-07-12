@@ -20,10 +20,10 @@ class PilotGear extends PilotEquipment {
 
     public set Uses(val: number | null) {
         val = val || 0;
-        if(val < 0) {
+        if (val < 0) {
             val = 0;
         }
-        if(this.uses && val > this.uses) {
+        if (this.uses && val > this.uses) {
             val = this.uses;
         }
         this.current_uses = val;

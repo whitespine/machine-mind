@@ -45,7 +45,7 @@ class MechWeapon extends MechEquipment {
         this._range = weaponData.range.map(x => new Range(x));
         this._mod = null;
         this._item_type = ItemType.MechWeapon;
-        this._custom_damage_type = null
+        this._custom_damage_type = null;
     }
 
     public get Size(): WeaponSize {

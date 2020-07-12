@@ -99,7 +99,7 @@ export class Pilot {
         this._skills = [];
         this._talents = [];
         this._mounted = false;
-        this._mechSkills = new MechSkills(0,0,0,0);
+        this._mechSkills = new MechSkills(0, 0, 0, 0);
         this._core_bonuses = [];
         this._active_mech = null;
         this._mechs = [];
@@ -109,7 +109,7 @@ export class Pilot {
         this._group = "";
         this._sortIndex = 0;
         this._campaign = "";
-        this.cc_ver = process.env.npm_package_version || "UNKNOWN";
+        this.cc_ver = store.getVersion || "UNKNOWN";
         // this._initCounters()
     }
 
@@ -509,7 +509,7 @@ export class Pilot {
             const underLimit = this.CurrentSkillPoints < this.MaxSkillPoints;
             if (!this.has("Skill", skill.ID) && underLimit) return true;
             const pSkill = this._skills.find(x => x.Skill.ID === skill.ID);
-            if(underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank) {
+            if (underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank) {
                 return true;
             }
             return false;

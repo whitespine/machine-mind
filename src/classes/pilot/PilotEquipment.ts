@@ -16,7 +16,7 @@ abstract class PilotEquipment extends CompendiumItem {
     public constructor(equipmentData: IPilotEquipmentData) {
         super(equipmentData);
         this._tags = equipmentData.tags || [];
-        this._custom_damage_type = null
+        this._custom_damage_type = null;
         this.current_uses = 0;
     }
 

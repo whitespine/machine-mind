@@ -19,7 +19,9 @@ class AIEffect extends ItemEffect {
         super(err);
         this.Name = data.name || null;
         this.Detail = data.detail;
-        this.Abilities = data.abilities.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[];
+        this.Abilities = data.abilities
+            .map(x => ItemEffect.Generate(x))
+            .filter(x => x) as ItemEffect[];
         this.activation = ActivationType.None;
         this.effectType = EffectType.AI;
         this.tags = data.tags || [];

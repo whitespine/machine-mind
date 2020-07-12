@@ -1,6 +1,6 @@
 import { LicensedItem, Tag, ItemEffect } from "@/class";
 import { ILicensedItemData, ITagData } from "@/interface";
-import { ItemType } from '../enums';
+import { ItemType } from "../enums";
 
 interface IMechEquipmentData extends ILicensedItemData {
     sp: number;

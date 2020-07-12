@@ -25,7 +25,9 @@ class OffensiveEffect extends ItemEffect {
         this.OnAttack = data.attack || null;
         this.OnHit = data.hit || null;
         this.OnCrit = data.critical || null;
-        this.Abilities = data.abilities ? data.abilities.map(x => ItemEffect.Generate(x)).filter(a => a) as ItemEffect[] : [];
+        this.Abilities = data.abilities
+            ? (data.abilities.map(x => ItemEffect.Generate(x)).filter(a => a) as ItemEffect[])
+            : [];
         this.activation = data.activation || ActivationType.None;
         this.effectType = EffectType.Offensive;
         this.tags = data.tags || [];

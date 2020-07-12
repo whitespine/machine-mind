@@ -13,7 +13,7 @@ export class EquippableMount extends Mount {
     }
 
     public Lock(target?: Mount | null): void {
-        if(!target) {
+        if (!target) {
             this.Unlock();
         } else {
             this.lock = true;
@@ -28,7 +28,7 @@ export class EquippableMount extends Mount {
         this.save();
     }
 
-    public get LockTarget(): Mount | null  {
+    public get LockTarget(): Mount | null {
         return this._lock_target;
     }
 

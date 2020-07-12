@@ -12,7 +12,7 @@ interface ICompendiumItemData {
     id: string;
     name: string;
     description: string;
-    brew: string;  // Homebrew pack it came from
+    brew: string; // Homebrew pack it came from
     counters: ICounterData[] | null;
 }
 

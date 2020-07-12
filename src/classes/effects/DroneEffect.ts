@@ -32,7 +32,9 @@ class DroneEffect extends ItemEffect {
         this.Armor = data.armor || 0;
         this.Evasion = data.evasion;
         this.EDef = data.edef;
-        this.Abilities = data.abilities ? data.abilities.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[] : [];
+        this.Abilities = data.abilities
+            ? (data.abilities.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[])
+            : [];
         this.activation = data.activation || ActivationType.Quick;
         this.effectType = EffectType.Drone;
         this.tags = data.tags || [];

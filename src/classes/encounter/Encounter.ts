@@ -55,7 +55,7 @@ class Encounter implements IMissionStep {
     }
 
     private save(): void {
-        store.encounter.saveEncounterData();
+        store.encounter.saveData();
     }
 
     public get ID(): string {
@@ -213,9 +213,9 @@ class Encounter implements IMissionStep {
     public MoveReinforcement(n: Npc): void {
         const idx = this._reinforcements.findIndex(x => x.id === n.ID);
         // Doesn't seem to have worked out
-        if(idx === -1) { 
+        if (idx === -1) {
             logger(`Reinforcement ${n.Name} not found in encounter`);
-            return; 
+            return;
         }
         const r = this._reinforcements[idx];
         if (idx > -1) {

@@ -1,5 +1,5 @@
 import { MechEquipment, CompendiumItem } from "@/class";
-import { Mech } from '../mech/Mech';
+import { Mech } from "../mech/Mech";
 
 export class ItemFilter {
     public static Filter(items: CompendiumItem[], filter: any): CompendiumItem[] {
