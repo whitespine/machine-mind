@@ -20,9 +20,9 @@ export interface INpcFeatureData {
     name: string;
     origin: IOriginData;
     locked: boolean;
-    effect?: string;
-    bonus?: object;
-    override?: object;
+    effect?: string | null;
+    bonus?: object | null;
+    override?: object | null;
     tags: ITagData[];
     brew: string;
     hide_active: boolean;
@@ -47,12 +47,13 @@ export abstract class NpcFeature {
         this._name = data.name;
         this._origin = data.origin;
         this._effect = data.effect || "";
-        this._bonus = data.bonus || null;
-        this._override = data.override || null;
+        this._bonus = data.bonus || {};
+        this._override = data.override || {};
         this._locked = data.locked || false;
         this._tags = data.tags;
         this._brew = data.brew || "CORE";
         this._hide_active = data.hide_active || false;
+        this.type = data.type;
     }
 
     public get ID(): string {

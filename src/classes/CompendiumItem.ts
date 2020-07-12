@@ -6,44 +6,47 @@ import { store } from "@/hooks";
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
 
+export const CORE_BREW_ID = "Core";
+
 interface ICompendiumItemData {
     id: string;
     name: string;
     description: string;
-    brew?: string;
-    counters?: ICounterData[];
+    brew: string;  // Homebrew pack it came from
+    counters: ICounterData[] | null;
 }
 
 abstract class CompendiumItem {
     private _id: string;
     protected _name: string;
     protected _description: string;
-    protected _note: string;
+    protected _note: string | null | undefined;
     protected _item_type: ItemType;
-    protected _flavor_name: string;
-    protected _flavor_description: string;
+    protected _flavor_name: string | null | undefined;
+    protected _flavor_description: string | null | undefined;
     protected _brew: string;
-    private _err?: string;
+    private _err?: string | null;
 
     public readonly Counters: ICounterData[];
 
-    public constructor(itemData?: ICompendiumItemData) {
+    public constructor(itemData?: ICompendiumItemData | null) {
         if (itemData) {
             this._id = itemData.id;
             this._name = itemData.name;
             this._description = itemData.description;
             this._item_type = ItemType.None;
-            this._brew = itemData.brew || "Core";
+            this._brew = itemData.brew || CORE_BREW_ID;
             this.Counters = itemData.counters || [];
         } else {
             this._id = this._name = this._description = this._note = this._brew = "";
             this._item_type = ItemType.None;
+            this.Counters = [];
             this._err = "Item data not found!";
         }
     }
 
     protected save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public get ID(): string {
@@ -60,7 +63,7 @@ abstract class CompendiumItem {
     }
 
     public get FlavorName(): string {
-        return this._flavor_name;
+        return this._flavor_name || "";
     }
 
     public get TrueName(): string {
@@ -89,7 +92,7 @@ abstract class CompendiumItem {
     }
 
     public get Note(): string {
-        return this._note;
+        return this._note || "";
     }
 
     public set Note(note: string) {

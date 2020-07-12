@@ -20,7 +20,7 @@ export class IntegratedMount extends Mount {
 
     public static Serialize(m: IntegratedMount): { weapon: IMechWeaponSaveData; source: string } {
         return {
-            weapon: MechWeapon.Serialize(m.Weapon),
+            weapon: MechWeapon.Serialize(m.Weapon!), // Integrated mounts always have a weapon, (we hope)
             source: m.ItemSource,
         };
     }

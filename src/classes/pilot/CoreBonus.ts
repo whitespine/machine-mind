@@ -6,7 +6,7 @@ import { ICompendiumItemData } from "@/interface";
 interface ICoreBonusData extends ICompendiumItemData {
     source: string;
     effect: string;
-    mounted_effect?: string;
+    mounted_effect?: string | null;
 }
 
 class CoreBonus extends CompendiumItem {
@@ -14,7 +14,7 @@ class CoreBonus extends CompendiumItem {
     private _effect: string;
     private _mounted_effect: string;
 
-    public constructor(cbData?: ICoreBonusData) {
+    public constructor(cbData: ICoreBonusData) {
         super(cbData);
         this._source = cbData.source;
         this._effect = cbData.effect;
@@ -27,7 +27,8 @@ class CoreBonus extends CompendiumItem {
     }
 
     public get Manufacturer(): Manufacturer {
-        return store.datastore.getReferenceByID("Manufacturers", this._source);
+        let v = store.datastore.getReferenceByID("Manufacturers", this._source);
+            return v;
     }
 
     public get Effect(): string {
@@ -43,7 +44,8 @@ class CoreBonus extends CompendiumItem {
     }
 
     public static Deserialize(id: string): CoreBonus {
-        return store.datastore.getReferenceByID("CoreBonuses", id);
+        let v = store.datastore.getReferenceByID("CoreBonuses", id);
+            return v;
     }
 }
 

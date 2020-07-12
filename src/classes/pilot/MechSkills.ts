@@ -7,15 +7,15 @@ export class MechSkills {
     private sys: number;
     private eng: number;
 
-    public constructor(h?: number, a?: number, s?: number, e?: number) {
-        this.hull = h || 0;
-        this.agi = a || 0;
-        this.sys = s || 0;
-        this.eng = e || 0;
+    public constructor(h: number, a: number, s: number, e: number) {
+        this.hull = h;
+        this.agi = a;
+        this.sys = s;
+        this.eng = e;
     }
 
     private save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public get Hull(): number {

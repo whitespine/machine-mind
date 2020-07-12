@@ -4,7 +4,7 @@ import { ItemEffect } from "./ItemEffect";
 class GenericEffect extends ItemEffect {
     public readonly Detail: string;
 
-    public constructor(effect: string, err?: boolean) {
+    public constructor(effect: string, err?: boolean | null) {
         super(err);
         this.Detail = effect;
         this.activation = ActivationType.None;

@@ -67,16 +67,16 @@ export class MechLoadout extends Loadout {
         return this._improvedArmament;
     }
 
-    public AllMounts(improved?: boolean, integrated?: boolean): Mount[] {
-        let ms = [];
+    public AllMounts(improved?: boolean | null, integrated?: boolean | null): Mount[] {
+        let ms: Mount[] = [];
         if (integrated) ms.push(this._integratedWeapon);
         if (improved && this._equippableMounts.length < 3) ms.push(this._improvedArmament);
         ms = ms.concat(this._equippableMounts).concat(this._integratedMounts);
         return ms;
     }
 
-    public AllEquippableMounts(improved?: boolean, integrated?: boolean): EquippableMount[] {
-        let ms = [];
+    public AllEquippableMounts(improved?: boolean | null, integrated?: boolean | null): EquippableMount[] {
+        let ms: EquippableMount[] = [];
         if (integrated) ms.push(this._integratedWeapon);
         if (improved && this._equippableMounts.length < 3) ms.push(this._improvedArmament);
         ms = ms.concat(this._equippableMounts);
@@ -220,7 +220,7 @@ export class MechLoadout extends Loadout {
     }
 
     public get UniqueMods(): WeaponMod[] {
-        return this.Weapons.map(x => x.Mod).filter(y => y && y.IsUnique);
+        return this.Weapons.map(x => x.Mod).filter(y => y && y.IsUnique) as WeaponMod[]; // filter omits null
     }
 
     public get UniqueItems(): MechEquipment[] {

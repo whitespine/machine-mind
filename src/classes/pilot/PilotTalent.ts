@@ -5,7 +5,7 @@ export class PilotTalent {
     private talent: Talent;
     private rank: number;
 
-    public constructor(talent: Talent, rank?: number) {
+    public constructor(talent: Talent, rank?: number | null) {
         this.talent = talent;
         this.rank = rank ? rank : 1;
     }

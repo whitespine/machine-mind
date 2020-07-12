@@ -3,25 +3,25 @@ import { ActivationType, EffectType } from "@/class";
 import { ItemEffect } from "./ItemEffect";
 interface IBonusEffectData extends IEffectData {
     detail: string;
-    size?: number;
-    hp?: number;
-    armor?: number;
-    evasion?: number;
-    edef?: number;
+    size?: number | null;
+    hp?: number | null;
+    armor?: number | null;
+    evasion?: number | null;
+    edef?: number | null;
 }
 
 class BonusEffect extends ItemEffect {
-    public readonly Name?: string;
+    public readonly Name: string | null;
     public readonly Detail: string;
-    public readonly Size?: number;
-    public readonly HP?: number;
-    public readonly Armor?: number;
-    public readonly Evasion?: number;
-    public readonly EDef?: number;
+    public readonly Size: number | null;
+    public readonly HP: number | null;
+    public readonly Armor: number | null;
+    public readonly Evasion: number | null;
+    public readonly EDef: number | null;
 
-    public constructor(data: IBonusEffectData, err?: boolean) {
+    public constructor(data: IBonusEffectData, err?: boolean | null) {
         super(err);
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Detail = data.detail;
         this.Size = data.size || 0;
         this.HP = data.hp || 0;

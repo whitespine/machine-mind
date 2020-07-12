@@ -5,7 +5,7 @@ import { DamageType } from "@/class";
 interface IDamageData {
     type: DamageType;
     val: string | number;
-    override?: boolean;
+    override?: boolean | null;
 }
 
 class Damage {
@@ -21,7 +21,7 @@ class Damage {
         this._override = damage.override || false;
     }
 
-    private getDamageType(str?: string): DamageType {
+    private getDamageType(str?: string | null): DamageType {
         switch (str?.toLowerCase()) {
             case "kinetic":
                 return DamageType.Kinetic;

@@ -1,4 +1,4 @@
-const accentMap = {
+const accentMap: any = {
     ẚ: "a",
     Á: "a",
     á: "a",

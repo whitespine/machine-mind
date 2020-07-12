@@ -5,8 +5,8 @@ import { RangeType } from "@/class";
 interface IRangeData {
     type: RangeType;
     val: number;
-    override?: boolean;
-    bonus?: number;
+    override?: boolean | null;
+    bonus?: number | null;
 }
 
 class Range {

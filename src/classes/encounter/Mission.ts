@@ -10,7 +10,7 @@ enum MissionStepType {
 }
 
 interface IMissionData {
-    id?: string;
+    id?: string | null;
     name: string;
     note: string;
     campaign: string;
@@ -98,7 +98,7 @@ class Mission {
     public get Encounters(): Encounter[] {
         const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
         const enc = store.encounter.getEncounters();
-        return ids.map(x => enc.find(y => y.ID === x));
+        return ids.map(x => enc.find(y => y.ID === x)).filter(e => e) as Encounter[];
     }
 
     public get Rests(): Rest[] {
@@ -114,16 +114,16 @@ class Mission {
     }
 
     public get Steps(): IMissionStep[] {
-        return this._step_ids.map(x => this.Step(x));
+        return this._step_ids.map(x => this.Step(x)).filter(x => x) as IMissionStep[];
     }
 
-    public Step(id: string): IMissionStep {
+    public Step(id: string): IMissionStep | null {
         const r = this._rests.find(x => x.ID === id);
         if (r) return r;
         const enc = store.encounter.getEncounters();
         const rIdx = this._step_ids.indexOf(id);
         if (rIdx == -1) this.RemoveStep(rIdx);
-        return enc.find(x => x.ID === id);
+        return enc.find(x => x.ID === id) || null;
     }
 
     public MoveStepUp(idx): void {
@@ -173,7 +173,7 @@ class Mission {
 
     public static Deserialize(data: IMissionData): Mission {
         const m = new Mission();
-        m._id = data.id;
+        m._id = data.id || uuid();
         m._name = data.name;
         m._note = data.note;
         m._labels = data.labels;

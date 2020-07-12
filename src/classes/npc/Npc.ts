@@ -64,7 +64,7 @@ export class Npc implements IActor {
     private _defeat: string;
     private cc_ver: string;
 
-    public constructor(npcClass: NpcClass, tier?: number) {
+    public constructor(npcClass: NpcClass, tier?: number | null) {
         const t = tier || 1;
         this._active = false;
         this._id = uuid();
@@ -106,7 +106,7 @@ export class Npc implements IActor {
 
     private save(): void {
         if (this.Active) store.mission.saveActiveMissionData();
-        else store.npc.saveNpcData();
+        else store.npc.saveData();
     }
 
     public get ID(): string {
@@ -321,14 +321,14 @@ export class Npc implements IActor {
         this.save();
     }
 
-    public AddFeature(feat: NpcFeature, skipRecalc?: boolean): void {
+    public AddFeature(feat: NpcFeature, skipRecalc?: boolean | null): void {
         const t = typeof this.Tier === "number" ? this.Tier : 1;
         const item = new NpcItem(feat, t);
         this._items.push(item);
         if (!skipRecalc) this.RecalcBonuses();
     }
 
-    public RemoveFeature(feat: NpcFeature, skipRecalc?: boolean): void {
+    public RemoveFeature(feat: NpcFeature, skipRecalc?: boolean | null): void {
         const j = this._items.findIndex(x => x.Feature.ID === feat.ID);
         if (j > -1) {
             this._items.splice(j, 1);
@@ -371,7 +371,7 @@ export class Npc implements IActor {
 
     // -- COUNTERS ----------------------------------------------------------------------------------
 
-    private _counterSaveData = [];
+    private _counterSaveData: ICounterSaveData[] = [];
     public get CounterSaveData(): ICounterSaveData[] {
         return this._counterSaveData;
     }

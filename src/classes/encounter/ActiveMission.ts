@@ -2,7 +2,7 @@ import uuid from "uuid/v4";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
 import { IMissionData, INpcData, IMissionStep } from "@/interface";
 import { EncounterSide } from "../enums";
-import { store } from "@/hooks";
+import { store, logger } from "@/hooks";
 
 export interface IActiveMissionData {
     mission: IMissionData;
@@ -12,7 +12,7 @@ export interface IActiveMissionData {
     step: number;
     round: number;
     start: string;
-    end: string;
+    end?: string | null;
     note: string;
     result: string;
 }
@@ -26,7 +26,7 @@ export class ActiveMission {
     private _activeNpcs: Npc[];
     private _activeReinforcements: Npc[];
     private _start_date: string;
-    private _end_date: string;
+    private _end_date: string | null;
     private _note: string;
     private _result: string;
 
@@ -39,6 +39,7 @@ export class ActiveMission {
         this._step = 0;
         this._round = 0;
         this._start_date = new Date().toISOString().slice(0, 10);
+        this._end_date = null;
         this._note = "";
         this._result = "";
         this.spawnNpcs();
@@ -73,7 +74,7 @@ export class ActiveMission {
         return this._start_date;
     }
 
-    public get EndDate(): string {
+    public get EndDate(): string | null {
         return this._end_date;
     }
 
@@ -169,12 +170,13 @@ export class ActiveMission {
     }
 
     public MoveReinforcement(n: Npc): void {
-        const r = this._activeReinforcements.find(x => x.ID === n.ID);
         const idx = this._activeReinforcements.findIndex(x => x.ID === n.ID);
-        if (idx > -1) {
-            this._activeReinforcements.splice(idx, 1);
-            this._activeNpcs.push(r);
+        if(idx === -1) {
+            logger(`Npc reinforcement ${n.Name} not found in this encounter`);
         }
+        const r = this._activeReinforcements[idx];
+        this._activeReinforcements.splice(idx, 1);
+        this._activeNpcs.push(r);
     }
 
     public get Round(): number {
@@ -268,7 +270,7 @@ export class ActiveMission {
         });
         m._pilotIDs = data.pilotIDs;
         m._start_date = data.start;
-        m._end_date = data.end;
+        m._end_date = data.end || null;
         m._note = data.note;
         m._result = data.result;
         return m;

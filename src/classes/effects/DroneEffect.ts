@@ -5,34 +5,34 @@ import { ItemEffect } from "./ItemEffect";
 interface IDroneData extends IEffectData {
     size: number;
     hp: number;
-    armor?: number;
+    armor?: number | null;
     edef: number;
     evasion: number;
     detail: string;
-    abilities?: IEffectData[];
-    tags?: ITagData[];
+    abilities?: IEffectData[] | null;
+    tags?: ITagData[] | null;
 }
 
 class DroneEffect extends ItemEffect {
-    public readonly Name?: string;
+    public readonly Name: string | null;
     public readonly Detail: string;
     public readonly Size: number;
     public readonly HP: number;
-    public readonly Armor?: number;
+    public readonly Armor: number;
     public readonly Evasion: number;
     public readonly EDef: number;
-    public readonly Abilities?: ItemEffect[];
+    public readonly Abilities: ItemEffect[];
 
-    public constructor(data: IDroneData, err?: boolean) {
+    public constructor(data: IDroneData, err?: boolean | null) {
         super(err);
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Detail = data.detail;
         this.Size = data.size;
         this.HP = data.hp;
-        this.Armor = data.armor;
+        this.Armor = data.armor || 0;
         this.Evasion = data.evasion;
         this.EDef = data.edef;
-        this.Abilities = data.abilities ? data.abilities.map(x => ItemEffect.Generate(x)) : [];
+        this.Abilities = data.abilities ? data.abilities.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[] : [];
         this.activation = data.activation || ActivationType.Quick;
         this.effectType = EffectType.Drone;
         this.tags = data.tags || [];
@@ -54,7 +54,7 @@ class DroneEffect extends ItemEffect {
                 .join("   "),
             this.Tags.length ? "Tags: " + this.Tags : "",
             this.Detail,
-            this.Abilities.map(a => a.toString()).join("\n"),
+            this.Abilities?.map(a => a.toString()).join("\n"),
         ]
             .filter(el => el !== "")
             .join("\n");

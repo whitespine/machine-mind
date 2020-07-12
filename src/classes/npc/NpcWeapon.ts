@@ -25,7 +25,7 @@ export class NpcWeapon extends NpcFeature {
     private _range: Range[];
     private _accuracy: number[];
     private _attack_bonus: number[];
-    private _on_hit?: string;
+    private _on_hit: string;
 
     public constructor(data: INpcWeaponData) {
         super(data);
@@ -43,7 +43,7 @@ export class NpcWeapon extends NpcFeature {
     }
 
     public get OnHit(): string {
-        return this._on_hit;
+        return this._on_hit || "";
     }
 
     public get IsLimited(): boolean {
@@ -55,7 +55,7 @@ export class NpcWeapon extends NpcFeature {
     }
 
     public get ChargeRoll(): string {
-        return this.Tags.find(x => x.IsRecharging).Value.toString();
+        return this.Tags.find(x => x.IsRecharging)?.Value.toString() || "";
     }
 
     public get Range(): Range[] {

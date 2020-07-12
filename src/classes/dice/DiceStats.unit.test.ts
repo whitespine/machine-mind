@@ -54,7 +54,7 @@ describe("DiceStats", () => {
             ${"-3d6-10"} | ${-13}
         `("gets max as $expected for $dice", ({ dice, expected }) => {
             let parsed = DiceRoller.parseDiceString(dice);
-            expect(DiceStats.calculateMax(parsed)).toBe(expected);
+            expect(DiceStats.calculateMax(parsed!)).toBe(expected);
         });
     });
 
@@ -76,7 +76,7 @@ describe("DiceStats", () => {
             ${"-3d6-10"} | ${-28}
         `("gets min as $expected for $dice", ({ dice, expected }) => {
             let parsed = DiceRoller.parseDiceString(dice);
-            expect(DiceStats.calculateMin(parsed)).toBe(expected);
+            expect(DiceStats.calculateMin(parsed!)).toBe(expected);
         });
     });
 
@@ -99,7 +99,7 @@ describe("DiceStats", () => {
             ${"-3d6-10"} | ${-20.5}
         `("gets mean as $expected for $dice", ({ dice, expected }) => {
             let parsed = DiceRoller.parseDiceString(dice);
-            expect(DiceStats.calculateMean(parsed)).toBe(expected);
+            expect(DiceStats.calculateMean(parsed!)).toBe(expected);
         });
     });
 });

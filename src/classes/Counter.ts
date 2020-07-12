@@ -4,11 +4,11 @@ import { ICounterSaveData } from "@/interface";
 interface ICounterData {
     id: string;
     name: string;
-    level?: number;
-    min?: number;
-    max?: number;
-    default_value?: number;
-    custom?: boolean;
+    level?: number | null;
+    min?: number | null;
+    max?: number | null;
+    default_value?: number | null;
+    custom?: boolean | null;
 }
 
 class Counter {
@@ -16,18 +16,19 @@ class Counter {
     public readonly Name: string;
     public readonly Level: number;
     public readonly Min: number;
-    public readonly Max: number;
+    public readonly Max: number | null;
     public readonly Default: number;
 
     constructor(data: ICounterData) {
-        const { id, name, level, min, max, default_value } = data;
+        let { id, name, level, min, max, default_value } = data;
+        let nd = default_value === null || default_value === undefined;
 
-        if (max && default_value > max)
+        if (!nd && max && default_value! > max)
             throw new Error(
                 `Error creating Counter: Default value of ${default_value} is greater than max value of ${max}`
             );
 
-        if (min && default_value < min)
+        if (!nd && min && default_value! < min)
             throw new Error(
                 `Error creating Counter: Default value of ${default_value} is lesser than min value of ${min}`
             );
@@ -35,8 +36,8 @@ class Counter {
         this.ID = id;
         this.Name = name;
         this.Level = level || 0;
-        this.Min = min;
-        this.Max = max;
+        this.Min = min || 0;
+        this.Max = max || null;
         this.Default = default_value || 0;
 
         this._value = this.Default;

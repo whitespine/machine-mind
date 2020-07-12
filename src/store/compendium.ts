@@ -29,6 +29,7 @@ import { logger } from "@/hooks";
 import { ICoreBonusData } from "@/classes/pilot/CoreBonus";
 import { ItemType } from "@/classes/enums";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
+import { CORE_BREW_ID } from '@/classes/CompendiumItem';
 
 const CONTENT_PACKS = "ContentPacks";
 const CORE_BONUSES = "CoreBonuses";
@@ -90,7 +91,7 @@ export interface ICompendium extends Compendium {}
 export type CompendiumCategory = keyof ICompendium;
 
 // All the keys specifically in content packs. Note that some of these items are missing/ not yet able to be homebrewed
-export const PackKeys: Array<CompendiumCategory> = [
+export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     CORE_BONUSES,
     FACTIONS,
     FRAMES,
@@ -119,12 +120,11 @@ export const PackKeys: Array<CompendiumCategory> = [
 export const CompendiumKeys: CompendiumCategory[] = Object.keys(new Compendium()) as any;
 
 // So we don't have to treat it separately
-const BASE_ID = "LANCER_CORE_DATA";
 export function getBaseContentPack(): ContentPack {
     // lancerData.
     return new ContentPack({
         active: true,
-        id: BASE_ID,
+        id: CORE_BREW_ID,
         manifest: {
             author: "Massif-Press",
             item_prefix: "core",
@@ -230,18 +230,36 @@ export abstract class CompendiumStore {
 
     public compendium: Compendium = new Compendium();
 
-    // Instantiate an item from a collection
-    // Note that functionally, this is just getReferenceByID except if you want to change it afterwards (e.g. an NPC)
+    // This variant panics on null
     public instantiate<T extends CompendiumCategory>(
         itemType: T,
         id: string
+    ): ICompendium[T][0]  {
+        let v = this.instantiateCareful(itemType, id);
+        if(!v) {
+            throw new TypeError(`Could not create item ${id} of category ${itemType}`);
+        }
+        return v;
+    }
+
+
+    // Instantiate an item from a collection
+    // Note that functionally, this is just getReferenceByID except if you want to change it afterwards (e.g. an NPC)
+    public instantiateCareful<T extends CompendiumCategory>(
+        itemType: T,
+        id: string
     ): ICompendium[T][0] | null {
-        return lodash.cloneDeep(this.getReferenceByID(itemType, id));
+        let v = this.getReferenceByID(itemType, id);
+        if(!v) {
+            return v;
+        } else {
+            return lodash.cloneDeep(v);
+        }
     }
 
     // Get a specific item from an item collection
     // public getReferenceByID<T>(itemType: LookupType, id: string): T | { err: string } { // Can we make this generic work?
-    public getReferenceByID<T extends CompendiumCategory>(
+    public getReferenceByIDCareful<T extends CompendiumCategory>(
         itemType: T,
         id: string
     ): ICompendium[T][0] | null {
@@ -249,6 +267,18 @@ export abstract class CompendiumStore {
         // Typescript cannot consolidate predicates, so we treat as any.
         const i = (items as Array<any>).find(x => x.ID === id || x.id === id);
         return i || null;
+    }
+
+    // Panic on null
+    public getReferenceByID<T extends CompendiumCategory>(
+        itemType: T,
+        id: string
+    ): ICompendium[T][0] {
+        let v = this.getReferenceByID(itemType, id);
+        if(!v) {
+            throw new TypeError(`Invalid item ${id} of category ${itemType}`);
+        }
+        return v;
     }
 
     // Get the item collection of the provided type

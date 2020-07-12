@@ -1,12 +1,13 @@
 import { LicensedItem, Tag, ItemEffect } from "@/class";
 import { ILicensedItemData, ITagData } from "@/interface";
+import { ItemType } from '../enums';
 
 interface IMechEquipmentData extends ILicensedItemData {
     sp: number;
     tags: ITagData[];
     effect: string | object | object[];
-    talent_item?: boolean;
-    frame_id?: boolean;
+    talent_item?: boolean | null;
+    frame_id?: boolean | null;
 }
 
 abstract class MechEquipment extends LicensedItem {
@@ -19,7 +20,7 @@ abstract class MechEquipment extends LicensedItem {
     private _integrated: boolean;
     private _max_uses: number;
     protected _tags: ITagData[];
-    protected max_use_override: number;
+    protected max_use_override: number | null = null;
 
     public constructor(itemData: IMechEquipmentData) {
         super(itemData);
@@ -42,8 +43,9 @@ abstract class MechEquipment extends LicensedItem {
 
     private getItemData(data: any): ItemEffect[] {
         if (!Array.isArray(data)) {
-            return [ItemEffect.Generate(data)];
-        } else return data.map(x => ItemEffect.Generate(x));
+            let item = ItemEffect.Generate(data);
+            return item ? [item] : [];
+        } else return data.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[];
     }
 
     public get Tags(): Tag[] {
@@ -147,7 +149,7 @@ abstract class MechEquipment extends LicensedItem {
         return this._max_uses;
     }
 
-    public getTotalUses(bonus?: number): number {
+    public getTotalUses(bonus?: number | null): number {
         const b = bonus ? bonus : 0;
         return this.MaxUses + b;
     }

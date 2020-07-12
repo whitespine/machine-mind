@@ -14,9 +14,9 @@ export function setup_store_shim(_store: StoreInterfaces.Store) {
 export var imageManagement: ImageShim;
 
 export interface ImageShim {
-    getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean): string;
+    getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean | null): string;
     validateImageFolders(): Promise<void>;
-    getImagePaths(subdir: ImageTag, defaults?: boolean): Promise<string[]>;
+    getImagePaths(subdir: ImageTag, defaults?: boolean | null): Promise<string[]>;
     addImage(subdir: ImageTag, imagePath: string): Promise<void>;
     removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
 }

@@ -42,31 +42,32 @@ enum ActivationType {
 
 interface IEffectData {
     effect_type: EffectType;
-    name?: string;
-    activation?: ActivationType;
-    tags?: ITagData[];
+    name?: string | null;
+    activation?: ActivationType | null;
+    tags?: ITagData[] | null;
 }
 
 abstract class ItemEffect {
     private _err: boolean;
-    protected effectType: EffectType;
-    protected activation: ActivationType;
-    protected tags: ITagData[];
+    // TODO: make this better
+    protected effectType!: EffectType | null;
+    protected activation!: ActivationType | null;
+    protected tags!: ITagData[] | null;
 
-    public constructor(err?: boolean) {
-        this._err = err;
+    public constructor(err?: boolean | null) {
+        this._err = err || false;
     }
 
-    public get EffectType(): EffectType {
+    public get EffectType(): EffectType | null {
         return this.effectType;
     }
 
-    public get Activation(): ActivationType {
-        return this.activation;
+    public get Activation(): ActivationType | null  {
+        return this.activation || ActivationType.None;
     }
 
     public get Tags(): Tag[] {
-        return Tag.Deserialize(this.tags);
+        return this.tags ? Tag.Deserialize(this.tags) : [];
     }
 
     public static Generate(data: any): ItemEffect | null {

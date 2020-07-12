@@ -4,8 +4,8 @@ import { INpcFeatureData, ITagData } from "@/interface";
 export interface INpcTechData extends INpcFeatureData {
     tags: ITagData[];
     tech_type: string;
-    accuracy?: number[];
-    attack_bonus?: number[];
+    accuracy?: number[] | null;
+    attack_bonus?: number[] | null;
     type: NpcFeatureType.Tech;
 }
 
@@ -31,7 +31,7 @@ export class NpcTech extends NpcFeature {
     }
 
     public get ChargeRoll(): string {
-        return this.Tags.find(x => x.IsRecharging).Value.toString();
+        return this.Tags.find(x => x.IsRecharging)?.Value.toString() || "";
     }
 
     public get TechType(): string {

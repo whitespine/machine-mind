@@ -7,20 +7,20 @@ export interface IImageContainer {
 export interface INotificationVariant {
     color: string;
     icon: string;
-    prefix?: string;
-    timeout?: number;
+    prefix?: string | null;
+    timeout?: number | null;
 }
 export interface INotification {
     id: string;
     variant: string;
     text: string;
-    onClick?: () => void;
+    onClick?: null | (() => void);
 }
 
 export interface IErrorReport {
     time: Date;
     message: string;
-    component?: string;
+    component?: string | null;
     stack: string;
 }
 
@@ -52,9 +52,9 @@ export interface IDamageRollResult {
 export interface IRankedData {
     id: string;
     rank: number;
-    custom?: boolean;
-    custom_desc?: string;
-    custom_detail?: string;
+    custom?: boolean | null;
+    custom_desc?: string | null;
+    custom_detail?: string | null;
 }
 
 export interface IEquipmentData {
@@ -62,17 +62,17 @@ export interface IEquipmentData {
     destroyed: boolean;
     cascading: boolean;
     note: string;
-    uses?: number;
-    flavorName?: string;
-    flavorDescription?: string;
-    customDamageType?: string;
+    uses?: number | null;
+    flavorName?: string | null;
+    flavorDescription?: string | null;
+    customDamageType?: string | null;
 }
 
 export interface IMechWeaponSaveData extends IEquipmentData {
     loaded: boolean;
-    mod?: IEquipmentData;
-    customDamageType?: string;
-    maxUseOverride?: number;
+    mod?: IEquipmentData | null;
+    customDamageType?: string | null;
+    maxUseOverride?: number | null;
 }
 
 export interface ICounterSaveData {
@@ -121,10 +121,10 @@ export interface IPilotData {
 
 export interface IReserveData {
     id: string;
-    type?: string;
-    name?: string;
-    label?: string;
-    description?: string;
+    type?: string | null;
+    name?: string | null;
+    label?: string | null;
+    description?: string | null;
     resource_name: string;
     resource_note: string;
     resource_cost: string;
@@ -237,7 +237,7 @@ export interface IWeaponSlotData {
 
 export interface ITagData {
     id: string;
-    val?: string | number;
+    val?: string | number | null;
 }
 
 export interface ILicenseRequirement {
@@ -245,13 +245,13 @@ export interface ILicenseRequirement {
     name: string;
     rank: number;
     items: string[];
-    missing?: boolean;
+    missing?: boolean | null;
 }
 
 export interface ISnackbarSettings {
     text: string;
-    multiline?: boolean;
-    timeout?: number;
-    color?: string;
-    visible?: boolean;
+    multiline?: boolean | null;
+    timeout?: number | null;
+    color?: string | null;
+    visible?: boolean | null;
 }

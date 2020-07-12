@@ -13,11 +13,11 @@ import { imageManagement, ImageTag } from "@/hooks";
 interface IFrameStats {
     size: number;
     armor: number;
-    structuremod?: number;
+    structuremod?: number | null;
     hp: number;
     evasion: number;
     edef: number;
-    stressmod?: number;
+    stressmod?: number | null;
     heatcap: number;
     repcap: number;
     sensor_range: number;
@@ -29,13 +29,13 @@ interface IFrameStats {
 
 interface IFrameData extends ILicensedItemData {
     mechtype: MechType[];
-    y_pos?: number;
+    y_pos?: number | null;
     mounts: MountType[];
     stats: IFrameStats;
     traits: FrameTrait[];
     core_system: ICoreData;
-    image_url?: string;
-    other_art?: { tag: ImageTag; src: string }[];
+    image_url?: string | null;
+    other_art?: { tag: ImageTag; src: string }[] | null;
 }
 
 class Frame extends LicensedItem {
@@ -45,8 +45,8 @@ class Frame extends LicensedItem {
     private _stats: IFrameStats;
     private _traits: FrameTrait[];
     private _core_system: CoreSystem;
-    private _image_url?: string;
-    private _other_art?: { tag: ImageTag; src: string }[];
+    private _image_url: string | null;
+    private _other_art: { tag: ImageTag; src: string }[] ;
 
     public constructor(frameData: IFrameData) {
         super(frameData);
@@ -57,8 +57,8 @@ class Frame extends LicensedItem {
         this._traits = frameData.traits;
         this._core_system = new CoreSystem(frameData.core_system);
         this._item_type = ItemType.Frame;
-        this._image_url = frameData.image_url;
-        this._other_art = frameData.other_art;
+        this._image_url = frameData.image_url || null;
+        this._other_art = frameData.other_art || [];
     }
 
     public get Mechtype(): MechType[] {

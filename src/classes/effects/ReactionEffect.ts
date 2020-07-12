@@ -7,20 +7,20 @@ interface IReactionEffectData extends IEffectData {
     detail: string;
     frequency: string;
     trigger: string;
-    init?: string;
+    init?: string | null;
 }
 
 class ReactionEffect extends ItemEffect {
-    public readonly Name?: string;
-    public readonly Init?: string;
+    public readonly Name: string;
+    public readonly Init: string | null;
     public readonly Frequency: string;
     public readonly Trigger: string;
     public readonly Detail: string;
 
-    public constructor(data: IReactionEffectData, err?: boolean) {
+    public constructor(data: IReactionEffectData, err?: boolean | null) {
         super(err);
         this.Name = data.name;
-        this.Init = data.init;
+        this.Init = data.init || null;
         this.Detail = data.detail;
         this.Frequency = data.frequency;
         this.Trigger = data.trigger;

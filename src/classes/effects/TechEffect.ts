@@ -5,21 +5,21 @@ import { ItemEffect } from "./ItemEffect";
 interface IInvadeOptionData {
     name: string;
     detail: string;
-    activation?: ActivationType;
+    activation?: ActivationType | null;
 }
 
 interface ITechEffectData extends IEffectData {
     detail: string;
-    options?: IInvadeOptionData[];
-    option_set?: string;
+    options?: IInvadeOptionData[] | null;
+    option_set?: string | null;
 }
 
 class InvadeOption {
-    public readonly Name?: string;
+    public readonly Name: string;
     public readonly Detail: string;
     public readonly Activation: ActivationType;
 
-    public constructor(data: IInvadeOptionData, activation: ActivationType) {
+    public constructor(data: IInvadeOptionData, activation: ActivationType | null | undefined) {
         this.Name = data.name;
         this.Detail = data.detail;
         this.Activation = activation || ActivationType.Quick;
@@ -31,16 +31,16 @@ class InvadeOption {
 }
 
 class TechEffect extends ItemEffect {
-    public readonly Name?: string;
+    public readonly Name: string | null;
     public readonly Detail: string;
-    public readonly OptionSet?: string;
-    public readonly Options?: InvadeOption[];
+    public readonly OptionSet: string;
+    public readonly Options: InvadeOption[] | null;
 
-    public constructor(data: ITechEffectData, err?: boolean) {
+    public constructor(data: ITechEffectData, err?: boolean | null) {
         super(err);
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Detail = data.detail;
-        this.OptionSet = data.option_set;
+        this.OptionSet = data.option_set || "";
         this.Options = data.options
             ? data.options.map(x => new InvadeOption(x, data.activation))
             : [];
@@ -55,9 +55,9 @@ class TechEffect extends ItemEffect {
             (this.Name || "").toUpperCase(),
             this.Tags.length ? "Tags: " + this.Tags : "",
             this.Detail,
-            this.Options.map(a => a.toString()).join("\n"),
+            this.Options?.map(a => a.toString()).join("\n"),
         ]
-            .filter(el => el !== "")
+            .filter(el => el)
             .join("\n");
     }
 }

@@ -88,6 +88,7 @@ export class Pilot {
         this._text_appearance = "";
         this._notes = "";
         this._history = "";
+        this._factionID = "";
         this._portrait = "";
         this._cloud_portrait = "";
         this._quirk = "";
@@ -98,7 +99,7 @@ export class Pilot {
         this._skills = [];
         this._talents = [];
         this._mounted = false;
-        this._mechSkills = new MechSkills();
+        this._mechSkills = new MechSkills(0,0,0,0);
         this._core_bonuses = [];
         this._active_mech = null;
         this._mechs = [];
@@ -114,7 +115,7 @@ export class Pilot {
 
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public SetBrewData(): void {
@@ -135,12 +136,12 @@ export class Pilot {
                 brews = _.union(brews, collectBrewGroup(ml.Systems));
             });
         });
-        brews = brews.map(x => packs.find(y => y.ID === x)).map(z => `${z.Name} @ ${z.Version}`);
+        brews = brews.map(x => packs.find(y => y.ID === x)).map(z => `${z?.Name} @ ${z?.Version}`);
         this._brews = brews;
     }
 
     //TODO: don't extract id or type at call, just pass object and deal with it w/ instanceof/typeof
-    public has(typeName: string, id: string, rank?: number): boolean {
+    public has(typeName: string, id: string, rank?: number | null): boolean {
         if (typeName.toLowerCase() === "skill") {
             return this._skills.findIndex(x => x.Skill.Name === id || x.Skill.ID === id) > -1;
         } else if (typeName.toLowerCase() === "corebonus") {
@@ -153,7 +154,7 @@ export class Pilot {
             return rank ? index > -1 && this._talents[index].Rank >= rank : index > -1;
         } else if (typeName.toLowerCase() === "reserve") {
             const e = this.Reserves.find(x => x.ID === `reserve_${id}`);
-            return e && !e.Used;
+            return !!(e && !e.Used);
         }
         return false;
     }
@@ -233,8 +234,8 @@ export class Pilot {
     }
 
     public get Faction(): Faction {
-        const factions = store.datastore.getItemCollection("Factions") as Faction[];
-        return factions.find((x: Faction) => x.ID === this._factionID);
+        let v = store.datastore.getReferenceByID("Factions", this._factionID);
+        return v;
     }
 
     public set Faction(faction: Faction) {
@@ -342,7 +343,7 @@ export class Pilot {
     }
 
     public get IsUserOwned(): boolean {
-        return this.CloudOwnerID === store.getUserProfile().ID;
+        return this.CloudOwnerID === store.getUserID();
     }
 
     public SetCloudImage(src: string): void {
@@ -353,7 +354,7 @@ export class Pilot {
     public async CloudSave(): Promise<any> {
         this.SetBrewData();
         if (!this.CloudOwnerID) {
-            this.CloudOwnerID = store.getUserProfile().ID;
+            this.CloudOwnerID = store.getUserID();
         }
         if (!this.CloudID) {
             return gistApi.newPilot(this).then((response: any) => {
@@ -382,7 +383,7 @@ export class Pilot {
 
     public setCloudInfo(id: string): void {
         this.CloudID = id;
-        this.CloudOwnerID = store.getUserProfile().ID;
+        this.CloudOwnerID = store.getUserID();
         this.LastCloudUpdate = new Date().toString();
     }
 
@@ -508,7 +509,10 @@ export class Pilot {
             const underLimit = this.CurrentSkillPoints < this.MaxSkillPoints;
             if (!this.has("Skill", skill.ID) && underLimit) return true;
             const pSkill = this._skills.find(x => x.Skill.ID === skill.ID);
-            return underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank;
+            if(underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank) {
+                return true;
+            }
+            return false;
         }
     }
 
@@ -917,6 +921,7 @@ export class Pilot {
     }
 
     public set Mounted(val: boolean) {
+        if (!this.ActiveMech) return;
         if (val) this.ActiveMech.Ejected = false;
         this._mounted = val;
         this.save();
@@ -924,7 +929,7 @@ export class Pilot {
 
     // -- COUNTERS ----------------------------------------------------------------------------------
 
-    private _counterSaveData = [];
+    private _counterSaveData: ICounterSaveData[] = [];
     public get CounterSaveData(): ICounterSaveData[] {
         return this._counterSaveData;
     }
@@ -970,8 +975,8 @@ export class Pilot {
             ),
             this.CoreBonuses?.flatMap(cb => cb.Counters),
             this.ActiveMech?.Frame.Counters,
-            this.ActiveMech?.ActiveLoadout.Systems.flatMap(system => system.Counters),
-            this.ActiveMech?.ActiveLoadout.Weapons.flatMap(weapon => [
+            this.ActiveMech?.ActiveLoadout?.Systems.flatMap(system => system.Counters),
+            this.ActiveMech?.ActiveLoadout?.Weapons.flatMap(weapon => [
                 ...weapon.Counters,
                 ...(weapon.Mod?.Counters || []),
             ]),
@@ -979,7 +984,7 @@ export class Pilot {
             this.CustomCounterData,
         ]
             .flat()
-            .filter(x => x);
+            .filter(x => x) as ICounterData[];
     }
 
     // -- Organization ------------------------------------------------------------------------------

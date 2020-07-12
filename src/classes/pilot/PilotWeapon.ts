@@ -4,7 +4,7 @@ import { IPilotEquipmentData, IRangeData, IDamageData } from "@/interface";
 interface IPilotWeaponData extends IPilotEquipmentData {
     range: IRangeData[];
     damage: IDamageData[];
-    effect?: string;
+    effect?: string | null;
 }
 
 class PilotWeapon extends PilotEquipment {
@@ -24,11 +24,11 @@ class PilotWeapon extends PilotEquipment {
         return this.range;
     }
 
-    public get DamageTypeOverride(): string {
+    public get DamageTypeOverride(): string | null {
         return this._custom_damage_type || null;
     }
 
-    public set DamageTypeOverride(val: string) {
+    public set DamageTypeOverride(val: string | null) {
         this._custom_damage_type = val;
         this.save();
     }

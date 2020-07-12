@@ -51,9 +51,9 @@ export interface IContentPackManifest {
     item_prefix: string;
     author: string;
     version: string;
-    description?: string;
-    website?: string;
-    image_url?: string;
+    description?: string | null;
+    website?: string | null;
+    image_url?: string | null;
 }
 interface IContentPackData {
     manufacturers: IManufacturerData[];
@@ -95,14 +95,14 @@ export class ContentPack {
     public get Version(): string {
         return this._manifest.version;
     }
-    public get Description(): string | undefined {
-        return this._manifest.description;
+    public get Description(): string | null {
+        return this._manifest.description || null;
     }
-    public get Website(): string | undefined {
-        return this._manifest.website;
+    public get Website(): string | null {
+        return this._manifest.website || null;
     }
-    public get ImageURL(): string | undefined {
-        return this._manifest.image_url;
+    public get ImageURL(): string | null {
+        return this._manifest.image_url || null;
     }
 
     private _data: IContentPackData;

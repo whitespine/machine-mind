@@ -20,7 +20,7 @@ export class NpcSystem extends NpcFeature {
     }
 
     public get ChargeRoll(): string {
-        return this.Tags.find(x => x.IsRecharging).Value.toString();
+        return this.Tags.find(x => x.IsRecharging)?.Value.toString() || "";
     }
 
     public get Color(): string {

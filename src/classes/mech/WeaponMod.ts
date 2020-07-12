@@ -18,9 +18,9 @@ interface IWeaponModData extends IMechEquipmentData {
     description: string;
     restricted_mounts: WeaponSize[];
     tags: ITagData[];
-    added_tags?: ITagData[];
-    added_damage?: IDamageData;
-    added_range?: IRangeData;
+    added_tags?: ITagData[] | null;
+    added_damage?: IDamageData | null;
+    added_range?: IRangeData | null;
 }
 
 class WeaponMod extends MechEquipment {
@@ -28,8 +28,8 @@ class WeaponMod extends MechEquipment {
     private _applied_string: string;
     private _restricted_mounts: WeaponSize[];
     private _added_tags: ITagData[];
-    private _added_damage?: Damage;
-    private _added_range?: Range;
+    private _added_damage: Damage | null;
+    private _added_range: Range | null;
 
     public constructor(weaponModData: IWeaponModData) {
         super(weaponModData);
@@ -40,8 +40,8 @@ class WeaponMod extends MechEquipment {
         this._restricted_mounts = weaponModData.restricted_mounts;
         this._tags = weaponModData.tags;
         this._added_tags = weaponModData.added_tags || [];
-        if (weaponModData.added_damage) this._added_damage = new Damage(weaponModData.added_damage);
-        if (weaponModData.added_range) this._added_range = new Range(weaponModData.added_range);
+        if (weaponModData.added_damage) {this._added_damage = new Damage(weaponModData.added_damage);} else {this._added_damage = null;}
+        if (weaponModData.added_range) {this._added_range = new Range(weaponModData.added_range); } else {this._added_range = null;}
         this._item_type = ItemType.WeaponMod;
     }
 

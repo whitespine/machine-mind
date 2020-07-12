@@ -37,11 +37,11 @@ export interface Sitrep {
     description: string;
     pcVictory: string;
     enemyVictory: string;
-    noVictory?: string;
-    deployment?: string;
-    objective?: string;
-    controlZone?: string;
-    extraction?: string;
+    noVictory?: string | null;
+    deployment?: string | null;
+    objective?: string | null;
+    controlZone?: string | null;
+    extraction?: string | null;
 }
 
 export interface FrameTrait {

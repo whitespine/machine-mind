@@ -4,17 +4,22 @@ import { IMountData } from "@/interface";
 
 export class EquippableMount extends Mount {
     private _bonuses: CoreBonus[];
-    private _lock_target?: Mount;
+    private _lock_target: Mount | null;
 
     public constructor(mtype: MountType) {
         super(mtype);
         this._bonuses = [];
+        this._lock_target = null;
     }
 
-    public Lock(target?: Mount): void {
-        this.lock = true;
-        this._lock_target = target;
-        this.save();
+    public Lock(target?: Mount | null): void {
+        if(!target) {
+            this.Unlock();
+        } else {
+            this.lock = true;
+            this._lock_target = target;
+            this.save();
+        }
     }
 
     public Unlock(): void {
@@ -23,7 +28,7 @@ export class EquippableMount extends Mount {
         this.save();
     }
 
-    public get LockTarget(): Mount | null {
+    public get LockTarget(): Mount | null  {
         return this._lock_target;
     }
 

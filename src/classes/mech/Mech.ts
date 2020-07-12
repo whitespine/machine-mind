@@ -10,7 +10,7 @@ import {
     CoreBonus,
     ActiveState,
 } from "@/class";
-import { imageManagement, ImageTag } from "@/hooks";
+import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store } from "@/hooks";
 import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from "@/interface";
 
@@ -21,10 +21,9 @@ export class Mech implements IActor {
     private _gm_note: string;
     private _portrait: string;
     private _cloud_portrait: string;
-    private _built_in_img: string;
     private _frame: Frame;
     private _loadouts: MechLoadout[];
-    private _active_loadout: MechLoadout;
+    private _active_loadout: MechLoadout | null | undefined;
     private _current_structure: number;
     private _current_hp: number;
     private _overshield: number;
@@ -89,7 +88,7 @@ export class Mech implements IActor {
     }
     // -- Utility -----------------------------------------------------------------------------------
     private save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     // -- Info --------------------------------------------------------------------------------------
@@ -155,7 +154,7 @@ export class Mech implements IActor {
     }
 
     public get IsCascading(): boolean {
-        if (!this.ActiveLoadout.AICount) return false;
+        if (!this.ActiveLoadout || !this.ActiveLoadout.AICount) return false;
         return !!this.ActiveLoadout.Equipment.filter(x => x.IsCascading).length;
     }
 
@@ -428,7 +427,7 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public AddDamage(dmg: number, resistance?: string): void {
+    public AddDamage(dmg: number, resistance?: string | null): void {
         if (resistance && this._resistances.includes(resistance)) {
             dmg = Math.ceil(dmg / 2);
         }
@@ -503,7 +502,7 @@ export class Mech implements IActor {
         this.CurrentHeat = newHeat;
     }
 
-    public ReduceHeat(heat: number, resist?: boolean): void {
+    public ReduceHeat(heat: number, resist?: boolean | null): void {
         if (resist) heat = this._resistances.includes("Heat") ? Math.ceil(heat / 2) : heat;
         while (heat > this.CurrentHeat) {
             heat -= this.CurrentHeat;
@@ -651,15 +650,15 @@ export class Mech implements IActor {
 
     // -- Statuses and Conditions -------------------------------------------------------------------
     public get StatusString(): string[] {
-        const out = [];
+        const out: string[] = [];
         if (this.ReactorDestroyed) out.push("reactorDestroyed");
         if (this.Destroyed) out.push("destroyed");
         if (this.Ejected) out.push("ejected");
         if (this.MeltdownImminent) out.push("meltdown");
-        if (this.ActiveLoadout.Systems.filter(x => x.IsCascading).length) out.push("cascading");
+        if (this.ActiveLoadout?.Systems.filter(x => x.IsCascading).length) out.push("cascading");
         if (this.FreeSP < 0) out.push("overSP");
         if (this.FreeSP > 0) out.push("underSP");
-        if (this.ActiveLoadout.HasEmptyMounts) out.push("unfinished");
+        if (this.ActiveLoadout?.HasEmptyMounts) out.push("unfinished");
         if (this.RequiredLicenses.filter(x => x.missing).length) out.push("unlicensed");
         return out;
     }
@@ -804,9 +803,9 @@ export class Mech implements IActor {
 
     // -- Integrated/Talents ------------------------------------------------------------------------
     public get IntegratedMounts(): IntegratedMount[] {
-        const intg = [];
-        if (this._frame.CoreSystem.Integrated) {
-            intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated(), "CORE System"));
+        const intg: IntegratedMount[] = [];
+        if (this._frame.CoreSystem.getIntegrated()) {
+            intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated()!, "CORE System"));
         }
         if (this._pilot.has("Talent", "t_nuclear_cavalier", 3)) {
             const frWeapon = store.datastore.getReferenceByID("MechWeapons", "mw_fuel_rod_gun");
@@ -821,7 +820,7 @@ export class Mech implements IActor {
     }
 
     public get IntegratedSystems(): MechSystem[] {
-        const intg = [];
+        const intg: MechSystem[] = [];
         if (this._pilot.has("Talent", "t_walking_armory")) {
             const arms = store.datastore.instantiate(
                 "MechSystems",
@@ -849,11 +848,11 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public get ActiveLoadout(): MechLoadout {
+    public get ActiveLoadout(): MechLoadout | null | undefined {
         return this._active_loadout;
     }
 
-    public set ActiveLoadout(loadout: MechLoadout) {
+    public set ActiveLoadout(loadout: MechLoadout | null | undefined) {
         this._active_loadout = loadout;
         this.save();
     }
@@ -868,7 +867,7 @@ export class Mech implements IActor {
         if (this._loadouts.length === 1) {
             console.error(`Cannot remove last Mech Loadout`);
         } else {
-            const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout.ID);
+            const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout?.ID);
             this._active_loadout = this._loadouts[index + (index === 0 ? 1 : -1)];
             this._loadouts.splice(index, 1);
             this.save();
@@ -876,13 +875,17 @@ export class Mech implements IActor {
     }
 
     public CloneLoadout(): void {
-        const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout.ID);
-        const newLoadout = MechLoadout.Deserialize(MechLoadout.Serialize(this.ActiveLoadout), this);
-        newLoadout.RenewID();
-        newLoadout.Name += " (Copy)";
-        this._loadouts.splice(index + 1, 0, newLoadout);
-        this._active_loadout = this._loadouts[index + 1];
-        this.save();
+        const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout?.ID);
+        if(index > -1) {
+            const newLoadout = MechLoadout.Deserialize(MechLoadout.Serialize(this.ActiveLoadout!), this);
+            newLoadout.RenewID();
+            newLoadout.Name += " (Copy)";
+            this._loadouts.splice(index + 1, 0, newLoadout);
+            this._active_loadout = this._loadouts[index + 1];
+            this.save();
+        } else {
+            logger("Could not clone - no active loadout");
+        }
     }
 
     public UpdateLoadouts(): void {
@@ -897,7 +900,7 @@ export class Mech implements IActor {
     }
 
     public get AppliedBonuses(): CoreBonus[] {
-        return _.flatten(this.ActiveLoadout.AllEquippableMounts(true, true).map(x => x.Bonuses));
+        return _.flatten(this.ActiveLoadout?.AllEquippableMounts(true, true).map(x => x.Bonuses) || []);
     }
 
     public get AvailableBonuses(): CoreBonus[] {
@@ -929,7 +932,7 @@ export class Mech implements IActor {
             current_overcharge: m._current_overcharge,
             current_core_energy: m._current_core_energy,
             loadouts: m.Loadouts.map(x => MechLoadout.Serialize(x)),
-            active_loadout_index: m.Loadouts.findIndex(x => x.ID === m.ActiveLoadout.ID),
+            active_loadout_index: m.Loadouts.findIndex(x => x.ID === m.ActiveLoadout?.ID),
             statuses: m._statuses,
             conditions: m._conditions,
             resistances: m._resistances,

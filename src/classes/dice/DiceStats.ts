@@ -13,7 +13,7 @@ class DiceStatsResult implements IDiceStats {
         min: number,
         max: number,
         mean: number,
-        error?: boolean
+        error?: boolean | null
     ) {
         this._diceString = diceString;
         this._min = min;

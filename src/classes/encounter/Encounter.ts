@@ -1,7 +1,6 @@
 import uuid from "uuid/v4";
 import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
-
-import { imageManagement, ImageTag } from "@/hooks";
+import { imageManagement, ImageTag, logger } from "@/hooks";
 import { IMissionStep } from "./IMissionStep";
 import { store, is_web } from "@/hooks";
 
@@ -13,13 +12,13 @@ interface IEncounterData {
     reinforcements: { id: string; side: EncounterSide }[];
     labels: string[];
     sitrep: Sitrep;
-    campaign?: string;
-    gmNotes?: string;
-    narrativeNotes?: string;
-    environment?: string;
-    environmentDetails?: string;
-    cloud_map?: string;
-    local_map?: string;
+    campaign?: string | null;
+    gmNotes?: string | null;
+    narrativeNotes?: string | null;
+    environment?: string | null;
+    environmentDetails?: string | null;
+    cloud_map?: string | null;
+    local_map?: string | null;
 }
 
 class Encounter implements IMissionStep {
@@ -154,9 +153,9 @@ class Encounter implements IMissionStep {
     }
 
     public Npcs(side: EncounterSide): Npc[] {
-        const npcs = [];
+        const npcs: Npc[] = [];
         this.npcIDBySide(side).forEach(id => {
-            const n = store.npc.getNpcs().find((x: Npc) => x.ID === id);
+            const n = store.npc.getNpcs.find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -188,9 +187,9 @@ class Encounter implements IMissionStep {
     }
 
     public Reinforcements(side: EncounterSide): Npc[] {
-        const npcs = [];
+        const npcs: Npc[] = [];
         this.reinforcementIDBySide(side).forEach(id => {
-            const n = store.npc.getNpcs().find((x: Npc) => x.ID === id);
+            const n = store.npc.getNpcs.find((x: Npc) => x.ID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -212,8 +211,13 @@ class Encounter implements IMissionStep {
     }
 
     public MoveReinforcement(n: Npc): void {
-        const r = this._reinforcements.find(x => x.id === n.ID);
         const idx = this._reinforcements.findIndex(x => x.id === n.ID);
+        // Doesn't seem to have worked out
+        if(idx === -1) { 
+            logger(`Reinforcement ${n.Name} not found in encounter`);
+            return; 
+        }
+        const r = this._reinforcements[idx];
         if (idx > -1) {
             this._reinforcements.splice(idx, 1);
             this._npcs.push({ id: r.id, side: r.side });
@@ -270,13 +274,13 @@ class Encounter implements IMissionStep {
         e._name = data.name;
         e._location = data.location;
         e._labels = data.labels;
-        e._campaign = data.campaign;
-        e._gm_notes = data.gmNotes;
-        e._narrative_notes = data.narrativeNotes;
-        e._environment = data.environment;
-        e._environment_details = data.environmentDetails;
-        e._cloud_map = data.cloud_map;
-        e._local_map = data.local_map;
+        e._campaign = data.campaign || "";
+        e._gm_notes = data.gmNotes || "";
+        e._narrative_notes = data.narrativeNotes || "";
+        e._environment = data.environment || "";
+        e._environment_details = data.environmentDetails || "";
+        e._cloud_map = data.cloud_map || "";
+        e._local_map = data.local_map || "";
         e._sitrep = data.sitrep;
         e._npcs = data.npcs;
         e._reinforcements = data.reinforcements;

@@ -18,13 +18,13 @@ export abstract class Loadout {
     private _id: string;
     protected _name: string;
 
-    public constructor(count: number, id?: string) {
+    public constructor(count: number, id?: string | null) {
         this._id = id ? id : uuid();
         this._name = ordArr[count];
     }
 
     protected save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public get ID(): string {

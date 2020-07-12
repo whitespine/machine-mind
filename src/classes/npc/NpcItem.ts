@@ -40,7 +40,7 @@ export class NpcItem {
     }
 
     private save(): void {
-        store.npc.saveNpcData();
+        store.npc.saveData();
     }
 
     public get Feature(): NpcFeature {

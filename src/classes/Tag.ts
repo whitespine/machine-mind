@@ -7,8 +7,8 @@ export interface ITagCompendiumData extends ICompendiumItemData {
     id: string;
     name: string;
     description: string;
-    filter_ignore?: boolean;
-    hidden?: boolean;
+    filter_ignore?: boolean | null;
+    hidden?: boolean | null;
 }
 
 export class Tag {
@@ -52,7 +52,7 @@ export class Tag {
         return this._description.replace(/{VAL}/g, "X");
     }
 
-    public GetDescription(addBonus?: number): string {
+    public GetDescription(addBonus?: number | null): string {
         let bonus = 0;
         if (this.ID === "tg_limited") bonus = addBonus || 0;
         if (!this._val) return this._description;
@@ -81,7 +81,7 @@ export class Tag {
         return this._name.replace(/{VAL}/g, "X");
     }
 
-    public GetName(addBonus?: number): string {
+    public GetName(addBonus?: number | null): string {
         let bonus = 0;
         if (this.IsLimited) bonus = addBonus || 0;
         if (!this._val) return this._name;

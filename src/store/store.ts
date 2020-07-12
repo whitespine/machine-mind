@@ -12,8 +12,8 @@ export abstract class Store {
     abstract encounter: EncounterStore;
     abstract mission: MissionStore;
 
-    // This as well
-    abstract getUserProfile(): any;
+    // We need this for cloud identificaation stuff
+    abstract getUserID(): string;
 
     // Version information
     private lancerVer = "V?.?.?";

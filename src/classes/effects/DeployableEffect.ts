@@ -2,32 +2,32 @@ import { IEffectData } from "@/interface";
 import { ActivationType, EffectType } from "@/class";
 import { ItemEffect } from "./ItemEffect";
 interface IDeployableData extends IEffectData {
-    count?: number;
-    size?: number;
-    hp?: number;
-    evasion?: number;
-    edef?: number;
+    count?: number | null;
+    size?: number | null;
+    hp?: number | null;
+    evasion?: number | null;
+    edef?: number | null;
     detail: string;
 }
 
 class DeployableEffect extends ItemEffect {
-    public readonly Name?: string;
-    public readonly Detail: string;
-    public readonly Count?: number;
-    public readonly Size?: number;
-    public readonly HP?: number;
-    public readonly Evasion?: number;
-    public readonly EDef?: number;
+    public readonly Name: string | null;
+    public readonly Detail: string | null;
+    public readonly Count: number | null;
+    public readonly Size: number | null;
+    public readonly HP: number | null;
+    public readonly Evasion: number | null;
+    public readonly EDef: number | null;
 
-    public constructor(data: IDeployableData, err?: boolean) {
+    public constructor(data: IDeployableData, err?: boolean | null) {
         super(err);
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Detail = data.detail;
-        this.Count = data.count;
-        this.Size = data.size;
-        this.HP = data.hp;
-        this.Evasion = data.evasion;
-        this.EDef = data.edef;
+        this.Count = data.count || null;
+        this.Size = data.size || null;
+        this.HP = data.hp || null;
+        this.Evasion = data.evasion || null;
+        this.EDef = data.edef || null;
         this.activation = data.activation || ActivationType.Quick;
         this.effectType = EffectType.Deployable;
         this.tags = data.tags || [];

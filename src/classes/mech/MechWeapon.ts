@@ -20,27 +20,32 @@ import { store } from "@/hooks";
 interface IMechWeaponData extends IMechEquipmentData {
     mount: WeaponSize;
     type: WeaponType;
-    damage: IDamageData[];
+    damage: IDamageData[] | null;
     range: IRangeData[];
 }
 
 class MechWeapon extends MechEquipment {
     private _size: WeaponSize;
     private _weapon_type: WeaponType;
-    private _damage?: Damage[];
-    private _range?: Range[];
+    private _damage: Damage[] | null;
+    private _range: Range[];
     private _mod: WeaponMod | null;
-    private _custom_damage_type?: string;
+    private _custom_damage_type: string | null;
     // private ammo?: WeaponAmmo | null;
 
     public constructor(weaponData: IMechWeaponData) {
         super(weaponData);
         this._size = weaponData.mount;
         this._weapon_type = weaponData.type;
-        if (weaponData.damage) this._damage = weaponData.damage.map(x => new Damage(x));
-        if (weaponData.range) this._range = weaponData.range.map(x => new Range(x));
+        if (weaponData.damage) {
+            this._damage = weaponData.damage.map(x => new Damage(x));
+        } else {
+            this._damage = null;
+        }
+        this._range = weaponData.range.map(x => new Range(x));
         this._mod = null;
         this._item_type = ItemType.MechWeapon;
+        this._custom_damage_type = null
     }
 
     public get Size(): WeaponSize {
@@ -79,7 +84,7 @@ class MechWeapon extends MechEquipment {
     }
 
     public get DamageTypeOverride(): string {
-        return this._custom_damage_type || null;
+        return this._custom_damage_type || "";
     }
 
     public set DamageTypeOverride(val: string) {
@@ -93,7 +98,7 @@ class MechWeapon extends MechEquipment {
     }
 
     public get DamageType(): DamageType[] {
-        return this._damage.map(x => x.Type);
+        return this._damage?.map(x => x.Type) || [];
     }
 
     public get DefaultDamageType(): DamageType {
@@ -126,7 +131,7 @@ class MechWeapon extends MechEquipment {
                 val: 1,
             });
         if (
-            mech.ActiveLoadout.HasSystem("ms_external_batteries") &&
+            mech.ActiveLoadout?.HasSystem("ms_external_batteries") &&
             this.Damage[0].Type === DamageType.Energy
         )
             if (this.Type === WeaponType.Melee) {
@@ -144,7 +149,7 @@ class MechWeapon extends MechEquipment {
     }
 
     public get RangeType(): RangeType[] {
-        return this._range.map(x => x.Type);
+        return this._range?.map(x => x.Type) || [];
     }
 
     public set Mod(_mod: WeaponMod | null) {

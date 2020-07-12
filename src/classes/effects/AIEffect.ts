@@ -13,13 +13,13 @@ interface IAIData extends IEffectData {
 class AIEffect extends ItemEffect {
     public readonly Detail: string;
     public readonly Abilities: ItemEffect[];
-    public readonly Name?: string;
+    public readonly Name: string | null;
 
-    public constructor(data: IAIData, err?: boolean) {
+    public constructor(data: IAIData, err?: boolean | null) {
         super(err);
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Detail = data.detail;
-        this.Abilities = data.abilities.map(x => ItemEffect.Generate(x));
+        this.Abilities = data.abilities.map(x => ItemEffect.Generate(x)).filter(x => x) as ItemEffect[];
         this.activation = ActivationType.None;
         this.effectType = EffectType.AI;
         this.tags = data.tags || [];

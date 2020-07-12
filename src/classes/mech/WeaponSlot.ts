@@ -15,7 +15,7 @@ export class WeaponSlot {
     }
 
     private save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public get Size(): FittingSize {

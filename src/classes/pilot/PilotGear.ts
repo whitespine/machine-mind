@@ -2,11 +2,11 @@ import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
 interface IPilotGearData extends IPilotEquipmentData {
-    uses?: number;
+    uses?: number | null;
 }
 
 class PilotGear extends PilotEquipment {
-    private uses?: number;
+    private uses: number | null;
 
     public constructor(gearData: IPilotGearData) {
         super(gearData);
@@ -18,9 +18,14 @@ class PilotGear extends PilotEquipment {
         return this.current_uses || null;
     }
 
-    public set Uses(val: number) {
-        val = val < 0 ? 0 : val;
-        val = val > this.uses ? this.uses : val;
+    public set Uses(val: number | null) {
+        val = val || 0;
+        if(val < 0) {
+            val = 0;
+        }
+        if(this.uses && val > this.uses) {
+            val = this.uses;
+        }
         this.current_uses = val;
         this.save();
     }

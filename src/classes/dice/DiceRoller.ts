@@ -47,10 +47,10 @@ class D20RollResult implements Id20RollResult {
     public constructor(
         total: number,
         rawDieRoll: number,
-        staticBonus?: number,
-        accuracyDiceCount?: number,
-        rawAccuracyRolls?: number[],
-        accuracyResult?: number
+        staticBonus?: number | null,
+        accuracyDiceCount?: number | null,
+        rawAccuracyRolls?: number[] | null,
+        accuracyResult?: number | null
     ) {
         this._total = total || 0;
         this._rawDieRoll = rawDieRoll || 0;
@@ -97,7 +97,7 @@ class DamageRollResult implements IDamageRollResult {
         total: number,
         rawRolls: number[],
         staticBonus: number,
-        parseError?: boolean
+        parseError?: boolean | null
     ) {
         this._diceString = diceString;
         this._total = total || 0;
@@ -186,7 +186,7 @@ class DiceRoller {
         }
     }
 
-    public static parseDiceString(diceString: string): ParsedDieString {
+    public static parseDiceString(diceString: string): ParsedDieString | null {
         // remove all spaces
         let parsedString = diceString.replace(/\s/g, "");
 
@@ -213,7 +213,7 @@ class DiceRoller {
 
             return new ParsedDieString([dieSet], modifier);
         } else {
-            return undefined;
+            return null;
         }
     }
 

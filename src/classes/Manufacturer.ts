@@ -7,7 +7,7 @@ interface IManufacturerData {
     quote: string;
     logo: string;
     color: string;
-    logo_url?: string;
+    logo_url?: string | null;
 }
 
 class Manufacturer {
@@ -17,7 +17,7 @@ class Manufacturer {
     private _quote: string;
     private _logo: string;
     private _color: string;
-    private _logo_url?: string;
+    private _logo_url: string | null;
 
     public constructor(data: IManufacturerData) {
         this._id = data.id;
@@ -26,7 +26,7 @@ class Manufacturer {
         this._quote = data.quote;
         this._logo = data.logo;
         this._color = data.color;
-        this._logo_url = data.logo_url;
+        this._logo_url = data.logo_url || null;
     }
 
     public get ID(): string {

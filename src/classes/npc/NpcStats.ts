@@ -19,20 +19,20 @@ interface INpcStats {
     engineering: number;
     sizes: number[];
     size: number;
-    structure?: number;
-    stress?: number;
-    reactions?: string[];
-    bonuses?: INpcStats;
-    overrides?: INpcStats;
+    structure?: number | null;
+    stress?: number | null;
+    reactions: string[] | null;
+    bonuses?: INpcStats | null;
+    overrides?: INpcStats | null;
 }
 
 class NpcStats {
     private _stats: INpcStats;
     private _bonuses: INpcStats;
     private _overrides: INpcStats;
-    private _active: boolean;
+    private _active: boolean = false;
 
-    public constructor(data: INpcStats, bonuses?: INpcStats, overrides?: INpcStats) {
+    public constructor(data: INpcStats, bonuses?: INpcStats | null, overrides?: INpcStats | null) {
         this._stats = data;
         this._bonuses = bonuses || NpcStats.Empty();
         this._overrides = overrides || NpcStats.Empty();
@@ -163,7 +163,6 @@ class NpcStats {
 
     private save(): void {
         if (this.Active) store.mission.saveActiveMissionData();
-        else store.npc.saveNpcData();
     }
 
     public get Stats(): INpcStats {
@@ -319,7 +318,7 @@ class NpcStats {
 
     public get Structure(): number {
         if (this._overrides.structure) return this._overrides.structure;
-        return this._stats.structure + this._bonuses.structure;
+        return (this._stats.structure || 1) + (this._bonuses.structure || 0);
     }
 
     public set Structure(val: number) {
@@ -329,7 +328,7 @@ class NpcStats {
 
     public get Stress(): number {
         if (this._overrides.stress) return this._overrides.stress;
-        return this._stats.stress + this._bonuses.stress;
+        return (this._stats.stress || 1) + (this._bonuses.stress || 0);
     }
 
     public set Stress(val: number) {
@@ -338,10 +337,13 @@ class NpcStats {
     }
 
     public get Reactions(): string[] {
-        return this._stats.reactions;
+        return this._stats.reactions || [];
     }
 
     public AddReaction(r: string): void {
+        if(!this._stats.reactions) {
+            this._stats.reactions = [];
+        }
         if (!this._stats.reactions.some(x => x === r)) {
             this._stats.reactions.push(r);
         }
@@ -349,8 +351,8 @@ class NpcStats {
     }
 
     public RemoveReaction(r: string): void {
-        const idx = this._stats.reactions.findIndex(x => x === r);
-        if (idx > -1) this._stats.reactions.splice(idx, 1);
+        const idx = this._stats.reactions?.findIndex(x => x === r) || -1; 
+        if (idx > -1) this._stats.reactions!.splice(idx, 1);
         this.save();
     }
 

@@ -11,9 +11,9 @@ interface IChargeData {
     name: string;
     charge_type: ChargeType;
     detail: string;
-    range?: IRangeData[];
-    damage?: IDamageData[];
-    tags?: ITagData[];
+    range?: IRangeData[] | null;
+    damage?: IDamageData[] | null;
+    tags?: ITagData[] | null;
 }
 
 interface IChargeEffectData extends IEffectData {
@@ -21,12 +21,12 @@ interface IChargeEffectData extends IEffectData {
 }
 
 class Charge {
-    public readonly Name?: string;
+    public readonly Name: string | null;
     public readonly ChargeType: ChargeType;
-    public readonly Range?: Range[];
-    public readonly Damage?: Damage[];
+    public readonly Range: Range[];
+    public readonly Damage: Damage[];
     public readonly Detail: string;
-    public readonly tags?: ITagData[];
+    public readonly tags: ITagData[];
 
     public constructor(data: IChargeData) {
         this.Name = data.name;
@@ -59,12 +59,12 @@ class Charge {
 }
 
 class ChargeEffect extends ItemEffect {
-    public readonly Name?: string;
+    public readonly Name: string | null;
     public readonly Charges: Charge[];
 
     public constructor(data: IChargeEffectData) {
         super();
-        this.Name = data.name;
+        this.Name = data.name || null;
         this.Charges = data.charges.map(x => new Charge(x));
         this.activation = data.activation || ActivationType.Quick;
         this.effectType = EffectType.Charge;

@@ -20,7 +20,7 @@ export class Organization {
     }
 
     private save(): void {
-        store.pilots.savePilots();
+        store.pilots.saveData();
     }
 
     public get Type(): string {

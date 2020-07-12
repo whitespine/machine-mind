@@ -2,14 +2,14 @@ import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
 interface IPilotArmorData extends IPilotEquipmentData {
-    hp_bonus?: number;
-    speed?: number;
-    speed_bonus?: number;
-    armor?: number;
-    edef?: number;
-    edef_bonus?: number;
-    evasion?: number;
-    evasion_bonus?: number;
+    hp_bonus?: number | null;
+    speed?: number | null;
+    speed_bonus?: number | null;
+    armor?: number | null;
+    edef?: number | null;
+    edef_bonus?: number | null;
+    evasion?: number | null;
+    evasion_bonus?: number | null;
 }
 
 class PilotArmor extends PilotEquipment {

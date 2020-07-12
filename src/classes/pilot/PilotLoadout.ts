@@ -76,7 +76,7 @@ export class PilotLoadout extends Loadout {
             .concat(this._gear as PilotEquipment[]);
     }
 
-    public Add(item: PilotEquipment, slot: number, extended?: boolean): void {
+    public Add(item: PilotEquipment, slot: number, extended?: boolean | null): void {
         switch (item.ItemType) {
             case ItemType.PilotArmor:
                 this._armor[slot] = item as PilotArmor;
@@ -95,7 +95,7 @@ export class PilotLoadout extends Loadout {
         this.save();
     }
 
-    public Remove(item: PilotEquipment, slot: number, extended?: boolean): void {
+    public Remove(item: PilotEquipment, slot: number, extended?: boolean | null): void {
         switch (item.ItemType) {
             case ItemType.PilotArmor:
                 if (this._armor[slot]) this._armor[slot] = null;
