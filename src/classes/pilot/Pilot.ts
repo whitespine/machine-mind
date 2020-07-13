@@ -343,7 +343,7 @@ export class Pilot {
     }
 
     public get IsUserOwned(): boolean {
-        return this.CloudOwnerID === store.getUserID();
+        return this.CloudOwnerID === store.user.ID;
     }
 
     public SetCloudImage(src: string): void {
@@ -354,7 +354,7 @@ export class Pilot {
     public async CloudSave(): Promise<any> {
         this.SetBrewData();
         if (!this.CloudOwnerID) {
-            this.CloudOwnerID = store.getUserID();
+            this.CloudOwnerID = store.user.ID;
         }
         if (!this.CloudID) {
             return gistApi.newPilot(this).then((response: any) => {
@@ -383,7 +383,7 @@ export class Pilot {
 
     public setCloudInfo(id: string): void {
         this.CloudID = id;
-        this.CloudOwnerID = store.getUserID();
+        this.CloudOwnerID = store.user.ID;
         this.LastCloudUpdate = new Date().toString();
     }
 

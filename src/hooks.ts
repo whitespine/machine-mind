@@ -1,12 +1,12 @@
 // import { Pilot, Npc, Encounter } from "@/class";
 // import { getVersion } from "jest";
-import * as StoreInterfaces from "./store/store";
-export { StoreInterfaces };
+import * as DataModules from "./store/main";
+export * from "./store/main";
 
 // Interface store interaction
-export var store: StoreInterfaces.Store;
+export var store: DataModules.CCDataStore;
 
-export function setup_store_shim(_store: StoreInterfaces.Store) {
+export function setup_store(_store: DataModules.CCDataStore) {
     store = _store;
 }
 

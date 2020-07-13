@@ -97,9 +97,8 @@ export class PilotManagementStore extends AbsStoreModule {
     }
 
     public async loadData(): Promise<void> {
-        this.pilots = (await this.persistence.get_item(PilotKey)).map((p: IPilotData) =>
-            Pilot.Deserialize(p)
-        );
-        this.pilot_groups = await this.persistence.get_item(PilotGroupKey);
+        let raw = (await this.persistence.get_item(PilotKey) || []) as IPilotData[];
+        this.pilots = raw.map((p: IPilotData) => Pilot.Deserialize(p));
+        this.pilot_groups = await this.persistence.get_item(PilotGroupKey) || [];
     }
 }

@@ -47,7 +47,7 @@ export class EncounterStore extends AbsStoreModule {
 
     // Load all encounters from persistent storage
     public async loadData(): Promise<void> {
-        let raw = (await this.persistence.get_item(ENCOUNTER_KEY)) as IEncounterData[];
+        let raw = (await this.persistence.get_item(ENCOUNTER_KEY)) || [] as IEncounterData[];
         this.encounters = raw.map(d => Encounter.Deserialize(d));
     }
 }

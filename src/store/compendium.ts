@@ -151,14 +151,18 @@ export function getBaseContentPack(): ContentPack {
 
 export class CompendiumStore extends AbsStoreModule {
     // Pack management - note that we break here from the compcon way of doing it, and do not automatically save content after changes, to be more consistent with other platforms
-    public ContentPacks: ContentPack[] = []; // Currently loaded custom content packs.
+    public _content_packs: ContentPack[] = []; // Currently loaded custom content packs.
+
+    public get ContentPacks(): ContentPack[] {
+        return this._content_packs;
+    }
 
     // Delete the specified pack from loaded state
     // Automatically reloads data
     public deleteContentPack(packID: string): void {
-        let i = this.ContentPacks.findIndex(p => p.ID == packID);
+        let i = this._content_packs.findIndex(p => p.ID == packID);
         if (i !== -1) {
-            this.ContentPacks.splice(i, 1);
+            this._content_packs.splice(i, 1);
         }
         this.populate();
     }
@@ -167,17 +171,17 @@ export class CompendiumStore extends AbsStoreModule {
     // Automatically reloads data
     public addContentPack(pack: ContentPack): void {
         // Get existing index if any
-        let i = this.ContentPacks.findIndex(p => p.ID == pack.ID);
+        let i = this._content_packs.findIndex(p => p.ID == pack.ID);
 
         // If present, replace
         if (i !== -1) {
-            let [replaced] = this.ContentPacks.splice(i, 1, pack);
+            let [replaced] = this._content_packs.splice(i, 1, pack);
             logger(
                 `Replacing pack ${replaced.Name}:${replaced.Version} with ${pack.Name}:${pack.Version}`
             );
         } else {
             // Otherwise just push
-            this.ContentPacks.push(pack);
+            this._content_packs.push(pack);
         }
         this.populate();
     }
@@ -185,7 +189,7 @@ export class CompendiumStore extends AbsStoreModule {
     // Flag a pack as active in the loaded state. Automatically reloads pack data
     public setPackActive(packID: string, active: boolean): void {
         // Set the specified pack as active
-        let pack = this.ContentPacks.find(p => p.ID === packID);
+        let pack = this._content_packs.find(p => p.ID === packID);
         if (pack) {
             pack.SetActive(active);
         }
@@ -194,12 +198,12 @@ export class CompendiumStore extends AbsStoreModule {
 
     // We can implement this mgmt functions here, regardless of anything else
     public packAlreadyInstalled(packID: string): boolean {
-        return !!this.ContentPacks.find(p => p.ID == packID);
+        return !!this._content_packs.find(p => p.ID == packID);
     }
 
     // Amends the custom content packs with the base
-    private get getAllContentPacks(): ContentPack[] {
-        return [getBaseContentPack(), ...this.ContentPacks];
+    private get getAll_content_packs(): ContentPack[] {
+        return [getBaseContentPack(), ...this._content_packs];
     }
 
     // (Re)loads the base lancer data, as well as any additional content packs data, from currently loaded packs/core data
@@ -209,7 +213,7 @@ export class CompendiumStore extends AbsStoreModule {
         let comp = new Compendium();
 
         // Load data from pack
-        for (let pack of this.getAllContentPacks.filter(p => p.Active)) {
+        for (let pack of this.getAll_content_packs.filter(p => p.Active)) {
             // Just do this part via iteration
             for (let k of PackKeys) {
                 // Get the items
@@ -281,14 +285,20 @@ export class CompendiumStore extends AbsStoreModule {
 
     public async loadData(): Promise<void> {
         // Load the contact packs themselves from static storage
-        let ser_packs = (await this.persistence.get_item("CONTENT_PACKS")) as IContentPack[];
-        this.ContentPacks = ser_packs.map(cp => new ContentPack(cp));
+        let ser_packs = (await this.persistence.get_item("CONTENT_PACKS")) as IContentPack[] | null;
+        if(!ser_packs)  {
+            this._content_packs = [];
+            this.populate();
+            return;
+        }
+
+        this._content_packs = ser_packs.map(cp => new ContentPack(cp));
         this.populate();
     }
 
     public async saveData(): Promise<void> {
         // Save the content packs to static storage
-        let data_packs = this.ContentPacks.map(c => c.Serialize());
+        let data_packs = this._content_packs.map(c => c.Serialize());
         await this.persistence.set_item("CONTENT_PACKS", data_packs);
     }
 }

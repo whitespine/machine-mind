@@ -12,7 +12,7 @@ export class NpcStore extends AbsStoreModule {
     private npcs: Npc[] = [];
 
     // Get a list of all currently loaded npcs
-    public get getNpcs(): Npc[] {
+    public get Npcs(): Npc[] {
         return this.npcs;
     }
 
@@ -54,7 +54,7 @@ export class NpcStore extends AbsStoreModule {
     // Load all npcs from persistent data
     // This is called automaticall before any changes are made, to make sure we don't clobber changes
     public async loadData(): Promise<void> {
-        let inpc_data: INpcData[] = await this.persistence.get_item(NPC_KEY);
+        let inpc_data: INpcData[] = (await this.persistence.get_item(NPC_KEY) || []) as INpcData[];
         this.npcs = inpc_data.map(i => Npc.Deserialize(i));
     }
 
