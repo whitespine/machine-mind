@@ -222,11 +222,9 @@ export class CompendiumStore extends AbsStoreModule {
         // Load data from pack
         for (let pack of this.getAll_content_packs.filter(p => p.Active)) {
             // Just do this part via iteration
-            console.log(pack);
             for (let k of PackKeys) {
                 // Get the items
                 let items = pack[k];
-                console.log(k, items);
 
                 // Push them on
                 if (items) {
@@ -236,6 +234,8 @@ export class CompendiumStore extends AbsStoreModule {
                 }
             }
         }
+
+        this.compendium = comp;
     }
 
     public compendium: Compendium = new Compendium();
@@ -280,7 +280,7 @@ export class CompendiumStore extends AbsStoreModule {
         itemType: T,
         id: string
     ): ICompendium[T][0] {
-        let v = this.getReferenceByID(itemType, id);
+        let v = this.getReferenceByIDCareful(itemType, id);
         if (!v) {
             throw new TypeError(`Invalid item ${id} of category ${itemType}`);
         }
