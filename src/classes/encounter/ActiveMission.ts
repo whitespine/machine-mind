@@ -46,7 +46,7 @@ export class ActiveMission {
     }
 
     private save(): void {
-        store.mission.saveData();
+        store.missions.saveData();
     }
 
     public get ID(): string {

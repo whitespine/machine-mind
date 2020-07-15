@@ -10,7 +10,7 @@ export class EncounterStore extends AbsStoreModule {
     private encounters: Encounter[] = [];
 
     // Retrieve current encounters
-    public getEncounters(): Encounter[] {
+    public get Encounters(): Encounter[] {
         return this.encounters;
     }
 

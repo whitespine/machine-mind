@@ -10,28 +10,28 @@ export class CCDataStore {
     // Substores
     compendium: CompendiumStore;
     pilots: PilotManagementStore;
-    npc: NpcStore;
-    encounter: EncounterStore;
-    mission: MissionStore;
+    npcs: NpcStore;
+    encounters: EncounterStore;
+    missions: MissionStore;
     user: UserProfileStore;
 
     constructor(persistence: PersistentStore) {
         this.compendium = new CompendiumStore(persistence);
         this.pilots = new PilotManagementStore(persistence);
-        this.npc = new NpcStore(persistence);
-        this.encounter = new EncounterStore(persistence);
-        this.mission = new MissionStore(persistence);
+        this.npcs = new NpcStore(persistence);
+        this.encounters = new EncounterStore(persistence);
+        this.missions = new MissionStore(persistence);
         this.user = new UserProfileStore(persistence);
     }
 
     // Call void on all modules
     public async load_all(): Promise<void> {
         await Promise.all([
-            this.compendium.loadData().then(() => this.compendium.loadData()),
+            this.compendium.loadData(),
             this.pilots.loadData(),
-            this.npc.loadData(),
-            this.encounter.loadData(),
-            this.mission.loadData()
+            this.npcs.loadData(),
+            this.encounters.loadData(),
+            this.missions.loadData()
         ]);
     }
 
@@ -40,9 +40,9 @@ export class CCDataStore {
         await Promise.all([
             this.compendium.saveData(),
             this.pilots.saveData(),
-            this.npc.saveData(),
-            this.encounter.saveData(),
-            this.mission.saveData()
+            this.npcs.saveData(),
+            this.encounters.saveData(),
+            this.missions.saveData()
         ]);
     }
 
@@ -66,7 +66,8 @@ export class CCDataStore {
 
     // Set the current version to display
     setVersions(lancerVer: string, ccVer: string): void {
-        (this.lancerVer = lancerVer), (this.ccVer = ccVer);
+        this.lancerVer = lancerVer;
+        this.ccVer = ccVer;
     }
 }
 

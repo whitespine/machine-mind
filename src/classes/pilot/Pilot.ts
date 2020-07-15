@@ -118,6 +118,10 @@ export class Pilot {
         store.pilots.saveData();
     }
 
+    public SetBrewForce(brews: string[]): void {
+        this._brews = brews;
+    }
+
     public SetBrewData(): void {
         const packs = store.compendium.ContentPacks;
 
@@ -196,6 +200,11 @@ export class Pilot {
         this._background = bg;
         this.save();
     }
+
+    public get Brews(): string[] {
+        return this._brews;
+    }
+
 
     public get Callsign(): string {
         return this._callsign;

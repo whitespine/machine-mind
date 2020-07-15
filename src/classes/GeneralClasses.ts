@@ -20,7 +20,7 @@ export interface Faction {
 
 export interface Status {
     name: string;
-    type: string;
+    type: 'Status' | 'Condition';
     icon: string;
     effects: string[];
 }

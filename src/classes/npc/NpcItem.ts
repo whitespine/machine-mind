@@ -30,7 +30,7 @@ export class NpcItem {
         this._destroyed = false;
         this._charged = true;
         this._uses = 0;
-        const f = feature as any;
+        const f = feature;
         if (f.IsLimited) {
             const ltd = f.Tags.find(x => x.IsLimited);
             this._max_uses = ltd && typeof ltd.Value === "number" ? ltd.Value : 0;
@@ -40,7 +40,7 @@ export class NpcItem {
     }
 
     private save(): void {
-        store.npc.saveData();
+        store.npcs.saveData();
     }
 
     public get Feature(): NpcFeature {

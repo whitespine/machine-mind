@@ -82,6 +82,11 @@ export abstract class NpcFeature {
         return this._origin.base;
     }
 
+    // Override as necessary
+    public get IsLimited(): boolean {
+        return false;
+    }
+
     public get Bonus(): object {
         return this._bonus;
     }

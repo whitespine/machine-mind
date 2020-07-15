@@ -39,7 +39,7 @@ class Mission {
     }
 
     private save(): void {
-        store.mission.saveData();
+        store.missions.saveData();
     }
 
     public get ID(): string {
@@ -97,7 +97,7 @@ class Mission {
 
     public get Encounters(): Encounter[] {
         const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
-        const enc = store.encounter.getEncounters();
+        const enc = store.encounters.Encounters;
         return ids.map(x => enc.find(y => y.ID === x)).filter(e => e) as Encounter[];
     }
 
@@ -106,8 +106,8 @@ class Mission {
     }
 
     public ValidateSteps(): void {
-        const ids = store.encounter
-            .getEncounters()
+        const ids = store.encounters
+            .Encounters
             .map((x: Encounter) => x.ID)
             .concat(this._rests.map(x => x.ID));
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));
@@ -120,7 +120,7 @@ class Mission {
     public Step(id: string): IMissionStep | null {
         const r = this._rests.find(x => x.ID === id);
         if (r) return r;
-        const enc = store.encounter.getEncounters();
+        const enc = store.encounters.Encounters;
         const rIdx = this._step_ids.indexOf(id);
         if (rIdx == -1) this.RemoveStep(rIdx);
         return enc.find(x => x.ID === id) || null;

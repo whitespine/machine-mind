@@ -81,7 +81,12 @@ export class Rules {
         return rules.max_hase;
     }
 
-    public static get MountFittings(): object {
+    public static get MountFittings(): {
+        "Auxiliary": ["Auxiliary"],
+        "Main": ["Main", "Auxiliary"],
+        "Flex": ["Main", "Auxiliary"],
+        "Heavy": ["Superheavy", "Heavy", "Main", "Auxiliary"]
+    } {
         return rules.mount_fittings;
     }
 

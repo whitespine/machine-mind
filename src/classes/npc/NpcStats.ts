@@ -162,7 +162,7 @@ class NpcStats {
     }
 
     private save(): void {
-        if (this.Active) store.mission.saveData();
+        if (this.Active) store.missions.saveData();
     }
 
     public get Stats(): INpcStats {

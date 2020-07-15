@@ -105,8 +105,8 @@ export class Npc implements IActor {
     }
 
     private save(): void {
-        if (this.Active) store.mission.saveData();
-        else store.npc.saveData();
+        if (this.Active) store.missions.saveData();
+        else store.npcs.saveData();
     }
 
     public get ID(): string {

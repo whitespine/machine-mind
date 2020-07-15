@@ -22,6 +22,7 @@ import {
     NpcTrait,
     NpcSystem,
     NpcTech,
+    Reserve,
 } from "@/class";
 import {
     IManufacturerData,
@@ -45,6 +46,12 @@ import {
     INpcTechData,
     ITagCompendiumData,
 } from "@/interface";
+import { ISkillData, Skill } from './pilot/Skill';
+import { Status, Environment, Sitrep } from './GeneralClasses';
+import { IReserveData } from './GeneralInterfaces';
+import { SkillFamily } from './enums';
+import { License } from './License';
+import _ from 'lodash';
 
 export interface IContentPackManifest {
     name: string;
@@ -70,6 +77,14 @@ interface IContentPackData {
     npcClasses: INpcClassData[];
     npcFeatures: INpcFeatureData[];
     npcTemplates: INpcTemplateData[];
+
+    // New additions courtesy of whitespine
+    skills?: ISkillData[] | null;
+    statuses?: Status[] | null;
+    reserves?: IReserveData[] | null;
+    environments?: Environment[] | null;
+    sitreps?: Sitrep[] | null;
+    quirks?: string[] | null;
 }
 
 export interface IContentPack {
@@ -187,6 +202,45 @@ export class ContentPack {
         return this._NpcFeatures;
     }
 
+
+    private _Environments: Environment[];
+    public get Environments(): Environment[] {
+        return this._Environments;
+     }
+
+
+    private    _Reserves: Reserve[];
+    public get Reserves(): Reserve[] {
+        return this._Reserves    
+    }
+
+    private _Sitreps: Sitrep[];
+    public get Sitreps(): Sitrep[] {
+        return this._Sitreps;
+    }
+
+    private _Skills: Skill[];
+    public get Skills(): Skill[] {
+        return this._Skills; 
+    }
+
+    private _Statuses: Status[];
+    public get Statuses(): Status[] {
+        return this._Statuses;
+    }
+
+
+    private _Quirks: string[];
+    public get Quirks(): string[] {
+        return this._Quirks;
+    }
+
+    private _Licenses: License[];
+    public get Licenses(): License[] {
+        return this._Licenses;
+    }
+
+
     private _active: boolean;
     public get Active(): boolean {
         return this._active;
@@ -250,6 +304,14 @@ export class ContentPack {
             }) || [];
         this._NpcClasses = this._data.npcClasses?.map(x => new NpcClass(x)) || [];
         this._NpcTemplates = this._data.npcTemplates?.map(x => new NpcTemplate(x)) || [];
+
+        this._Quirks = this._data.quirks || [];
+        this._Skills = (this._data.skills || []).map(s => new Skill(s));
+        this._Sitreps = this._data.sitreps || [];
+        this._Reserves = (this._data.reserves || []).map(s => new Reserve(s));
+        this._Statuses = this._data.statuses || [];
+        this._Environments = this._data.environments || [];
+        this._Licenses = this.Frames.map(f => new License(f));
     }
 
     public Serialize(): IContentPack {

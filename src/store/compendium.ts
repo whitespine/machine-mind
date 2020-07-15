@@ -57,7 +57,7 @@ const SITREPS = "Sitreps";
 const TAGS = "Tags";
 
 // Contains the core compendium data
-class Compendium {
+export class Compendium {
     [CORE_BONUSES]: CoreBonus[] = [];
     [FACTIONS]: Faction[] = [];
     [FRAMES]: Frame[] = [];
@@ -95,25 +95,25 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     CORE_BONUSES,
     FACTIONS,
     FRAMES,
-    // LICENSES,
+    LICENSES,
     MANUFACTURERS,
     NPC_CLASSES,
     NPC_TEMPLATES,
     NPC_FEATURES,
     WEAPON_MODS,
     MECH_WEAPONS,
-    // MECH_SYSTEM,
+    MECH_SYSTEM,
     PILOT_GEAR,
-    // PILOT_ARMOR,
+    PILOT_ARMOR,
     TALENTS,
-    // SKILLS,
-    // STATUSES,
-    // RESERVES,
-    // ENVIRONMENTS,
-    // SITREPS,
-    // PILOT_WEAPONS,
+    SKILLS,
+    STATUSES,
+    RESERVES,
+    ENVIRONMENTS,
+    SITREPS,
+    PILOT_WEAPONS,
     TAGS,
-    // QUIRKS
+    QUIRKS
 ];
 
 // This is all compendium keys, IE items that  you can lookup by collection (and sometimes ID)
@@ -145,6 +145,13 @@ export function getBaseContentPack(): ContentPack {
             tags: lancerData.tags,
             talents: lancerData.talents,
             weapons: lancerData.weapons,
+
+            quirks: lancerData.quirks,
+            environments: lancerData.environments,
+            reserves: lancerData.reserves,
+            sitreps: lancerData.sitreps,
+            skills: lancerData.skills,
+            statuses: lancerData.statuses
         },
     });
 }
@@ -215,9 +222,11 @@ export class CompendiumStore extends AbsStoreModule {
         // Load data from pack
         for (let pack of this.getAll_content_packs.filter(p => p.Active)) {
             // Just do this part via iteration
+            console.log(pack);
             for (let k of PackKeys) {
                 // Get the items
                 let items = pack[k];
+                console.log(k, items);
 
                 // Push them on
                 if (items) {
