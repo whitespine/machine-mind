@@ -125,9 +125,9 @@ export interface IReserveData {
     name?: string | null;
     label?: string | null;
     description?: string | null;
-    resource_name: string;
-    resource_note: string;
-    resource_cost: string;
+    resource_name?: string | null;
+    resource_note?: string | null;
+    resource_cost?: string | null;
     used: boolean;
 }
 

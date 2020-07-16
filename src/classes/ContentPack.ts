@@ -46,12 +46,12 @@ import {
     INpcTechData,
     ITagCompendiumData,
 } from "@/interface";
-import { ISkillData, Skill } from './pilot/Skill';
-import { Status, Environment, Sitrep } from './GeneralClasses';
-import { IReserveData } from './GeneralInterfaces';
-import { SkillFamily } from './enums';
-import { License } from './License';
-import _ from 'lodash';
+import { ISkillData, Skill } from "./pilot/Skill";
+import { Status, Environment, Sitrep } from "./GeneralClasses";
+import { IReserveData } from "./GeneralInterfaces";
+import { SkillFamily } from "./enums";
+import { License } from "./License";
+import _ from "lodash";
 
 export interface IContentPackManifest {
     name: string;
@@ -202,16 +202,14 @@ export class ContentPack {
         return this._NpcFeatures;
     }
 
-
     private _Environments: Environment[];
     public get Environments(): Environment[] {
         return this._Environments;
-     }
+    }
 
-
-    private    _Reserves: Reserve[];
+    private _Reserves: Reserve[];
     public get Reserves(): Reserve[] {
-        return this._Reserves    
+        return this._Reserves;
     }
 
     private _Sitreps: Sitrep[];
@@ -221,14 +219,13 @@ export class ContentPack {
 
     private _Skills: Skill[];
     public get Skills(): Skill[] {
-        return this._Skills; 
+        return this._Skills;
     }
 
     private _Statuses: Status[];
     public get Statuses(): Status[] {
         return this._Statuses;
     }
-
 
     private _Quirks: string[];
     public get Quirks(): string[] {
@@ -239,7 +236,6 @@ export class ContentPack {
     public get Licenses(): License[] {
         return this._Licenses;
     }
-
 
     private _active: boolean;
     public get Active(): boolean {

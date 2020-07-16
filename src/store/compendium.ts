@@ -1,5 +1,5 @@
 import lodash from "lodash";
-import lancerData from "lancer-data";
+import * as lancerData from "@/typed_lancerdata";
 // import { getUser, UserProfile } from '@/io/User'
 import {
     Sitrep,
@@ -29,7 +29,7 @@ import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
-import { AbsStoreModule } from './store_module';
+import { AbsStoreModule } from "./store_module";
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -113,7 +113,7 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     SITREPS,
     PILOT_WEAPONS,
     TAGS,
-    QUIRKS
+    QUIRKS,
 ];
 
 // This is all compendium keys, IE items that  you can lookup by collection (and sometimes ID)
@@ -151,7 +151,7 @@ export function getBaseContentPack(): ContentPack {
             reserves: lancerData.reserves,
             sitreps: lancerData.sitreps,
             skills: lancerData.skills,
-            statuses: lancerData.statuses
+            statuses: lancerData.statuses,
         },
     });
 }
@@ -294,8 +294,10 @@ export class CompendiumStore extends AbsStoreModule {
 
     public async loadData(): Promise<void> {
         // Load the contact packs themselves from static storage
-        let ser_packs = (await this.persistence.get_item(FILEKEY_CONTENT_PACKS)) as IContentPack[] | null;
-        if(!ser_packs)  {
+        let ser_packs = (await this.persistence.get_item(FILEKEY_CONTENT_PACKS)) as
+            | IContentPack[]
+            | null;
+        if (!ser_packs) {
             this._content_packs = [];
             this.populate();
             return;

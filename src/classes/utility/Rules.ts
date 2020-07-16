@@ -1,4 +1,4 @@
-import { rules } from "lancer-data";
+import { rules } from "@/typed_lancerdata";
 
 export class Rules {
     public static get BaseStructure(): number {
@@ -82,10 +82,10 @@ export class Rules {
     }
 
     public static get MountFittings(): {
-        "Auxiliary": ["Auxiliary"],
-        "Main": ["Main", "Auxiliary"],
-        "Flex": ["Main", "Auxiliary"],
-        "Heavy": ["Superheavy", "Heavy", "Main", "Auxiliary"]
+        Auxiliary: ["Auxiliary"];
+        Main: ["Main", "Auxiliary"];
+        Flex: ["Main", "Auxiliary"];
+        Heavy: ["Superheavy", "Heavy", "Main", "Auxiliary"];
     } {
         return rules.mount_fittings;
     }

@@ -1,6 +1,6 @@
 import { imageManagement, ImageTag } from "@/hooks";
 
-interface IFactionData {
+export interface IFactionData {
     id: string;
     name: string;
     description: string;
@@ -9,7 +9,7 @@ interface IFactionData {
     logo_url?: string | null;
 }
 
-class Faction {
+export class Faction {
     private _id: string;
     private _name: string;
     private _description: string;
@@ -53,5 +53,3 @@ class Faction {
         else return ""; // TODO: placeholder logo?
     }
 }
-
-export { Faction, IFactionData };

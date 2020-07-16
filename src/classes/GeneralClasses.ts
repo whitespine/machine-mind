@@ -9,18 +9,9 @@ export interface PrintOptions {
     loadout_index: number;
     combo: boolean;
 }
-
-export interface Faction {
-    id: string;
-    name: string;
-    description: string;
-    logo: string;
-    color: string;
-}
-
 export interface Status {
     name: string;
-    type: 'Status' | 'Condition';
+    type: "Status" | "Condition";
     icon: string;
     effects: string[];
 }

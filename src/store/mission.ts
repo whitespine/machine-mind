@@ -70,10 +70,10 @@ export class MissionStore extends AbsStoreModule {
 
     // Load missions from persistent storage
     public async loadData(): Promise<void> {
-        let raw_missions = (await this.persistence.get_item(FILEKEY_MISSIONS) || []) as IMissionData[];
-        let raw_actives = (await this.persistence.get_item(
-            FILEKEY_ACTIVE_MISSIONS
-        ) || []) as IActiveMissionData[];
+        let raw_missions = ((await this.persistence.get_item(FILEKEY_MISSIONS)) ||
+            []) as IMissionData[];
+        let raw_actives = ((await this.persistence.get_item(FILEKEY_ACTIVE_MISSIONS)) ||
+            []) as IActiveMissionData[];
         this._missions = raw_missions.map(v => Mission.Deserialize(v));
         this._active_missions = raw_actives.map(v => ActiveMission.Deserialize(v));
     }

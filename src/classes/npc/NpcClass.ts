@@ -78,7 +78,9 @@ export class NpcClass {
     }
 
     public get OptionalFeatures(): NpcFeature[] {
-        return this._optional_features.map(x => store.compendium.getReferenceByID("NpcFeatures", x));
+        return this._optional_features.map(x =>
+            store.compendium.getReferenceByID("NpcFeatures", x)
+        );
     }
 
     public get Stats(): NpcClassStats {

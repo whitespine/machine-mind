@@ -45,15 +45,15 @@ export class UserProfileStore extends AbsStoreModule {
 
     public async loadData(): Promise<void> {
         // Recall all fields, and set them
-        const data = await this.persistence.get_item(FILEKEY_USER) as IUserProfile;
-        if(data) {
-        this.ID = data.id;
-        this.SelectorView = data.selectorView;
-        this.NpcView = data.npcView;
-        this.RosterView = data.rosterView;
-        this.HangarView = data.hangarView;
-        this.PilotSheetView = data.pilotSheetView;
-        this.Theme = data.theme;
+        const data = (await this.persistence.get_item(FILEKEY_USER)) as IUserProfile;
+        if (data) {
+            this.ID = data.id;
+            this.SelectorView = data.selectorView;
+            this.NpcView = data.npcView;
+            this.RosterView = data.rosterView;
+            this.HangarView = data.hangarView;
+            this.PilotSheetView = data.pilotSheetView;
+            this.Theme = data.theme;
         } else {
             this._id = uuid();
             this._selectorView = "split";

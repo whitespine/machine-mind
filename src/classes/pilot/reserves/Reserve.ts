@@ -1,8 +1,8 @@
 //
 import { ReserveType } from "@/class";
-import { reserves } from "lancer-data";
 import { store } from "@/hooks";
 import { IReserveData } from "@/classes/GeneralInterfaces";
+import { reserves } from "@/typed_lancerdata";
 
 export class Reserve {
     private _id: string;
@@ -111,17 +111,19 @@ export class Reserve {
     public static Deserialize(rData: IReserveData): Reserve {
         let data = reserves.find(x => x.id === rData.id);
         if (!data)
+            // Create new
             data = {
                 id: rData.id,
                 type: rData.type,
                 name: rData.name,
                 label: rData.label,
                 description: rData.description,
+                used: false,
             };
         const r = new Reserve(data);
-        r._resource_name = rData.resource_name;
-        r._resource_note = rData.resource_note;
-        r._resource_cost = rData.resource_cost;
+        r._resource_name = rData.resource_name || "";
+        r._resource_note = rData.resource_note || "";
+        r._resource_cost = rData.resource_cost || "";
         r._used = rData.used;
         return r;
     }

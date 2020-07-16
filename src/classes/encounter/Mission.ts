@@ -106,10 +106,9 @@ class Mission {
     }
 
     public ValidateSteps(): void {
-        const ids = store.encounters
-            .Encounters
-            .map((x: Encounter) => x.ID)
-            .concat(this._rests.map(x => x.ID));
+        const ids = store.encounters.Encounters.map((x: Encounter) => x.ID).concat(
+            this._rests.map(x => x.ID)
+        );
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));
     }
 

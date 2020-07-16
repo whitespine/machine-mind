@@ -2,7 +2,7 @@
 import { Encounter } from "@/class";
 import { IEncounterData } from "@/classes/encounter/Encounter";
 import { logger } from "@/hooks";
-import { AbsStoreModule } from './store_module';
+import { AbsStoreModule } from "./store_module";
 
 export const FILEKEY_ENCOUNTERS = "encounters_v2.json";
 
@@ -47,7 +47,7 @@ export class EncounterStore extends AbsStoreModule {
 
     // Load all encounters from persistent storage
     public async loadData(): Promise<void> {
-        let raw = (await this.persistence.get_item(FILEKEY_ENCOUNTERS)) || [] as IEncounterData[];
+        let raw = (await this.persistence.get_item(FILEKEY_ENCOUNTERS)) || ([] as IEncounterData[]);
         this.encounters = raw.map(d => Encounter.Deserialize(d));
     }
 }

@@ -205,7 +205,6 @@ export class Pilot {
         return this._brews;
     }
 
-
     public get Callsign(): string {
         return this._callsign;
     }
