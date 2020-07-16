@@ -5,8 +5,8 @@ import { IMissionData } from "@/classes/encounter/Mission";
 import { IActiveMissionData } from "@/classes/encounter/ActiveMission";
 import { AbsStoreModule } from "./store_module";
 
-const MISSION_KEY = "MISSIONS";
-const ACTIVE_MISSION_KEY = "ACTIVE_MISSIONS";
+export const FILEKEY_MISSIONS = "missions_v2.json";
+export const FILEKEY_ACTIVE_MISSIONS = "active_missions_v2.json";
 
 export class MissionStore extends AbsStoreModule {
     // The mission state
@@ -64,15 +64,15 @@ export class MissionStore extends AbsStoreModule {
     public async saveData(): Promise<void> {
         let raw_missions = this._missions.map(v => Mission.Serialize(v));
         let raw_actives = this._active_missions.map(v => ActiveMission.Serialize(v));
-        await this.persistence.set_item(MISSION_KEY, raw_missions);
-        await this.persistence.set_item(ACTIVE_MISSION_KEY, raw_actives);
+        await this.persistence.set_item(FILEKEY_MISSIONS, raw_missions);
+        await this.persistence.set_item(FILEKEY_ACTIVE_MISSIONS, raw_actives);
     }
 
     // Load missions from persistent storage
     public async loadData(): Promise<void> {
-        let raw_missions = (await this.persistence.get_item(MISSION_KEY) || []) as IMissionData[];
+        let raw_missions = (await this.persistence.get_item(FILEKEY_MISSIONS) || []) as IMissionData[];
         let raw_actives = (await this.persistence.get_item(
-            ACTIVE_MISSION_KEY
+            FILEKEY_ACTIVE_MISSIONS
         ) || []) as IActiveMissionData[];
         this._missions = raw_missions.map(v => Mission.Deserialize(v));
         this._active_missions = raw_actives.map(v => ActiveMission.Deserialize(v));

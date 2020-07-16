@@ -4,8 +4,8 @@ import { Pilot, PrintOptions } from "@/class";
 import { IPilotData } from "@/classes/GeneralInterfaces";
 import { AbsStoreModule } from './store_module';
 
-const PilotKey = "PILOT_DATA";
-const PilotGroupKey = "PILOT_GROUPS";
+export const FILEKEY_PILOTS = "pilots_v2.json";
+export const FILEKEY_PILOT_GROUPS = "pilot_groups.json";
 
 export class PilotManagementStore extends AbsStoreModule {
     private pilots: Pilot[] = [];
@@ -92,13 +92,13 @@ export class PilotManagementStore extends AbsStoreModule {
     public async saveData() {
         const pilot_data = this.pilots.map(p => Pilot.Serialize(p));
         const pilot_groups = this.PilotGroups;
-        await this.persistence.set_item(PilotKey, pilot_data);
-        await this.persistence.set_item(PilotGroupKey, pilot_groups);
+        await this.persistence.set_item(FILEKEY_PILOTS, pilot_data);
+        await this.persistence.set_item(FILEKEY_PILOT_GROUPS, pilot_groups);
     }
 
     public async loadData(): Promise<void> {
-        let raw = (await this.persistence.get_item(PilotKey) || []) as IPilotData[];
+        let raw = (await this.persistence.get_item(FILEKEY_PILOTS) || []) as IPilotData[];
         this.pilots = raw.map((p: IPilotData) => Pilot.Deserialize(p));
-        this.pilot_groups = await this.persistence.get_item(PilotGroupKey) || [];
+        this.pilot_groups = await this.persistence.get_item(FILEKEY_PILOT_GROUPS) || [];
     }
 }

@@ -6,7 +6,7 @@ import { INpcData } from "@/classes/npc/Npc";
 import { AbsStoreModule } from "./store_module";
 import { logger } from "@/hooks";
 
-const NPC_KEY = "npc_data";
+export const FILEKEY_NPCS = "npcs_v2.json";
 
 export class NpcStore extends AbsStoreModule {
     private npcs: Npc[] = [];
@@ -54,7 +54,7 @@ export class NpcStore extends AbsStoreModule {
     // Load all npcs from persistent data
     // This is called automaticall before any changes are made, to make sure we don't clobber changes
     public async loadData(): Promise<void> {
-        let inpc_data: INpcData[] = (await this.persistence.get_item(NPC_KEY) || []) as INpcData[];
+        let inpc_data: INpcData[] = (await this.persistence.get_item(FILEKEY_NPCS) || []) as INpcData[];
         this.npcs = inpc_data.map(i => Npc.Deserialize(i));
     }
 
@@ -62,6 +62,6 @@ export class NpcStore extends AbsStoreModule {
     // This is called after any of the above operations; deliberate invocation is only necessary after modifying an npc directly
     public async saveData(): Promise<void> {
         let inpc_data: INpcData[] = this.npcs.map(n => Npc.Serialize(n));
-        await this.persistence.set_item(NPC_KEY, inpc_data);
+        await this.persistence.set_item(FILEKEY_NPCS, inpc_data);
     }
 }

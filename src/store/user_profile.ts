@@ -2,7 +2,7 @@ import { AbsStoreModule } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
 import uuid from "uuid/v4";
 
-const CONFIG_FILE_NAME = "user.config";
+export const FILEKEY_USER = "user.config";
 
 interface IUserProfile {
     id: string;
@@ -40,12 +40,12 @@ export class UserProfileStore extends AbsStoreModule {
             theme: this.Theme,
         };
 
-        await this.persistence.set_item(CONFIG_FILE_NAME, data);
+        await this.persistence.set_item(FILEKEY_USER, data);
     }
 
     public async loadData(): Promise<void> {
         // Recall all fields, and set them
-        const data = await this.persistence.get_item(CONFIG_FILE_NAME) as IUserProfile;
+        const data = await this.persistence.get_item(FILEKEY_USER) as IUserProfile;
         if(data) {
         this.ID = data.id;
         this.SelectorView = data.selectorView;

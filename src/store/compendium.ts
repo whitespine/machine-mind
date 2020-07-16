@@ -28,7 +28,6 @@ import {
 import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
-import { PersistentStore } from "@/io/persistence";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule } from './store_module';
 
@@ -55,6 +54,7 @@ const RESERVES = "Reserves";
 const ENVIRONMENTS = "Environments";
 const SITREPS = "Sitreps";
 const TAGS = "Tags";
+export const FILEKEY_CONTENT_PACKS = "extra_content.json";
 
 // Contains the core compendium data
 export class Compendium {
@@ -294,7 +294,7 @@ export class CompendiumStore extends AbsStoreModule {
 
     public async loadData(): Promise<void> {
         // Load the contact packs themselves from static storage
-        let ser_packs = (await this.persistence.get_item("CONTENT_PACKS")) as IContentPack[] | null;
+        let ser_packs = (await this.persistence.get_item(FILEKEY_CONTENT_PACKS)) as IContentPack[] | null;
         if(!ser_packs)  {
             this._content_packs = [];
             this.populate();
@@ -308,6 +308,6 @@ export class CompendiumStore extends AbsStoreModule {
     public async saveData(): Promise<void> {
         // Save the content packs to static storage
         let data_packs = this._content_packs.map(c => c.Serialize());
-        await this.persistence.set_item("CONTENT_PACKS", data_packs);
+        await this.persistence.set_item(FILEKEY_CONTENT_PACKS, data_packs);
     }
 }

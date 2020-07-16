@@ -1,10 +1,21 @@
-import { CompendiumStore } from "./compendium";
-import { PilotManagementStore } from "./pilot";
-import { NpcStore } from "./npc";
-import { EncounterStore } from "./encounter";
-import { MissionStore } from "./mission";
-import { PersistentStore } from "@/io/persistence";
-import { UserProfileStore } from './user_profile';
+import { CompendiumStore, FILEKEY_CONTENT_PACKS } from "./compendium";
+import { PilotManagementStore, FILEKEY_PILOTS, FILEKEY_PILOT_GROUPS } from "./pilot";
+import { NpcStore, FILEKEY_NPCS } from "./npc";
+import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
+import { MissionStore, FILEKEY_ACTIVE_MISSIONS, FILEKEY_MISSIONS} from "./mission";
+import { PersistentStore} from "@/io/persistence";
+import { UserProfileStore, FILEKEY_USER } from './user_profile';
+
+export const FILE_KEYS = {
+    active_missions: FILEKEY_ACTIVE_MISSIONS,
+    content_packs: FILEKEY_CONTENT_PACKS,
+    encounters: FILEKEY_ENCOUNTERS,
+    missions: FILEKEY_MISSIONS,
+    npcs: FILEKEY_NPCS,
+    pilot_groups: FILEKEY_PILOT_GROUPS,
+    pilots: FILEKEY_PILOTS,
+    user_config: FILEKEY_USER
+}
 
 export class CCDataStore {
     // Substores

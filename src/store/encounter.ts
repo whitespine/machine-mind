@@ -4,7 +4,7 @@ import { IEncounterData } from "@/classes/encounter/Encounter";
 import { logger } from "@/hooks";
 import { AbsStoreModule } from './store_module';
 
-const ENCOUNTER_KEY = "ENCOUNTERS";
+export const FILEKEY_ENCOUNTERS = "encounters_v2.json";
 
 export class EncounterStore extends AbsStoreModule {
     private encounters: Encounter[] = [];
@@ -42,12 +42,12 @@ export class EncounterStore extends AbsStoreModule {
     // Save all loaded encounters to persisten memory, overwriting previous data
     public async saveData(): Promise<void> {
         let raw = this.encounters.map(e => Encounter.Serialize(e));
-        await this.persistence.set_item(ENCOUNTER_KEY, raw);
+        await this.persistence.set_item(FILEKEY_ENCOUNTERS, raw);
     }
 
     // Load all encounters from persistent storage
     public async loadData(): Promise<void> {
-        let raw = (await this.persistence.get_item(ENCOUNTER_KEY)) || [] as IEncounterData[];
+        let raw = (await this.persistence.get_item(FILEKEY_ENCOUNTERS)) || [] as IEncounterData[];
         this.encounters = raw.map(d => Encounter.Deserialize(d));
     }
 }
