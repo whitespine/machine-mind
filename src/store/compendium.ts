@@ -28,7 +28,7 @@ import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
-import { AbsStoreModule } from "./store_module";
+import { AbsStoreModule, load_setter_handler } from "./store_module";
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -177,6 +177,7 @@ export class CompendiumStore extends AbsStoreModule {
             this._content_packs.splice(i, 1);
         }
         this.populate();
+        this.saveData();
     }
 
     // Add the given pack to loaded state. Replaces existing packs with given id
@@ -196,6 +197,7 @@ export class CompendiumStore extends AbsStoreModule {
             this._content_packs.push(pack);
         }
         this.populate();
+        this.saveData();
     }
 
     // Flag a pack as active in the loaded state. Automatically reloads pack data
@@ -206,6 +208,7 @@ export class CompendiumStore extends AbsStoreModule {
             pack.SetActive(active);
         }
         this.populate();
+        this.saveData();
     }
 
     // We can implement this mgmt functions here, regardless of anything else
@@ -240,7 +243,13 @@ export class CompendiumStore extends AbsStoreModule {
             }
         }
 
+        // Set compendium
         this.compendium = comp;
+
+        // Update frame licenses
+        for (let l of comp[LICENSES]) {
+            l.updateUnlocks();
+        }
     }
 
     public compendium: Compendium = new Compendium();
@@ -297,19 +306,17 @@ export class CompendiumStore extends AbsStoreModule {
         return this.compendium[itemType];
     }
 
-    public async loadData(): Promise<void> {
+    public async loadData(handler: load_setter_handler<CompendiumStore>): Promise<void> {
         // Load the contact packs themselves from static storage
-        let ser_packs = (await this.persistence.get_item(FILEKEY_CONTENT_PACKS)) as
-            | IContentPack[]
-            | null;
-        if (!ser_packs) {
-            this._content_packs = [];
-            this.populate();
-            return;
-        }
+        let ser_packs =
+            (await this.persistence.get_item<IContentPack[]>(FILEKEY_CONTENT_PACKS)) || [];
+        let deser = ser_packs.map(cp => new ContentPack(deser));
 
-        this._content_packs = ser_packs.map(cp => new ContentPack(cp));
-        this.populate();
+        // Set when able
+        handler(cs => {
+            cs._content_packs = deser;
+            cs.populate();
+        });
     }
 
     public async saveData(): Promise<void> {

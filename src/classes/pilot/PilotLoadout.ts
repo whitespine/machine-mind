@@ -82,12 +82,12 @@ export class PilotLoadout extends Loadout {
                 this._armor[slot] = item as PilotArmor;
                 break;
             case ItemType.PilotWeapon:
-                if (extended) this._extendedWeapons[slot] = item as PilotWeapon;
-                else this._weapons[slot] = item as PilotWeapon;
+                if (extended) this._extendedWeapons.splice(slot, 1, item as PilotWeapon);
+                else this._weapons.splice(slot, 1, item as PilotWeapon);
                 break;
             case ItemType.PilotGear:
                 if (extended) this._extendedGear[slot] = item as PilotGear;
-                else this._gear[slot] = item as PilotGear;
+                else this._gear.splice(slot, 1, item as PilotGear);
                 break;
             default:
                 break;

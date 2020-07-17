@@ -2,7 +2,7 @@
 import _ from "lodash";
 import { Pilot, PrintOptions } from "@/class";
 import { IPilotData } from "@/classes/GeneralInterfaces";
-import { AbsStoreModule } from "./store_module";
+import { AbsStoreModule, load_setter_handler } from "./store_module";
 
 export const FILEKEY_PILOTS = "pilots_v2.json";
 export const FILEKEY_PILOT_GROUPS = "pilot_groups.json";
@@ -96,9 +96,16 @@ export class PilotManagementStore extends AbsStoreModule {
         await this.persistence.set_item(FILEKEY_PILOT_GROUPS, pilot_groups);
     }
 
-    public async loadData(): Promise<void> {
-        let raw = ((await this.persistence.get_item(FILEKEY_PILOTS)) || []) as IPilotData[];
-        this.pilots = raw.map((p: IPilotData) => Pilot.Deserialize(p));
-        this.pilot_groups = (await this.persistence.get_item(FILEKEY_PILOT_GROUPS)) || [];
+    public async loadData(handler: load_setter_handler<PilotManagementStore>): Promise<void> {
+        let raw_pilots = (await this.persistence.get_item<IPilotData[]>(FILEKEY_PILOTS)) || [];
+        let raw_groups = (await this.persistence.get_item<string[]>(FILEKEY_PILOT_GROUPS)) || [];
+
+        let parsed_pilots = raw_pilots.map((p: IPilotData) => Pilot.Deserialize(p));
+
+        // Set when able
+        handler(x => {
+            x.pilots = parsed_pilots;
+            x.pilot_groups = raw_groups;
+        });
     }
 }

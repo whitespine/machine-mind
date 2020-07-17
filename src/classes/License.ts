@@ -15,12 +15,21 @@ export class License {
         this._name = frame.Name;
         this._brew = frame.Brew || "Core";
 
+        this._unlocks = [[], [], []];
+        this.updateUnlocks();
+    }
+
+    public updateUnlocks() {
+        let frame = store.compendium.getReferenceByIDCareful("Frames", this._frame_id);
+        if (!frame) {
+            return;
+        }
         const items: LicensedItem[] = _.cloneDeep([
             ...store.compendium.getItemCollection("MechWeapons"),
             ...store.compendium.getItemCollection("WeaponMods"),
             ...store.compendium.getItemCollection("MechSystems"),
         ]).filter(
-            (x: LicensedItem) => x.License.toUpperCase() === frame.Name.toUpperCase()
+            (x: LicensedItem) => x.License.toUpperCase() === frame!.Name.toUpperCase()
         ) as LicensedItem[];
 
         this._unlocks = [

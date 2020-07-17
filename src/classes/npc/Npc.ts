@@ -380,8 +380,7 @@ export class Npc implements IActor {
         if (index < 0) {
             this._counterSaveData = [...this._counterSaveData, inputData];
         } else {
-            this._counterSaveData[index] = inputData;
-            this._counterSaveData = [...this._counterSaveData];
+            this._counterSaveData.splice(index, 1, inputData);
         }
         this.save();
     }

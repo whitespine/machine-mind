@@ -5,6 +5,10 @@ import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
 import { MissionStore, FILEKEY_ACTIVE_MISSIONS, FILEKEY_MISSIONS } from "./mission";
 import { PersistentStore } from "@/io/persistence";
 import { UserProfileStore, FILEKEY_USER } from "./user_profile";
+import { load_setter_handler } from "./store_module";
+
+type CCDataStoreMutation = load_setter_handler<CCDataStore>;
+export { CCDataStoreMutation };
 
 export const FILE_KEYS = {
     active_missions: FILEKEY_ACTIVE_MISSIONS,
@@ -36,13 +40,17 @@ export class CCDataStore {
     }
 
     // Call void on all modules
-    public async load_all(): Promise<void> {
+    public async load_all(handler: load_setter_handler<CCDataStore>): Promise<void> {
+        // Black magicks - we're doing nested handlers, which is less than ideal, but trust the process.
+        // Basically, we call loadData as we normally would, except our passed function must
+        // use the parm _handler_ to route back to the corresponding module. Simple as that ;)
         await Promise.all([
-            this.compendium.loadData(),
-            this.pilots.loadData(),
-            this.npcs.loadData(),
-            this.encounters.loadData(),
-            this.missions.loadData(),
+            this.compendium.loadData(h => handler(s => h(s.compendium))),
+            this.pilots.loadData(h => handler(s => h(s.pilots))),
+            this.npcs.loadData(h => handler(s => h(s.npcs))),
+            this.encounters.loadData(h => handler(s => h(s.encounters))),
+            this.missions.loadData(h => handler(s => h(s.missions))),
+            this.user.loadData(h => handler(s => h(s.user))),
         ]);
     }
 

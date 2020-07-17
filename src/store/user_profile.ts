@@ -1,4 +1,4 @@
-import { AbsStoreModule } from "./store_module";
+import { AbsStoreModule, load_setter_handler } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
 import uuid from "uuid/v4";
 
@@ -43,26 +43,28 @@ export class UserProfileStore extends AbsStoreModule {
         await this.persistence.set_item(FILEKEY_USER, data);
     }
 
-    public async loadData(): Promise<void> {
+    public async loadData(handler: load_setter_handler<UserProfileStore>): Promise<void> {
         // Recall all fields, and set them
         const data = (await this.persistence.get_item(FILEKEY_USER)) as IUserProfile;
-        if (data) {
-            this.ID = data.id;
-            this.SelectorView = data.selectorView;
-            this.NpcView = data.npcView;
-            this.RosterView = data.rosterView;
-            this.HangarView = data.hangarView;
-            this.PilotSheetView = data.pilotSheetView;
-            this.Theme = data.theme;
-        } else {
-            this._id = uuid();
-            this._selectorView = "split";
-            this._npcView = "list";
-            this._rosterView = "list";
-            this._hangarView = "cards";
-            this._pilotSheetView = "tabbed";
-            this._theme = "gms";
-        }
+        handler(user => {
+            if (data) {
+                user.ID = data.id;
+                user.SelectorView = data.selectorView;
+                user.NpcView = data.npcView;
+                user.RosterView = data.rosterView;
+                user.HangarView = data.hangarView;
+                user.PilotSheetView = data.pilotSheetView;
+                user.Theme = data.theme;
+            } else {
+                user._id = uuid();
+                user._selectorView = "split";
+                user._npcView = "list";
+                user._rosterView = "list";
+                user._hangarView = "cards";
+                user._pilotSheetView = "tabbed";
+                user._theme = "gms";
+            }
+        });
     }
 
     public get ID(): string {

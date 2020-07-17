@@ -9,5 +9,5 @@ export interface GetResult<T> {
 // However, we operate under the assumption that these may be expensive
 export abstract class PersistentStore {
     public abstract async set_item(key: string, val: any): Promise<void>;
-    public abstract async get_item(key: string): Promise<any>;
+    public abstract async get_item<T>(key: string): Promise<T>;
 }

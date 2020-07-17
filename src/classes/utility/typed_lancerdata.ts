@@ -43,7 +43,7 @@ import {
     ITagCompendiumData,
 } from "@/interface";
 import { Sitrep, Status, Environment } from "@/class";
-import { Rules } from './Rules';
+import { Rules } from "./Rules";
 
 export interface GlossaryItem {
     name: string;

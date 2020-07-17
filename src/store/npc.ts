@@ -3,22 +3,22 @@ import _ from "lodash";
 import { Npc } from "@/class";
 import { PersistentStore } from "@/io/persistence";
 import { INpcData } from "@/classes/npc/Npc";
-import { AbsStoreModule } from "./store_module";
+import { AbsStoreModule, load_setter_handler } from "./store_module";
 import { logger } from "@/hooks";
 
 export const FILEKEY_NPCS = "npcs_v2.json";
 
 export class NpcStore extends AbsStoreModule {
-    private npcs: Npc[] = [];
+    private _npcs: Npc[] = [];
 
     // Get a list of all currently loaded npcs
     public get Npcs(): Npc[] {
-        return this.npcs;
+        return this._npcs;
     }
 
     // Get a specific loaded npc by id
     public getNpc(id: string): Npc | null {
-        return this.npcs.find(n => n.ID == id) || null;
+        return this._npcs.find(n => n.ID == id) || null;
     }
 
     // Duplicate a loaded npc
@@ -27,21 +27,21 @@ export class NpcStore extends AbsStoreModule {
         const newNpc = Npc.Deserialize(npcData);
         newNpc.RenewID();
         newNpc.Name += " (COPY)";
-        this.npcs.push(newNpc);
+        this._npcs.push(newNpc);
         this.saveData();
     }
 
     // Add a new npc. New npc is added as a copy.
     public addNpc(payload: Npc): void {
-        this.npcs.push();
+        this._npcs.push();
         this.saveData();
     }
 
     // Delete an existing npc by ID
     public deleteNpc(npc: Npc): void {
-        let idx = this.npcs.findIndex(n => n.ID === npc.ID);
+        let idx = this._npcs.findIndex(n => n.ID === npc.ID);
         if (idx > -1) {
-            this.npcs.splice(idx);
+            this._npcs.splice(idx);
         } else {
             logger(`Could not remove npc ${npc.Name}`);
         }
@@ -53,16 +53,17 @@ export class NpcStore extends AbsStoreModule {
 
     // Load all npcs from persistent data
     // This is called automaticall before any changes are made, to make sure we don't clobber changes
-    public async loadData(): Promise<void> {
-        let inpc_data: INpcData[] = ((await this.persistence.get_item(FILEKEY_NPCS)) ||
-            []) as INpcData[];
-        this.npcs = inpc_data.map(i => Npc.Deserialize(i));
+    public async loadData(handler: load_setter_handler<NpcStore>): Promise<void> {
+        let inpc_data = (await this.persistence.get_item<INpcData[]>(FILEKEY_NPCS)) || [];
+        let npcs = inpc_data.map(i => Npc.Deserialize(i));
+
+        handler(x => (x._npcs = npcs));
     }
 
     // Save all loaded npcs to persistent data, overriding previous data
     // This is called after any of the above operations; deliberate invocation is only necessary after modifying an npc directly
     public async saveData(): Promise<void> {
-        let inpc_data: INpcData[] = this.npcs.map(n => Npc.Serialize(n));
+        let inpc_data: INpcData[] = this._npcs.map(n => Npc.Serialize(n));
         await this.persistence.set_item(FILEKEY_NPCS, inpc_data);
     }
 }
