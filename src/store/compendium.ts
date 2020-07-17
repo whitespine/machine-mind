@@ -1,6 +1,5 @@
 import lodash from "lodash";
-import * as lancerData from "@/typed_lancerdata";
-// import { getUser, UserProfile } from '@/io/User'
+import * as lancerData from "@/classes/utility/typed_lancerdata";
 import {
     Sitrep,
     Skill,
@@ -48,7 +47,9 @@ const PILOT_WEAPONS = "PilotWeapons";
 const PILOT_EQUIPMENT = "PilotEquipment";
 const TALENTS = "Talents";
 const SKILLS = "Skills";
-const STATUSES = "Statuses";
+const STATUSES_AND_CONDITIONS = "StatusesAndConditions";
+const STATUSES = "Statuses"; // excludes conditions
+const CONDITIONS = "Conditions"; // excludes statuses
 const QUIRKS = "Quirks";
 const RESERVES = "Reserves";
 const ENVIRONMENTS = "Environments";
@@ -70,7 +71,7 @@ export class Compendium {
     [MECH_SYSTEM]: MechSystem[] = [];
     [TALENTS]: Talent[] = [];
     [SKILLS]: Skill[] = [];
-    [STATUSES]: Status[] = [];
+    [STATUSES_AND_CONDITIONS]: Status[] = [];
     [RESERVES]: Reserve[] = [];
     [ENVIRONMENTS]: Environment[] = [];
     [SITREPS]: Sitrep[] = [];
@@ -80,6 +81,8 @@ export class Compendium {
     [PILOT_ARMOR]: PilotArmor[] = []; // Come from pilot gear
     [PILOT_WEAPONS]: PilotWeapon[] = []; // Come from pilot gear
     [PILOT_EQUIPMENT]: PilotEquipment[] = []; // Come from pilot gear
+    [STATUSES]: Status[] = []; // Come from statuses
+    [CONDITIONS]: Status[] = []; // Come from statuses
 
     // These are not ID'd
     [QUIRKS]: string[] = [];
@@ -107,7 +110,9 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     PILOT_ARMOR,
     TALENTS,
     SKILLS,
+    STATUSES_AND_CONDITIONS,
     STATUSES,
+    CONDITIONS,
     RESERVES,
     ENVIRONMENTS,
     SITREPS,

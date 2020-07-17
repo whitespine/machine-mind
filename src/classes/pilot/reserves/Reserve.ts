@@ -2,7 +2,7 @@
 import { ReserveType } from "@/class";
 import { store } from "@/hooks";
 import { IReserveData } from "@/classes/GeneralInterfaces";
-import { reserves } from "@/typed_lancerdata";
+import { reserves } from "@/classes/utility/typed_lancerdata";
 
 export class Reserve {
     private _id: string;

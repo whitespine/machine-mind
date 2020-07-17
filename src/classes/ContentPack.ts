@@ -222,9 +222,19 @@ export class ContentPack {
         return this._Skills;
     }
 
+    private _StatusesAndConditions: Status[];
+    public get StatusesAndConditions(): Status[] {
+        return this._StatusesAndConditions;
+    }
+
     private _Statuses: Status[];
     public get Statuses(): Status[] {
         return this._Statuses;
+    }
+
+    private _Conditions: Status[];
+    public get Conditions(): Status[] {
+        return this._Conditions;
     }
 
     private _Quirks: string[];
@@ -305,9 +315,12 @@ export class ContentPack {
         this._Skills = (this._data.skills || []).map(s => new Skill(s));
         this._Sitreps = this._data.sitreps || [];
         this._Reserves = (this._data.reserves || []).map(s => new Reserve(s));
-        this._Statuses = this._data.statuses || [];
+        this._StatusesAndConditions = this._data.statuses || [];
         this._Environments = this._data.environments || [];
         this._Licenses = this.Frames.map(f => new License(f));
+
+        this._Statuses = this._StatusesAndConditions.filter(s => s.type == "Status");
+        this._Conditions = this._StatusesAndConditions.filter(s => s.type == "Condition");
     }
 
     public Serialize(): IContentPack {

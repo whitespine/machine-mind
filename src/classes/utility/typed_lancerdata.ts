@@ -34,13 +34,16 @@ import {
     ISkillData,
     IFrameData,
     IFactionData,
+    IManufacturerData,
+    IWeaponModData,
+    INpcClassData,
+    INpcFeatureData,
+    INpcTemplateData,
+    IPilotEquipmentData,
+    ITagCompendiumData,
 } from "@/interface";
 import { Sitrep, Status, Environment } from "@/class";
-import { IPilotEquipmentData } from "./classes/pilot/PilotEquipment";
-import { INpcTemplateData, INpcFeatureData, INpcClassData } from "./classes/npc/interfaces";
-import { IWeaponModData } from "./classes/mech/WeaponMod";
-import { IManufacturerData } from "./classes/Manufacturer";
-import { ITagCompendiumData } from "./classes/Tag";
+import { Rules } from './Rules';
 
 export interface GlossaryItem {
     name: string;
@@ -48,7 +51,7 @@ export interface GlossaryItem {
 }
 export const glossary = _glossary as GlossaryItem[];
 
-export interface CombatAction {
+export interface PlayerAction {
     id: string;
     name: string;
     reserve: boolean;
@@ -56,7 +59,7 @@ export interface CombatAction {
     description: string;
     detai: string;
 }
-export const actions = _actions as CombatAction[];
+export const actions = _actions as PlayerAction[];
 
 export interface Background {
     id: string;
@@ -67,41 +70,7 @@ export interface Background {
 export const backgrounds = _backgrounds as Background[];
 
 // export type MountFitting = "Auxillary" | "Main" | "Flex" | "Heavy"
-export interface Rules {
-    base_structure: number;
-    base_stress: number;
-    base_grapple: number;
-    base_ram: number;
-    base_pilot_hp: number;
-    base_pilot_evasion: number;
-    base_pilot_edef: number;
-    base_pilot_speed: number;
-    minimum_pilot_skills: number;
-    minimum_mech_skills: number;
-    minimum_pilot_talents: number;
-    trigger_bonus_per_rank: number;
-    max_trigger_rank: number;
-    max_pilot_level: number;
-    max_pilot_weapons: number;
-    max_pilot_armor: number;
-    max_pilot_gear: number;
-    max_frame_size: number;
-    max_mech_armor: number;
-    max_hase: number;
-    mount_fittings: {
-        Auxiliary: ["Auxiliary"];
-        Main: ["Main", "Auxiliary"];
-        Flex: ["Main", "Auxiliary"];
-        Heavy: ["Superheavy", "Heavy", "Main", "Auxiliary"];
-    };
-    overcharge: string[];
-    skill_headers: Array<{
-        attr: string;
-        description: string;
-    }>;
-}
-export const rules = _rules as Rules;
-
+export const rules = Rules;
 export const core_bonuses = _core_bonuses as ICoreBonusData[];
 export const environments = _environments as Environment[];
 export const factions = _factions as IFactionData[];
