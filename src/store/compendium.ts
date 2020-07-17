@@ -108,6 +108,8 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     MECH_SYSTEM,
     PILOT_GEAR,
     PILOT_ARMOR,
+    PILOT_WEAPONS,
+    PILOT_EQUIPMENT,
     TALENTS,
     SKILLS,
     STATUSES_AND_CONDITIONS,
@@ -116,7 +118,6 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     RESERVES,
     ENVIRONMENTS,
     SITREPS,
-    PILOT_WEAPONS,
     TAGS,
     QUIRKS,
 ];

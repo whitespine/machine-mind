@@ -33,7 +33,7 @@ export class PilotManagementStore extends AbsStoreModule {
         return this.loaded_mech_id;
     }
 
-    public findById(id: string): Pilot | null {
+    public findByID(id: string): Pilot | null {
         return this.pilots.find(x => x.ID === id) || null;
     }
 

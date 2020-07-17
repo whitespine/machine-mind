@@ -4,7 +4,7 @@ import { NpcStore, FILEKEY_NPCS } from "./npc";
 import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
 import { MissionStore, FILEKEY_ACTIVE_MISSIONS, FILEKEY_MISSIONS } from "./mission";
 import { PersistentStore } from "@/io/persistence";
-import { UserProfileStore, FILEKEY_USER } from "./user_profile";
+import { UserProfileStore, FILEKEY_USER, IUserProfile } from "./user_profile";
 import { load_setter_handler } from "./store_module";
 
 type CCDataStoreMutation = load_setter_handler<CCDataStore>;
@@ -101,4 +101,5 @@ export {
     EncounterStore,
     MissionStore,
     UserProfileStore,
+    IUserProfile
 };

@@ -4,7 +4,7 @@ import uuid from "uuid/v4";
 
 export const FILEKEY_USER = "user.config";
 
-interface IUserProfile {
+export interface IUserProfile {
     id: string;
     selectorView: string;
     npcView: string;
@@ -48,13 +48,13 @@ export class UserProfileStore extends AbsStoreModule {
         const data = (await this.persistence.get_item(FILEKEY_USER)) as IUserProfile;
         handler(user => {
             if (data) {
-                user.ID = data.id;
-                user.SelectorView = data.selectorView;
-                user.NpcView = data.npcView;
-                user.RosterView = data.rosterView;
-                user.HangarView = data.hangarView;
-                user.PilotSheetView = data.pilotSheetView;
-                user.Theme = data.theme;
+                user.ID = data.id || uuid();
+                user.SelectorView = data.selectorView || "split";
+                user.NpcView = data.npcView || "list";
+                user.RosterView = data.rosterView || "list";
+                user.HangarView = data.hangarView || "cards";
+                user.PilotSheetView = data.pilotSheetView || "tabbed";
+                user.Theme = data.theme || "gms";
             } else {
                 user._id = uuid();
                 user._selectorView = "split";
