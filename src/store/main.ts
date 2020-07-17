@@ -44,14 +44,18 @@ export class CCDataStore {
         // Black magicks - we're doing nested handlers, which is less than ideal, but trust the process.
         // Basically, we call loadData as we normally would, except our passed function must
         // use the parm _handler_ to route back to the corresponding module. Simple as that ;)
-        await Promise.all([
-            this.compendium.loadData(h => handler(s => h(s.compendium))),
-            this.pilots.loadData(h => handler(s => h(s.pilots))),
-            this.npcs.loadData(h => handler(s => h(s.npcs))),
-            this.encounters.loadData(h => handler(s => h(s.encounters))),
-            this.missions.loadData(h => handler(s => h(s.missions))),
-            this.user.loadData(h => handler(s => h(s.user))),
-        ]);
+
+        // Can do this wherever but better earlier
+        this.user.loadData(h => handler(s => h(s.user))),
+            // This one is most important for other data ones
+            await this.compendium.loadData(h => handler(s => h(s.compendium)));
+
+        // Then can do these, in this order (pilots  + npcs before missions/encounters
+        await this.pilots.loadData(h => handler(s => h(s.pilots)));
+        await this.npcs.loadData(h => handler(s => h(s.npcs)));
+
+        await this.encounters.loadData(h => handler(s => h(s.encounters)));
+        await this.missions.loadData(h => handler(s => h(s.missions)));
     }
 
     // Call save on all modules

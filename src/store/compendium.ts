@@ -310,7 +310,7 @@ export class CompendiumStore extends AbsStoreModule {
         // Load the contact packs themselves from static storage
         let ser_packs =
             (await this.persistence.get_item<IContentPack[]>(FILEKEY_CONTENT_PACKS)) || [];
-        let deser = ser_packs.map(cp => new ContentPack(deser));
+        let deser = ser_packs.map(cp => new ContentPack(cp));
 
         // Set when able
         handler(cs => {

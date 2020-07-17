@@ -33,6 +33,10 @@ export class PilotManagementStore extends AbsStoreModule {
         return this.loaded_mech_id;
     }
 
+    public findById(id: string): Pilot | null {
+        return this.pilots.find(x => x.ID === id) || null;
+    }
+
     // Replace the current loaded pilot list with an entirely new one.
     public setPilots(payload: Pilot[]): void {
         this.pilots = payload;
