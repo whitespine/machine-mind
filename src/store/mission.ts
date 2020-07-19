@@ -4,6 +4,7 @@ import { PersistentStore } from "@/io/persistence";
 import { IMissionData } from "@/classes/encounter/Mission";
 import { IActiveMissionData } from "@/classes/encounter/ActiveMission";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
+import { logger } from '@/hooks';
 
 export const FILEKEY_MISSIONS = "missions_v2.json";
 export const FILEKEY_ACTIVE_MISSIONS = "active_missions_v2.json";
@@ -57,6 +58,27 @@ export class MissionStore extends AbsStoreModule {
         if (idx > -1) {
             this._active_missions.splice(idx);
             this.saveData();
+        }
+    }
+
+    // Replace by id
+    public updateMission(new_mis: Mission): void {
+        let idx = this._missions.findIndex(e => e.ID === new_mis.ID);
+        if (idx > -1) {
+            this._missions.splice(idx, 1, new_mis);
+            this.saveData();
+        } else {
+            logger(`Tried to update mission ${new_mis.ID}, but it did not exist!`);
+        }
+    }
+
+    public updateActiveMission(new_mis: ActiveMission): void {
+        let idx = this._active_missions.findIndex(e => e.ID === new_mis.ID);
+        if (idx > -1) {
+            this._active_missions.splice(idx, 1, new_mis);
+            this.saveData();
+        } else {
+            logger(`Tried to update active mission ${new_mis.ID}, but it did not exist!`);
         }
     }
 

@@ -33,8 +33,21 @@ export class PilotManagementStore extends AbsStoreModule {
         return this.loaded_mech_id;
     }
 
-    public findByID(id: string): Pilot | null {
+    // Retrieve a pilot, by ID
+    public getPilot(id: string): Pilot | null {
         return this.pilots.find(x => x.ID === id) || null;
+    }
+
+    // Replace a pilot (by ID) with a new one. Useful for "committing" a locally edited copy.
+    // Same as delete
+    public updatePilot(pilot: Pilot): void {
+        const pilotIndex = this.Pilots.findIndex(x => x.ID === pilot.ID);
+        if (pilotIndex > -1) {
+            this.Pilots.splice(pilotIndex, 1, pilot);
+            this.saveData();
+        } else {
+            throw console.error(`Attempted to update pilot ${pilot.ID} but they did were not found in the store.`);
+        }
     }
 
     // Replace the current loaded pilot list with an entirely new one.

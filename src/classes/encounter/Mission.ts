@@ -97,14 +97,14 @@ class Mission {
 
     public get Encounters(): Encounter[] {
         const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
-        const enc = store.encounters.Encounters;
-        return ids.map(x => enc.find(y => y.ID === x)).filter(e => e) as Encounter[];
+        return ids.map(x => store.encounters.getEncounter(x)).filter(x => x) as Encounter[];
     }
 
     public get Rests(): Rest[] {
         return this._rests;
     }
 
+    // Remove all invalid ids
     public ValidateSteps(): void {
         const ids = store.encounters.Encounters.map((x: Encounter) => x.ID).concat(
             this._rests.map(x => x.ID)
@@ -125,7 +125,7 @@ class Mission {
         return enc.find(x => x.ID === id) || null;
     }
 
-    public MoveStepUp(idx): void {
+    public MoveStepUp(idx: number): void {
         const e = this._step_ids[idx];
         const up = this._step_ids[idx - 1];
         this._step_ids.splice(idx, 1, up);
@@ -133,7 +133,7 @@ class Mission {
         this.save();
     }
 
-    public MoveStepDown(idx): void {
+    public MoveStepDown(idx: number): void {
         const e = this._step_ids[idx];
         const down = this._step_ids[idx + 1];
         this._step_ids.splice(idx, 1, down);

@@ -14,6 +14,22 @@ export class EncounterStore extends AbsStoreModule {
         return this._encounters;
     }
 
+    // Retrieve by id
+    public getEncounter(id: string): Encounter | null {
+        return this._encounters.find(x => x.ID === id) || null;
+    }
+
+    // Replace by id
+    public updateEncounter(new_enc: Encounter): void {
+        let idx = this._encounters.findIndex(e => e.ID === new_enc.ID);
+        if (idx > -1) {
+            this._encounters.splice(idx, 1, new_enc);
+            this.saveData();
+        } else {
+            logger(`Tried to update encounter ${new_enc.ID}, but it did not exist!`);
+        }
+    }
+
     // Duplicate a loaded encounter
     public cloneEncounter(payload: Encounter): void {
         let nv = Encounter.Deserialize(Encounter.Serialize(payload));

@@ -37,6 +37,17 @@ export class NpcStore extends AbsStoreModule {
         this.saveData();
     }
 
+    // Replace by id
+    public updateNpc(new_npc: Npc): void {
+        let idx = this._npcs.findIndex(e => e.ID === new_npc.ID);
+        if (idx > -1) {
+            this._npcs.splice(idx, 1, new_npc);
+            this.saveData();
+        } else {
+            logger(`Tried to update npc ${new_npc.ID}, but it did not exist!`);
+        }
+    }
+
     // Delete an existing npc by ID
     public deleteNpc(npc: Npc): void {
         let idx = this._npcs.findIndex(n => n.ID === npc.ID);
