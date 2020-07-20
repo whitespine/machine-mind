@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { identity } from "lodash";
 import uuid from "uuid/v4";
 import {
     Rules,
@@ -122,6 +122,7 @@ export class Pilot {
         this._brews = brews;
     }
 
+    // Set the pilots brews based on which brews its frames, licenses, etc come from
     public SetBrewData(): void {
         const packs = store.compendium.ContentPacks;
 
@@ -144,23 +145,34 @@ export class Pilot {
         this._brews = brews;
     }
 
-    //TODO: don't extract id or type at call, just pass object and deal with it w/ instanceof/typeof
-    public has(typeName: string, id: string, rank?: number | null): boolean {
-        if (typeName.toLowerCase() === "skill") {
-            return this._skills.findIndex(x => x.Skill.Name === id || x.Skill.ID === id) > -1;
-        } else if (typeName.toLowerCase() === "corebonus") {
-            return this._core_bonuses.findIndex(x => x.ID === id) > -1;
-        } else if (typeName.toLowerCase() === "license") {
-            const index = this._licenses.findIndex(x => x.License.Name === id);
-            return rank ? index > -1 && this._licenses[index].Rank >= rank : index > -1;
-        } else if (typeName.toLowerCase() === "talent") {
-            const index = this._talents.findIndex(x => x.Talent.ID === id);
-            return rank ? index > -1 && this._talents[index].Rank >= rank : index > -1;
-        } else if (typeName.toLowerCase() === "reserve") {
-            const e = this.Reserves.find(x => x.ID === `reserve_${id}`);
-            return !!(e && !e.Used);
+    // Check if the lancer has any of the following "possessions"
+    public has(feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve, rank?: number | null): boolean {
+        if(feature instanceof Skill || feature instanceof Talent || feature instanceof CustomSkill) {
+            let pilot_rank = this.rank(feature);
+            return pilot_rank >= (rank || 1);
+        } else if(feature instanceof CoreBonus) {
+            return this._core_bonuses.some(x => x.ID === feature.ID)
+        } else if(feature instanceof License) {
+                const license = this._licenses.find(x => x.License.Name === feature.Name);
+                return !!(license && (license.Rank >= (rank || 0)));
+        } else if(feature instanceof Reserve) {
+                const e = this.Reserves.find(x => x.ID === `reserve_${feature.ID}` || x.Name === feature.Name);
+                return !!(e && !e.Used);
+        } else {
+            return false;
         }
-        return false;
+    }
+
+    // Get the rank of the specified skill/talent. Returns 0 if none
+    public rank(feature: Skill | CustomSkill | Talent): number {
+        if(feature instanceof Skill) {
+            let valid = [feature.ID, feature.Name];
+            let found = this._skills.find(x => valid.includes(x.Skill.Name) || valid.includes(x.Skill.ID));
+            return found?.Rank || 0;
+        } else {
+            let found = this._talents.find(x => x.Talent.ID === feature.ID);
+            return found?.Rank || 0;
+        }
     }
 
     // -- Attributes --------------------------------------------------------------------------------
@@ -476,7 +488,8 @@ export class Pilot {
     }
 
     public get AICapacity(): number {
-        return this.has("corebonus", "cb_the_lesson_of_shaping") ? 2 : 1;
+        let tlos = store.compendium.getReferenceByID("CoreBonuses", "cb_the_lesson_of_shaping");
+        return this.has(tlos) ? 2 : 1;
     }
 
     // -- Skills ------------------------------------------------------------------------------------
@@ -512,10 +525,10 @@ export class Pilot {
 
     public CanAddSkill(skill: Skill | CustomSkill): boolean {
         if (this._level === 0) {
-            return this._skills.length < Rules.MinimumPilotSkills && !this.has("Skill", skill.ID);
+            return this._skills.length < Rules.MinimumPilotSkills && !this.has(skill);
         } else {
             const underLimit = this.CurrentSkillPoints < this.MaxSkillPoints;
-            if (!this.has("Skill", skill.ID) && underLimit) return true;
+            if (!this.has(skill) && underLimit) return true;
             const pSkill = this._skills.find(x => x.Skill.ID === skill.ID);
             if (underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank) {
                 return true;
@@ -539,7 +552,7 @@ export class Pilot {
     }
 
     public CanRemoveSkill(skill: Skill | CustomSkill): boolean {
-        return this.has("Skill", skill.ID);
+        return this.has(skill);
     }
 
     public RemoveSkill(skill: Skill | CustomSkill): void {

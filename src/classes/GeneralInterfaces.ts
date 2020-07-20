@@ -1,3 +1,5 @@
+import { License } from './License';
+
 export interface IImageContainer {
     SetLocalImage(): any;
     SetCloudImage(): any;
@@ -239,15 +241,6 @@ export interface ITagData {
     id: string;
     val?: string | number | null;
 }
-
-export interface ILicenseRequirement {
-    source: string;
-    name: string;
-    rank: number;
-    items: string[];
-    missing?: boolean | null;
-}
-
 export interface ISnackbarSettings {
     text: string;
     multiline?: boolean | null;

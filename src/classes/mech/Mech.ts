@@ -12,7 +12,8 @@ import {
 } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store } from "@/hooks";
-import { IMechData, IActor, ILicenseRequirement, IMechLoadoutData } from "@/interface";
+import { IMechData, IActor, IMechLoadoutData } from "@/interface";
+import { LicensedRequirementBuilder, ILicenseRequirement } from '../LicensedItem';
 
 export class Mech implements IActor {
     private _id: string;
@@ -155,35 +156,25 @@ export class Mech implements IActor {
 
     public get IsCascading(): boolean {
         if (!this.ActiveLoadout || !this.ActiveLoadout.AICount) return false;
-        return !!this.ActiveLoadout.Equipment.filter(x => x.IsCascading).length;
+        return this.ActiveLoadout.Equipment.some(x => x.IsCascading);
     }
 
-    public get RequiredLicenses(): ILicenseRequirement[] {
-        const requirements = this.ActiveLoadout
-            ? this.ActiveLoadout.RequiredLicenses
-            : ([] as ILicenseRequirement[]);
+    // Get the license list, and whether they are satisfied
+    public get RequiredLicenseList(): ILicenseRequirement[] {
+        return this.RequiredLicenses().check_satisfied(this.Pilot);
+    }
 
-        if (this._frame.ID === "mf_standard_pattern_i_everest") {
-            const gmsIdx = requirements.findIndex(x => x.source === "GMS");
-            if (gmsIdx > -1) requirements[gmsIdx].items.push('STANDARD PATTERN I "EVEREST" Frame');
-            else requirements.push(this.Frame.RequiredLicense);
+    public RequiredLicenses(): LicensedRequirementBuilder {
+        // Get the requirements
+        let requirements: LicensedRequirementBuilder;
+        if(this.ActiveLoadout) {
+            requirements = this.ActiveLoadout.RequiredLicenses();
         } else {
-            const reqIdx = requirements.findIndex(
-                x => x.name === `${this._frame.Name}` && x.rank === 2
-            );
-            if (reqIdx > -1)
-                requirements[reqIdx].items.push(`${this._frame.Name.toUpperCase()} Frame`);
-            else requirements.push(this.Frame.RequiredLicense);
+            requirements = new LicensedRequirementBuilder();
         }
 
-        for (const l of requirements) {
-            if (l.source === "GMS") continue;
-            l.missing = !this._pilot.has("License", l.name, l.rank);
-        }
-
-        return requirements.sort((a, b) => {
-            return a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0;
-        });
+        // Add the frame
+        return requirements.add_item(this.Frame);
     }
 
     public SetCloudImage(src: string): void {
@@ -214,11 +205,47 @@ export class Mech implements IActor {
         return this.Frame.DefaultImage;
     }
 
+    private has_cb(name: string) {
+        const bonus = store.compendium.getReferenceByIDCareful("CoreBonuses", name);
+        return !!(bonus && this.Pilot.has(bonus));
+    }
+
+    private get HasFomorian(): boolean {
+        return this.has_cb("cb_fomorian_frame");
+    }
+
+    private get HasSlopedPlating(): boolean {
+        return this.has_cb("cb_sloped_plating");
+    }
+
+    private get HasLessonOfTheOpenDoor(): boolean {
+        return this.has_cb("cb_the_lesson_of_the_open_door");
+    }
+
+    private get HasFullSubjectivitySync(): boolean {
+        return this.has_cb("cb_full_subjectivity_sync");
+    }
+
+    private get HasLessonOfDisbelief(): boolean { 
+        return this.has_cb("cb_the_lesson_of_disbelief");
+    }
+    
+    private get HasIntegratedAmmoFeeds(): boolean {
+        return this.has_cb("cb_integrated_ammo_feeds");
+    }
+
+    private get HasSuperiorByDesign(): boolean {
+        return this.has_cb("cb_superior_by_design");
+    }
+
+    private get HasReinforcedFrame(): boolean {
+        return this.has_cb("cb_reinforced_frame");
+    }
+
     // -- Attributes --------------------------------------------------------------------------------
     public get Size(): number {
         if (this._frame.Size === Rules.MaxFrameSize) return Rules.MaxFrameSize;
-        const bonus = this._pilot.has("CoreBonus", "cb_fomorian_frame");
-        if (bonus) {
+        if (this.HasFomorian) {
             return this._frame.Size === 0.5 ? 1 : this._frame.Size + 1;
         } else return this._frame.Size;
     }
@@ -229,30 +256,27 @@ export class Mech implements IActor {
 
     public get SizeContributors(): string[] {
         const output = [`FRAME Base Size: ${this.Frame.Size}`];
-        if (this._pilot.has("CoreBonus", "cb_fomorian_frame"))
+        if (this.HasFomorian)
             output.push(`FOMORIAN FRAME (IPS-N CORE Bonus): +1`);
         return output;
     }
 
     public get Armor(): number {
-        const bonus =
-            this._pilot.has("CoreBonus", "cb_sloped_plating") &&
-            this._frame.Armor < Rules.MaxMechArmor
-                ? 1
-                : 0;
-        return this._frame.Armor + bonus;
+        // Decide if core bonuses apply
+        const bonus = this.HasSlopedPlating && this._frame.Armor < Rules.MaxMechArmor
+        return this._frame.Armor + (bonus ? 1 : 0);
     }
 
     public get ArmorContributors(): string[] {
         const output = [`FRAME Base Armor: ${this.Frame.Armor}`];
-        if (this._pilot.has("CoreBonus", "cb_sloped_plating"))
+        if (this.HasSlopedPlating)
             output.push(`SLOPED PLATING (IPS-N CORE Bonus): +1`);
         return output;
     }
 
     public get SaveTarget(): number {
         let bonus = this._pilot.Grit;
-        if (this._pilot.has("CoreBonus", "cb_the_lesson_of_the_open_door")) bonus += 2;
+        if (this.HasLessonOfTheOpenDoor) bonus += 2;
         return this._frame.SaveTarget + bonus;
     }
 
@@ -261,14 +285,16 @@ export class Mech implements IActor {
             `FRAME Base Save Target: ${this.Frame.SaveTarget}`,
             `Pilot GRIT Bonus: +${this._pilot.Grit}`,
         ];
-        if (this._pilot.has("CoreBonus", "cb_the_lesson_of_the_open_door"))
+        if (this.HasLessonOfTheOpenDoor)
             output.push(`THE LESSON OF THE OPEN DOOR (HORUS CORE Bonus): +2`);
         return output;
     }
 
     public get Evasion(): number {
         let bonus = this.Agi;
-        if (this._pilot.has("CoreBonus", "cb_full_subjectivity_sync")) bonus += 2;
+        if(this.HasFullSubjectivitySync) {
+            bonus += 2;
+        }
         return this._frame.Evasion + bonus;
     }
 
@@ -277,7 +303,7 @@ export class Mech implements IActor {
             `FRAME Base Evasion: ${this.Frame.Evasion}`,
             `Pilot AGILITY Bonus: +${this.Agi}`,
         ];
-        if (this._pilot.has("CoreBonus", "cb_full_subjectivity_sync"))
+        if(this.HasFullSubjectivitySync)
             output.push(`FULL SUBJECTIVITY SYNC (SSC CORE Bonus): +2`);
         return output;
     }
@@ -304,7 +330,7 @@ export class Mech implements IActor {
 
     public get EDefense(): number {
         let bonus = this.Sys;
-        if (this._pilot.has("CoreBonus", "cb_the_lesson_of_disbelief")) bonus += 2;
+        if (this.HasLessonOfDisbelief) bonus += 2;
         return this._frame.EDefense + bonus;
     }
 
@@ -313,20 +339,20 @@ export class Mech implements IActor {
             `FRAME Base E-Defense: ${this.Frame.EDefense}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
         ];
-        if (this._pilot.has("CoreBonus", "cb_the_lesson_of_disbelief"))
+        if (this.HasLessonOfDisbelief) 
             output.push(`THE LESSON OF DISBELIEF (HORUS CORE Bonus): +2`);
         return output;
     }
 
     public get LimitedBonus(): number {
         let bonus = 0;
-        if (this._pilot.has("CoreBonus", "cb_integrated_ammo_feeds")) bonus += 2;
+        if (this.HasIntegratedAmmoFeeds) bonus += 2;
         return Math.floor(this.Eng / 2) + bonus;
     }
 
     public get LimitedContributors(): string[] {
         const output = [`Pilot ENGINEERING Bonus: +${Math.floor(this.Eng / 2)}`];
-        if (this._pilot.has("CoreBonus", "cb_integrated_ammo_feeds"))
+        if (this.HasIntegratedAmmoFeeds)
             output.push(`INTEGRATED AMMO FEEDS (HA CORE Bonus): +2`);
         return output;
     }
@@ -440,7 +466,7 @@ export class Mech implements IActor {
             const personalizations = this.ActiveLoadout.GetSystem("ms_personalizations");
             if (personalizations && !personalizations.Destroyed) bonus += 2;
         }
-        if (this._pilot.has("CoreBonus", "cb_reinforced_frame")) bonus += 5;
+        if (this.HasReinforcedFrame) bonus += 5;
         return this._frame.HP + bonus;
     }
 
@@ -452,7 +478,7 @@ export class Mech implements IActor {
         ];
         if (this.ActiveLoadout && this.ActiveLoadout.HasSystem("ms_personalizations"))
             output.push(`PERSONALIZATIONS (GMS System): +2`);
-        if (this._pilot.has("CoreBonus", "cb_reinforced_frame"))
+        if (this.HasReinforcedFrame)
             output.push(`REINFORCED FRAME (IPS-N CORE Bonus): +5`);
         return output;
     }
@@ -518,7 +544,7 @@ export class Mech implements IActor {
 
     public get HeatCapacity(): number {
         let bonus = this.Eng;
-        if (this._pilot.has("CoreBonus", "cb_superior_by_design")) bonus += 2;
+        if (this.HasSuperiorByDesign) bonus += 2;
         return this._frame.HeatCap + bonus;
     }
 
@@ -527,7 +553,7 @@ export class Mech implements IActor {
             `FRAME Base Heat Capacity: ${this.Frame.HeatCap}`,
             `Pilot ENGINEERING Bonus: +${this.Eng}`,
         ];
-        if (this._pilot.has("CoreBonus", "cb_superior_by_design"))
+        if (this.HasSuperiorByDesign)
             output.push(`SUPERIOR BY DESIGN (HA CORE Bonus): +2`);
         return output;
     }
@@ -659,7 +685,7 @@ export class Mech implements IActor {
         if (this.FreeSP < 0) out.push("overSP");
         if (this.FreeSP > 0) out.push("underSP");
         if (this.ActiveLoadout?.HasEmptyMounts) out.push("unfinished");
-        if (this.RequiredLicenses.filter(x => x.missing).length) out.push("unlicensed");
+        if (this.RequiredLicenseList.filter(x => x.missing).length) out.push("unlicensed");
         return out;
     }
 
@@ -807,12 +833,18 @@ export class Mech implements IActor {
         if (this._frame.CoreSystem.getIntegrated()) {
             intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated()!, "CORE System"));
         }
-        if (this._pilot.has("Talent", "t_nuclear_cavalier", 3)) {
+
+        let nuccav = store.compendium.getReferenceByID("Talents", "t_nuclear_cavalier");
+        let nuc_rank = this._pilot.rank(nuccav);
+        if (nuc_rank >= 3) {
             const frWeapon = store.compendium.getReferenceByID("MechWeapons", "mw_fuel_rod_gun");
             intg.push(new IntegratedMount(frWeapon, "Nuclear Cavalier"));
         }
-        if (this._pilot.has("Talent", "t_engineer")) {
-            const id = `mw_prototype_${this._pilot.getTalentRank("t_engineer")}`;
+
+        let engineer = store.compendium.getReferenceByID("Talents", "t_engineer");
+        let eng_rank = this._pilot.rank(engineer);
+        if (eng_rank) {
+            const id = `mw_prototype_${eng_rank}`;
             const engWeapon = store.compendium.getReferenceByID("MechWeapons", id);
             intg.push(new IntegratedMount(engWeapon, "Engineer"));
         }
@@ -821,17 +853,24 @@ export class Mech implements IActor {
 
     public get IntegratedSystems(): MechSystem[] {
         const intg: MechSystem[] = [];
-        if (this._pilot.has("Talent", "t_walking_armory")) {
+
+        let armory = store.compendium.getReferenceByID("Talents", "t_walking_armory");
+        let arm_rank = this._pilot.rank(armory);
+        if (arm_rank) {
             const arms = store.compendium.instantiate(
                 "MechSystems",
-                `ms_walking_armory_${this._pilot.getTalentRank("t_walking_armory")}`
+                `ms_walking_armory_${arm_rank}`
             );
             intg.push(arms);
         }
-        if (this._pilot.has("Talent", "t_technophile")) {
+
+
+        let technophile = store.compendium.getReferenceByID("Talents", "t_technophile");
+        let techno_rank = this._pilot.rank(armory);
+        if (techno_rank) {
             const techno = store.compendium.instantiate(
                 "MechSystems",
-                `ms_technophile_${this._pilot.getTalentRank("t_technophile")}`
+                `ms_technophile_${techno_rank}`
             );
             intg.push(techno);
         }

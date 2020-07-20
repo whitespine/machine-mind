@@ -47,8 +47,10 @@ export class MissionStore extends AbsStoreModule {
     public deleteMission(payload: Mission): void {
         let idx = this._missions.findIndex(v => v.ID === payload.ID);
         if (idx > -1) {
-            this._missions.splice(idx);
+            this._missions.splice(idx)[0];
             this.saveData();
+            
+            // There's no need to fix active missions as they actually keep their own local copies of the missions
         }
     }
 

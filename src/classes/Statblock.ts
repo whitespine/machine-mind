@@ -1,4 +1,5 @@
 import { Pilot, Mech, Npc, PilotWeapon } from "@/class";
+import { store } from '@/hooks';
 
 function linebreak(i: number, length: number): string {
     if (i > 0 && (i + 1) % 2 === 0 && i + 1 !== length) {
@@ -107,10 +108,11 @@ export class Statblock {
                 output += `  INTEGRATED MOUNT: ${im.Weapon ? im.Weapon.Name : ""}\n`;
             }
             const loadout = mech.ActiveLoadout ? mech.ActiveLoadout : mech.Loadouts[0];
+            const comp = store.compendium;
             if (loadout) {
                 for (const mount of loadout.AllEquippableMounts(
-                    pilot && pilot.has("CoreBonus", "cb_improved_armament"),
-                    pilot && pilot.has("CoreBonus", "cb_integrated_weapon")
+                    pilot.has(comp.getReferenceByID("CoreBonuses", "cb_improved_armament")),
+                    pilot.has(comp.getReferenceByID("CoreBonuses", "cb_integrated_weapon"))
                 )) {
                     output += `  ${mount.Name}: `;
                     if (mount.IsLocked) {
@@ -154,6 +156,7 @@ export class Statblock {
 
     public static GenerateBuildSummary(pilot: Pilot, mech: Mech, discordEmoji: boolean): string {
         const mechLoadout = mech.ActiveLoadout ? mech.ActiveLoadout : mech.Loadouts[0];
+            const comp = store.compendium;
         return `-- ${mech.Frame.Source} ${mech.Frame.Name} @ LL${pilot.Level} --
 [ LICENSES ]
   ${
@@ -184,8 +187,8 @@ export class Statblock {
       mount => `Integrated: ${mount.Weapon ? mount.Weapon.Name : "N/A"}\n`
   )}${mechLoadout
             .AllEquippableMounts(
-                pilot.has("CoreBonus", "cb_improved_armament"),
-                pilot.has("CoreBonus", "cb_integrated_weapon")
+                    pilot.has(comp.getReferenceByID("CoreBonuses", "cb_improved_armament")),
+                    pilot.has(comp.getReferenceByID("CoreBonuses", "cb_integrated_weapon"))
             )
             .map(mount => {
                 let out = `${mount.Name}: `;

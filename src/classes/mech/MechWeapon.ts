@@ -114,18 +114,19 @@ class MechWeapon extends MechEquipment {
     }
 
     public getTotalRange(mech: Mech): Range[] {
+        const comp = store.compendium;
         const bonuses = [] as { type: RangeType; val: number }[];
         if (this.Mod && this.Mod.AddedRange)
             bonuses.push({
                 type: RangeType.Range,
                 val: parseInt(this.Mod.AddedRange.Value),
             });
-        if (mech.Pilot.has("CoreBonus", "cb_neurolink_targeting"))
+        if (mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_neurolink_targeting")))
             bonuses.push({
                 type: RangeType.Range,
                 val: 3,
             });
-        if (mech.Pilot.has("CoreBonus", "cb_gyges_frame") && this.Type === WeaponType.Melee)
+        if (mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_gyges_frame")) && this.Type === WeaponType.Melee)
             bonuses.push({
                 type: RangeType.Threat,
                 val: 1,

@@ -12,8 +12,8 @@ import {
     MechWeapon,
     WeaponMod,
 } from "@/class";
-import { ILicenseRequirement } from "@/interface";
 import { IMechLoadoutData } from "@/interface";
+import { LicensedRequirementBuilder, ILicenseRequirement } from '../LicensedItem';
 
 export class MechLoadout extends Loadout {
     private _integratedMounts: IntegratedMount[];
@@ -143,7 +143,7 @@ export class MechLoadout extends Loadout {
     }
 
     public HasSystem(systemID: string): boolean {
-        return !!this.Systems.find(x => x.ID === systemID);
+        return this.Systems.some(x => x.ID === systemID);
     }
 
     public GetSystem(systemID: string): MechSystem | null {
@@ -167,37 +167,22 @@ export class MechLoadout extends Loadout {
         this.save();
     }
 
-    public get RequiredLicenses(): ILicenseRequirement[] {
-        const requirements = [] as ILicenseRequirement[];
-        const equippedWeapons = (this.Weapons as LicensedItem[]).concat(
-            this.Weapons.map(x => x.Mod).filter(x => x !== null) as LicensedItem[]
-        );
-        const equippedSystems = this._systems as LicensedItem[];
+    // Returns a list of requirements to provide every system, mod, and weapon used in
+    // this mech loadout. Does not include the fraame itself
+    public RequiredLicenses(): LicensedRequirementBuilder {
+        // Init list
+        const requirements = new LicensedRequirementBuilder();
 
-        equippedSystems.concat(equippedWeapons).forEach(item => {
-            if (item.Source === "GMS") {
-                const GMSIndex = requirements.findIndex(x => x.source === "GMS");
-                if (GMSIndex > -1) {
-                    requirements[GMSIndex].items.push(item.Name);
-                } else {
-                    requirements.push(item.RequiredLicense);
-                }
-            } else {
-                const licenseIndex = requirements.findIndex(
-                    x =>
-                        x.source === item.Source &&
-                        x.name === item.License &&
-                        x.rank === item.LicenseLevel
-                );
-                if (licenseIndex > -1) {
-                    requirements[licenseIndex].items.push(item.Name);
-                } else {
-                    if (item.RequiredLicense.name !== "" && item.RequiredLicense.rank > 0) {
-                        requirements.push(item.RequiredLicense);
-                    }
-                }
-            }
-        });
+        // Collect all required items
+        const equippedWeapons = this.Weapons as LicensedItem[];
+        const equippedMods = this.Weapons.map(x => x.Mod).filter(x => x !== null) as LicensedItem[];
+        const equippedSystems = this._systems as LicensedItem[];
+        const all_equipped = _.concat(equippedWeapons, equippedMods, equippedSystems);
+
+        // add each and return
+        for(let item of all_equipped) {
+            requirements.add_item(item);
+        }
         return requirements;
     }
 

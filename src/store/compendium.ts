@@ -214,7 +214,7 @@ export class CompendiumStore extends AbsStoreModule {
 
     // We can implement this mgmt functions here, regardless of anything else
     public packAlreadyInstalled(packID: string): boolean {
-        return !!this._content_packs.find(p => p.ID == packID);
+        return this._content_packs.some(p => p.ID == packID);
     }
 
     // Amends the custom content packs with the base

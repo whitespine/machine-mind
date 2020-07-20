@@ -1,6 +1,8 @@
-import { CompendiumItem, ItemType, Manufacturer } from "@/class";
-import { ICompendiumItemData, ILicenseRequirement } from "@/interface";
+import { CompendiumItem, ItemType, Manufacturer, Pilot, License } from "@/class";
+import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
+import _ from 'lodash';
+import { PilotLicense } from './pilot/PilotLicense';
 
 interface ILicensedItemData extends ICompendiumItemData {
     source: string;
@@ -41,14 +43,50 @@ abstract class LicensedItem extends CompendiumItem {
         if (this._license) return `${this._license} ${this._license_level}`;
         return this._source;
     }
+}
 
-    public get RequiredLicense(): ILicenseRequirement {
-        return {
-            source: this.Source,
-            name: this.License,
-            rank: this.LicenseLevel,
-            items: [this.ItemType === ItemType.Frame ? `${this.Name} Frame` : this.Name],
-        };
+
+// Represents the specific licenses of a mech
+export interface ILicenseRequirement {
+    license: License; // The license it comes from
+    rank: number; // The rank of that license
+    items: string[]; // The items used in that license
+    missing?: boolean | null; // When displaying, whether this license is present
+}
+
+// Utility class to check if all requirements are satisfied
+export class LicensedRequirementBuilder {
+    // Our resulting array, so far
+    requirements: ILicenseRequirement[] = [];
+
+    add_item(item: LicensedItem): LicensedRequirementBuilder {
+        // Get what license we think it came from
+        let found_license = store.compendium.getReferenceByID("Licenses", item.License);
+
+        // Try and fine one
+        let existing: ILicenseRequirement | null = this.requirements.find(req => req.license.Name == item.License && req.rank === item.LicenseLevel) || null;
+        if(!existing) {
+            existing = {
+                items: [],
+                license: found_license,
+                rank: item.LicenseLevel,
+                missing: null
+            };
+        }
+
+        return this;
+    }
+
+    // Returns as_requirement_list but with missing filled in
+    check_satisfied(for_pilot: Pilot){
+        let requirements = [...this.requirements];
+
+        // Iterate over each requirement
+        for(let r of requirements) {
+            let satisfied = for_pilot.has(r.license, r.rank);
+            r.missing = !satisfied;
+        }
+        return requirements;
     }
 }
 
