@@ -46,7 +46,9 @@ export class PilotManagementStore extends AbsStoreModule {
             this.Pilots.splice(pilotIndex, 1, pilot);
             this.saveData();
         } else {
-            throw console.error(`Attempted to update pilot ${pilot.ID} but they did were not found in the store.`);
+            throw console.error(
+                `Attempted to update pilot ${pilot.ID} but they did were not found in the store.`
+            );
         }
     }
 

@@ -4,7 +4,7 @@ import { PersistentStore } from "@/io/persistence";
 import { IMissionData } from "@/classes/encounter/Mission";
 import { IActiveMissionData } from "@/classes/encounter/ActiveMission";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
-import { logger } from '@/hooks';
+import { logger } from "@/hooks";
 
 export const FILEKEY_MISSIONS = "missions_v2.json";
 export const FILEKEY_ACTIVE_MISSIONS = "active_missions_v2.json";
@@ -49,7 +49,7 @@ export class MissionStore extends AbsStoreModule {
         if (idx > -1) {
             this._missions.splice(idx)[0];
             this.saveData();
-            
+
             // There's no need to fix active missions as they actually keep their own local copies of the missions
         }
     }

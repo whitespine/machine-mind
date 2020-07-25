@@ -146,18 +146,27 @@ export class Pilot {
     }
 
     // Check if the lancer has any of the following "possessions"
-    public has(feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve, rank?: number | null): boolean {
-        if(feature instanceof Skill || feature instanceof Talent || feature instanceof CustomSkill) {
+    public has(
+        feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve,
+        rank?: number | null
+    ): boolean {
+        if (
+            feature instanceof Skill ||
+            feature instanceof Talent ||
+            feature instanceof CustomSkill
+        ) {
             let pilot_rank = this.rank(feature);
             return pilot_rank >= (rank || 1);
-        } else if(feature instanceof CoreBonus) {
-            return this._core_bonuses.some(x => x.ID === feature.ID)
-        } else if(feature instanceof License) {
-                const license = this._licenses.find(x => x.License.Name === feature.Name);
-                return !!(license && (license.Rank >= (rank || 0)));
-        } else if(feature instanceof Reserve) {
-                const e = this.Reserves.find(x => x.ID === `reserve_${feature.ID}` || x.Name === feature.Name);
-                return !!(e && !e.Used);
+        } else if (feature instanceof CoreBonus) {
+            return this._core_bonuses.some(x => x.ID === feature.ID);
+        } else if (feature instanceof License) {
+            const license = this._licenses.find(x => x.License.Name === feature.Name);
+            return !!(license && license.Rank >= (rank || 0));
+        } else if (feature instanceof Reserve) {
+            const e = this.Reserves.find(
+                x => x.ID === `reserve_${feature.ID}` || x.Name === feature.Name
+            );
+            return !!(e && !e.Used);
         } else {
             return false;
         }
@@ -165,9 +174,11 @@ export class Pilot {
 
     // Get the rank of the specified skill/talent. Returns 0 if none
     public rank(feature: Skill | CustomSkill | Talent): number {
-        if(feature instanceof Skill) {
+        if (feature instanceof Skill) {
             let valid = [feature.ID, feature.Name];
-            let found = this._skills.find(x => valid.includes(x.Skill.Name) || valid.includes(x.Skill.ID));
+            let found = this._skills.find(
+                x => valid.includes(x.Skill.Name) || valid.includes(x.Skill.ID)
+            );
             return found?.Rank || 0;
         } else {
             let found = this._talents.find(x => x.Talent.ID === feature.ID);

@@ -1,9 +1,9 @@
 {
-  "name": "compcon_data",
+  "name": "machine-mind",
   "version": "0.1.0",
-  "description": "Backing data types for compcon",
+  "description": "Backing data processing types for compcon - modification of existing code from the official project",
   "license": "GPL-3.0-or-later",
-  "author": "WHITESPINE, for now",
+  "author": "whitespine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,8 +13,9 @@
     "build": "tsc && tscpaths -p ./tsconfig.json -s ./src -o ./dist",
     "build:watch": "tsc -w --noEmit",
     "link": "npm run build && npm link",
+    "test": "echo No tests",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint"
+    "prepublishOnly": "npm test && npm run format"
   },
   "dependencies": {
     "axios": "^0.19.2",

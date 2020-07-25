@@ -13,7 +13,7 @@ import {
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store } from "@/hooks";
 import { IMechData, IActor, IMechLoadoutData } from "@/interface";
-import { LicensedRequirementBuilder, ILicenseRequirement } from '../LicensedItem';
+import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
 
 export class Mech implements IActor {
     private _id: string;
@@ -167,7 +167,7 @@ export class Mech implements IActor {
     public RequiredLicenses(): LicensedRequirementBuilder {
         // Get the requirements
         let requirements: LicensedRequirementBuilder;
-        if(this.ActiveLoadout) {
+        if (this.ActiveLoadout) {
             requirements = this.ActiveLoadout.RequiredLicenses();
         } else {
             requirements = new LicensedRequirementBuilder();
@@ -226,10 +226,10 @@ export class Mech implements IActor {
         return this.has_cb("cb_full_subjectivity_sync");
     }
 
-    private get HasLessonOfDisbelief(): boolean { 
+    private get HasLessonOfDisbelief(): boolean {
         return this.has_cb("cb_the_lesson_of_disbelief");
     }
-    
+
     private get HasIntegratedAmmoFeeds(): boolean {
         return this.has_cb("cb_integrated_ammo_feeds");
     }
@@ -256,21 +256,19 @@ export class Mech implements IActor {
 
     public get SizeContributors(): string[] {
         const output = [`FRAME Base Size: ${this.Frame.Size}`];
-        if (this.HasFomorian)
-            output.push(`FOMORIAN FRAME (IPS-N CORE Bonus): +1`);
+        if (this.HasFomorian) output.push(`FOMORIAN FRAME (IPS-N CORE Bonus): +1`);
         return output;
     }
 
     public get Armor(): number {
         // Decide if core bonuses apply
-        const bonus = this.HasSlopedPlating && this._frame.Armor < Rules.MaxMechArmor
+        const bonus = this.HasSlopedPlating && this._frame.Armor < Rules.MaxMechArmor;
         return this._frame.Armor + (bonus ? 1 : 0);
     }
 
     public get ArmorContributors(): string[] {
         const output = [`FRAME Base Armor: ${this.Frame.Armor}`];
-        if (this.HasSlopedPlating)
-            output.push(`SLOPED PLATING (IPS-N CORE Bonus): +1`);
+        if (this.HasSlopedPlating) output.push(`SLOPED PLATING (IPS-N CORE Bonus): +1`);
         return output;
     }
 
@@ -292,7 +290,7 @@ export class Mech implements IActor {
 
     public get Evasion(): number {
         let bonus = this.Agi;
-        if(this.HasFullSubjectivitySync) {
+        if (this.HasFullSubjectivitySync) {
             bonus += 2;
         }
         return this._frame.Evasion + bonus;
@@ -303,7 +301,7 @@ export class Mech implements IActor {
             `FRAME Base Evasion: ${this.Frame.Evasion}`,
             `Pilot AGILITY Bonus: +${this.Agi}`,
         ];
-        if(this.HasFullSubjectivitySync)
+        if (this.HasFullSubjectivitySync)
             output.push(`FULL SUBJECTIVITY SYNC (SSC CORE Bonus): +2`);
         return output;
     }
@@ -339,7 +337,7 @@ export class Mech implements IActor {
             `FRAME Base E-Defense: ${this.Frame.EDefense}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
         ];
-        if (this.HasLessonOfDisbelief) 
+        if (this.HasLessonOfDisbelief)
             output.push(`THE LESSON OF DISBELIEF (HORUS CORE Bonus): +2`);
         return output;
     }
@@ -352,8 +350,7 @@ export class Mech implements IActor {
 
     public get LimitedContributors(): string[] {
         const output = [`Pilot ENGINEERING Bonus: +${Math.floor(this.Eng / 2)}`];
-        if (this.HasIntegratedAmmoFeeds)
-            output.push(`INTEGRATED AMMO FEEDS (HA CORE Bonus): +2`);
+        if (this.HasIntegratedAmmoFeeds) output.push(`INTEGRATED AMMO FEEDS (HA CORE Bonus): +2`);
         return output;
     }
 
@@ -478,8 +475,7 @@ export class Mech implements IActor {
         ];
         if (this.ActiveLoadout && this.ActiveLoadout.HasSystem("ms_personalizations"))
             output.push(`PERSONALIZATIONS (GMS System): +2`);
-        if (this.HasReinforcedFrame)
-            output.push(`REINFORCED FRAME (IPS-N CORE Bonus): +5`);
+        if (this.HasReinforcedFrame) output.push(`REINFORCED FRAME (IPS-N CORE Bonus): +5`);
         return output;
     }
 
@@ -553,8 +549,7 @@ export class Mech implements IActor {
             `FRAME Base Heat Capacity: ${this.Frame.HeatCap}`,
             `Pilot ENGINEERING Bonus: +${this.Eng}`,
         ];
-        if (this.HasSuperiorByDesign)
-            output.push(`SUPERIOR BY DESIGN (HA CORE Bonus): +2`);
+        if (this.HasSuperiorByDesign) output.push(`SUPERIOR BY DESIGN (HA CORE Bonus): +2`);
         return output;
     }
 
@@ -863,7 +858,6 @@ export class Mech implements IActor {
             );
             intg.push(arms);
         }
-
 
         let technophile = store.compendium.getReferenceByID("Talents", "t_technophile");
         let techno_rank = this._pilot.rank(armory);

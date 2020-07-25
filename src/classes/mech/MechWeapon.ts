@@ -126,7 +126,10 @@ class MechWeapon extends MechEquipment {
                 type: RangeType.Range,
                 val: 3,
             });
-        if (mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_gyges_frame")) && this.Type === WeaponType.Melee)
+        if (
+            mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_gyges_frame")) &&
+            this.Type === WeaponType.Melee
+        )
             bonuses.push({
                 type: RangeType.Threat,
                 val: 1,

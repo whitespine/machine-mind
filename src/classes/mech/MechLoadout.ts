@@ -13,7 +13,7 @@ import {
     WeaponMod,
 } from "@/class";
 import { IMechLoadoutData } from "@/interface";
-import { LicensedRequirementBuilder, ILicenseRequirement } from '../LicensedItem';
+import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
 
 export class MechLoadout extends Loadout {
     private _integratedMounts: IntegratedMount[];
@@ -180,7 +180,7 @@ export class MechLoadout extends Loadout {
         const all_equipped = _.concat(equippedWeapons, equippedMods, equippedSystems);
 
         // add each and return
-        for(let item of all_equipped) {
+        for (let item of all_equipped) {
             requirements.add_item(item);
         }
         return requirements;

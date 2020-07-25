@@ -1,8 +1,8 @@
 import { CompendiumItem, ItemType, Manufacturer, Pilot, License } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
-import _ from 'lodash';
-import { PilotLicense } from './pilot/PilotLicense';
+import _ from "lodash";
+import { PilotLicense } from "./pilot/PilotLicense";
 
 interface ILicensedItemData extends ICompendiumItemData {
     source: string;
@@ -45,7 +45,6 @@ abstract class LicensedItem extends CompendiumItem {
     }
 }
 
-
 // Represents the specific licenses of a mech
 export interface ILicenseRequirement {
     license: License; // The license it comes from
@@ -64,13 +63,16 @@ export class LicensedRequirementBuilder {
         let found_license = store.compendium.getReferenceByID("Licenses", item.License);
 
         // Try and fine one
-        let existing: ILicenseRequirement | null = this.requirements.find(req => req.license.Name == item.License && req.rank === item.LicenseLevel) || null;
-        if(!existing) {
+        let existing: ILicenseRequirement | null =
+            this.requirements.find(
+                req => req.license.Name == item.License && req.rank === item.LicenseLevel
+            ) || null;
+        if (!existing) {
             existing = {
                 items: [],
                 license: found_license,
                 rank: item.LicenseLevel,
-                missing: null
+                missing: null,
             };
         }
 
@@ -78,11 +80,11 @@ export class LicensedRequirementBuilder {
     }
 
     // Returns as_requirement_list but with missing filled in
-    check_satisfied(for_pilot: Pilot){
+    check_satisfied(for_pilot: Pilot) {
         let requirements = [...this.requirements];
 
         // Iterate over each requirement
-        for(let r of requirements) {
+        for (let r of requirements) {
             let satisfied = for_pilot.has(r.license, r.rank);
             r.missing = !satisfied;
         }

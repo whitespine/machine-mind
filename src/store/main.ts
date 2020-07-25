@@ -101,5 +101,5 @@ export {
     EncounterStore,
     MissionStore,
     UserProfileStore,
-    IUserProfile
+    IUserProfile,
 };
