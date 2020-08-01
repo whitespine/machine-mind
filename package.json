@@ -6,6 +6,9 @@
   "author": "whitespine",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "unit-test": "jest unit",
     "commit": "git-cz",
