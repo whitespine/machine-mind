@@ -4,8 +4,8 @@
   "description": "Backing data processing types for compcon - modification of existing code from the official project",
   "license": "GPL-3.0-or-later",
   "author": "whitespine",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "unit-test": "jest unit",
     "commit": "git-cz",

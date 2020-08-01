@@ -1,5 +1,3 @@
-import { License } from "./License";
-
 export interface IImageContainer {
     SetLocalImage(): any;
     SetCloudImage(): any;
