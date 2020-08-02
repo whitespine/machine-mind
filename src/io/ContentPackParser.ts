@@ -1,6 +1,22 @@
-
 import JSZip, { JSZipObject } from "jszip";
-import { IContentPackManifest, IContentPack, ICompendiumItemData, IManufacturerData, IFactionData, ICoreBonusData, IFrameData, IMechWeaponData, IMechSystemData, IWeaponModData, IPilotEquipmentData, ITalentData, ITagCompendiumData, INpcClassData, INpcFeatureData, INpcTemplateData } from '@/interface';
+import {
+    IContentPackManifest,
+    IContentPack,
+    ICompendiumItemData,
+    IManufacturerData,
+    IFactionData,
+    ICoreBonusData,
+    IFrameData,
+    IMechWeaponData,
+    IMechSystemData,
+    IWeaponModData,
+    IPilotEquipmentData,
+    ITalentData,
+    ITagCompendiumData,
+    INpcClassData,
+    INpcFeatureData,
+    INpcTemplateData,
+} from "@/interface";
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (
@@ -98,4 +114,4 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
             npcTemplates,
         },
     };
-};
+}
