@@ -1,24 +1,6 @@
-/*
+
 import JSZip, { JSZipObject } from "jszip";
-import {
-    IMechWeaponData,
-    IManufacturerData,
-    IFactionData,
-    ICoreBonusData,
-    IFrameData,
-    IMechSystemData,
-    IWeaponModData,
-    ITalentData,
-    IPilotEquipmentData,
-    IContentPackManifest,
-    ITagCompendiumData,
-    IContentPack,
-    INpcClassData,
-    INpcFeatureData,
-    INpcTemplateData,
-    ICompendiumItemData,
-} from "@/interface";
-import { logger } from "@/hooks";
+import { IContentPackManifest, IContentPack, ICompendiumItemData, IManufacturerData, IFactionData, ICoreBonusData, IFrameData, IMechWeaponData, IMechSystemData, IWeaponModData, IPilotEquipmentData, ITalentData, ITagCompendiumData, INpcClassData, INpcFeatureData, INpcTemplateData } from '@/interface';
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (
@@ -42,22 +24,22 @@ const getPackID = async function(manifest: IContentPackManifest): Promise<string
     const enc = new TextEncoder();
     const signature = `${manifest.author}/${manifest.name}`;
     const hash = await crypto.subtle.digest("SHA-1", enc.encode(signature));
-    return btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
+    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))));
 };
 
 async function getZipData<T>(zip: JSZip, filename: string): Promise<T[]> {
-    let readResult: T[];
+    let readResult: T[] | null;
     try {
         readResult = await readZipJSON<T[]>(zip, filename);
     } catch (e) {
-        logger(`Error reading file ${filename} from package, skipping. Error follows:`);
+        console.error(`Error reading file ${filename} from package, skipping. Error follows:`);
         console.trace(e);
         readResult = null;
     }
     return readResult || [];
 }
 
-const parseContentPack = async function(binString: string): Promise<IContentPack> {
+export async function parseContentPack(binString: string): Promise<IContentPack> {
     const zip = await JSZip.loadAsync(binString);
 
     const manifest = await readZipJSON<IContentPackManifest>(zip, "lcp_manifest.json");
@@ -117,7 +99,3 @@ const parseContentPack = async function(binString: string): Promise<IContentPack
         },
     };
 };
-
-export { parseContentPack };
-
-*/

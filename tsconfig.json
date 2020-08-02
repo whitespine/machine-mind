@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "esnext",
+    "module": "es6",
     "resolveJsonModule": true,
     "strict": true,
     "noImplicitAny": false,
@@ -25,7 +25,8 @@
     },
     "lib": [
       "esnext",
-      "es2018.promise"
+      "es2018.promise",
+      "DOM"
     ]
   },
   "include": [
