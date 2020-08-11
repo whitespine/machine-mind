@@ -41,8 +41,10 @@ import {
     INpcTemplateData,
     IPilotEquipmentData,
     ITagCompendiumData,
+    Environment,
+    Sitrep,
+    Status,
 } from "@/interface";
-import { Sitrep, Status, Environment } from "@/class";
 import { Rules } from "./Rules";
 
 export interface GlossaryItem {

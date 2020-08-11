@@ -20,6 +20,7 @@ export {
     IProfileEffectData,
     IOffensiveEffectData,
 } from "./classes/effects/interfaces";
+export * from "@/classes/GeneralClasses";
 export { ICompendiumItemData } from "./classes/CompendiumItem";
 export { ILicensedItemData } from "./classes/LicensedItem";
 export { ICoreData } from "./classes/mech/CoreSystem";

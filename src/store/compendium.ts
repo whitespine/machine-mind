@@ -1,11 +1,8 @@
 import lodash from "lodash";
 import * as lancerData from "@/classes/utility/typed_lancerdata";
 import {
-    Sitrep,
     Skill,
-    Status,
     Reserve,
-    Environment,
     ContentPack,
     NpcClass,
     NpcTemplate,
@@ -29,6 +26,7 @@ import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
+import { Status, Environment, Sitrep } from '@/interface';
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import _ from "lodash";
-import { Pilot, PrintOptions } from "@/class";
+import { Pilot } from "@/class";
 import { IPilotData } from "@/classes/GeneralInterfaces";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
 

@@ -5,9 +5,8 @@ import {
     ItemType,
     MechType,
     CoreSystem,
-    FrameTrait,
 } from "@/class";
-import { ILicensedItemData, ICoreData } from "@/interface";
+import { ILicensedItemData, ICoreData, FrameTrait } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 
 interface IFrameStats {

@@ -1,5 +1,4 @@
-import { Range, Damage } from "@/class";
-import { NpcFeature, NpcFeatureType } from ".";
+import { Range, Damage, NpcFeature, NpcFeatureType } from "@/class";
 import { INpcFeatureData, ITagData, IRangeData } from "@/interface";
 import { DamageType } from "../enums";
 

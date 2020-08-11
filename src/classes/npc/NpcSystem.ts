@@ -1,5 +1,5 @@
-import { NpcFeature, NpcFeatureType } from "./";
 import { INpcFeatureData } from "./interfaces";
+import { NpcFeature, NpcFeatureType } from '@/class';
 
 export interface INpcSystemData extends INpcFeatureData {
     type: NpcFeatureType.System;
