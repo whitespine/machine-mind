@@ -1,4 +1,4 @@
-import { INpcFeatureData } from "./interfaces";
+import { INpcFeatureData } from "@/interface";
 import { NpcFeature, NpcFeatureType } from '@/class';
 
 export interface INpcSystemData extends INpcFeatureData {

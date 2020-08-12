@@ -2,7 +2,6 @@ import { CompendiumItem, ItemType, Manufacturer, Pilot, License } from "@/class"
 import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
 import _ from "lodash";
-import { PilotLicense } from "./pilot/PilotLicense";
 
 interface ILicensedItemData extends ICompendiumItemData {
     source: string;

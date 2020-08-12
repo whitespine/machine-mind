@@ -21,7 +21,7 @@ import {
     INpcTechData,
     INpcTemplateData,
     ITagCompendiumData,
-} from "./interface";
+} from "@/interface";
 
 type IFrameData_Fixed = Omit<IFrameData, "license" | "license_level">;
 

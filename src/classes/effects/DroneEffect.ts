@@ -1,6 +1,5 @@
 import { IEffectData, ITagData } from "@/interface";
-import { ActivationType, EffectType } from "@/class";
-import { ItemEffect } from "./ItemEffect";
+import { ActivationType, EffectType, ItemEffect } from "@/class";
 
 interface IDroneData extends IEffectData {
     size: number;

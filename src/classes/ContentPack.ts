@@ -23,6 +23,8 @@ import {
     NpcSystem,
     NpcTech,
     Reserve,
+    Skill,
+    License,
 } from "@/class";
 import {
     IManufacturerData,
@@ -45,12 +47,12 @@ import {
     INpcSystemData,
     INpcTechData,
     ITagCompendiumData,
+    ISkillData,
+    Status,
+    IReserveData,
+    Environment,
+    Sitrep,
 } from "@/interface";
-import { ISkillData, Skill } from "./pilot/Skill";
-import { Status, Environment, Sitrep } from "./GeneralClasses";
-import { IReserveData } from "./GeneralInterfaces";
-import { SkillFamily } from "./enums";
-import { License } from "./License";
 import _ from "lodash";
 
 export interface IContentPackManifest {

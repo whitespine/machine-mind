@@ -71,7 +71,10 @@ export {
     DieSet,
 } from "./classes/dice/DiceRoller";
 export { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
-export { Encounter, Rest, Mission, ActiveMission, MissionStepType } from "./classes/encounter";
+export { Encounter } from "./classes/encounter/Encounter";
+export { Rest } from "./classes/encounter/Rest";
+export { Mission, MissionStepType } from "./classes/encounter/Mission";
+export { ActiveMission } from "./classes/encounter/ActiveMission";
 export { ContentPack } from "./classes/ContentPack";
 export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";

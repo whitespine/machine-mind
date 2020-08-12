@@ -1,7 +1,6 @@
 import { IRangeData, IDamageData } from "@/interface";
 import { IEffectData } from "@/interface";
-import { ActivationType, EffectType, Damage, Range } from "@/class";
-import { ItemEffect } from "./ItemEffect";
+import { ActivationType, EffectType, Damage, Range, ItemEffect } from "@/class";
 
 interface IProfileEffectData extends IEffectData {
     name: string;
