@@ -2,14 +2,14 @@ import { RangeType } from "@/class";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
-interface IRangeData {
+export interface IRangeData {
     type: RangeType;
     val: number;
     override?: boolean | null;
     bonus?: number | null;
 }
 
-class Range {
+export class Range {
     private _range_type: RangeType;
     private _value: number;
     private _override: boolean;
@@ -81,5 +81,3 @@ class Range {
         return output;
     }
 }
-
-export { Range, IRangeData };

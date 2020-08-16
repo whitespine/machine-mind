@@ -1,7 +1,7 @@
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 import { IEffectData } from "@/interface";
 
-interface IAIData extends IEffectData {
+export interface IAIData extends IEffectData {
     size: number;
     hp: number;
     edef: number;
@@ -10,7 +10,7 @@ interface IAIData extends IEffectData {
     abilities: IEffectData[];
 }
 
-class AIEffect extends ItemEffect {
+export class AIEffect extends ItemEffect {
     public readonly Detail: string;
     public readonly Abilities: ItemEffect[];
     public readonly Name: string | null;
@@ -39,5 +39,3 @@ class AIEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IAIData, AIEffect };

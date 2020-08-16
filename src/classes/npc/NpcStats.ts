@@ -2,7 +2,7 @@ import _ from "lodash";
 import { store } from "@/hooks";
 import { NpcClass } from "@/class";
 
-interface INpcStats {
+export interface INpcStats {
     activations: number;
     armor: number;
     hp: number;
@@ -25,7 +25,7 @@ interface INpcStats {
     overrides?: INpcStats | null;
 }
 
-class NpcStats {
+export class NpcStats {
     private _stats: INpcStats;
     private _bonuses: INpcStats;
     private _overrides: INpcStats;
@@ -385,5 +385,3 @@ class NpcStats {
         return new NpcStats(_.clone(data));
     }
 }
-
-export { NpcStats, INpcStats };

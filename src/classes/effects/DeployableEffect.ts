@@ -1,6 +1,6 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
-interface IDeployableData extends IEffectData {
+export interface IDeployableData extends IEffectData {
     count?: number | null;
     size?: number | null;
     hp?: number | null;
@@ -9,7 +9,7 @@ interface IDeployableData extends IEffectData {
     detail: string;
 }
 
-class DeployableEffect extends ItemEffect {
+export class DeployableEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Detail: string | null;
     public readonly Count: number | null;
@@ -53,5 +53,3 @@ class DeployableEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IDeployableData, DeployableEffect };

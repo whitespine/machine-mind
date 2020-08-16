@@ -1,10 +1,10 @@
-interface ISynergyData {
+export interface ISynergyData {
     location: string;
     type: string;
     detail: string;
 }
 
-class SynergyDecorator {
+export class SynergyDecorator {
     readonly Location: string;
     readonly Type: string;
     readonly Detail: string;
@@ -22,5 +22,3 @@ class SynergyDecorator {
         );
     }
 }
-
-export { SynergyDecorator };

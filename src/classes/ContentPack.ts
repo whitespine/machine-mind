@@ -48,8 +48,8 @@ import {
     INpcTechData,
     ITagCompendiumData,
     ISkillData,
-    Status,
     IReserveData,
+    Status,
     Environment,
     Sitrep,
 } from "@/interface";
@@ -64,7 +64,7 @@ export interface IContentPackManifest {
     website?: string | null;
     image_url?: string | null;
 }
-interface IContentPackData {
+export interface IContentPackData {
     manufacturers: IManufacturerData[];
     factions: IFactionData[];
     coreBonuses: ICoreBonusData[];

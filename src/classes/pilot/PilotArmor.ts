@@ -1,7 +1,7 @@
 import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
-interface IPilotArmorData extends IPilotEquipmentData {
+export interface IPilotArmorData extends IPilotEquipmentData {
     hp_bonus?: number | null;
     speed?: number | null;
     speed_bonus?: number | null;
@@ -12,7 +12,7 @@ interface IPilotArmorData extends IPilotEquipmentData {
     evasion_bonus?: number | null;
 }
 
-class PilotArmor extends PilotEquipment {
+export class PilotArmor extends PilotEquipment {
     private hp_bonus: number;
     private speed: number;
     private speed_bonus: number;
@@ -67,5 +67,3 @@ class PilotArmor extends PilotEquipment {
         return this.evasion_bonus;
     }
 }
-
-export { PilotArmor, IPilotArmorData };

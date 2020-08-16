@@ -1,7 +1,7 @@
 import { ICounterSaveData } from "@/interface";
 
 /* eslint-disable @typescript-eslint/camelcase */
-interface ICounterData {
+export interface ICounterData {
     id: string;
     name: string;
     level?: number | null;
@@ -11,7 +11,7 @@ interface ICounterData {
     custom?: boolean | null;
 }
 
-class Counter {
+export class Counter {
     public readonly ID: string;
     public readonly Name: string;
     public readonly Level: number;
@@ -79,5 +79,3 @@ class Counter {
         this.Set(data.val);
     }
 }
-
-export { ICounterData, Counter };

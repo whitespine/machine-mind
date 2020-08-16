@@ -1,7 +1,7 @@
 import { DiceRoller, ParsedDieString } from "@/class";
 import { IDiceStats } from "@/interface";
 
-class DiceStatsResult implements IDiceStats {
+export class DiceStatsResult implements IDiceStats {
     private _diceString: string;
     private _min: number;
     private _max: number;
@@ -43,7 +43,7 @@ class DiceStatsResult implements IDiceStats {
     }
 }
 
-class DiceStats {
+export class DiceStats {
     // returns stats for a dice string
     public static getStats(diceString: string): DiceStatsResult {
         let min = 0;
@@ -111,5 +111,3 @@ class DiceStats {
         return result;
     }
 }
-
-export { DiceStats, DiceStatsResult };

@@ -1,19 +1,19 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IInvadeOptionData {
+export interface IInvadeOptionData {
     name: string;
     detail: string;
     activation?: ActivationType | null;
 }
 
-interface ITechEffectData extends IEffectData {
+export interface ITechEffectData extends IEffectData {
     detail: string;
     options?: IInvadeOptionData[] | null;
     option_set?: string | null;
 }
 
-class InvadeOption {
+export class InvadeOption {
     public readonly Name: string;
     public readonly Detail: string;
     public readonly Activation: ActivationType;
@@ -29,7 +29,7 @@ class InvadeOption {
     }
 }
 
-class TechEffect extends ItemEffect {
+export class TechEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Detail: string;
     public readonly OptionSet: string;
@@ -60,5 +60,3 @@ class TechEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IInvadeOptionData, ITechEffectData, TechEffect };

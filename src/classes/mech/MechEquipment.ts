@@ -2,7 +2,7 @@ import { LicensedItem, Tag, ItemEffect } from "@/class";
 import { ILicensedItemData, ITagData } from "@/interface";
 import { ItemType } from "../enums";
 
-interface IMechEquipmentData extends ILicensedItemData {
+export interface IMechEquipmentData extends ILicensedItemData {
     sp: number;
     tags: ITagData[];
     effect: string | object | object[];
@@ -10,7 +10,7 @@ interface IMechEquipmentData extends ILicensedItemData {
     frame_id?: boolean | null;
 }
 
-abstract class MechEquipment extends LicensedItem {
+export abstract class MechEquipment extends LicensedItem {
     protected sp: number;
     protected _uses: number;
     protected _destroyed: boolean;
@@ -154,5 +154,3 @@ abstract class MechEquipment extends LicensedItem {
         return this.MaxUses + b;
     }
 }
-
-export { MechEquipment, IMechEquipmentData };

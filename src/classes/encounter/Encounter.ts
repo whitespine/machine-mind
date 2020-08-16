@@ -4,7 +4,7 @@ import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store, is_web } from "@/hooks";
 import { Sitrep, IMissionStep } from "@/interface";
 
-interface IEncounterData {
+export interface IEncounterData {
     id: string;
     name: string;
     location: string;
@@ -21,7 +21,7 @@ interface IEncounterData {
     local_map?: string | null;
 }
 
-class Encounter implements IMissionStep {
+export class Encounter implements IMissionStep {
     private _id: string;
     private _name: string;
     private _location: string;
@@ -288,5 +288,3 @@ class Encounter implements IMissionStep {
         return e;
     }
 }
-
-export { Encounter, IEncounterData };

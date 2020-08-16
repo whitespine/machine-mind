@@ -1,11 +1,11 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IBasicEffectData extends IEffectData {
+export interface IBasicEffectData extends IEffectData {
     detail: string;
 }
 
-class BasicEffect extends ItemEffect {
+export class BasicEffect extends ItemEffect {
     public readonly Detail: string;
     public readonly Name: string | null;
 
@@ -29,5 +29,3 @@ class BasicEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IBasicEffectData, BasicEffect };

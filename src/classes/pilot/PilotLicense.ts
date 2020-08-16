@@ -1,7 +1,7 @@
 import { License } from "@/class";
 import { IRankedData } from "../GeneralInterfaces";
 
-class PilotLicense {
+export class PilotLicense {
     private license: License;
     private rank: number;
 
@@ -46,5 +46,3 @@ class PilotLicense {
         return new PilotLicense(License.Deserialize(itemData.id), itemData.rank);
     }
 }
-
-export { PilotLicense };

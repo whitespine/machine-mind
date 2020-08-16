@@ -3,14 +3,14 @@ import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
 import _ from "lodash";
 
-interface ILicensedItemData extends ICompendiumItemData {
+export interface ILicensedItemData extends ICompendiumItemData {
     source: string;
     license: string;
     license_level: number;
 }
 
 // these items are unlocked via pilots ranking up in a specific frame license
-abstract class LicensedItem extends CompendiumItem {
+export abstract class LicensedItem extends CompendiumItem {
     private _source: string;
     private _license: string;
     private _license_level: number;
@@ -90,5 +90,3 @@ export class LicensedRequirementBuilder {
         return requirements;
     }
 }
-
-export { LicensedItem, ILicensedItemData };

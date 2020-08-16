@@ -2,11 +2,11 @@ import { MechEquipment, SystemType, ItemType } from "@/class";
 import { IMechEquipmentData, IEquipmentData } from "@/interface";
 import { store } from "@/hooks";
 
-interface IMechSystemData extends IMechEquipmentData {
+export interface IMechSystemData extends IMechEquipmentData {
     type: SystemType;
 }
 
-class MechSystem extends MechEquipment {
+export class MechSystem extends MechEquipment {
     private _system_type: SystemType;
 
     public constructor(systemData: IMechSystemData) {
@@ -47,5 +47,3 @@ class MechSystem extends MechEquipment {
         return item;
     }
 }
-
-export { MechSystem, IMechSystemData };

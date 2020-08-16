@@ -1,11 +1,11 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IProtocolEffectData extends IEffectData {
+export interface IProtocolEffectData extends IEffectData {
     detail: string;
 }
 
-class ProtocolEffect extends ItemEffect {
+export class ProtocolEffect extends ItemEffect {
     public readonly Detail: string;
     public readonly Name: string | null;
 
@@ -29,5 +29,3 @@ class ProtocolEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IProtocolEffectData, ProtocolEffect };

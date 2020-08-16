@@ -1,6 +1,6 @@
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-class GenericEffect extends ItemEffect {
+export class GenericEffect extends ItemEffect {
     public readonly Detail: string;
 
     public constructor(effect: string, err?: boolean | null) {
@@ -11,5 +11,3 @@ class GenericEffect extends ItemEffect {
         this.tags = [];
     }
 }
-
-export { GenericEffect };

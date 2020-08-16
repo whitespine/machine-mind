@@ -2,7 +2,7 @@ import { MechWeapon, Tag } from "@/class";
 import { ITagData } from "@/interface";
 import { store } from "@/hooks";
 
-interface ICoreData {
+export interface ICoreData {
     name: string;
     description: string;
     integrated?: { id: string } | null;
@@ -13,7 +13,7 @@ interface ICoreData {
     tags: ITagData[];
 }
 
-class CoreSystem {
+export class CoreSystem {
     private _name: string;
     private _description: string;
     private _integrated: string | null;
@@ -72,5 +72,3 @@ class CoreSystem {
         return Tag.Deserialize(this._tags);
     }
 }
-
-export { CoreSystem, ICoreData };

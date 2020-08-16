@@ -4,12 +4,12 @@ import { Encounter, Rest } from "@/class";
 import { store } from "@/hooks";
 import { IMissionStep } from "@/interface";
 
-enum MissionStepType {
+export enum MissionStepType {
     Encounter = "Encounter",
     Rest = "Rest",
 }
 
-interface IMissionData {
+export interface IMissionData {
     id?: string | null;
     name: string;
     note: string;
@@ -19,7 +19,7 @@ interface IMissionData {
     rests: { id: string; note: string }[];
 }
 
-class Mission {
+export class Mission {
     private _id: string;
     private _name: string;
     private _note: string;
@@ -182,5 +182,3 @@ class Mission {
         return m;
     }
 }
-
-export { IMissionData, MissionStepType, Mission };

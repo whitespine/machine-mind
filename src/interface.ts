@@ -16,8 +16,8 @@ export { IReactionEffectData } from "@/classes/effects/ReactionEffect";
 export { IInvadeOptionData, ITechEffectData } from "@/classes/effects/TechEffect";
 export { IProfileEffectData } from "@/classes/effects/ProfileEffect";
 export { IOffensiveEffectData } from "@/classes/effects/OffensiveEffect";
-export * from "@/classes/GeneralClasses";
 export { ICompendiumItemData } from "./classes/CompendiumItem";
+export * from "@/classes/GeneralClasses";
 export { ILicensedItemData } from "./classes/LicensedItem";
 export { ICoreData } from "./classes/mech/CoreSystem";
 export { IFrameData, IFrameStats } from "./classes/mech/Frame";
@@ -33,7 +33,7 @@ export { IPilotWeaponData } from "./classes/pilot/PilotWeapon";
 export { IPilotGearData } from "./classes/pilot/PilotGear";
 export { IManufacturerData } from "./classes/Manufacturer";
 export { IFactionData } from "./classes/Faction";
-export { ITalentData } from "./classes/pilot/Talent";
+export { ITalentData, ITalentRank } from "./classes/pilot/Talent";
 export { ISkillData } from "./classes/pilot/Skill";
 export { IMechWeaponData } from "./classes/mech/MechWeapon";
 export { INpcFeatureData } from "./classes/npc/NpcFeature";
@@ -56,61 +56,3 @@ export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
 export { CompendiumCategory } from "./store/compendium";
 export * from "./classes/GeneralInterfaces";
-/*
-export {
-    IAIData,
-    IBasicEffectData,
-    IChargeData,
-    IChargeEffectData,
-    IDeployableData,
-    IDroneData,
-    IEffectData,
-    IBonusEffectData,
-    IProtocolEffectData,
-    IReactionEffectData,
-    IProfileEffectData,
-    IOffensiveEffectData,
-    ICompendiumItemData,
-    ILicensedItemData,
-    ICoreData,
-    IFrameData,
-    IFrameStats,
-    IMechEquipmentData,
-    IDamageData,
-    IRangeData,
-    IMechSystemData,
-    IWeaponModData,
-    ICoreBonusData,
-    IPilotEquipmentData,
-    IPilotArmorData,
-    IPilotWeaponData,
-    IPilotGearData,
-    IManufacturerData,
-    IFactionData,
-    IMissionStep,
-    IActor,
-    ITalentData,
-    ISkillData,
-    IMechWeaponData,
-    INpcFeatureData,
-    INpcReactionData,
-    INpcSystemData,
-    INpcTechData,
-    INpcDamageData,
-    INpcWeaponData,
-    INpcStats,
-    INpcClassData,
-    INpcTemplateData,
-    INpcData,
-    INpcItemSaveData,
-    IEncounterData,
-    IMissionData,
-    IActiveMissionData,
-    IContentPackManifest,
-    IContentPack,
-    ICounterData,
-    ITagCompendiumData,
-    IInvadeOptionData,
-    ITechEffectData,
-};
-*/

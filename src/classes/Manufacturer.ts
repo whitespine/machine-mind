@@ -1,6 +1,6 @@
 import { imageManagement, ImageTag } from "@/hooks";
 
-interface IManufacturerData {
+export interface IManufacturerData {
     id: string;
     name: string;
     description: string;
@@ -10,7 +10,7 @@ interface IManufacturerData {
     logo_url?: string | null;
 }
 
-class Manufacturer {
+export class Manufacturer {
     private _id: string;
     private _name: string;
     private _description: string;
@@ -60,5 +60,3 @@ class Manufacturer {
         else return ""; // TODO: placeholder logo?
     }
 }
-
-export { Manufacturer, IManufacturerData };

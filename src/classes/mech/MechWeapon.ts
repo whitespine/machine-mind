@@ -17,14 +17,14 @@ import { store } from "@/hooks";
 // TODO:
 // class WeaponAmmo {}
 
-interface IMechWeaponData extends IMechEquipmentData {
+export interface IMechWeaponData extends IMechEquipmentData {
     mount: WeaponSize;
     type: WeaponType;
     damage: IDamageData[] | null;
     range: IRangeData[];
 }
 
-class MechWeapon extends MechEquipment {
+export class MechWeapon extends MechEquipment {
     private _size: WeaponSize;
     private _weapon_type: WeaponType;
     private _damage: Damage[] | null;
@@ -195,5 +195,3 @@ class MechWeapon extends MechEquipment {
         return item;
     }
 }
-
-export { MechWeapon, IMechWeaponData };

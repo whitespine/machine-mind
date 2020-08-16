@@ -1,7 +1,7 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IReactionEffectData extends IEffectData {
+export interface IReactionEffectData extends IEffectData {
     name: string;
     detail: string;
     frequency: string;
@@ -9,7 +9,7 @@ interface IReactionEffectData extends IEffectData {
     init?: string | null;
 }
 
-class ReactionEffect extends ItemEffect {
+export class ReactionEffect extends ItemEffect {
     public readonly Name: string;
     public readonly Init: string | null;
     public readonly Frequency: string;
@@ -41,5 +41,3 @@ class ReactionEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IReactionEffectData, ReactionEffect };

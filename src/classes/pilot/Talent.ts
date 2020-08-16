@@ -2,16 +2,16 @@ import { CompendiumItem } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
 
-interface ITalentRank {
+export interface ITalentRank {
     name: string;
     description: string;
 }
 
-interface ITalentData extends ICompendiumItemData {
+export interface ITalentData extends ICompendiumItemData {
     ranks: ITalentRank[];
 }
 
-class Talent extends CompendiumItem {
+export class Talent extends CompendiumItem {
     private _ranks: ITalentRank[];
 
     public constructor(talentData: any) {
@@ -34,5 +34,3 @@ class Talent extends CompendiumItem {
         return v;
     }
 }
-
-export { Talent, ITalentData };

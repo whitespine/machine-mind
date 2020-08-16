@@ -3,7 +3,7 @@ import { Mech } from "@/class";
 import { IMechState, IHistoryItem } from "@/interface";
 import { Pilot } from "../pilot/Pilot";
 
-class ActiveState {
+export class ActiveState {
     public stage: string;
     public mech: Mech;
     public turn: number;
@@ -325,5 +325,3 @@ class ActiveState {
         return s;
     }
 }
-
-export { ActiveState };

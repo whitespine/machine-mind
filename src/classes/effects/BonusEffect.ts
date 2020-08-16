@@ -1,6 +1,6 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
-interface IBonusEffectData extends IEffectData {
+export interface IBonusEffectData extends IEffectData {
     detail: string;
     size?: number | null;
     hp?: number | null;
@@ -9,7 +9,7 @@ interface IBonusEffectData extends IEffectData {
     edef?: number | null;
 }
 
-class BonusEffect extends ItemEffect {
+export class BonusEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Detail: string;
     public readonly Size: number | null;
@@ -53,5 +53,3 @@ class BonusEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IBonusEffectData, BonusEffect };

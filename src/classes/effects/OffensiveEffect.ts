@@ -1,7 +1,7 @@
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IOffensiveEffectData extends IEffectData {
+export interface IOffensiveEffectData extends IEffectData {
     attack?: string | null;
     hit?: string | null;
     critical?: string | null;
@@ -9,7 +9,7 @@ interface IOffensiveEffectData extends IEffectData {
     abilities?: IEffectData[] | null;
 }
 
-class OffensiveEffect extends ItemEffect {
+export class OffensiveEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Detail: string | null;
     public readonly OnAttack: string | null;
@@ -32,5 +32,3 @@ class OffensiveEffect extends ItemEffect {
         this.tags = data.tags || [];
     }
 }
-
-export { IOffensiveEffectData, OffensiveEffect };

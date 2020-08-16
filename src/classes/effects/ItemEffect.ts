@@ -15,7 +15,7 @@ import {
 } from "@/class";
 import { ITagData } from "@/interface";
 
-enum EffectType {
+export enum EffectType {
     Generic = "Generic", // Covers old/fallback/simple
     Basic = "Basic",
     Charge = "Charge",
@@ -30,7 +30,7 @@ enum EffectType {
     Profile = "Profile",
 }
 
-enum ActivationType {
+export enum ActivationType {
     None = "None",
     Passive = "Passive",
     Quick = "Quick",
@@ -40,14 +40,14 @@ enum ActivationType {
     Protocol = "Protocol",
 }
 
-interface IEffectData {
+export interface IEffectData {
     effect_type: EffectType;
     name?: string | null;
     activation?: ActivationType | null;
     tags?: ITagData[] | null;
 }
 
-abstract class ItemEffect {
+export abstract class ItemEffect {
     private _err: boolean;
     // TODO: make this better
     protected effectType!: EffectType | null;
@@ -88,5 +88,3 @@ abstract class ItemEffect {
         return new GenericEffect("ERR: Unknown Effect Type", true);
     }
 }
-
-export { EffectType, ActivationType, IEffectData, ItemEffect };

@@ -3,13 +3,13 @@ import { store } from "@/hooks";
 
 import { ICompendiumItemData } from "@/interface";
 
-interface ICoreBonusData extends ICompendiumItemData {
+export interface ICoreBonusData extends ICompendiumItemData {
     source: string;
     effect: string;
     mounted_effect?: string | null;
 }
 
-class CoreBonus extends CompendiumItem {
+export class CoreBonus extends CompendiumItem {
     private _source: string;
     private _effect: string;
     private _mounted_effect: string;
@@ -48,5 +48,3 @@ class CoreBonus extends CompendiumItem {
         return v;
     }
 }
-
-export { CoreBonus, ICoreBonusData };

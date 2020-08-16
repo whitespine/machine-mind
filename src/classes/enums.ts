@@ -1,4 +1,4 @@
-enum MountType {
+export enum MountType {
     Main = "Main",
     Heavy = "Heavy",
     AuxAux = "Aux/Aux",
@@ -9,7 +9,7 @@ enum MountType {
 }
 
 // governs what can be added to a mount (weapon slot)
-enum FittingSize {
+export enum FittingSize {
     Auxiliary = "Auxiliary",
     Main = "Main",
     Flex = "Flex",
@@ -17,14 +17,14 @@ enum FittingSize {
     Integrated = "Integrated",
 }
 
-enum WeaponSize {
+export enum WeaponSize {
     Aux = "Auxiliary",
     Main = "Main",
     Heavy = "Heavy",
     Superheavy = "Superheavy",
 }
 
-enum WeaponType {
+export enum WeaponType {
     Rifle = "Rifle",
     Cannon = "Cannon",
     Launcher = "Launcher",
@@ -33,7 +33,7 @@ enum WeaponType {
     Melee = "Melee",
 }
 
-enum ItemType {
+export enum ItemType {
     None = "",
     Action = "Action",
     CoreBonus = "CoreBonus",
@@ -50,7 +50,7 @@ enum ItemType {
     NpcFeature = "NpcFeature",
 }
 
-enum SystemType {
+export enum SystemType {
     System = "System",
     AI = "AI",
     Shield = "Shield",
@@ -63,14 +63,14 @@ enum SystemType {
     Mod = "Mod",
 }
 
-enum SkillFamily {
+export enum SkillFamily {
     str = "str",
     dex = "dex",
     int = "int",
     cha = "cha",
 }
 
-enum RangeType {
+export enum RangeType {
     Range = "Range",
     Threat = "Threat",
     Thrown = "Thrown",
@@ -80,7 +80,7 @@ enum RangeType {
     Burst = "Burst",
 }
 
-enum DamageType {
+export enum DamageType {
     Kinetic = "Kinetic",
     Energy = "Energy",
     Explosive = "Explosive",
@@ -89,7 +89,7 @@ enum DamageType {
     Variable = "Variable",
 }
 
-enum MechType {
+export enum MechType {
     Balanced = "Balanced",
     Artillery = "Artillery",
     Striker = "Striker",
@@ -98,14 +98,14 @@ enum MechType {
     Defender = "Defender",
 }
 
-enum HASE {
+export enum HASE {
     H = "hull",
     A = "agi",
     S = "sys",
     E = "eng",
 }
 
-enum ReserveType {
+export enum ReserveType {
     Resources = "Resources",
     Tactical = "Tactical",
     Mech = "Mech",
@@ -113,7 +113,7 @@ enum ReserveType {
     Organization = "Organization",
 }
 
-enum OrgType {
+export enum OrgType {
     Military = "Military",
     Scientific = "Scientific",
     Academic = "Academic",
@@ -124,25 +124,8 @@ enum OrgType {
     Political = "Political",
 }
 
-enum EncounterSide {
+export enum EncounterSide {
     Enemy = "Enemy",
     Ally = "Ally",
     Neutral = "Neutral",
 }
-
-export {
-    MountType,
-    FittingSize,
-    WeaponSize,
-    WeaponType,
-    ItemType,
-    SystemType,
-    SkillFamily,
-    RangeType,
-    DamageType,
-    HASE,
-    MechType,
-    ReserveType,
-    OrgType,
-    EncounterSide,
-};

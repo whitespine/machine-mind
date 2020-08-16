@@ -1,12 +1,12 @@
 import { IEffectData, IRangeData, IDamageData, ITagData } from "@/interface";
 import { ActivationType, EffectType, Damage, Range, Tag, ItemEffect } from "@/class";
 
-enum ChargeType {
+export enum ChargeType {
     Grenade = "Grenade",
     Mine = "Mine",
 }
 
-interface IChargeData {
+export interface IChargeData {
     name: string;
     charge_type: ChargeType;
     detail: string;
@@ -15,11 +15,11 @@ interface IChargeData {
     tags?: ITagData[] | null;
 }
 
-interface IChargeEffectData extends IEffectData {
+export interface IChargeEffectData extends IEffectData {
     charges: IChargeData[];
 }
 
-class Charge {
+export class Charge {
     public readonly Name: string | null;
     public readonly ChargeType: ChargeType;
     public readonly Range: Range[];
@@ -57,7 +57,7 @@ class Charge {
     }
 }
 
-class ChargeEffect extends ItemEffect {
+export class ChargeEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Charges: Charge[];
 
@@ -81,5 +81,3 @@ class ChargeEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { ChargeType, IChargeData, IChargeEffectData, Charge, ChargeEffect };

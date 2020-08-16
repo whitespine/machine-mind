@@ -2,13 +2,13 @@ import { DamageType } from "@/class";
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
-interface IDamageData {
+export interface IDamageData {
     type: DamageType;
     val: string | number;
     override?: boolean | null;
 }
 
-class Damage {
+export class Damage {
     private _damage_type: DamageType;
     private _value: string;
     private _raw_value: string | number;
@@ -79,5 +79,3 @@ class Damage {
         return `${this._value} ${this._damage_type} Damage`;
     }
 }
-
-export { Damage, IDamageData };

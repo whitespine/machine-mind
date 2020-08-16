@@ -1,11 +1,11 @@
 import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
-interface IPilotGearData extends IPilotEquipmentData {
+export interface IPilotGearData extends IPilotEquipmentData {
     uses?: number | null;
 }
 
-class PilotGear extends PilotEquipment {
+export class PilotGear extends PilotEquipment {
     private uses: number | null;
 
     public constructor(gearData: IPilotGearData) {
@@ -34,5 +34,3 @@ class PilotGear extends PilotEquipment {
         return this.uses || null;
     }
 }
-
-export { PilotGear, IPilotGearData };

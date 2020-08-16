@@ -1,6 +1,6 @@
 import { IDamageRollResult, Id20RollResult } from "@/interface";
 
-class DieSet {
+export class DieSet {
     private _type: number;
     private _quantity: number;
 
@@ -18,7 +18,7 @@ class DieSet {
     }
 }
 
-class ParsedDieString {
+export class ParsedDieString {
     private _dice: DieSet[];
     private _modifier: number;
 
@@ -36,7 +36,7 @@ class ParsedDieString {
     }
 }
 
-class D20RollResult implements Id20RollResult {
+export class D20RollResult implements Id20RollResult {
     private _total: number;
     private _rawDieRoll: number;
     private _staticBonus: number;
@@ -85,7 +85,7 @@ class D20RollResult implements Id20RollResult {
     }
 }
 
-class DamageRollResult implements IDamageRollResult {
+export class DamageRollResult implements IDamageRollResult {
     private _total: number;
     private _rawDieRolls: number[];
     private _staticBonus: number;
@@ -127,7 +127,7 @@ class DamageRollResult implements IDamageRollResult {
     }
 }
 
-class DiceRoller {
+export class DiceRoller {
     // this class will make rolls, given all the inputs
     // it makes no evaluation re their success or failure
 
@@ -260,5 +260,3 @@ class DiceRoller {
         return Math.floor(Math.random() * Math.floor(dieType)) + 1;
     }
 }
-
-export { DiceRoller, D20RollResult, DamageRollResult, ParsedDieString, DieSet };

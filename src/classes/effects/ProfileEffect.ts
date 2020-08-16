@@ -2,14 +2,14 @@ import { IRangeData, IDamageData } from "@/interface";
 import { IEffectData } from "@/interface";
 import { ActivationType, EffectType, Damage, Range, ItemEffect } from "@/class";
 
-interface IProfileEffectData extends IEffectData {
+export interface IProfileEffectData extends IEffectData {
     name: string;
     range?: IRangeData[] | null;
     damage?: IDamageData[] | null;
     detail?: string | null;
 }
 
-class ProfileEffect extends ItemEffect {
+export class ProfileEffect extends ItemEffect {
     public readonly Name: string;
     public readonly Detail: string | null;
     public readonly Range: Range[];
@@ -27,5 +27,3 @@ class ProfileEffect extends ItemEffect {
         this.tags = data.tags || [];
     }
 }
-
-export { IProfileEffectData, ProfileEffect };

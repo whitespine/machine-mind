@@ -8,7 +8,7 @@ import { store } from "@/hooks";
 
 export const CORE_BREW_ID = "Core";
 
-interface ICompendiumItemData {
+export interface ICompendiumItemData {
     id: string;
     name: string;
     description: string;
@@ -16,7 +16,7 @@ interface ICompendiumItemData {
     counters: ICounterData[] | null;
 }
 
-abstract class CompendiumItem {
+export abstract class CompendiumItem {
     private _id: string;
     protected _name: string;
     protected _description: string;
@@ -108,5 +108,3 @@ abstract class CompendiumItem {
         return _.kebabCase(this.ItemType);
     }
 }
-
-export { CompendiumItem, ICompendiumItemData };

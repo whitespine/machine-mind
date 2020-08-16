@@ -2,7 +2,7 @@ import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "
 import { ILicensedItemData, ICoreData, FrameTrait } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 
-interface IFrameStats {
+export interface IFrameStats {
     size: number;
     armor: number;
     structuremod?: number | null;
@@ -19,7 +19,7 @@ interface IFrameStats {
     sp: number;
 }
 
-interface IFrameData extends ILicensedItemData {
+export interface IFrameData extends ILicensedItemData {
     mechtype: MechType[];
     y_pos?: number | null;
     mounts: MountType[];
@@ -30,7 +30,7 @@ interface IFrameData extends ILicensedItemData {
     other_art?: { tag: ImageTag; src: string }[] | null;
 }
 
-class Frame extends LicensedItem {
+export class Frame extends LicensedItem {
     private _mechtype: MechType[];
     private _y_pos: number;
     private _mounts: MountType[];
@@ -147,5 +147,3 @@ class Frame extends LicensedItem {
         return imageManagement.getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
     }
 }
-
-export { Frame, IFrameData, IFrameStats };

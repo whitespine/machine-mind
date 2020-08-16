@@ -1,13 +1,13 @@
 import { PilotEquipment, Range, Damage, ItemType, DamageType } from "@/class";
 import { IPilotEquipmentData, IRangeData, IDamageData } from "@/interface";
 
-interface IPilotWeaponData extends IPilotEquipmentData {
+export interface IPilotWeaponData extends IPilotEquipmentData {
     range: IRangeData[];
     damage: IDamageData[];
     effect?: string | null;
 }
 
-class PilotWeapon extends PilotEquipment {
+export class PilotWeapon extends PilotEquipment {
     private range: Range[];
     private damage: Damage[];
     private effect: string;
@@ -57,5 +57,3 @@ class PilotWeapon extends PilotEquipment {
         return this.effect;
     }
 }
-
-export { PilotWeapon, IPilotWeaponData };

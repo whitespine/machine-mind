@@ -2,12 +2,12 @@ import { CompendiumItem, SkillFamily, ItemType } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
 
-interface ISkillData extends ICompendiumItemData {
+export interface ISkillData extends ICompendiumItemData {
     detail: string;
     family: string;
 }
 
-class Skill extends CompendiumItem {
+export class Skill extends CompendiumItem {
     private _detail: string;
     private _family: SkillFamily;
 
@@ -35,5 +35,3 @@ class Skill extends CompendiumItem {
         return v;
     }
 }
-
-export { Skill, ISkillData };

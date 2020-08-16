@@ -3,12 +3,12 @@ import { ICompendiumItemData } from "@/interface";
 import { IEquipmentData, ITagData } from "../GeneralInterfaces";
 import { store } from "@/hooks";
 
-interface IPilotEquipmentData extends ICompendiumItemData {
+export interface IPilotEquipmentData extends ICompendiumItemData {
     type?: string | null;
     tags: ITagData[];
 }
 
-abstract class PilotEquipment extends CompendiumItem {
+export abstract class PilotEquipment extends CompendiumItem {
     private _tags: ITagData[];
     protected current_uses: number | null | undefined;
     protected _custom_damage_type: string | null;
@@ -57,5 +57,3 @@ abstract class PilotEquipment extends CompendiumItem {
         return item;
     }
 }
-
-export { PilotEquipment, IPilotEquipmentData };

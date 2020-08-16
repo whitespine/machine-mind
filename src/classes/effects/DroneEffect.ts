@@ -1,7 +1,7 @@
 import { IEffectData, ITagData } from "@/interface";
 import { ActivationType, EffectType, ItemEffect } from "@/class";
 
-interface IDroneData extends IEffectData {
+export interface IDroneData extends IEffectData {
     size: number;
     hp: number;
     armor?: number | null;
@@ -12,7 +12,7 @@ interface IDroneData extends IEffectData {
     tags?: ITagData[] | null;
 }
 
-class DroneEffect extends ItemEffect {
+export class DroneEffect extends ItemEffect {
     public readonly Name: string | null;
     public readonly Detail: string;
     public readonly Size: number;
@@ -61,5 +61,3 @@ class DroneEffect extends ItemEffect {
             .join("\n");
     }
 }
-
-export { IDroneData, DroneEffect };
