@@ -1,5 +1,5 @@
 import { INpcFeatureData } from "@/interface";
-import { NpcFeature, NpcFeatureType } from '@/class';
+import { NpcFeature, NpcFeatureType } from "@/class";
 
 export interface INpcReactionData extends INpcFeatureData {
     trigger: string;

@@ -1,6 +1,6 @@
 import "jest";
-import { Counter } from '@/class';
-import { ICounterData } from '@/interface';
+import { Counter } from "@/class";
+import { ICounterData } from "@/interface";
 
 const testCounterData: ICounterData = {
     id: "test",

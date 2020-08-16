@@ -1,6 +1,6 @@
 import uuid from "uuid/v4";
 import { MissionStepType } from "@/class";
-import { IMissionStep } from '@/interface';
+import { IMissionStep } from "@/interface";
 
 interface IRestData {
     id: string;

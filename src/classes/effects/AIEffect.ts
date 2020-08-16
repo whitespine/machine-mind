@@ -1,5 +1,5 @@
 import { ActivationType, EffectType, ItemEffect } from "@/class";
-import { IEffectData } from '@/interface';
+import { IEffectData } from "@/interface";
 
 interface IAIData extends IEffectData {
     size: number;

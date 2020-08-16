@@ -1,6 +1,6 @@
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { store } from "@/hooks";
-import { NpcFeature } from '@/class';
+import { NpcFeature } from "@/class";
 
 export interface INpcClassData {
     id: string;

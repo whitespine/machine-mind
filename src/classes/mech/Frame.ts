@@ -1,11 +1,4 @@
-import {
-    Rules,
-    LicensedItem,
-    MountType,
-    ItemType,
-    MechType,
-    CoreSystem,
-} from "@/class";
+import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "@/class";
 import { ILicensedItemData, ICoreData, FrameTrait } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 

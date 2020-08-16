@@ -2,6 +2,7 @@
 // (to the extent possible) in order to avoid any circular reference errors. Basic types and
 // abstract classes should be imported before their children. AFAIK the definitions can be
 // stored anywhere and collected imports are fine as long as their constituents are impored
+
 // first in this file.
 export { IAIData } from "@/classes/effects/AIEffect";
 export { IBasicEffectData } from "@/classes/effects/BasicEffect";
@@ -53,7 +54,7 @@ export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
-
+export { CompendiumCategory } from "./store/compendium";
 export * from "./classes/GeneralInterfaces";
 /*
 export {

@@ -2,7 +2,7 @@ import uuid from "uuid/v4";
 
 import { Encounter, Rest } from "@/class";
 import { store } from "@/hooks";
-import { IMissionStep } from '@/interface';
+import { IMissionStep } from "@/interface";
 
 enum MissionStepType {
     Encounter = "Encounter",

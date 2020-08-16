@@ -1,5 +1,5 @@
 import { INpcFeatureData } from "@/interface";
-import { NpcFeature, NpcFeatureType } from '@/class';
+import { NpcFeature, NpcFeatureType } from "@/class";
 
 export class NpcTrait extends NpcFeature {
     public constructor(data: INpcFeatureData) {

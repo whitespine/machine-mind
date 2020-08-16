@@ -45,7 +45,7 @@ import {
     Sitrep,
     Status,
 } from "@/interface";
-import { Rules } from '@/class';
+import { Rules } from "@/class";
 
 export interface GlossaryItem {
     name: string;
