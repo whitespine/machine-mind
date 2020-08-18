@@ -131,7 +131,7 @@ export function getBaseContentPack(): ContentPack {
         id: CORE_BREW_ID,
         manifest: {
             author: "Massif-Press",
-            item_prefix: "core",
+            item_prefix: "", // Don't want one
             name: "Lancer Core Book Data",
             version: "1.X",
         },

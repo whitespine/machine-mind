@@ -67,7 +67,12 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
             .replace(/[ \/-]/g, "_")
             .replace(/[^A-Za-z0-9_]/g, "")
             .toLowerCase();
-        return `${manifest.item_prefix}__${type}_${sanitizedName}`;
+        if(manifest.item_prefix) {
+            return `${manifest.item_prefix}__${type}_${sanitizedName}`;
+        }
+        else {
+            return `${type}_${sanitizedName}`;
+        }
     };
 
     function generateIDs<T extends ICompendiumItemData>(data: T[], dataPrefix: string): T[] {
