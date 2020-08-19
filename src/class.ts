@@ -102,3 +102,4 @@ export { NpcStats } from "@/classes/npc/NpcStats";
 export { NpcClass } from "@/classes/npc/NpcClass";
 export { NpcTemplate } from "@/classes/npc/NpcTemplate";
 export { Npc } from "@/classes/npc/Npc";
+export { Compendium } from "./store/compendium";

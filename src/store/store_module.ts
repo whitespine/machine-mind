@@ -21,7 +21,7 @@ export abstract class AbsStoreModule {
 }
 
 export interface DataStoreOptions {
-    disable_core_data: boolean;
+    disable_core_data?: boolean;
 }
 
 export const DEFAULT_STORE_OPTIONS: DataStoreOptions = {
