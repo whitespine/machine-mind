@@ -25,6 +25,5 @@ export interface DataStoreOptions {
 }
 
 export const DEFAULT_STORE_OPTIONS: DataStoreOptions = {
-    disable_core_data: false
-}
-
+    disable_core_data: false,
+};

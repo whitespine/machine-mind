@@ -32,8 +32,8 @@ export class CCDataStore {
     constructor(persistence: PersistentStore, options?: DataStoreOptions) {
         // Supplant defaults
         options = {
-            ...DEFAULT_STORE_OPTIONS, 
-            ...(options || {})
+            ...DEFAULT_STORE_OPTIONS,
+            ...(options || {}),
         };
         this.compendium = new CompendiumStore(persistence, options);
         this.pilots = new PilotManagementStore(persistence, options);

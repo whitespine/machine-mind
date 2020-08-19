@@ -67,10 +67,9 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
             .replace(/[ \/-]/g, "_")
             .replace(/[^A-Za-z0-9_]/g, "")
             .toLowerCase();
-        if(manifest.item_prefix) {
+        if (manifest.item_prefix) {
             return `${manifest.item_prefix}__${type}_${sanitizedName}`;
-        }
-        else {
+        } else {
             return `${type}_${sanitizedName}`;
         }
     };

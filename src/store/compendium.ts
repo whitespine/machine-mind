@@ -27,7 +27,7 @@ import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { Status, Environment, Sitrep } from "@/interface";
-import { PersistentStore } from '@/io/persistence';
+import { PersistentStore } from "@/io/persistence";
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -226,7 +226,7 @@ export class CompendiumStore extends AbsStoreModule {
 
     // Amends the custom content packs with the base
     private get getAll_content_packs(): ContentPack[] {
-        if(this._include_core) {
+        if (this._include_core) {
             return [getBaseContentPack(), ...this._content_packs];
         } else {
             return [...this._content_packs];
