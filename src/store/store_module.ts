@@ -11,7 +11,7 @@ export type load_setter_handler<T> = (x: load_setter<T>) => void;
 export abstract class AbsStoreModule {
     protected persistence: PersistentStore;
 
-    constructor(persistence: PersistentStore) {
+    constructor(persistence: PersistentStore, options: DataStoreOptions) {
         this.persistence = persistence;
     }
 
@@ -19,3 +19,12 @@ export abstract class AbsStoreModule {
     public abstract loadData<T extends this>(handler: load_setter_handler<T>): Promise<void>;
     public abstract saveData(): Promise<void>;
 }
+
+export interface DataStoreOptions {
+    disable_core_data: boolean;
+}
+
+export const DEFAULT_STORE_OPTIONS: DataStoreOptions = {
+    disable_core_data: false
+}
+

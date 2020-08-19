@@ -1,4 +1,4 @@
-import { AbsStoreModule, load_setter_handler } from "./store_module";
+import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
 import uuid from "uuid/v4";
 
@@ -23,11 +23,6 @@ export class UserProfileStore extends AbsStoreModule {
     private _hangarView!: string;
     private _pilotSheetView!: string;
     private _theme!: string;
-
-    public constructor(persistence: PersistentStore) {
-        super(persistence);
-        // Set sensible defaults
-    }
 
     public async saveData(): Promise<void> {
         const data: IUserProfile = {

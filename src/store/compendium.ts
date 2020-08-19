@@ -25,8 +25,9 @@ import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
-import { AbsStoreModule, load_setter_handler } from "./store_module";
+import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { Status, Environment, Sitrep } from "@/interface";
+import { PersistentStore } from '@/io/persistence';
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -164,6 +165,9 @@ export class CompendiumStore extends AbsStoreModule {
     // Pack management - note that we break here from the compcon way of doing it, and do not automatically save content after changes, to be more consistent with other platforms
     public _content_packs: ContentPack[] = []; // Currently loaded custom content packs.
 
+    // Should we always include the core data?
+    private _include_core: boolean = true;
+
     public get ContentPacks(): ContentPack[] {
         return this._content_packs;
     }
@@ -177,6 +181,11 @@ export class CompendiumStore extends AbsStoreModule {
         }
         this.populate();
         this.saveData();
+    }
+
+    public constructor(persistence: PersistentStore, options: DataStoreOptions) {
+        super(persistence, options);
+        this._include_core = !options.disable_core_data;
     }
 
     // Add the given pack to loaded state. Replaces existing packs with given id
@@ -217,7 +226,11 @@ export class CompendiumStore extends AbsStoreModule {
 
     // Amends the custom content packs with the base
     private get getAll_content_packs(): ContentPack[] {
-        return [getBaseContentPack(), ...this._content_packs];
+        if(this._include_core) {
+            return [getBaseContentPack(), ...this._content_packs];
+        } else {
+            return [...this._content_packs];
+        }
     }
 
     // (Re)loads the base lancer data, as well as any additional content packs data, from currently loaded packs/core data

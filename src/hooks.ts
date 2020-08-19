@@ -38,22 +38,7 @@ export function setup_image_shim(image: ImageShim) {
     imageManagement = image;
 }
 
-// Interface VueSet
-
-// export var VueSet = Vue.set;
-/*
-export type VueSetter = (target: Object | Array<any>, item: string | number, val: any) => any;
-
-export var VueSet: VueSetter;
-
-export function setup_vue_shim(setter: VueSetter) {
-    VueSet = setter;
-}
-*/
-
-// Interface Data save/load
-
-// Are we web?
+// Are we web? Controls if images are loaded etc
 export var is_web: boolean;
 
 export function set_is_web(yes: boolean) {

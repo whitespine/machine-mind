@@ -55,4 +55,5 @@ export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
 export { CompendiumCategory } from "./store/compendium";
+export { DataStoreOptions } from "./store/store_module";
 export * from "./classes/GeneralInterfaces";

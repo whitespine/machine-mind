@@ -5,7 +5,7 @@ import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
 import { MissionStore, FILEKEY_ACTIVE_MISSIONS, FILEKEY_MISSIONS } from "./mission";
 import { PersistentStore } from "@/io/persistence";
 import { UserProfileStore, FILEKEY_USER, IUserProfile } from "./user_profile";
-import { load_setter_handler } from "./store_module";
+import { load_setter_handler, DataStoreOptions, DEFAULT_STORE_OPTIONS } from "./store_module";
 
 type CCDataStoreMutation = load_setter_handler<CCDataStore>;
 export { CCDataStoreMutation };
@@ -20,7 +20,6 @@ export const FILE_KEYS = {
     pilots: FILEKEY_PILOTS,
     user_config: FILEKEY_USER,
 };
-
 export class CCDataStore {
     // Substores
     compendium: CompendiumStore;
@@ -30,20 +29,27 @@ export class CCDataStore {
     missions: MissionStore;
     user: UserProfileStore;
 
-    constructor(persistence: PersistentStore) {
-        this.compendium = new CompendiumStore(persistence);
-        this.pilots = new PilotManagementStore(persistence);
-        this.npcs = new NpcStore(persistence);
-        this.encounters = new EncounterStore(persistence);
-        this.missions = new MissionStore(persistence);
-        this.user = new UserProfileStore(persistence);
+    constructor(persistence: PersistentStore, options?: DataStoreOptions) {
+        // Supplant defaults
+        options = {
+            ...DEFAULT_STORE_OPTIONS, 
+            ...(options || {})
+        };
+        this.compendium = new CompendiumStore(persistence, options);
+        this.pilots = new PilotManagementStore(persistence, options);
+        this.npcs = new NpcStore(persistence, options);
+        this.encounters = new EncounterStore(persistence, options);
+        this.missions = new MissionStore(persistence, options);
+        this.user = new UserProfileStore(persistence, options);
     }
 
-    // Call void on all modules
+    // Call load on all modules
     public async load_all(handler: load_setter_handler<CCDataStore>): Promise<void> {
         // Black magicks - we're doing nested handlers, which is less than ideal, but trust the process.
         // Basically, we call loadData as we normally would, except our passed function must
         // use the parm _handler_ to route back to the corresponding module. Simple as that ;)
+
+        // Handler can be any function that makes loading / setting data "safe". For instance, in a vue context this would possibly force edits to only occur when in a vuex context
 
         // Can do this wherever but better earlier
         this.user.loadData(h => handler(s => h(s.user))),
