@@ -68,10 +68,10 @@ export class Counter {
         this._value = this.Default;
     }
 
-    public Serialize(): ICounterSaveData {
+    public static Serialize(dat: Counter): ICounterSaveData {
         return {
-            id: this.ID,
-            val: this.Value,
+            id: dat.ID,
+            val: dat.Value,
         };
     }
 

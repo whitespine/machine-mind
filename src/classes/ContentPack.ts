@@ -328,12 +328,12 @@ export class ContentPack {
         this._Conditions = this._StatusesAndConditions.filter(s => s.is_condition);
     }
 
-    public Serialize(): IContentPack {
+    public static Serialize(dat: ContentPack): IContentPack {
         return {
-            id: this._id,
-            active: this._active,
-            manifest: this._manifest,
-            data: this._data,
+            id: dat._id,
+            active: dat._active,
+            manifest: dat._manifest,
+            data: dat._data, // We never get rid of the raw data, so no need to reserialize
         };
     }
 }

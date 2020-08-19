@@ -1,4 +1,4 @@
-import { CompendiumItem } from '../CompendiumItem';
+import { CompendiumItem } from "../CompendiumItem";
 
 export interface ISitrepData {
     id: string;
@@ -12,7 +12,6 @@ export interface ISitrepData {
     controlZone?: string | null;
     extraction?: string | null;
 }
-
 
 export class Sitrep {
     private _id: string;
@@ -34,35 +33,35 @@ export class Sitrep {
         this._enemyVictory = "";
     }
 
-    public Serialize(): ISitrepData {
+    public static Serialize(dat: Sitrep): ISitrepData {
         return {
-            id: this._id,
-            name: this._name,
-            description: this._description,
-            pcVictory: this._pcVictory,
-            enemyVictory: this._enemyVictory,
-            noVictory: this._noVictory,
-            deployment: this._deployment,
-            objective: this._objective,
-            controlZone: this._controlZone,
-            extraction: this._extraction,
-        }
+            id: dat._id,
+            name: dat._name,
+            description: dat._description,
+            pcVictory: dat._pcVictory,
+            enemyVictory: dat._enemyVictory,
+            noVictory: dat._noVictory,
+            deployment: dat._deployment,
+            objective: dat._objective,
+            controlZone: dat._controlZone,
+            extraction: dat._extraction,
+        };
     }
 
     public static Deserialize(data: ISitrepData): Sitrep {
         let result = new Sitrep();
 
         // Simple populate
-        result._id= data.id;
-        result._name= data.name;
-        result._description= data.description;
-        result._pcVictory= data.pcVictory;
-        result._enemyVictory= data.enemyVictory;
-        result._noVictory= data.noVictory;
-        result._deployment= data.deployment;
-        result._objective= data.objective;
-        result._controlZone= data.controlZone;
-        result._extraction= data.extraction;
+        result._id = data.id;
+        result._name = data.name;
+        result._description = data.description;
+        result._pcVictory = data.pcVictory;
+        result._enemyVictory = data.enemyVictory;
+        result._noVictory = data.noVictory;
+        result._deployment = data.deployment;
+        result._objective = data.objective;
+        result._controlZone = data.controlZone;
+        result._extraction = data.extraction;
 
         return result;
     }

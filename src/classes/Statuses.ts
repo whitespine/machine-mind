@@ -22,7 +22,7 @@ export class Status {
     public get Effects(): string[] {
         return this._effects;
     }
-    
+
     public get Type(): "Status" | "Condition" {
         return this._type;
     }
@@ -34,12 +34,12 @@ export class Status {
         this._effects = [];
     }
 
-    public Serialize(): IStatusData {
+    public static Serialize(dat: Status): IStatusData {
         return {
-            name: this._name,
-            icon: this._icon,
-            type: this._type,
-            effects: this._effects
+            name: dat._name,
+            icon: dat._icon,
+            type: dat._type,
+            effects: dat._effects,
         };
     }
 

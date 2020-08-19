@@ -335,7 +335,7 @@ export class CompendiumStore extends AbsStoreModule {
 
     public async saveData(): Promise<void> {
         // Save the content packs to static storage
-        let data_packs = this._content_packs.map(c => c.Serialize());
+        let data_packs = this._content_packs.map(ContentPack.Serialize);
         await this.persistence.set_item(FILEKEY_CONTENT_PACKS, data_packs);
     }
 }

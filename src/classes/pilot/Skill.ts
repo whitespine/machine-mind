@@ -35,16 +35,16 @@ export class Skill extends CompendiumItem {
         return v;
     }
 
-    public Serialize(): ISkillData {
+    public static Serialize(dat: Skill): ISkillData {
         return {
-            detail: this._detail,
-            family: this._family,
-        
-            brew: this._brew,
-            counters: this.Counters,
-            description: this._description,
-            id: this.ID,
-            name: this._name
+            detail: dat._detail,
+            family: dat._family,
+
+            brew: dat._brew,
+            counters: dat.Counters,
+            description: dat._description,
+            id: dat.ID,
+            name: dat._name,
         };
     }
 }

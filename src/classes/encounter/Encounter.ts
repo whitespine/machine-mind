@@ -3,7 +3,7 @@ import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store, is_web } from "@/hooks";
 import { IMissionStep } from "@/interface";
-import { ISitrepData } from './Sitrep';
+import { ISitrepData } from "./Sitrep";
 
 export interface IEncounterData {
     id: string;
@@ -264,7 +264,7 @@ export class Encounter implements IMissionStep {
             location: enc.Location,
             environment: enc.Environment,
             environmentDetails: enc.EnvironmentDetails,
-            sitrep: enc.Sitrep.Serialize(),
+            sitrep: Sitrep.Serialize(enc.Sitrep),
             cloud_map: enc.CloudImage,
             local_map: enc.LocalImage,
         };

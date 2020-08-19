@@ -19,9 +19,15 @@ export class Environment {
         this._description = "";
     }
 
-    public get Description(): string { return this._description; }
-    public get Name(): string { return this._name; }
-    public get ID(): string { return this._id; }
+    public get Description(): string {
+        return this._description;
+    }
+    public get Name(): string {
+        return this._name;
+    }
+    public get ID(): string {
+        return this._id;
+    }
 
     public static Deserialize(data: IEnvironmentData): Environment {
         let v = new Environment();
@@ -31,11 +37,11 @@ export class Environment {
         return v;
     }
 
-    public Serialize(): IEnvironmentData {
+    public static Serialize(dat: Environment): IEnvironmentData {
         return {
-            id: this._id,
-            name: this._name,
-            description: this._description
+            id: dat._id,
+            name: dat._name,
+            description: dat._description,
         };
     }
 }
