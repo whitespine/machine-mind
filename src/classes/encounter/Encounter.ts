@@ -1,8 +1,9 @@
 import uuid from "uuid/v4";
-import { Npc, EncounterSide, MissionStepType } from "@/class";
+import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store, is_web } from "@/hooks";
-import { Sitrep, IMissionStep } from "@/interface";
+import { IMissionStep } from "@/interface";
+import { ISitrepData } from './Sitrep';
 
 export interface IEncounterData {
     id: string;
@@ -11,7 +12,7 @@ export interface IEncounterData {
     npcs: { id: string; side: EncounterSide }[];
     reinforcements: { id: string; side: EncounterSide }[];
     labels: string[];
-    sitrep: Sitrep;
+    sitrep: ISitrepData;
     campaign?: string | null;
     gmNotes?: string | null;
     narrativeNotes?: string | null;
@@ -49,7 +50,7 @@ export class Encounter implements IMissionStep {
         this._environment_details = "";
         this._cloud_map = "";
         this._local_map = "";
-        this._sitrep = store.compendium.getItemCollection("Sitreps")[0] as Sitrep;
+        this._sitrep = store.compendium.getItemCollection("Sitreps")[0];
         this._npcs = [];
         this._reinforcements = [];
     }
@@ -263,7 +264,7 @@ export class Encounter implements IMissionStep {
             location: enc.Location,
             environment: enc.Environment,
             environmentDetails: enc.EnvironmentDetails,
-            sitrep: enc.Sitrep,
+            sitrep: enc.Sitrep.Serialize(),
             cloud_map: enc.CloudImage,
             local_map: enc.LocalImage,
         };
@@ -282,7 +283,7 @@ export class Encounter implements IMissionStep {
         e._environment_details = data.environmentDetails || "";
         e._cloud_map = data.cloud_map || "";
         e._local_map = data.local_map || "";
-        e._sitrep = data.sitrep;
+        e._sitrep = Sitrep.Deserialize(data.sitrep);
         e._npcs = data.npcs;
         e._reinforcements = data.reinforcements;
         return e;

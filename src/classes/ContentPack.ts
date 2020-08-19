@@ -25,6 +25,9 @@ import {
     Reserve,
     Skill,
     License,
+    Environment,
+    Sitrep,
+    Status,
 } from "@/class";
 import {
     IManufacturerData,
@@ -49,15 +52,15 @@ import {
     ITagCompendiumData,
     ISkillData,
     IReserveData,
-    Status,
-    Environment,
-    Sitrep,
+    IStatusData,
+    IEnvironmentData,
+    ISitrepData,
 } from "@/interface";
 import _ from "lodash";
 
 export interface IContentPackManifest {
     name: string;
-    item_prefix: string;
+    item_prefix: string; // Note - this is applied only on initial load. Dynamic, at runtime packs do not care about this
     author: string;
     version: string;
     description?: string | null;
@@ -82,10 +85,10 @@ export interface IContentPackData {
 
     // New additions courtesy of whitespine
     skills?: ISkillData[] | null;
-    statuses?: Status[] | null;
+    statuses?: IStatusData[] | null;
     reserves?: IReserveData[] | null;
-    environments?: Environment[] | null;
-    sitreps?: Sitrep[] | null;
+    environments?: IEnvironmentData[] | null;
+    sitreps?: ISitrepData[] | null;
     quirks?: string[] | null;
 }
 
@@ -315,14 +318,14 @@ export class ContentPack {
 
         this._Quirks = this._data.quirks || [];
         this._Skills = (this._data.skills || []).map(s => new Skill(s));
-        this._Sitreps = this._data.sitreps || [];
+        this._Sitreps = (this._data.sitreps || []).map(Sitrep.Deserialize);
         this._Reserves = (this._data.reserves || []).map(s => new Reserve(s));
-        this._StatusesAndConditions = this._data.statuses || [];
-        this._Environments = this._data.environments || [];
+        this._StatusesAndConditions = (this._data.statuses || []).map(Status.Deserialize);
+        this._Environments = (this._data.environments || []).map(Environment.Deserialize);
         this._Licenses = this.Frames.map(f => new License(f));
 
-        this._Statuses = this._StatusesAndConditions.filter(s => s.type == "Status");
-        this._Conditions = this._StatusesAndConditions.filter(s => s.type == "Condition");
+        this._Statuses = this._StatusesAndConditions.filter(s => s.is_status);
+        this._Conditions = this._StatusesAndConditions.filter(s => s.is_condition);
     }
 
     public Serialize(): IContentPack {

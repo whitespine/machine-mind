@@ -20,13 +20,15 @@ import {
     PilotGear,
     Tag,
     License,
+    Status,
+    Environment,
+    Sitrep,
 } from "@/class";
 import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
 import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
-import { Status, Environment, Sitrep } from "@/interface";
 import { PersistentStore } from "@/io/persistence";
 
 const CORE_BONUSES = "CoreBonuses";

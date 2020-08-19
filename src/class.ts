@@ -4,6 +4,7 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 // first in this file.
 
+export * from "@/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
 export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
 export {
@@ -75,6 +76,9 @@ export { Encounter } from "./classes/encounter/Encounter";
 export { Rest } from "./classes/encounter/Rest";
 export { Mission, MissionStepType } from "./classes/encounter/Mission";
 export { ActiveMission } from "./classes/encounter/ActiveMission";
+export { Sitrep } from "./classes/encounter/Sitrep";
+export { Environment } from "./classes/encounter/Environment";
+export { Status } from "./classes/Statuses";
 export { ContentPack } from "./classes/ContentPack";
 export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";

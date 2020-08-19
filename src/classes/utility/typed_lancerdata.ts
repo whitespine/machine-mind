@@ -41,9 +41,9 @@ import {
     INpcTemplateData,
     IPilotEquipmentData,
     ITagCompendiumData,
-    Environment,
-    Sitrep,
-    Status,
+    IStatusData,
+    ISitrepData,
+    IEnvironmentData,
 } from "@/interface";
 import { Rules } from "@/class";
 
@@ -74,7 +74,7 @@ export const backgrounds = _backgrounds as Background[];
 // export type MountFitting = "Auxillary" | "Main" | "Flex" | "Heavy"
 export const rules = Rules;
 export const core_bonuses = _core_bonuses as ICoreBonusData[];
-export const environments = _environments as Environment[];
+export const environments = _environments as IEnvironmentData[];
 export const factions = _factions as IFactionData[];
 export const frames = _frames as IFrameData[];
 
@@ -94,9 +94,9 @@ export const npc_templates = _npc_templates as INpcTemplateData[];
 export const pilot_gear = _pilot_gear as IPilotEquipmentData[];
 export const quirks = _quirks as string[];
 export const reserves = _reserves as IReserveData[];
-export const sitreps = _sitreps as Sitrep[];
+export const sitreps = _sitreps as ISitrepData[];
 export const skills = _skills as ISkillData[];
-export const statuses = _statuses as Status[];
+export const statuses = _statuses as IStatusData[];
 export const systems = _systems as IMechSystemData[];
 export const tags = _tags as ITagCompendiumData[];
 export const talents = _talents as ITalentData[];

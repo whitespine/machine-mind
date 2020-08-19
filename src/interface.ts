@@ -17,7 +17,6 @@ export { IInvadeOptionData, ITechEffectData } from "@/classes/effects/TechEffect
 export { IProfileEffectData } from "@/classes/effects/ProfileEffect";
 export { IOffensiveEffectData } from "@/classes/effects/OffensiveEffect";
 export { ICompendiumItemData } from "./classes/CompendiumItem";
-export * from "@/classes/GeneralClasses";
 export { ILicensedItemData } from "./classes/LicensedItem";
 export { ICoreData } from "./classes/mech/CoreSystem";
 export { IFrameData, IFrameStats } from "./classes/mech/Frame";
@@ -51,6 +50,9 @@ export { IMissionData } from "./classes/encounter/Mission";
 export { IMissionStep } from "./classes/encounter/IMissionStep";
 export { IActor } from "./classes/encounter/IActor";
 export { IActiveMissionData } from "./classes/encounter/ActiveMission";
+export { IStatusData } from "./classes/Statuses";
+export { ISitrepData } from "./classes/encounter/Sitrep";
+export { IEnvironmentData } from "./classes/encounter/Environment";
 export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
