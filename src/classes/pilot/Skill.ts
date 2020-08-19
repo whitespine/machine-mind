@@ -34,4 +34,17 @@ export class Skill extends CompendiumItem {
         let v = store.compendium.getReferenceByID("Skills", id);
         return v;
     }
+
+    public Serialize(): ISkillData {
+        return {
+            detail: this._detail,
+            family: this._family,
+        
+            brew: this._brew,
+            counters: this.Counters,
+            description: this._description,
+            id: this.ID,
+            name: this._name
+        };
+    }
 }
