@@ -53,7 +53,7 @@ export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IStatusData } from "./classes/Statuses";
 export { ISitrepData } from "./classes/encounter/Sitrep";
 export { IEnvironmentData } from "./classes/encounter/Environment";
-export { IContentPackManifest, IContentPack } from "./classes/ContentPack";
+export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
 export { CompendiumCategory } from "./store/compendium";

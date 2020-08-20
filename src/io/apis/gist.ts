@@ -57,6 +57,8 @@ const savePilot = async function(pilot: Pilot) {
 const loadPilot = async function(id: string): Promise<IPilotData> {
     const gistData = (await gistApi.get(id)).data;
     const pilotData = JSON.parse(gistData.files["pilot.txt"].content) as IPilotData;
+    // This is occasionally missing from the transmitted data
+    pilotData.cloudID = id;
     return pilotData;
 };
 
