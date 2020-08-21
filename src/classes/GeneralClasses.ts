@@ -9,7 +9,3 @@ export interface PrintOptions {
     loadout_index: number;
     combo: boolean;
 }
-export interface FrameTrait {
-    name: string;
-    description: string;
-}

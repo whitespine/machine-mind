@@ -12,6 +12,7 @@ import {
     AIEffect,
     OffensiveEffect,
     ProfileEffect,
+    ActivationType,
 } from "@/class";
 import { ITagData } from "@/interface";
 
@@ -28,16 +29,6 @@ export enum EffectType {
     Bonus = "Bonus",
     Offensive = "Offensive",
     Profile = "Profile",
-}
-
-export enum ActivationType {
-    None = "None",
-    Passive = "Passive",
-    Quick = "Quick",
-    Full = "Full",
-    Other = "Other",
-    Reaction = "Reaction",
-    Protocol = "Protocol",
 }
 
 export interface IEffectData {

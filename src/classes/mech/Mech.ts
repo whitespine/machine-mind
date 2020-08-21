@@ -12,8 +12,41 @@ import {
 } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store } from "@/hooks";
-import { IMechData, IActor, IMechLoadoutData } from "@/interface";
+import { IActor, IMechLoadoutData } from "@/interface";
 import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
+
+export interface IMechData {
+    id: string;
+    name: string;
+    notes: string;
+    gm_note: string;
+    portrait: string;
+    cloud_portrait: string;
+    frame: string;
+    active: boolean;
+    current_structure: number;
+    current_hp: number;
+    overshield: number;
+    current_stress: number;
+    current_heat: number;
+    current_repairs: number;
+    current_overcharge: number;
+    current_core_energy: number;
+    loadouts: IMechLoadoutData[];
+    active_loadout_index: number;
+    statuses: string[];
+    conditions: string[];
+    resistances: string[];
+    reactions: string[];
+    burn: number;
+    ejected: boolean;
+    destroyed: boolean;
+    defeat: string;
+    activations: number;
+    meltdown_imminent: boolean;
+    reactor_destroyed: boolean;
+    cc_ver: string;
+}
 
 export class Mech implements IActor {
     private _id: string;
@@ -49,7 +82,6 @@ export class Mech implements IActor {
     private _burn: number;
     private _actions: number;
     private _currentMove: number;
-    private _state: ActiveState;
 
     public constructor(frame: Frame, pilot: Pilot) {
         this._id = uuid();
@@ -84,7 +116,6 @@ export class Mech implements IActor {
         this._activations = 1;
         this._actions = 2;
         this._currentMove = this.Speed;
-        this._state = new ActiveState(this);
         this._cc_ver = store.getVersion || "N/A";
     }
     // -- Utility -----------------------------------------------------------------------------------
@@ -416,6 +447,7 @@ export class Mech implements IActor {
         if (structure > this.MaxStructure) this._current_structure = this.MaxStructure;
         else if (structure < 0) this._current_structure = 0;
         else this._current_structure = structure;
+        if (this._current_structure === 0) this.Destroy();
         this.save();
     }
 
@@ -752,11 +784,11 @@ export class Mech implements IActor {
     }
 
     public get IsShutDown(): boolean {
-        return this.Statuses.includes("Shut Down");
+        return this.Statuses.includes("SHUT DOWN");
     }
 
     public get IsStunned(): boolean {
-        return this._conditions.includes("Stunned");
+        return this._conditions.includes("STUNNED");
     }
 
     public get Conditions(): string[] {
@@ -945,11 +977,6 @@ export class Mech implements IActor {
         return this.PilotBonuses.filter(x => !this.AppliedBonuses.includes(x));
     }
 
-    // -- Active Mode -------------------------------------------------------------------------------
-    public get State(): ActiveState {
-        return this._state;
-    }
-
     // -- I/O ---------------------------------------------------------------------------------------
     public static Serialize(m: Mech): IMechData {
         return {
@@ -983,7 +1010,6 @@ export class Mech implements IActor {
             meltdown_imminent: m._meltdown_imminent,
             reactor_destroyed: m._reactor_destroyed,
             cc_ver: store.getVersion || "ERR",
-            state: ActiveState.Serialize(m._state),
         };
     }
 
@@ -1031,7 +1057,6 @@ export class Mech implements IActor {
         m._meltdown_imminent = data.meltdown_imminent || false;
         m._reactor_destroyed = data.reactor_destroyed || false;
         m._cc_ver = data.cc_ver || "";
-        m._state = data.state ? ActiveState.Deserialize(data.state, m) : new ActiveState(m);
         return m;
     }
 }

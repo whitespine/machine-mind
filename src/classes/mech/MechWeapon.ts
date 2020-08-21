@@ -121,14 +121,18 @@ export class MechWeapon extends MechEquipment {
                 type: RangeType.Range,
                 val: parseInt(this.Mod.AddedRange.Value),
             });
-        if (mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_neurolink_targeting")))
+        if (
+            mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_neurolink_targeting")) &&
+            !this.IsIntegrated
+        )
             bonuses.push({
                 type: RangeType.Range,
                 val: 3,
             });
         if (
             mech.Pilot.has(comp.getReferenceByID("CoreBonuses", "cb_gyges_frame")) &&
-            this.Type === WeaponType.Melee
+            this.Type === WeaponType.Melee &&
+            !this.IsIntegrated
         )
             bonuses.push({
                 type: RangeType.Threat,
@@ -136,7 +140,8 @@ export class MechWeapon extends MechEquipment {
             });
         if (
             mech.ActiveLoadout?.HasSystem("ms_external_batteries") &&
-            this.Damage[0].Type === DamageType.Energy
+            this.Damage[0].Type === DamageType.Energy &&
+            !this.IsIntegrated
         )
             if (this.Type === WeaponType.Melee) {
                 bonuses.push({
@@ -162,6 +167,10 @@ export class MechWeapon extends MechEquipment {
 
     public get Mod(): WeaponMod | null {
         return this._mod || null;
+    }
+
+    public get Color(): string {
+        return "mech-weapon";
     }
 
     public static Serialize(item: MechWeapon): IMechWeaponSaveData {

@@ -63,7 +63,7 @@ export class Range {
         ranges: Range[],
         bonuses: { type: RangeType; val: number }[]
     ): Range[] {
-        var output = [] as Range[];
+        let output = [] as Range[];
         ranges.forEach(range => {
             let bonus = bonuses
                 .filter(x => x.type === range.Type)

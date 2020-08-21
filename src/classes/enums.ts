@@ -1,3 +1,4 @@
+// Holds enums that are as of yet seen nowhere else
 export enum MountType {
     Main = "Main",
     Heavy = "Heavy",
@@ -61,6 +62,25 @@ export enum SystemType {
     FlightSystem = "Flight System",
     Integrated = "Integrated",
     Mod = "Mod",
+}
+
+export enum Duration {
+    Free = "Free",
+    Turn = "Turn",
+    NextTurn = "NextTurn",
+    Scene = "Scene",
+    Mission = "Mission",
+}
+
+export enum ActivationType {
+    None = "None",
+    Passive = "Passive",
+    Quick = "Quick",
+    Full = "Full",
+    Other = "Other",
+    Reaction = "Reaction",
+    Protocol = "Protocol",
+    Free = "Free"
 }
 
 export enum SkillFamily {

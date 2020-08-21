@@ -22,12 +22,17 @@ export {
     ReserveType,
     OrgType,
     EncounterSide,
+    ActivationType,
+    Duration,
 } from "./classes/enums";
+export { Drone } from "./classes/Drone";
+export { Deployable } from "./classes/Deployable";
 export { CompendiumItem } from "./classes/CompendiumItem";
 export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage } from "./classes/Damage";
 export { Range } from "./classes/Range";
+export { Synergy } from "@/classes/Synergy";
 export { Skill } from "./classes/pilot/Skill";
 export { PilotEquipment } from "./classes/pilot/PilotEquipment";
 export { PilotArmor } from "./classes/pilot/PilotArmor";
@@ -43,7 +48,7 @@ export { MechWeapon } from "./classes/mech/MechWeapon";
 
 export { CustomSkill } from "./classes/pilot/CustomSkill";
 export { Loadout } from "./classes/Loadout";
-export { Talent } from "./classes/pilot/Talent";
+export { Talent, TalentRankUtil } from "./classes/pilot/Talent";
 export { License } from "./classes/License";
 export { MechSkills } from "./classes/pilot/MechSkills";
 export { PilotLicense } from "./classes/pilot/PilotLicense";
@@ -82,7 +87,7 @@ export { Status } from "./classes/Statuses";
 export { ContentPack } from "./classes/ContentPack";
 export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
-export { EffectType, ActivationType, ItemEffect } from "@/classes/effects/ItemEffect";
+export { EffectType, ItemEffect } from "@/classes/effects/ItemEffect";
 export { BasicEffect } from "@/classes/effects/BasicEffect";
 export { AIEffect } from "@/classes/effects/AIEffect";
 export { ChargeType, Charge, ChargeEffect } from "@/classes/effects/ChargeEffect";

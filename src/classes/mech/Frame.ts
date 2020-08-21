@@ -1,12 +1,4 @@
-import {
-    Rules,
-    LicensedItem,
-    MountType,
-    ItemType,
-    MechType,
-    CoreSystem,
-    FrameTrait,
-} from "@/class";
+import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "@/class";
 import { ILicensedItemData, ICoreData } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 
@@ -27,8 +19,21 @@ export interface IFrameStats {
     sp: number;
 }
 
+export interface FrameSynergy {
+    locations: string[];
+    detail: string;
+}
+
+export interface FrameTrait {
+    name: string;
+    description: string;
+
+    synergies?: FrameSynergy[];
+}
+
 export interface IFrameData extends ILicensedItemData {
     mechtype: MechType[];
+    license_level: number;
     y_pos?: number | null;
     mounts: MountType[];
     stats: IFrameStats;

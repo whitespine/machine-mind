@@ -1,5 +1,6 @@
 import { Talent } from "@/class";
 import { IRankedData } from "../GeneralInterfaces";
+import { ITalentRank } from "@/interface";
 
 export class PilotTalent {
     private talent: Talent;
@@ -16,6 +17,14 @@ export class PilotTalent {
 
     public get Rank(): number {
         return this.rank;
+    }
+
+    public get UnlockedRanks(): ITalentRank[] {
+        let result: ITalentRank[] = [];
+        for (let i = 1; i <= this.rank; i++) {
+            result.push(this.talent.Rank(i));
+        }
+        return result;
     }
 
     public Increment(): boolean {

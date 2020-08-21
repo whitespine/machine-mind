@@ -80,45 +80,6 @@ export interface ICounterSaveData {
     val: number;
 }
 
-export interface IPilotData {
-    id: string;
-    campaign: string;
-    group: string;
-    sort_index: number;
-    cloudID: string;
-    cloudOwnerID: string;
-    lastCloudUpdate: string;
-    level: number;
-    callsign: string;
-    name: string;
-    player_name: string;
-    status: string;
-    mounted: boolean;
-    factionID: string;
-    text_appearance: string;
-    notes: string;
-    history: string;
-    portrait: string;
-    cloud_portrait: string;
-    quirk: string;
-    current_hp: number;
-    background: string;
-    mechSkills: number[];
-    licenses: IRankedData[];
-    skills: IRankedData[];
-    talents: IRankedData[];
-    core_bonuses: string[];
-    reserves: IReserveData[];
-    orgs: IOrganizationData[];
-    loadout: IPilotLoadoutData;
-    mechs: IMechData[];
-    active_mech: string | null;
-    cc_ver: string;
-    counter_data: ICounterSaveData[];
-    custom_counters: object[];
-    brews: string[];
-}
-
 export interface IReserveData {
     id: string;
     type?: string | null;
@@ -175,40 +136,6 @@ export interface IMechState {
     bracedCooldown: boolean;
     redundant: boolean;
     history: IHistoryItem[];
-}
-
-export interface IMechData {
-    id: string;
-    name: string;
-    notes: string;
-    gm_note: string;
-    portrait: string;
-    cloud_portrait: string;
-    frame: string;
-    active: boolean;
-    current_structure: number;
-    current_hp: number;
-    overshield: number;
-    current_stress: number;
-    current_heat: number;
-    current_repairs: number;
-    current_overcharge: number;
-    current_core_energy: number;
-    loadouts: IMechLoadoutData[];
-    active_loadout_index: number;
-    statuses: string[];
-    conditions: string[];
-    resistances: string[];
-    reactions: string[];
-    burn: number;
-    ejected: boolean;
-    destroyed: boolean;
-    defeat: string;
-    activations: number;
-    meltdown_imminent: boolean;
-    reactor_destroyed: boolean;
-    cc_ver: string;
-    state: IMechState;
 }
 
 export interface IMechLoadoutData {

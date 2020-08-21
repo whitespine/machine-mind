@@ -221,6 +221,10 @@ export class MechLoadout extends Loadout {
         return this.Equipment.filter(x => x.IsAI).length;
     }
 
+    public get Color(): string {
+        return "mech-system";
+    }
+
     public static Serialize(ml: MechLoadout): IMechLoadoutData {
         return {
             id: ml.ID,
