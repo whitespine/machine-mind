@@ -21,6 +21,14 @@ export class Damage {
         this._override = damage.override || false;
     }
 
+    public static Serialize(damage: Damage): IDamageData {
+        return {
+            type: damage._damage_type,
+            val: damage._raw_value,
+            override: damage._override
+        }
+    }
+
     private getDamageType(str?: string | null): DamageType {
         switch (str?.toLowerCase()) {
             case "kinetic":
