@@ -16,11 +16,19 @@ import { IMechLoadoutData } from "@/interface";
 import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
 
 export class MechLoadout extends Loadout {
+    // The following four mount items are mutually exclusive, in case that was not obvious
+    // Integrated mounts from the frame itself (e.g. solidcore) and from talents (e.g. nuccav)
     private _integratedMounts: IntegratedMount[];
+    // Normal mounts from the frame itself, typically for core systems
     private _equippableMounts: EquippableMount[];
+    // Added flex mount via improved armament.
     private _improvedArmament: EquippableMount;
+    // The mount from the GMS Integrated Weapon core bonus
     private _integratedWeapon: EquippableMount;
+
+    // What it says on the tin
     private _systems: MechSystem[];
+    // Core system passives, spaceborn, etc
     private _integratedSystems: MechSystem[];
 
     public constructor(mech: Mech) {
