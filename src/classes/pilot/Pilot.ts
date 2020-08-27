@@ -590,6 +590,11 @@ export class Pilot {
         }
     }
 
+    public getSkillRank(id: string): number {
+        const index = this._skills.findIndex(x => x.Skill.ID === id);
+        return index > -1 ? this._talents[index].Rank : 0;
+    }
+
     // -- Talents -----------------------------------------------------------------------------------
     public get Talents(): PilotTalent[] {
         return this._talents;
@@ -624,6 +629,7 @@ export class Pilot {
         const index = this._talents.findIndex(x => x.Talent.ID === id);
         return index > -1 ? this._talents[index].Rank : 0;
     }
+
 
     public AddTalent(talent: Talent): void {
         const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent));
