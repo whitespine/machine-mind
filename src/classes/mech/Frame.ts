@@ -5,11 +5,11 @@ import { imageManagement, ImageTag } from "@/hooks";
 export interface IFrameStats {
     size: number;
     armor: number;
-    structuremod?: number | null;
+    // structuremod?: number | null;
     hp: number;
     evasion: number;
     edef: number;
-    stressmod?: number | null;
+    // stressmod?: number | null;
     heatcap: number;
     repcap: number;
     sensor_range: number;
@@ -19,28 +19,32 @@ export interface IFrameStats {
     sp: number;
 }
 
-export interface FrameSynergy {
-    locations: string[];
-    detail: string;
+export interface IFrameTraitData {
+  name: string,
+  description: string, // v-html
+  use?: 'Round' | 'Scene' | 'Encounter' | 'Mission' | null,
+  actions?: IActionData[] | null,
+  bonuses?: IBonusData[] | null,
+  synergies?: ISynergyData[ | null,
+  deployables?: IDeployableData[] | null,
+  counters?: ICounterData[] | null,
+  integrated?: string[] | null
 }
 
-export interface FrameTrait {
-    name: string;
-    description: string;
-
-    synergies?: FrameSynergy[];
-}
-
-export interface IFrameData extends ILicensedItemData {
-    mechtype: MechType[];
-    license_level: number;
-    y_pos?: number | null;
-    mounts: MountType[];
-    stats: IFrameStats;
-    traits: FrameTrait[];
-    core_system: ICoreData;
-    image_url?: string | null;
-    other_art?: { tag: ImageTag; src: string }[] | null;
+export interface IFrameData  {
+  id: string,
+  license_level: number, // set to zero for this item to be available to a LL0 character
+  source: string, // must be the same as the Manufacturer ID to sort correctly
+  name: string,
+  mechtype: string[], // can be customized
+  y_pos: number, // used for vertical alignment of the mech in banner views (like in the new mech selector)
+  description: string, // v-html
+  mounts: MountType[],
+  stats: IFrameStats,
+  traits: IFrameTraitData[],
+  core_system: ICoreSystemData,
+  image_url?: string | null,
+  other_art?: IArtLocation[] | null
 }
 
 export class Frame extends LicensedItem {

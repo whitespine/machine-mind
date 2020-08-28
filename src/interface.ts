@@ -4,21 +4,26 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 
 // first in this file.
+export { IActionData } from "@/classes/Action";
 export { IAIData } from "@/classes/effects/AIEffect";
+export { IBackground } from "@/classes/Background";
 export { IBasicEffectData } from "@/classes/effects/BasicEffect";
+export { IBonusEffectData } from "@/classes/effects/BonusEffect";
+export { IBonusData } from "@/classes/Bonus";
 export { IChargeData, IChargeEffectData } from "@/classes/effects/ChargeEffect";
+export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
+export { ICounterData } from "./classes/Counter";
+export { ICoreBonusData } from "./classes/pilot/CoreBonus";
 export { IDeployableData } from "@/classes/effects/DeployableEffect";
 export { IDroneData } from "@/classes/effects/DroneEffect";
 export { IEffectData } from "@/classes/effects/ItemEffect";
-export { IBonusEffectData } from "@/classes/effects/BonusEffect";
 export { IProtocolEffectData } from "@/classes/effects/ProtocolEffect";
 export { IReactionEffectData } from "@/classes/effects/ReactionEffect";
-export { IAction } from "@/classes/Action";
-export { ISynergyItem, ISynergyDecorator } from "@/classes/Synergy";
+export { ISynergyData, ISynergyDecorator } from "@/classes/Synergy";
 export { IInvadeOptionData, ITechEffectData } from "@/classes/effects/TechEffect";
 export { IProfileEffectData } from "@/classes/effects/ProfileEffect";
 export { IOffensiveEffectData } from "@/classes/effects/OffensiveEffect";
-export { ICompendiumItemData } from "./classes/CompendiumItem";
+export { ICompendiumItemData, IEquippable, IIntegrated, ITagged, ICounted } from "./classes/CompendiumItem";
 export { ILicensedItemData } from "./classes/LicensedItem";
 export { ICoreData } from "./classes/mech/CoreSystem";
 export { IFrameData, IFrameStats } from "./classes/mech/Frame";
@@ -29,7 +34,6 @@ export { IMechData } from "./classes/mech/Mech";
 export { IMechSystemData } from "./classes/mech/MechSystem";
 export { IMechWeaponData } from "./classes/mech/MechWeapon";
 export { IWeaponModData } from "./classes/mech/WeaponMod";
-export { ICoreBonusData } from "./classes/pilot/CoreBonus";
 export { IPilotData } from "./classes/pilot/Pilot";
 export { IPilotEquipmentData } from "./classes/pilot/PilotEquipment";
 export { IPilotArmorData } from "./classes/pilot/PilotArmor";
@@ -57,8 +61,6 @@ export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IStatusData } from "./classes/Statuses";
 export { ISitrepData } from "./classes/encounter/Sitrep";
 export { IEnvironmentData } from "./classes/encounter/Environment";
-export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
-export { ICounterData } from "./classes/Counter";
 export { ITagCompendiumData } from "./classes/Tag";
 export { CompendiumCategory } from "./store/compendium";
 export { DataStoreOptions } from "./store/store_module";

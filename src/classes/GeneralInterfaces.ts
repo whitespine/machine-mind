@@ -166,10 +166,3 @@ export interface ITagData {
     id: string;
     val?: string | number | null;
 }
-export interface ISnackbarSettings {
-    text: string;
-    multiline?: boolean | null;
-    timeout?: number | null;
-    color?: string | null;
-    visible?: boolean | null;
-}

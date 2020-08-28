@@ -22,6 +22,15 @@ export class Range {
         this._bonus = range.bonus || 0;
     }
 
+    public Serialize(): IRangeData {
+        return {
+            type: this._range_type,
+            val: this._value,
+            override: this._override,
+            bonus: this._bonus
+        }
+    }
+
     public get Override(): boolean {
         return this._override;
     }

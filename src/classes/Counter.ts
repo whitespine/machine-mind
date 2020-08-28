@@ -4,43 +4,52 @@ import { ICounterSaveData } from "@/interface";
 export interface ICounterData {
     id: string;
     name: string;
-    level?: number | null;
     min?: number | null;
     max?: number | null;
     default_value?: number | null;
-    custom?: boolean | null;
 }
 
 export class Counter {
     public readonly ID: string;
     public readonly Name: string;
-    public readonly Level: number;
     public readonly Min: number;
     public readonly Max: number | null;
     public readonly Default: number;
 
     constructor(data: ICounterData) {
-        let { id, name, level, min, max, default_value } = data;
-        let nd = default_value === null || default_value === undefined;
+        let { id, name, min, max, default_value } = data;
 
-        if (!nd && max && default_value! > max)
-            throw new Error(
-                `Error creating Counter: Default value of ${default_value} is greater than max value of ${max}`
-            );
-
-        if (!nd && min && default_value! < min)
-            throw new Error(
-                `Error creating Counter: Default value of ${default_value} is lesser than min value of ${min}`
-            );
 
         this.ID = id;
         this.Name = name;
-        this.Level = level || 0;
         this.Min = min || 0;
         this.Max = max || null;
-        this.Default = default_value || 0;
+        this.Default = default_value || this.Min;
+        this._value =  this.Default;
+
+        if (this.Max && this._value > this.Max) {
+            throw new Error(
+                `Error creating Counter: Default value of ${default_value} is greater than max value of ${max}`
+            );
+        }
+
+        if (this._value < this.Min) {
+            throw new Error(
+                `Error creating Counter: Default value of ${default_value} is lesser than min value of ${min}`
+            );
+        }
 
         this._value = this.Default;
+    }
+
+    public Serialize(dat: Counter): ICounterData {
+        return {
+            id: this.ID,
+            name: this.Name,
+            min: this.Min,
+            max: this.Max,
+            default_value: this.Default,
+        }
     }
 
     private _value: number;
@@ -68,12 +77,13 @@ export class Counter {
         this._value = this.Default;
     }
 
-    public static Serialize(dat: Counter): ICounterSaveData {
+    public SaveData(data: ICounterSaveData): ICounterSaveData {
         return {
-            id: dat.ID,
-            val: dat.Value,
+            id: this.ID,
+            val: this.Value,
         };
     }
+
 
     public LoadData(data: ICounterSaveData): void {
         this.Set(data.val);

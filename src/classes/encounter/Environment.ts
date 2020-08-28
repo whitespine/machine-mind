@@ -5,7 +5,7 @@ import uuid from "uuid/v4";
 export interface IEnvironmentData {
     id: string;
     name: string;
-    description: string;
+    description: string; // v-html
 }
 
 export class Environment {

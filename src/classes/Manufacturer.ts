@@ -3,12 +3,12 @@ import { imageManagement, ImageTag } from "@/hooks";
 export interface IManufacturerData {
     id: string;
     name: string;
-    description: string;
-    quote: string;
     logo: string;
-    light: string;
-    dark: string;
     logo_url?: string | null;
+    light: string;
+    description: string;
+    dark: string;
+    quote: string;
 }
 
 export class Manufacturer {

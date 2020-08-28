@@ -1,8 +1,16 @@
 import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
-export interface IPilotGearData extends IPilotEquipmentData {
-    uses?: number | null;
+export interface IPilotGearData {
+      id: string,
+  name: string, // v-html
+  type: "Armor",
+  description: string,
+  tags: ITagData[],
+  actions?: IActionData[] | null, // these are only available to UNMOUNTED pilots
+  bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent system
+  synergies?: ISynergyData[] | null,
+  deployables?: IDeployableData[] | null, // these are only available to UNMOUNTED pilots
 }
 
 export class PilotGear extends PilotEquipment {

@@ -1,7 +1,8 @@
-import { ItemType } from "@/class";
-import { ICounterData } from "@/interface";
+import { ItemType, Action, Bonus, Synergy, Deployable } from "@/class";
+import { ICounterData, IActionData, IDeployableData } from "@/interface";
 import _ from "lodash";
 import { store } from "@/hooks";
+import { ITagData } from './GeneralInterfaces';
 
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
@@ -13,7 +14,44 @@ export interface ICompendiumItemData {
     name: string;
     description: string;
     brew: string; // Homebrew pack it came from
-    counters: ICounterData[] | null;
+
+}
+
+// Interfaces extend this
+export interface IEquippable {
+  actions?: IActionData[] | null,
+  bonuses?: IBonusData[] | null,
+  synergies?: ISynergyData[] | null,
+  deployables?: IDeployableData[] | null,
+}
+
+
+// Classes hold this
+export class MixEquippable {
+    public actions: Action[];
+    public bonuses: Bonus[];
+    public synergies: Synergy[];
+    public deployables: Deployable[];
+
+    constructor(data: IEquippable) {
+        this.actions = data.actions?.map(a => new Action(a)) || [];
+        this.bonuses = data.bonuses?.map(a => new Bonus(a)) || [];
+        this.synergies = data.synergies?.map(a => new Synergy(a)) || [];
+        this.deployables = data.deployables?.map(a => new Deployable(a)) || [];
+    }
+
+}
+
+export interface IIntegrated {
+  integrated?: string[] | null
+}
+
+export interface ITagged {
+  tags?: ITagData[] | null
+}
+
+export interface ICounted {
+  counters?: ICounterData[] | null
 }
 
 export abstract class CompendiumItem {

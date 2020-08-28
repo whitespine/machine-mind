@@ -25,6 +25,8 @@ export {
     ActivationType,
     Duration,
 } from "./classes/enums";
+export { Action } from "./classes/Action";
+export { Bonus } from "./classes/Bonus";
 export { Drone } from "./classes/Drone";
 export { Deployable } from "./classes/Deployable";
 export { CompendiumItem } from "./classes/CompendiumItem";

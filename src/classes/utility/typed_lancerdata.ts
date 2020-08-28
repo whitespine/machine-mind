@@ -25,6 +25,7 @@ import {
     weapons as _weapons,
 } from "lancer-data";
 import {
+    IBackground,
     IReserveData,
     ICoreBonusData,
     ITalentData,
@@ -44,35 +45,18 @@ import {
     IStatusData,
     ISitrepData,
     IEnvironmentData,
+    IActionData
 } from "@/interface";
 import { Rules } from "@/class";
 
 export interface GlossaryItem {
     name: string;
-    description: string;
+    description: string; // v-html
 }
 export const glossary = _glossary as GlossaryItem[];
 
-export interface PlayerAction {
-    id: string;
-    name: string;
-    reserve: boolean;
-    action_type: string;
-    description: string;
-    detai: string;
-}
-export const actions = _actions as PlayerAction[];
-
-export interface Background {
-    id: string;
-    name: string;
-    description: string;
-    triggers: string;
-}
-export const backgrounds = _backgrounds as Background[];
-
-// export type MountFitting = "Auxillary" | "Main" | "Flex" | "Heavy"
-export const rules = Rules;
+export const actions = _actions as IActionData[];
+export const backgrounds = _backgrounds as IBackground[];
 export const core_bonuses = _core_bonuses as ICoreBonusData[];
 export const environments = _environments as IEnvironmentData[];
 export const factions = _factions as IFactionData[];
@@ -101,3 +85,5 @@ export const systems = _systems as IMechSystemData[];
 export const tags = _tags as ITagCompendiumData[];
 export const talents = _talents as ITalentData[];
 export const weapons = _weapons as IMechWeaponData[];
+
+export const rules = Rules;

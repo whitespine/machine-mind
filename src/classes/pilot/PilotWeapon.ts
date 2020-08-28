@@ -1,36 +1,50 @@
-import { PilotEquipment, Range, Damage, ItemType, DamageType } from "@/class";
+import { PilotEquipment, Range, Damage, ItemType, DamageType, Tag } from "@/class";
 import { IPilotEquipmentData, IRangeData, IDamageData } from "@/interface";
+import { IEquippable, ITagged } from '../CompendiumItem';
 
-export interface IPilotWeaponData extends IPilotEquipmentData {
-    range: IRangeData[];
-    damage: IDamageData[];
-    effect?: string | null;
+export interface IPilotWeaponData extends IEquippable, ITagged  {
+  id: string,
+  name: string, // v-html
+  type: "Weapon",
+  description: string,
+  range: IRangeData[],
+  damage: IDamageData[],
 }
 
-export class PilotWeapon extends PilotEquipment {
+export class PilotWeapon {
+    private id: string;
+    private name: string
+    private description: string;
     private range: Range[];
     private damage: Damage[];
-    private effect: string;
+    private tags: Tag[];
 
     public constructor(data: IPilotWeaponData) {
-        super(data);
+        this.id = data.id;
+        this.name = data.name;
+        this.description = data.description;
         this.range = data.range.map(x => new Range(x));
         this.damage = data.damage.map(x => new Damage(x));
-        this.effect = data.effect || "";
-        this._item_type = ItemType.PilotWeapon;
+        this.tags = Tag.Deserialize(data.tags || []);
+    }
+
+    public Serialize(): IPilotWeaponData {
+        return {
+            id: this.id,
+            name: this.name,
+            description: this.description,
+            range: this.range.map(r => r.Serialize()),
+            damage: this.damage.map(d => d.Serialize()),
+            type: "Weapon",
+
+
+
+
+        };
     }
 
     public get Range(): Range[] {
         return this.range;
-    }
-
-    public get DamageTypeOverride(): string | null {
-        return this._custom_damage_type || null;
-    }
-
-    public set DamageTypeOverride(val: string | null) {
-        this._custom_damage_type = val;
-        this.save();
     }
 
     public get DefaultDamageType(): DamageType {
@@ -56,4 +70,10 @@ export class PilotWeapon extends PilotEquipment {
     public get Effect(): string {
         return this.effect;
     }
+
+    public get CanSetDamage(): boolean {
+        return this._tags.some(x => x.id === "tg_set_damage_type");
+    }
+
+
 }

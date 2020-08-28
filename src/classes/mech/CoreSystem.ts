@@ -1,17 +1,29 @@
-import { MechWeapon, Tag } from "@/class";
-import { ITagData } from "@/interface";
+import { MechWeapon, Tag, ActivationType } from "@/class";
+import { ICompendiumItemData, ITagData, IActionData, IDeployableData, ICounterData } from "@/interface";
 import { store } from "@/hooks";
+import { ITagged, IIntegrated, ICounted } from '../CompendiumItem';
 
-export interface ICoreData {
-    name: string;
-    description: string;
-    integrated?: { id: string } | null;
-    passive_name?: string | null;
-    passive_effect?: string | null;
-    active_name: string;
-    active_effect: string;
-    tags: ITagData[];
+export interface ICoreData extends ITagged, IIntegrated, ICounted {
+  name: string,
+  active_name: string,
+  active_effect: string, // v-html
+  activation: ActivationType,
+  deactivation?: ActivationType,
+  use?: 'Round' | 'Next Round' | 'Scene' | 'Encounter' | null,
+  active_actions: IActionData[],
+  active_bonuses: IBonusData[],
+  active_synergies: ISynergyData[],
+
+  passive_name?: string | null,
+  passive_effect?: string | null, // v-html, 
+  passive_actions?: IActionData[] | null,
+
+  deployables?: IDeployableData[] | null,
+  counters?: ICounterData[] | null,
+  integrated?: string[] | null,
+  tags: ITagData[]
 }
+
 
 export class CoreSystem {
     private _name: string;

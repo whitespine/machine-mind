@@ -5,7 +5,7 @@ import { DamageType } from "@/class";
 export interface IDamageData {
     type: DamageType;
     val: string | number;
-    override?: boolean | null;
+    override?: boolean | null; // If player can set the damage of this
 }
 
 export class Damage {
@@ -19,6 +19,14 @@ export class Damage {
         this._raw_value = damage.val;
         this._value = typeof damage.val === "number" ? damage.val.toString() : damage.val;
         this._override = damage.override || false;
+    }
+
+    public Serialize(): IDamageData {
+        return {
+            type: this._damage_type,
+            val: this._raw_value,
+            override: this._override
+        }
     }
 
     private getDamageType(str?: string | null): DamageType {

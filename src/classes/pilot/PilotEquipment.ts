@@ -2,11 +2,11 @@ import { CompendiumItem, Tag } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { IEquipmentData, ITagData } from "../GeneralInterfaces";
 import { store } from "@/hooks";
+import { IPilotWeaponData } from './PilotWeapon';
+import { IPilotArmorData } from './PilotArmor';
+import { IPilotGearData } from './PilotGear';
 
-export interface IPilotEquipmentData extends ICompendiumItemData {
-    type?: string | null;
-    tags: ITagData[];
-}
+export type IPilotEquipmentData = IPilotWeaponData | IPilotArmorData | IPilotGearData;
 
 export abstract class PilotEquipment extends CompendiumItem {
     private _tags: ITagData[];
@@ -27,11 +27,6 @@ export abstract class PilotEquipment extends CompendiumItem {
     public get Tags(): Tag[] {
         return Tag.Deserialize(this._tags);
     }
-
-    public get CanSetDamage(): boolean {
-        return this._tags.some(x => x.id === "tg_set_damage_type");
-    }
-
     public static Serialize(item: PilotEquipment | null): IEquipmentData | null {
         if (!item) return null;
         return {

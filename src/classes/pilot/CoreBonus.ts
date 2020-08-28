@@ -1,14 +1,23 @@
 import { CompendiumItem, ItemType, Manufacturer } from "@/class";
 import { store } from "@/hooks";
 
-import { ICompendiumItemData } from "@/interface";
+import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData } from "@/interface";
+import { IEquippable, IIntegrated } from '../CompendiumItem';
 
-export interface ICoreBonusData extends ICompendiumItemData {
-    source: string;
-    effect: string;
-    mounted_effect?: string | null;
+export interface ICoreBonusData extends IEquippable, IIntegrated, ICounted {
+  id: string,
+  name: string,
+  source: string, // must be the same as the Manufacturer ID to sort correctly
+  effect: string, // v-html
+  description: string, // v-html
+  mounted_effect?: string
+  actions?: IActionData[] | null,
+  bonuses?: IBonusData[] | null
+  synergies?: ISynergyData[] | null
+  deployables?: IDeployableData[] | null,
+  counters?: ICounterData[] | null,
+  integrated?: string[]
 }
-
 export class CoreBonus extends CompendiumItem {
     private _source: string;
     private _effect: string;

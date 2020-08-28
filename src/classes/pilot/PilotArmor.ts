@@ -1,15 +1,16 @@
 import { PilotEquipment, ItemType } from "@/class";
 import { IPilotEquipmentData } from "@/interface";
 
-export interface IPilotArmorData extends IPilotEquipmentData {
-    hp_bonus?: number | null;
-    speed?: number | null;
-    speed_bonus?: number | null;
-    armor?: number | null;
-    edef?: number | null;
-    edef_bonus?: number | null;
-    evasion?: number | null;
-    evasion_bonus?: number | null;
+export interface IPilotArmorData {
+      id: string,
+  name: string, // v-html
+  type: "Armor",
+  description: string,
+  tags: ITagData[],
+  actions?: IActionData[] | null, // these are only available to UNMOUNTED pilots
+  bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent system
+  synergies?: ISynergyData[] | null,
+  deployables?: IDeployableData[] | null, // these are only available to UNMOUNTED pilots
 }
 
 export class PilotArmor extends PilotEquipment {
