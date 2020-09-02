@@ -1,4 +1,4 @@
-import { ActivationType } from "@/class";
+import { ActivationType, Mixin } from "@/class";
 export interface IActionData {
   id: string,
   name: string,
@@ -25,7 +25,7 @@ export class Action {
         this.pilot = data.pilot;
     }
 
-    Serialize(): IActionData {
+    save(): IActionData {
         return {
             id : this.id,
             name : this.name,
@@ -35,6 +35,30 @@ export class Action {
             pilot : this.pilot,
         }
     }
-
-
 }
+
+// Mixin stuff
+export interface IHasActions {
+  actions?: IActionData[] | null,
+}
+
+export class MixActions extends Mixin<IHasActions> implements Iterable<Action> {
+    private _actions: Action[] = [];
+    public get list(): readonly Action[] { return this._actions; }
+
+    // Inline iterator
+    public [Symbol.iterator](): Iterator<Action> {
+        return this._actions[Symbol.iterator]();
+    }
+
+    public load(data: IHasActions) {
+        this._actions = data.actions?.map(a => new Action(a)) || [];
+    }
+
+    public save(): IHasActions {
+        return {
+            actions: this._actions.map(a => a.save()),
+        }
+    }
+}
+

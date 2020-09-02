@@ -9,8 +9,8 @@ import { DamageType } from './enums';
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
 
-// Simplifies serialization implementation to be more generally consistent
-abstract class Mixin<T> {
+// Simplifies serialization implementation to be more generally consistent. Many of the more common 
+export abstract class Mixin<T> {
     constructor(){}
 
     public abstract load(data: T): void;
@@ -28,7 +28,7 @@ export interface IMMItemData {
 
 export interface ICompendiumItemData extends IMMItemData  {
     id: string; // Id within the pack
-    brew: string; // Homebrew pack it came from -- note that we must generate this ourselves, typically
+    brew: string; // Homebrew pack it came from -- note that we must generate this ourselves, typically, as it is not in the provided data (it is instead derived by where thaat data comes from!)
     item_type: ItemType; // The type of the item -- note that we must generate this ourselves, typically, based on where we find it
 }
 
@@ -62,78 +62,7 @@ export class MixLicensed extends Mixin<ILicensed> {
     }
 }
 
-// For items that have actions/effects/synergies.
-export interface IHasActions {
-  actions?: IActionData[] | null,
-}
 
-export interface IHasBonuses {
-  bonuses?: IBonusData[] | null,
-}
-export interface IHasSynergies {
-  synergies?: ISynergyData[] | null,
-}
-
-export class MixActions extends Mixin<IHasActions> implements Iterable<Action> {
-    private _actions: Action[] = [];
-    public get list(): Action[] { return [...this._actions]; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Action> {
-        return this._actions[Symbol.iterator]();
-    }
-
-    public load(data: IHasActions) {
-        this._actions = data.actions?.map(a => new Action(a)) || [];
-    }
-
-    public save(): IHasActions {
-        return {
-            actions: this._actions.map(a => a.Serialize()),
-        }
-    }
-}
-
-
-export class MixBonuses extends Mixin<IHasBonuses> {
-    private _bonuses: Bonus[] = [];
-    public get list(): readonly Bonus[] { return this._bonuses };
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Bonus> {
-        return this._bonuses[Symbol.iterator]();
-    }
-    
-    public load(data: IHasBonuses) {
-        this._bonuses = data.bonuses?.map(a => new Bonus(a)) || [];
-    }
-
-    public save(): IHasBonuses {
-        return {
-            bonuses: this._bonuses.map(b => b.Serialize()),
-        }
-    }
-}
-
-export class MixSynergies extends Mixin<IHasSynergies> {
-    private _synergies: Synergy[] = [];
-    public get Synergies(): readonly Synergy[] { return this._synergies; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Synergy> {
-        return this._synergies[Symbol.iterator]();
-    }
-    
-    public load(data: IHasSynergies) {
-        this._synergies = data.synergies?.map(a => new Synergy(a)) || [];
-    }
-
-    public save(): IHasSynergies {
-        return {
-            synergies: this._synergies.map(s => s.Serialize()),
-        }
-    }
-}
 
 // For items that have deployables
 export interface IHasDeployables {
@@ -220,7 +149,7 @@ export interface IHasCounters {
 
 export class MixCounters extends Mixin<IHasCounters> {
     private _counters: Counter[] = [];
-    public get Counters(): Counter[] { return [...this._counters]; }
+    public get Counters(): readonly Counter[] { return this._counters; }
 
     // Inline iterator
     public [Symbol.iterator](): Iterator<Counter> {
@@ -299,7 +228,7 @@ export abstract class MixinHost<D extends (object)> {
     }
 
     // Save all data from all mixins
-    public serialize(): D  {
+    public save(): D  {
         let result = this.serialize_self();
         for(let m of this._mixins) {
             Object.assign(result, m.save());
@@ -314,7 +243,7 @@ export abstract class MixinHost<D extends (object)> {
 
     // Makes a copy by serializing and de-serializing
     public clone(): this {
-        let data = this.serialize();
+        let data = this.save();
 
         // TS gets a bit messy here, but so long as our mixins keep to the standard call sig's it should be fine
         let nv = (this as any).constructor(data) as this;
@@ -327,10 +256,6 @@ export abstract class MixinHost<D extends (object)> {
             m.load(data);
         }
     }
-
-    // Todo - find a way people might want to use this. Could be useful in foundry to "commit" back to items.......... but how to expose api?
-    public save(): void {}
-
 }
 
 // Has names and description - this is for any item that might be displayed, but is not necessarily in the compendium

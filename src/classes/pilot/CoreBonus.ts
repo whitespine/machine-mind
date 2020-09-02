@@ -11,12 +11,12 @@ export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBo
 }
 export class CoreBonus extends CompendiumItem<ICoreBonusData> {
     // Mixins
-    public readonly Actions: MixActions;
-    public readonly Bonuses: MixBonuses;
-    public readonly Synergies: MixSynergies ;
-    public readonly Deployables: MixDeployables ;
-    public readonly Counters: MixCounters ;
-    public readonly Integrated: MixIntegrated ;
+    public readonly Actions = new MixActions();
+    public readonly Bonuses = new MixBonuses();
+    public readonly Synergies = new MixSynergies();
+    public readonly Deployables = new MixDeployables();
+    public readonly Counters = new MixCounters();
+    public readonly Integrated = new MixIntegrated();
 
     private _source: string; 
     public get Source(): string { return this._source ;}
@@ -32,17 +32,10 @@ export class CoreBonus extends CompendiumItem<ICoreBonusData> {
     public set MountedEffect(nv: string | null) { this._mounted_effect = nv; }
 
     public constructor(cbData: ICoreBonusData) {
-        super(ItemType.CoreBonus, cbData);
+        super(cbData);
 
         // Handle mixins
-        let mixins = [
-            this.Actions = new MixActions(),
-            this.Bonuses = new MixBonuses(),
-            this.Synergies = new MixSynergies(),
-            this.Deployables = new MixDeployables(),
-            this.Counters = new MixCounters(),
-            this.Integrated = new MixIntegrated()
-        ];
+        let mixins = [this.Actions, this.Bonuses, this.Synergies, this.Deployables, this.Counters, this.Integrated];
         this.register_mixins(mixins);
         this.load(cbData);
 

@@ -24,9 +24,19 @@ export interface ICoreSystemData extends IHasDeployables, IHasCounters, IHasInte
 
 
 // Used to represent passive/active states
-interface ICoreSystemPartData extends IHasActions, IHasBonuses, IHasActions {};
+export interface ICoreSystemPartData extends IHasActions, IHasBonuses, IHasActions {};
 export class CoreSystemPart extends MixinHost<ICoreSystemPart> {
+    public readonly Actions: MixActions = new MixActions();
+    public readonly 
+    constructor() {
+        super();
+        this.register_mixins
+    }
 
+    protected serialize_self() {
+        return {}; // we're all mixins
+    }
+}
 
 
 export class CoreSystem extends MMItem<ICoreSystemData> {

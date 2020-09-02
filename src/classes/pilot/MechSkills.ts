@@ -1,7 +1,8 @@
 import { Rules, HASE } from "@/class";
 import { store } from "@/hooks";
 
-export class MechSkills {
+// It's HASE, baby!
+export class MechSkills extends mixin {
     private hull: number;
     private agi: number;
     private sys: number;

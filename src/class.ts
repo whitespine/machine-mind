@@ -25,7 +25,7 @@ export {
     ActivationType,
     Duration,
 } from "./classes/enums";
-export { MixinHost, MMItem, CompendiumItem, MixCounters, MixDeployables, MixIntegrated, MixActions, MixBonuses, MixFlavor, MixLicensed, MixSynergies, MixTags, MixUserNoted } from "./classes/CompendiumItem";
+export { Mixin, MixinHost, MMItem, CompendiumItem, MixCounters, MixDeployables, MixIntegrated, MixActions, MixBonuses, MixFlavor, MixLicensed, MixSynergies, MixTags, MixUserNoted } from "./classes/CompendiumItem";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Drone } from "./classes/Drone";

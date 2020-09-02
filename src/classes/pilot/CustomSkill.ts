@@ -1,6 +1,9 @@
 import { ItemType } from "@/class";
+import { CompendiumItem } from '../CompendiumItem';
 
-export class CustomSkill {
+
+// For get focused, etc
+export class CustomSkill  {
     private _name: string;
     private _description: string;
     private _detail: string;
