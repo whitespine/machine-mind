@@ -72,6 +72,20 @@ export enum Duration {
     Mission = "Mission",
 }
 
+export enum TraitUseType {
+    Round= "Round",
+    Scene= "Scene",
+    Encounter= "Encounter",
+    Mission= "Mission",
+}
+
+export enum CoreUseType {
+    Round= "Round",
+    Scene= "Next Round",
+    Encounter= "Scene",
+    Mission= "Encounter",
+}
+
 export enum ActivationType {
     None = "None",
     Passive = "Passive",

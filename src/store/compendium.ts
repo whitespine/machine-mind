@@ -30,8 +30,10 @@ import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
+import { Deployable } from '@/classes/Deployable';
 
 const CORE_BONUSES = "CoreBonuses";
+const DEPLOYABLES = "Deployables";
 const FACTIONS = "Factions";
 const FRAMES = "Frames";
 const LICENSES = "Licenses";
@@ -84,6 +86,7 @@ export class Compendium {
     [PILOT_EQUIPMENT]: PilotEquipment[] = []; // Come from pilot gear
     [STATUSES]: Status[] = []; // Come from statuses
     [CONDITIONS]: Status[] = []; // Come from statuses
+    [DEPLOYABLES]: Deployable[] = []; // Comes from anything with a DEPLOYABLES sub-item, usually systems (but also some weapons like the ghast nexus)
 
     // These are not ID'd
     [QUIRKS]: string[] = [];
@@ -114,13 +117,13 @@ export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
     TALENTS,
     SKILLS,
     STATUSES_AND_CONDITIONS,
-    STATUSES,
-    CONDITIONS,
-    RESERVES,
-    ENVIRONMENTS,
-    SITREPS,
-    TAGS,
-    QUIRKS,
+    STATUSES, // We did these ourselves
+    CONDITIONS, // We did these ourselves
+    RESERVES, // We did these ourselves
+    ENVIRONMENTS, // We did these ourselves
+    SITREPS, // We did these ourselves
+    TAGS, // We did these ourselves
+    QUIRKS, // We did these ourselves
 ];
 
 // This is all compendium keys, IE items that  you can lookup by collection (and sometimes ID)

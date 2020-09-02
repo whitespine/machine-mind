@@ -32,7 +32,7 @@
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "tests/**/*.tsx", "src/classes/CompItemBackup.tsss"
   ],
   "exclude": [
     "node_modules"

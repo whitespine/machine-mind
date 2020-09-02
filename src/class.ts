@@ -25,11 +25,11 @@ export {
     ActivationType,
     Duration,
 } from "./classes/enums";
+export { MixinHost, MMItem, CompendiumItem, MixCounters, MixDeployables, MixIntegrated, MixActions, MixBonuses, MixFlavor, MixLicensed, MixSynergies, MixTags, MixUserNoted } from "./classes/CompendiumItem";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Drone } from "./classes/Drone";
 export { Deployable } from "./classes/Deployable";
-export { CompendiumItem } from "./classes/CompendiumItem";
 export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage } from "./classes/Damage";
@@ -89,19 +89,6 @@ export { Status } from "./classes/Statuses";
 export { ContentPack } from "./classes/ContentPack";
 export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
-export { EffectType, ItemEffect } from "@/classes/effects/ItemEffect";
-export { BasicEffect } from "@/classes/effects/BasicEffect";
-export { AIEffect } from "@/classes/effects/AIEffect";
-export { ChargeType, Charge, ChargeEffect } from "@/classes/effects/ChargeEffect";
-export { DeployableEffect } from "@/classes/effects/DeployableEffect";
-export { DroneEffect } from "@/classes/effects/DroneEffect";
-export { GenericEffect } from "@/classes/effects/GenericEffect";
-export { BonusEffect } from "@/classes/effects/BonusEffect";
-export { ProtocolEffect } from "@/classes/effects/ProtocolEffect";
-export { ReactionEffect } from "@/classes/effects/ReactionEffect";
-export { OffensiveEffect } from "@/classes/effects/OffensiveEffect";
-export { TechEffect } from "@/classes/effects/TechEffect";
-export { ProfileEffect } from "@/classes/effects/ProfileEffect";
 export { NpcFeatureType, NpcFeature } from "@/classes/npc//NpcFeature";
 export { NpcItem } from "@/classes/npc/NpcItem";
 export { NpcReaction } from "@/classes/npc/NpcReaction";

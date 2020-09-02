@@ -5,28 +5,19 @@
 
 // first in this file.
 export { IActionData } from "@/classes/Action";
-export { IAIData } from "@/classes/effects/AIEffect";
 export { IBackground } from "@/classes/Background";
-export { IBasicEffectData } from "@/classes/effects/BasicEffect";
-export { IBonusEffectData } from "@/classes/effects/BonusEffect";
 export { IBonusData } from "@/classes/Bonus";
-export { IChargeData, IChargeEffectData } from "@/classes/effects/ChargeEffect";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { ICounterData } from "./classes/Counter";
 export { ICoreBonusData } from "./classes/pilot/CoreBonus";
-export { IDeployableData } from "@/classes/effects/DeployableEffect";
-export { IDroneData } from "@/classes/effects/DroneEffect";
-export { IEffectData } from "@/classes/effects/ItemEffect";
-export { IProtocolEffectData } from "@/classes/effects/ProtocolEffect";
-export { IReactionEffectData } from "@/classes/effects/ReactionEffect";
-export { ISynergyData, ISynergyDecorator } from "@/classes/Synergy";
-export { IInvadeOptionData, ITechEffectData } from "@/classes/effects/TechEffect";
-export { IProfileEffectData } from "@/classes/effects/ProfileEffect";
-export { IOffensiveEffectData } from "@/classes/effects/OffensiveEffect";
-export { ICompendiumItemData, IEquippable, IIntegrated, ITagged, ICounted } from "./classes/CompendiumItem";
+
+export { ISynergyData } from "@/classes/Synergy";
+export { IMMItemData, ICompendiumItemData, IHasActions, IHasBonuses, IHasCounters, IHasDeployables, IHasFlavor, IHasIntegrated, IHasSynergies, IHasTags, ILicensed, IUserNoted} from "./classes/CompendiumItem";
 export { ILicensedItemData } from "./classes/LicensedItem";
-export { ICoreData } from "./classes/mech/CoreSystem";
+export { ICoreSystemData } from "./classes/mech/CoreSystem";
+export { IDeployableData } from "./classes/Deployable";
 export { IFrameData, IFrameStats } from "./classes/mech/Frame";
+export { IFrameTraitData } from "./classes/mech/FrameTrait";
 export { IMechEquipmentData } from "./classes/mech/MechEquipment";
 export { IDamageData } from "./classes/Damage";
 export { IRangeData } from "./classes/Range";

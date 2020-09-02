@@ -1,10 +1,4 @@
 import { ActivationType } from "@/class";
-
-export interface InvasionOption {
-    name: string;
-    detail: string;
-}
-
 export interface IActionData {
   id: string,
   name: string,

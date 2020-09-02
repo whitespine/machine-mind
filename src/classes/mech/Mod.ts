@@ -1,7 +1,8 @@
-import { WeaponType, WeaponSize, MountType } from "@/class";
-import { ITagData, IDamageData, IActionData, } from '@/interface';
+import { WeaponType, WeaponSize, MountType, SystemType } from "@/class";
+import { ITagData, IDamageData, IActionData, IRangeData, IBonusData, ISynergyData, IDeployableData, ICounterData, } from '@/interface';
+import { IIntegrated, IModifies } from '../CompendiumItem';
 
-export interface IWeaponModData {
+export interface IWeaponModData extends IIntegrated, IDeploys, ICounted, IModifies {
   id: string,
   name: string,
   sp: number,
@@ -15,16 +16,11 @@ export interface IWeaponModData {
   license: string, // Frame Name
   license_level: number, // set to 0 to be available to all Pilots
   effect: string, // v-html
-  tags: ITagData[], // tags related to the mod itself
   added_tags: ITagData[] // tags propogated to the weapon the mod is installed on
   added_damage: IDamageData[] // damage added to the weapon the mod is installed on, see note
   added_range: IRangeData[] // damage added to the weapon the mod is installed on, see note
-  actions?: IActionData[] | null,
-  bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent weapon
-  synergies?: ISynergyData[] | null,
-  deployables?: IDeployableData[] | null,
-  counters?: ICounterData[] | null,
-  integrated?: string[]
+  // bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent weapon
+  // tags: ITagData[], // tags related to the mod itself
 }
 
 

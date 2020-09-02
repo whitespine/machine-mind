@@ -7,7 +7,7 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Mech, Drone, Deployable, Pilot, Rules, MechEquipment } from "@/class";
-import { IAction, IMechState, IHistoryItem } from "@/interface";
+import { IActionData, IMechState, IHistoryItem } from "@/interface";
 import { store } from "@/hooks";
 
 enum Stage {

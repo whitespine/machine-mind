@@ -1,6 +1,7 @@
 import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "@/class";
-import { ILicensedItemData, ICoreData } from "@/interface";
+import { ILicensedItemData, IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICoreSystemData } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
+import { IArtLocation } from '../Art';
 
 export interface IFrameStats {
     size: number;
@@ -19,24 +20,13 @@ export interface IFrameStats {
     sp: number;
 }
 
-export interface IFrameTraitData {
-  name: string,
-  description: string, // v-html
-  use?: 'Round' | 'Scene' | 'Encounter' | 'Mission' | null,
-  actions?: IActionData[] | null,
-  bonuses?: IBonusData[] | null,
-  synergies?: ISynergyData[ | null,
-  deployables?: IDeployableData[] | null,
-  counters?: ICounterData[] | null,
-  integrated?: string[] | null
-}
 
 export interface IFrameData  {
   id: string,
   license_level: number, // set to zero for this item to be available to a LL0 character
   source: string, // must be the same as the Manufacturer ID to sort correctly
   name: string,
-  mechtype: string[], // can be customized
+  mechtype: string[], // can be customized. ex. striker, defender
   y_pos: number, // used for vertical alignment of the mech in banner views (like in the new mech selector)
   description: string, // v-html
   mounts: MountType[],

@@ -1,59 +1,54 @@
-import { CompendiumItem, ItemType, Manufacturer } from "@/class";
+import { CompendiumItem, ItemType, Manufacturer, EquippableMount } from "@/class";
 import { store } from "@/hooks";
 
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData } from "@/interface";
-import { IEquippable, IIntegrated } from '../CompendiumItem';
+import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated } from '../CompendiumItem';
 
-export interface ICoreBonusData extends IEquippable, IIntegrated, ICounted {
-  id: string,
-  name: string,
+export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
   source: string, // must be the same as the Manufacturer ID to sort correctly
   effect: string, // v-html
-  description: string, // v-html
-  mounted_effect?: string
-  actions?: IActionData[] | null,
-  bonuses?: IBonusData[] | null
-  synergies?: ISynergyData[] | null
-  deployables?: IDeployableData[] | null,
-  counters?: ICounterData[] | null,
-  integrated?: string[]
+  mounted_effect?: string | null
 }
-export class CoreBonus extends CompendiumItem {
-    private _source: string;
-    private _effect: string;
-    private _mounted_effect: string;
+export class CoreBonus extends CompendiumItem<ICoreBonusData> {
+    // Mixins
+    public readonly Actions: MixActions;
+    public readonly Bonuses: MixBonuses;
+    public readonly Synergies: MixSynergies ;
+    public readonly Deployables: MixDeployables ;
+    public readonly Counters: MixCounters ;
+    public readonly Integrated: MixIntegrated ;
+
+    private _source: string; 
+    public get Source(): string { return this._source ;}
+    public set Source(nv: string) { this._source = nv ;}
+
+    private _effect: string; 
+    public get Effect(): string { return this._effect ;}
+    public set Effect(nv: string) { this._effect = nv ;}
+
+
+    private _mounted_effect: string | null;
+    public get MountedEffect(): string | null { return this._mounted_effect; }
+    public set MountedEffect(nv: string | null) { this._mounted_effect = nv; }
 
     public constructor(cbData: ICoreBonusData) {
-        super(cbData);
+        super(ItemType.CoreBonus, cbData);
+
+        // Handle mixins
+        let mixins = [
+            this.Actions = new MixActions(),
+            this.Bonuses = new MixBonuses(),
+            this.Synergies = new MixSynergies(),
+            this.Deployables = new MixDeployables(),
+            this.Counters = new MixCounters(),
+            this.Integrated = new MixIntegrated()
+        ];
+        this.register_mixins(mixins);
+        this.load(cbData);
+
+        // Handle specific data
         this._source = cbData.source;
         this._effect = cbData.effect;
-        this._mounted_effect = cbData.mounted_effect || "";
-        this._item_type = ItemType.CoreBonus;
-    }
-
-    public get Source(): string {
-        return this._source;
-    }
-
-    public get Manufacturer(): Manufacturer {
-        let v = store.compendium.getReferenceByID("Manufacturers", this._source);
-        return v;
-    }
-
-    public get Effect(): string {
-        return this._effect;
-    }
-
-    public get IsMountable(): boolean {
-        return !!this.MountedEffect;
-    }
-
-    public get MountedEffect(): string {
-        return this._mounted_effect;
-    }
-
-    public static Deserialize(id: string): CoreBonus {
-        let v = store.compendium.getReferenceByID("CoreBonuses", id);
-        return v;
+        this._mounted_effect = cbData.mounted_effect || null;
     }
 }

@@ -162,6 +162,7 @@ export interface IWeaponSlotData {
     weapon: IMechWeaponSaveData | null;
 }
 
+// Represents just like, an instance of a tag
 export interface ITagData {
     id: string;
     val?: string | number | null;

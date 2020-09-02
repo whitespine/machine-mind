@@ -15,6 +15,7 @@ export class Counter {
     public readonly Min: number;
     public readonly Max: number | null;
     public readonly Default: number;
+    private _value: number;
 
     constructor(data: ICounterData) {
         let { id, name, min, max, default_value } = data;
@@ -42,7 +43,7 @@ export class Counter {
         this._value = this.Default;
     }
 
-    public Serialize(dat: Counter): ICounterData {
+    public Serialize(): ICounterData {
         return {
             id: this.ID,
             name: this.Name,
@@ -52,7 +53,6 @@ export class Counter {
         }
     }
 
-    private _value: number;
     public get Value(): number {
         return this._value;
     }

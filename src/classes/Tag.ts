@@ -32,6 +32,24 @@ export class Tag {
         this._item_type = ItemType.Tag;
     }
 
+    public SerializeInstance(): ITagData {
+        return {
+            id: this._id,
+            val: this._val
+        };
+    }
+
+    public Serialize(): ITagCompendiumData {
+        return {
+            brew: this._brew,
+            description: this._description,
+            id: this._id,
+            name: this._name,
+            filter_ignore: this._filter_ignore,
+            hidden: this._hidden
+        }
+    }
+
     public get Value(): number | string {
         return this._val;
     }

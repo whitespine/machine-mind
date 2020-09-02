@@ -9,6 +9,9 @@ import { DamageType } from './enums';
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
 
+export const CORE_BREW_ID = "Core";
+type Constructor = new (...args: any[]) => {};
+
 // Simplifies serialization implementation to be more generally consistent
 abstract class Mixin<T> {
     constructor(){}
@@ -18,18 +21,11 @@ abstract class Mixin<T> {
 }
 
 // Represents something that is stored / searchable in the compendium
-export interface IMMItemData {
-    // The display name
+export interface ICompendiumItemData {
+    id: string;
     name: string;
-
-    // The description
-    description?: string | null;
-}
-
-export interface ICompendiumItemData extends IMMItemData  {
-    id: string; // Id within the pack
-    brew: string; // Homebrew pack it came from -- note that we must generate this ourselves, typically
-    item_type: ItemType; // The type of the item -- note that we must generate this ourselves, typically, based on where we find it
+    description: string;
+    brew: string; // Homebrew pack it came from
 }
 
 // Represents something tied to a license
@@ -62,7 +58,7 @@ export class MixLicensed extends Mixin<ILicensed> {
     }
 }
 
-// For items that have actions/effects/synergies.
+// For items that have actions/effects/synergies. May be better to separate these...........
 export interface IHasActions {
   actions?: IActionData[] | null,
 }
@@ -74,14 +70,9 @@ export interface IHasSynergies {
   synergies?: ISynergyData[] | null,
 }
 
-export class MixActions extends Mixin<IHasActions> implements Iterable<Action> {
+export class MixActions extends Mixin<IHasActions> {
     private _actions: Action[] = [];
-    public get list(): Action[] { return [...this._actions]; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Action> {
-        return this._actions[Symbol.iterator]();
-    }
+    public get Actions(): Action[] { return [...this._actions]; }
 
     public load(data: IHasActions) {
         this._actions = data.actions?.map(a => new Action(a)) || [];
@@ -97,13 +88,8 @@ export class MixActions extends Mixin<IHasActions> implements Iterable<Action> {
 
 export class MixBonuses extends Mixin<IHasBonuses> {
     private _bonuses: Bonus[] = [];
-    public get list(): readonly Bonus[] { return this._bonuses };
+    public get Bonuses(): Bonus[] { return [...this._bonuses] };
 
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Bonus> {
-        return this._bonuses[Symbol.iterator]();
-    }
-    
     public load(data: IHasBonuses) {
         this._bonuses = data.bonuses?.map(a => new Bonus(a)) || [];
     }
@@ -117,13 +103,8 @@ export class MixBonuses extends Mixin<IHasBonuses> {
 
 export class MixSynergies extends Mixin<IHasSynergies> {
     private _synergies: Synergy[] = [];
-    public get Synergies(): readonly Synergy[] { return this._synergies; }
+    public get Synergies(): Synergy[] { return [...this._synergies]; }
 
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Synergy> {
-        return this._synergies[Symbol.iterator]();
-    }
-    
     public load(data: IHasSynergies) {
         this._synergies = data.synergies?.map(a => new Synergy(a)) || [];
     }
@@ -135,6 +116,7 @@ export class MixSynergies extends Mixin<IHasSynergies> {
     }
 }
 
+
 // For items that have deployables
 export interface IHasDeployables {
   deployables?: IDeployableData[] | null,
@@ -144,13 +126,8 @@ export interface IHasDeployables {
 
 export class MixDeployables extends Mixin<IHasDeployables> {
     private _deployables: Deployable[] = [];
-    public get list(): readonly Deployable[] { return this._deployables; }
+    public get Deployables(): Deployable[] { return [...this._deployables]; }
 
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Deployable> {
-        return this._deployables[Symbol.iterator]();
-    }
-    
     public load(data: IHasDeployables) {
         this._deployables = data.deployables?.map(a => new Deployable(a)) || [];
     }
@@ -170,20 +147,15 @@ export interface IHasIntegrated {
 
 export class MixIntegrated extends Mixin<IHasIntegrated> {
     private _integrated: string[] = [];
-    public get list(): readonly string[] { return this._integrated; }
+    public get Integrated(): string[] { return [...this._integrated]; }
 
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<string> {
-        return this._integrated[Symbol.iterator]();
-    }
-    
     public load(data: IHasIntegrated) {
         this._integrated = data.integrated || [];
     }
 
     public save(): IHasIntegrated {
         return {
-            integrated: [...this._integrated]
+            integrated: [...this.integrated]
         }
     }
 }
@@ -195,20 +167,15 @@ export interface IHasTags {
 
 export class MixTags extends Mixin<IHasTags> {
     private _tags: Tag[] = [];
-    public get list(): readonly Tag[] { return this._tags; }
+    public get Tags(): Tag[] { return [...this._tags]; }
 
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Tag> {
-        return this._tags[Symbol.iterator]();
-    }
-    
     public load(data: IHasTags) {
         this._tags = Tag.Deserialize(data.tags || []);
     }
 
     public save(): IHasTags {
         return {
-            tags: this._tags.map(t => t.SerializeInstance())
+            tags: this.tags.map(t => t.SerializeInstance())
         }
     }
 }
@@ -220,12 +187,7 @@ export interface IHasCounters {
 
 export class MixCounters extends Mixin<IHasCounters> {
     private _counters: Counter[] = [];
-    public get Counters(): Counter[] { return [...this._counters]; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Counter> {
-        return this._counters[Symbol.iterator]();
-    }
+    public get Counters(): Counter[] { return ...this._counters; }
 
     public load(data: IHasCounters ) {
         this._counters = data.counters?.map(c => new Counter(c)) || [];
@@ -245,20 +207,20 @@ export interface IHasFlavor {
 }
 
 export class MixFlavor extends Mixin<IHasFlavor> {
-    private _name: string | null = null;
-    private _description: string | null = null;
-    public get Name(): string | null { return this._name; }
-    public get Description(): string | null { return this._description; }
+    private _flavor_name: string | null = null;
+    private _flavor_description: string | null = null;
+    public get FlavorName(): string | null { return this._flavor_name; }
+    public get FlavorDescription(): string | null { return this._flavor_description; }
 
     public load(data: IHasFlavor) {
-        this._name = data.flavorDescription || null;
-        this._name = data.flavorName || null;
+        this._flavor_name = data.flavorDescription || null;
+        this._flavor_name = data.flavorName || null;
     }
 
     public save(): IHasFlavor {
         return {
-            flavorDescription: this.Description,
-            flavorName: this.Name
+            flavorDescription: this.FlavorDescription,
+            flavorName: this.FlavorName
         }
     }
 }
@@ -288,70 +250,62 @@ export class MixUserNoted extends Mixin<IUserNoted> {
     }
 }
 
-// Hosts mixins. Expects nothing from its children, except note that you MUST call register-mixins and then load if you want anything real to happen
-export abstract class MixinHost<D extends (object)> {
-    private _mixins: Mixin<any>[] = [];
+function Scale<TBase extends Constructor>(Base: TBase) {
+  return class Scaling extends Base {
+    // Mixins may not declare private/protected properties
+    // however, you can use ES2020 private fields
+    _scale = 1;
 
-
-    // Add mixins. Should do in constructor of child classes
-    protected register_mixins(mixins: Array<Mixin<any>>) {
-        this._mixins = mixins;
+    setScale(scale: number) {
+      this._scale = scale;
     }
 
-    // Save all data from all mixins
-    public serialize(): D  {
-        let result = this.serialize_self();
-        for(let m of this._mixins) {
-            Object.assign(result, m.save());
-        }
-
-        // We've filled it
-        return result as D;
+    get scale(): number {
+      return this._scale;
     }
-
-    // This is how we emit non-mixin data. Subclasses should override with super calls as appropriate
-    protected abstract serialize_self(): Partial<D>;
-
-    // Makes a copy by serializing and de-serializing
-    public clone(): this {
-        let data = this.serialize();
-
-        // TS gets a bit messy here, but so long as our mixins keep to the standard call sig's it should be fine
-        let nv = (this as any).constructor(data) as this;
-        return nv;
-    }
-
-    // Load data to this and to all mixins
-    protected load(data: D) {
-        for(let m of this._mixins) {
-            m.load(data);
-        }
-    }
-
-    // Todo - find a way people might want to use this. Could be useful in foundry to "commit" back to items.......... but how to expose api?
-    public save(): void {}
-
+  };
 }
 
-// Has names and description - this is for any item that might be displayed, but is not necessarily in the compendium
-export class MMItem<D extends  (object & IMMItemData)> extends MixinHost<D> {
-    private _name: string;
-    private _description: string | null; // v-html
+// A somewhat unweildy super-meta class
+// TODO: add save callbacks to mixins...
+export abstract class CompendiumItem<D, M> {
+    private _id: string;
+    protected _name: string;
+    protected _description: string;
+    protected _item_type: ItemType;
+    protected _brew: string;
 
-    public constructor(data: D) {
-        super();
 
-        // Setup basics. Children have to handle mixins themselves, unfortunately
+    public constructor(type: ItemType, data: D & ICompendiumItemData, ...md: Array<new (x:D) => M>) {
+        this._id = data.id;
         this._name = data.name;
-        this._description = data.description || null;
+        this._brew = data.brew;
+        this._description = data.description;
+        this._item_type = type;
     } 
-    
-    protected serialize_self(): Partial<D> {
-        let mm = {
-            name: this._name,
-            description: this._description
-        } as Partial<D>;
-        return mm; 
+
+
+    /*
+    public constructor(itemData?: ICompendiumItemData | null) {
+        if (itemData) {
+            this._id = itemData.id;
+            this._name = itemData.name;
+            this._description = itemData.description;
+            this._item_type = ItemType.None;
+            this._brew = itemData.brew || CORE_BREW_ID;
+        } else {
+            this._id = this._name = this._description = this._note = this._brew = "";
+            this._item_type = ItemType.None;
+            this.Counters = [];
+            this._err = "Item data not found!";
+        }
+    }
+    */
+
+    abstract protected save(): void;
+
+    public get ID(): string {
+        return this._id;
     }
 
     public get Name(): string {
@@ -363,73 +317,27 @@ export class MMItem<D extends  (object & IMMItemData)> extends MixinHost<D> {
         this.save();
     }
 
-    public get Description(): string | null {
+    public get Description(): string {
         return this._description;
     }
 
-    public set Description(val: string | null) {
+    public set Description(val: string) {
         this._description = val;
         this.save();
     }
-}
 
-// Has an ID and type, as well as tracks the brew it came from
-export abstract class CompendiumItem<D extends (object & ICompendiumItemData)> extends MMItem<D> {
-    private _id: string;
-    protected readonly _item_type: ItemType;
-    protected _brew: string;
-
-    // As with above, never deviate from this single-item constructor
-    public constructor(data: D) {
-        // Setup basics
-        super(data);
-        this._id = data.id;
-        this._brew = data.brew;
-        this._item_type = data.item_type;
-    } 
-
-    public get ID(): string {
-        return this._id;
-    }
-
-    // Allows you to pick a new ID. TODO: Register with compendium, maybe? I don't really think we should honestly
-    public clone(new_id: string | null = null): this {
-        let v = super.clone();
-        if(new_id) {
-            v._id = new_id
-        }
-        return v;
-    }
-
-    // The item type (system, weapon, etc), used for compendium categorization
     public get ItemType(): ItemType {
         return this._item_type;
     }
 
-    // The content pack (or more generally, the source) this came from
     public get Brew(): string {
         return this._brew;
     }
 
-    public set Brew(nv: string) {
-         this._brew = nv;
-    }
-
-    protected serialize_self(): Partial<D> {
-        let result = {
-            ...super.serialize_self(),
-            id: this._id,
-            brew: this._brew
-        } as Partial<D>;
-        return result;
-    }
-
-    // Derived icon id from the item type
     public get Icon(): string {
         return "cci-" + _.kebabCase(this.ItemType);
     }
 
-    // Derived item color from the item type
     public get Color(): string {
         return _.kebabCase(this.ItemType);
     }
