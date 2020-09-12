@@ -1,25 +1,47 @@
-import { PilotEquipment, ItemType,} from "@/class";
-import { IPilotEquipmentData, ITagged } from "@/interface";
-import { CompendiumItem, IHasDeployables, IHasActions, IHasBonuses } from '../CompendiumItem';
+import { PilotEquipment, ItemType, Action, Tag,} from "@/class";
+import { IPilotEquipmentData, ITagged, ITagData, IActionData, IBonusData, ISynergyData, IDeployableData } from "@/interface";
+import { CompendiumItem } from '../CompendiumItem';
+import { MixinHostData, MixBuilder, Mixlet } from '@/mixmeta';
+import { ActionMixReader, ActionMixWriter } from '../Action';
+import { Synergy } from '../Synergy';
+import { Deployable } from '../Deployable';
+import { identity, uniqueId } from 'lodash';
 
-export interface IPilotArmorData extends IHasDeployables, IHasActions, IHasBonuses, IHas {
+export interface IPilotArmorData {
+  "id": string,
+  "name": string, // v-html
+  "type": "Armor",
+  "description": string,
+  "tags": ITagData[],
+  "actions"?: IActionData[], // these are only available to UNMOUNTED pilots
+  "bonuses"?: IBonusData[], // these bonuses are applied to the pilot, not parent system
+  "synergies"?: ISynergyData[],
+  "deployables"?: IDeployableData[], // these are only available to UNMOUNTED pilots
+},
+
+export interface PilotArmor extends MixinHostData<IPilotArmorData> {
   id: string,
-  name: string, // v-html
-  type: "Armor",
-  description: string,
-  // Tags, deplys, etc only valid when unmounted
+  name: string,
+  Tags: Tag[],
+  Actions: Action[],
+  Bonuses: Bonus[],
+  Synergies: Synergy[],
+  Deployables: Deployable[]
 }
 
-export class PilotArmor extends CompendiumItem {
-    public readonly Tags: MixTagged;
-    private readonly Mod: MixModifies;
-    private deploys: MixDeploys;
+type RawHasActionsAndStuff = object & {
+    actions: IActionData[]
+}
 
-    public constructor(data: IPilotArmorData) {
-        this.name = data.name;
-        this.tags = new MixTagged(data);
-        this.mods = new MixModifies(data);
-        this.deploys = new MixDeploys(data);
-        // this._item_type = ItemType.PilotArmor;
-    }
+interface ClassHasActionsAndStuff extends MixinHostData<RawHasActionsAndStuff> {
+    Actions: Action[]
+}
+
+export function MakePilotArmor(from_data?: IPilotArmorData): PilotArmor {
+    let b = new MixBuilder<PilotArmor, IPilotArmorData>({});
+    b.with(new Mixlet("name", "name", "New Armor", identity, identity));
+    b.with(new Mixlet("id", "id", uniqueId(), identity, identity));
+    b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter));
+    b.with(with
+
 }

@@ -89,3 +89,28 @@ export class Counter {
         this.Set(data.val);
     }
 }
+
+// Mixin stuff
+export interface IHasCounters {
+  counters?: ICounterData[] | null
+}
+
+export class MixCounters extends Mixin<IHasCounters> {
+    private _counters: Counter[] = [];
+    public get Counters(): readonly Counter[] { return this._counters; }
+
+    // Inline iterator
+    public [Symbol.iterator](): Iterator<Counter> {
+        return this._counters[Symbol.iterator]();
+    }
+
+    public load(data: IHasCounters ) {
+        this._counters = data.counters?.map(c => new Counter(c)) || [];
+    }
+
+    public save(): IHasCounters {
+        return {
+            counters: this._counters.map(c => c.Serialize())
+        }
+    }
+}

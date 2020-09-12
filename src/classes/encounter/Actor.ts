@@ -1,4 +1,5 @@
-export interface IActor {
+// Contains logic for mixing in current state of a mech
+export interface IIsActor {
     ID: string;
     EncounterName: string;
     Image: string;
@@ -24,6 +25,29 @@ export interface IActor {
     MaxMove: number;
     Reactions: string[];
     Icon: string;
+}
+
+export class MixActor extends Mixin<IIsActor> {
+    private _actions: Action[] = [];
+    public get list(): readonly Action[] { return this._actions; }
+
+    // Inline iterator
+    public [Symbol.iterator](): Iterator<Action> {
+        return this._actions[Symbol.iterator]();
+    }
+
+    public load(data: IHasActions) {
+        this._actions = data.actions?.map(a => new Action(a)) || [];
+    }
+
+    public save(): IHasActions {
+        return {
+            actions: this._actions.map(a => a.save()),
+        }
+    }
+
     NewTurn: () => void;
     FullRepair: () => void;
 }
+
+

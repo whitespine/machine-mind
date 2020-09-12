@@ -163,3 +163,28 @@ export class Tag {
         return output;
     }
 }
+
+// Item can have tags
+export interface IHasTags {
+  tags?: ITagData[] | null
+}
+
+export class MixTags extends Mixin<IHasTags> {
+    private _tags: Tag[] = [];
+    public get list(): readonly Tag[] { return this._tags; }
+
+    // Inline iterator
+    public [Symbol.iterator](): Iterator<Tag> {
+        return this._tags[Symbol.iterator]();
+    }
+    
+    public load(data: IHasTags) {
+        this._tags = Tag.Deserialize(data.tags || []);
+    }
+
+    public save(): IHasTags {
+        return {
+            tags: this._tags.map(t => t.SerializeInstance())
+        }
+    }
+}

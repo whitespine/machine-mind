@@ -47,7 +47,7 @@ export { INpcData } from "./classes/npc/Npc";
 export { IEncounterData } from "./classes/encounter/Encounter";
 export { IMissionData } from "./classes/encounter/Mission";
 export { IMissionStep } from "./classes/encounter/IMissionStep";
-export { IActor } from "./classes/encounter/IActor";
+export { IActor } from "./classes/encounter/Actor";
 export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IStatusData } from "./classes/Statuses";
 export { ISitrepData } from "./classes/encounter/Sitrep";

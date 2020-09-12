@@ -1,4 +1,5 @@
 import { ActivationType, Mixin } from "@/class";
+import { Mixlet, MixBuilder, MixinHostData } from '@/mixmeta';
 export interface IActionData {
   id: string,
   name: string,
@@ -62,3 +63,19 @@ export class MixActions extends Mixin<IHasActions> implements Iterable<Action> {
     }
 }
 
+// Use these for shorthand elsewhere
+export const ActionMixReader = (x: IActionData[] | null | undefined) => (x || []).map(i => new Action(i));
+export const ActionMixWriter = (x: Action[]) => x.map(i => i.save()));
+
+
+type RawHasActionsAndStuff = object & {
+    actions: IActionData[]
+}
+
+interface ClassHasActionsAndStuff extends MixinHostData<RawHasActionsAndStuff> {
+    Actions: Action[]
+}
+
+function makeClass(): ClassHasActionsAndStuff {
+    return new MixBuilder<ClassHasActionsAndStuff, RawHasActionsAndStuff>({}).with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter)).finalize();
+}

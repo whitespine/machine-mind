@@ -2,7 +2,7 @@ import { Rules, HASE } from "@/class";
 import { store } from "@/hooks";
 
 // It's HASE, baby!
-export class MechSkills extends mixin {
+export class MechSkills  {
     private hull: number;
     private agi: number;
     private sys: number;
