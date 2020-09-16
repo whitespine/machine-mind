@@ -1,6 +1,6 @@
 // Bonuses - we'll need to elaborate on these later... currently they don't work
 
-import { Mixin } from "@/class";
+import { MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
 
 // export type IBonusData = BonusSkillPoint | BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
 
@@ -269,43 +269,21 @@ export type IBonusData =
           value: number;
       };
 
-      // Todo - uh... more???
-export class Bonus {
-    // Don't bother parsing it into anything meaningful - functions better this waay
-    public data: IBonusData;
-
-    constructor(data: IBonusData) {
-        this.data = data;
-    }
-
-    save(): IBonusData {
-        return this.data;
-    }
+// Todo - uh... more??? It's a bit barebones for now...
+export interface Bonus extends MixLinks<IBonusData> {
+  ID: string,
+  Value: any
 }
 
-// Mixin stuff
-export interface IHasBonuses {
-    bonuses?: IBonusData[] | null;
+export function CreateBonus(data: IBonusData): Bonus {
+    let b = new MixBuilder<Bonus, IBonusData>({});
+    b.with(new Mixlet("ID", "id", "n/a", ident, ident));
+    b.with(new Mixlet("Value", "value", "", ident, ident));
+
+    let r = b.finalize(data);
+    return r;
 }
 
-export class MixBonuses extends Mixin<IHasBonuses> {
-    private _bonuses: Bonus[] = [];
-    public get list(): readonly Bonus[] {
-        return this._bonuses;
-    }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Bonus> {
-        return this._bonuses[Symbol.iterator]();
-    }
-
-    public load(data: IHasBonuses) {
-        this._bonuses = data.bonuses?.map(a => new Bonus(a)) || [];
-    }
-
-    public save(): IHasBonuses {
-        return {
-            bonuses: this._bonuses.map(b => b.save()),
-        };
-    }
-}
+// Use these for mixin shorthand elsewhere
+export const BonusMixReader = (x: IBonusData[] | null | undefined) => (x || []).map(CreateBonus);
+export const BonusMixWriter = (x: Bonus[]) => x.map(i => i.Serialize());

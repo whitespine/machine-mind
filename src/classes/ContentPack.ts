@@ -13,7 +13,7 @@ import {
     PilotArmor,
     PilotGear,
     Talent,
-    Tag,
+    TagTemplate,
     NpcClass,
     NpcTemplate,
     NpcFeature,
@@ -187,8 +187,8 @@ export class ContentPack {
         return this._Talents;
     }
 
-    private _Tags: Tag[];
-    public get Tags(): Tag[] {
+    private _Tags: TagTemplate[];
+    public get Tags(): TagTemplate[] {
         return this._Tags;
     }
 
@@ -283,11 +283,11 @@ export class ContentPack {
 
         for (let igear of this._data.pilotGear || []) {
             let equip: PilotEquipment;
-            if (igear.type === "weapon") {
+            if (igear.type.toLowerCase() === "weapon") {
                 let wep = new PilotWeapon(igear as IPilotWeaponData);
                 this._PilotWeapons.push(wep);
                 equip = wep;
-            } else if (igear.type === "armor") {
+            } else if (igear.type.toLowerCase() === "armor") {
                 let arm = new PilotArmor(igear as IPilotArmorData);
                 this._PilotArmor.push(arm);
                 equip = arm;
@@ -301,7 +301,7 @@ export class ContentPack {
         }
 
         this._Talents = this._data.talents?.map(x => new Talent(x)) || [];
-        this._Tags = this._data.tags?.map(x => new Tag(x)) || [];
+        this._Tags = this._data.tags?.map(x => new TagTemplate(x)) || [];
 
         this._NpcFeatures =
             this._data.npcFeatures?.map(function(x) {

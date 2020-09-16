@@ -1,5 +1,11 @@
-import { ActivationType } from '@/class';
-import { IActionData, IBonusData, ISynergyData, ICounterData, ITagData } from '@/interface';
+import { ActivationType, Counter } from '@/class';
+import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
+import { MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
+import { ident } from 'lodash';
+import { Action, ActionMixReader, ActionMixWriter } from './Action';
+import { Bonus, BonusMixReader, BonusMixWriter } from './Bonus';
+import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
+import { ITagInstanceData, TagInstance, TagInstanceMixReader, TagInstanceMixWriter } from './Tag';
 
 export interface IDeployableData {
     name: string,
@@ -25,21 +31,73 @@ export interface IDeployableData {
     bonuses?: IBonusData[],
     synergies?: ISynergyData[],
     counters?: ICounterData[],
-    tags?: ITagData[],
+    tags?: ITagInstanceData[],
 }
 
-
-export class Deployable {
-    private readonly data: IDeployableData;
-    constructor(data: IDeployableData) {
-        this.data = {...data};
-    }
-
-    public Serialize(): IDeployableData {
-        return {...this.data};
-    }
+export interface Deployable extends MixLinks<IDeployableData> {
+    Name: string,
+    Type: string, // this is for UI furnishing only,
+    Detail: string,
+    Activation: ActivationType,
+    Deactivation: ActivationType,
+    Recall: ActivationType,
+    Redeploy: ActivationType,
+    Size: number,
+    Cost: number
+    Armor: number,
+    HP: number | null,
+    Evasion: number | null,
+    EDef: number | null,
+    HeatCap: number | null,
+    RepairCap: number | null,
+    SensorRange: number | null,
+    TechAttack: number | null,
+    Save: number | null,
+    Speed: number | null,
+    Actions: Action[],
+    Bonuses: Bonus[],
+    Synergies: Synergy[],
+    Counters: Counter[],
+    Tags: TagInstance[],
 }
 
+// function ident<T>(v: T): T {return v;}
+
+export function CreateDeployable(data: IDeployableData | null): Deployable {
+    let b = new MixBuilder<Deployable, IDeployableData>({});
+    b.with(new Mixlet("Name", "name", "New Deployable", ident(, ident));
+    b.with(new Mixlet("Type", "type", "custom", ident, ident));
+    b.with(new Mixlet("Detail", "detail", "No description", ident, ident));
+    b.with(new Mixlet("Activation", "activation", ActivationType.None, ident, ident));
+    b.with(new Mixlet("Deactivation", "deactivation", ActivationType.None, ident, ident));
+    b.with(new Mixlet("Recall", "recall", ActivationType.None, ident, ident));
+    b.with(new Mixlet("Redeploy", "redeploy", ActivationType.None, ident, ident));
+    b.with(new Mixlet("Size", "size", .5, ident, ident)); // deployables tend to be smaller
+    b.with(new Mixlet("Cost", "cost", 1, ident, ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
+    b.with(new Mixlet("Armor", "armor", 0, ident, ident)); 
+    b.with(new Mixlet("HP", "hp", null, ident, ident)); 
+    b.with(new Mixlet("Evasion", "hp", null, ident, ident)); 
+    b.with(new Mixlet("EDef", "edef", null, ident, ident)); 
+    b.with(new Mixlet("HeatCap", "heatcap", null, ident, ident)); 
+    b.with(new Mixlet("RepairCap", "repcap", null, ident, ident)); 
+    b.with(new Mixlet("SensorRange", "sensor_range", null, ident, ident)); 
+    b.with(new Mixlet("TechAttack", "tech_attack", null, ident, ident)); 
+    b.with(new Mixlet("Save", "save", null, ident, ident)); 
+    b.with(new Mixlet("Speed", "speed", null, ident, ident)); 
+    b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter)); 
+    b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter)); 
+    b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, ident)); 
+    b.with(new Mixlet("Counters", "counters", [], CounterMixReader, CounterMixWriter)); 
+    b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter)); 
+    
+
+    let r = b.finalize(data);
+    return r;
+}
+
+// Use these for mixin shorthand elsewhere in items that have many actions
+export const DeployableMixReader = (x: IDeployableData[] | null | undefined) => (x || []).map(CreateDeployable);
+export const DeployableMixWriter = (x: Deployable[]) => x.map(i => i.Serialize());
 
 /*
 export interface IDeployedData {

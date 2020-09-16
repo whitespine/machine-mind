@@ -9,6 +9,9 @@ export enum MountType {
     Integrated = "Integrated",
 }
 
+export const CORE_BREW_ID = "core";
+export const DEFAULT_BREW_ID = "dyn";
+
 // governs what can be added to a mount (weapon slot)
 export enum FittingSize {
     Auxiliary = "Auxiliary",

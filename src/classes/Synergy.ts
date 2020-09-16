@@ -22,7 +22,7 @@ export class Synergy {
         this.detail = data.detail;
     }
 
-    public Serialize(): ISynergyData {
+    public save(): ISynergyData {
         return {
             locations: this.locations == "any" ? ["any"] : this.locations, // TODO: is any allowed here?
             types: this.types == "any" ? null : this.types, 
@@ -101,31 +101,6 @@ export class Synergy {
     */
 }
 
-// Mixin stuff
-export interface IHasSynergies {
-  synergies?: ISynergyData[] | null,
-}
-
-
-// Do we even want to have readonly getters? meh...
-
-
-export class MixSynergies extends Mixin<IHasSynergies> {
-    private _synergies: Synergy[] = [];
-    public get Synergies(): readonly Synergy[] { return this._synergies; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Synergy> {
-        return this._synergies[Symbol.iterator]();
-    }
-    
-    public load(data: IHasSynergies) {
-        this._synergies = data.synergies?.map(a => new Synergy(a)) || [];
-    }
-
-    public save(): IHasSynergies {
-        return {
-            synergies: this._synergies.map(s => s.Serialize()),
-        }
-    }
-}
+// Use these for mixin shorthand elsewhere
+export const SynergyMixReader = (x: ISynergyData[] | null | undefined) => (x || []).map(i => new Synergy(i));
+export const SynergyMixWriter = (x: Synergy[]) => x.map(i => i.save());

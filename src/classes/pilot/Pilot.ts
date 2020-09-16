@@ -1,4 +1,4 @@
-import _, { identity } from "lodash";
+import _, { ident } from "lodash";
 import uuid from "uuid/v4";
 import {
     Rules,

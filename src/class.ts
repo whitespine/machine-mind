@@ -25,7 +25,6 @@ export {
     ActivationType,
     Duration,
 } from "./classes/enums";
-export { Mixin, MixinHost, MMItem, CompendiumItem, MixCounters, MixDeployables, MixIntegrated, MixActions, MixBonuses, MixFlavor, MixLicensed, MixSynergies, MixTags, MixUserNoted } from "./classes/CompendiumItem";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Drone } from "./classes/Drone";
@@ -36,10 +35,7 @@ export { Damage } from "./classes/Damage";
 export { Range } from "./classes/Range";
 export { Synergy } from "@/classes/Synergy";
 export { Skill } from "./classes/pilot/Skill";
-export { PilotEquipment } from "./classes/pilot/PilotEquipment";
-export { PilotArmor } from "./classes/pilot/PilotArmor";
-export { PilotWeapon } from "./classes/pilot/PilotWeapon";
-export { PilotGear } from "./classes/pilot/PilotGear";
+export { CreatePilotArmor, PilotArmor, PilotGear, CreatePilotGeaar, PilotWeapon, CreatePilotWeapon } from "./classes/pilot/PilotEquipment";
 export { ActiveState } from "./classes/mech/ActiveState";
 export { CoreSystem } from "./classes/mech/CoreSystem";
 export { Frame } from "./classes/mech/Frame";
@@ -58,7 +54,7 @@ export { PilotLoadout } from "./classes/pilot/PilotLoadout";
 export { PilotSkill } from "./classes/pilot/PilotSkill";
 export { PilotTalent } from "./classes/pilot/PilotTalent";
 export { Pilot } from "./classes/pilot/Pilot";
-export { Tag } from "./classes/Tag";
+export { TagInstance, TagTemplate } from "./classes/Tag";
 export { MechLoadout } from "./classes/mech/MechLoadout";
 export { Mount } from "./classes/mech/Mount";
 export { IntegratedMount } from "./classes/mech/IntegratedMount";

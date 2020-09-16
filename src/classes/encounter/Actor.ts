@@ -1,5 +1,5 @@
 // Contains logic for mixing in current state of a mech
-export interface IIsActor {
+export interface VActor {
     ID: string;
     EncounterName: string;
     Image: string;

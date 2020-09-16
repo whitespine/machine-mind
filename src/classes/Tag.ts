@@ -1,9 +1,12 @@
 import { ItemType } from "@/class";
 
-import { ICompendiumItemData, ITagData } from "@/interface";
+import { VCompendiumItem } from "@/interface";
 import { store } from "@/hooks";
+import { MixLinks, MixBuilder, Mixlet, uuid } from '@/mixmeta';
+import { DEFAULT_BREW_ID } from './CompendiumItem';
+import { ident } from 'lodash';
 
-export interface ITagCompendiumData extends ICompendiumItemData {
+export interface ITagTemplateData {
     id: string;
     name: string;
     description: string;
@@ -11,65 +14,58 @@ export interface ITagCompendiumData extends ICompendiumItemData {
     hidden?: boolean | null;
 }
 
-export class Tag {
-    private _id: string;
-    private _name: string;
-    private _description: string;
-    private _val: number | string;
-    private _filter_ignore: boolean;
-    private _hidden: boolean;
-    private _item_type: ItemType;
-    private _brew: string;
+export interface ITagInstanceData {
+    id: string;
+    val?: string | number | null;
+}
 
-    public constructor(tagData: ITagCompendiumData) {
-        this._id = tagData.id;
-        this._name = tagData.name;
-        this._description = tagData.description;
-        this._brew = tagData.brew || "Core";
-        this._val = "";
-        this._hidden = tagData.hidden || false;
-        this._filter_ignore = tagData.filter_ignore || this._hidden;
-        this._item_type = ItemType.Tag;
+export interface TagTemplate extends MixLinks<ITagTemplateData>, VCompendiumItem {
+    Description: string;
+    FilterIgnore: boolean;
+    Hidden: boolean;
+    ItemType: ItemType.Tag;
+}
+
+export interface TagInstance extends MixLinks<ITagInstanceData> {
+    TemplateID: string;
+    Val: number | string | null;
+}
+
+export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
+    let b = new MixBuilder<TagTemplate, ITagTemplateData>({
+        ItemType: ItemType.Tag,
+        Brew: DEFAULT_BREW_ID
+    });
+    b.with(new Mixlet("ID", "id", uuid(), ident, ident));
+    b.with(new Mixlet("Name", "name", "New Tag", ident, ident));
+    b.with(new Mixlet("Description", "description", "", ident, ident));
+    b.with(new Mixlet("FilterIgnore", "filter_ignore", false, ident, ident));
+    b.with(new Mixlet("Hidden", "hidden", false, ident, ident));
+    let r = b.finalize();
+    if(data) {
+        r.Deserialize(data);
     }
+    return r;
+}
 
-    public SerializeInstance(): ITagData {
-        return {
-            id: this._id,
-            val: this._val
-        };
+export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
+    let b = new MixBuilder<TagInstance, ITagInstanceData>({});
+    b.with(new Mixlet("TemplateID", "id", uuid(), ident, ident));
+    b.with(new Mixlet("Val", "val", "", ident, ident));
+    let r = b.finalize();
+    if(data) {
+        r.Deserialize(data);
     }
+    return r;
+}
 
-    public Serialize(): ITagCompendiumData {
-        return {
-            brew: this._brew,
-            description: this._description,
-            id: this._id,
-            name: this._name,
-            filter_ignore: this._filter_ignore,
-            hidden: this._hidden
-        }
-    }
+// Use these for mixin shorthand elsewhere in items that have many actions
+export const TagTemplateMixReader = (x: ITagTemplateData[] | null | undefined) => (x || []).map(CreateTagTemplate);
+export const TagTemplateMixWriter = (x: TagTemplate[]) => x.map(i => i.Serialize());
+export const TagInstanceMixReader = (x: ITagInstanceData[] | null | undefined) => (x || []).map(CreateTagInstance);
+export const TagInstanceMixWriter = (x: TagInstance[]) => x.map(i => i.Serialize());
 
-    public get Value(): number | string {
-        return this._val;
-    }
-
-    public set Value(val: number | string) {
-        this._val = val;
-    }
-
-    public get FilterIgnore(): boolean {
-        return this._filter_ignore;
-    }
-
-    public get IsHidden(): boolean {
-        return this._hidden;
-    }
-
-    public get Description(): string {
-        return this._description.replace(/{VAL}/g, "X");
-    }
-
+/*
     public GetDescription(addBonus?: number | null): string {
         let bonus = 0;
         if (this.ID === "tg_limited") bonus = addBonus || 0;
@@ -89,10 +85,6 @@ export class Tag {
                     : this._description.replace(/{VAL}/g, this._val);
             }
         }
-    }
-
-    public get ID(): string {
-        return this._id;
     }
 
     public get Name(): string {
@@ -163,28 +155,4 @@ export class Tag {
         return output;
     }
 }
-
-// Item can have tags
-export interface IHasTags {
-  tags?: ITagData[] | null
-}
-
-export class MixTags extends Mixin<IHasTags> {
-    private _tags: Tag[] = [];
-    public get list(): readonly Tag[] { return this._tags; }
-
-    // Inline iterator
-    public [Symbol.iterator](): Iterator<Tag> {
-        return this._tags[Symbol.iterator]();
-    }
-    
-    public load(data: IHasTags) {
-        this._tags = Tag.Deserialize(data.tags || []);
-    }
-
-    public save(): IHasTags {
-        return {
-            tags: this._tags.map(t => t.SerializeInstance())
-        }
-    }
-}
+*/

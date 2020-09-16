@@ -27,6 +27,9 @@
       "esnext",
       "es2018.promise",
       "DOM"
+    ],
+    "plugins": [
+        { "transform": "ts-transformer-keys/transformer" }
     ]
   },
   "include": [
