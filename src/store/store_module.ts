@@ -11,8 +11,7 @@ export type load_setter_handler<T> = (x: load_setter<T>) => void;
 export abstract class AbsStoreModule {
     protected persistence: PersistentStore;
 
-    constructor(persistence: PersistentStore, options: Partial<DataStoreOptions>) {
-        let full_options = { ...DEFAULT_STORE_OPTIONS, ...options } as DataStoreOptions; // Shim defaults
+    constructor(persistence: PersistentStore, options: DataStoreOptions) {
         this.persistence = persistence;
     }
 

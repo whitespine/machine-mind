@@ -23,22 +23,14 @@ import {
     Status,
     Environment,
     Sitrep,
+    NpcFeatureType,
+    NpcTrait,
+    PilotEquipment,
 } from "@/class";
 import { logger } from "@/hooks";
-import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
-import { CompendiumItem, CORE_BREW_ID } from "@/classes/CompendiumItem";
-import { IContentPack } from "@/classes/ContentPack";
-import {
-    AbsStoreModule,
-    load_setter_handler,
-    DataStoreOptions,
-    DEFAULT_STORE_OPTIONS,
-} from "./store_module";
+import { CORE_BREW_ID } from "@/classes/CompendiumItem";
+import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
-import { NpcTrait } from "@/classes/npc/NpcTrait";
-import { NpcWeapon } from "@/classes/npc/NpcWeapon";
-import { NpcFeatureType } from "@/classes/npc/NpcFeature";
-import { quirks } from "lancer-data";
 import {
     DamageType,
     MechType,
@@ -48,11 +40,7 @@ import {
     WeaponSize,
     WeaponType,
 } from "@/classes/enums";
-import { IDamageData } from "@/classes/Damage";
-import { IRangeData } from "@/classes/Range";
-import { ITagCompendiumData } from "@/classes/Tag";
-import { ITagData } from "@/classes/GeneralInterfaces";
-import { ICounterData } from "@/classes/Counter";
+import { ICounterData, IDamageData, IRangeData, ITagData, IContentPack } from "@/interface";
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -328,7 +316,7 @@ export class CompendiumStore extends AbsStoreModule {
         // Typescript cannot consolidate predicates, so we treat as any.
         let i = (items as Array<any>).find(x => x.ID === id || x.id === id);
 
-        if (this._shim_default_items && i === null) {
+        if (this._shim_default_items && i == null) {
             // We gotta shim
             i = this.gen_default_item(id, itemType) as T;
         }
