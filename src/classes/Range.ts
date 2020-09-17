@@ -27,7 +27,7 @@ export class Range {
             type: r._range_type,
             val: r._value,
             override: r._override,
-            bonus: r._bonus
+            bonus: r._bonus,
         };
     }
 

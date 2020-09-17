@@ -630,7 +630,6 @@ export class Pilot {
         return index > -1 ? this._talents[index].Rank : 0;
     }
 
-
     public AddTalent(talent: Talent): void {
         const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent));
         if (index === -1) {

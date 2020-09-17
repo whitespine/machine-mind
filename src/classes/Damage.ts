@@ -25,8 +25,8 @@ export class Damage {
         return {
             type: damage._damage_type,
             val: damage._raw_value,
-            override: damage._override
-        }
+            override: damage._override,
+        };
     }
 
     private getDamageType(str?: string | null): DamageType {
