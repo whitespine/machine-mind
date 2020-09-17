@@ -1,4 +1,4 @@
-import lodash from "lodash";
+import lodash, { uniqueId } from "lodash";
 import * as lancerData from "@/classes/utility/typed_lancerdata";
 import {
     Skill,
@@ -26,10 +26,33 @@ import {
 } from "@/class";
 import { logger } from "@/hooks";
 import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
-import { CORE_BREW_ID } from "@/classes/CompendiumItem";
+import { CompendiumItem, CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
-import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
+import {
+    AbsStoreModule,
+    load_setter_handler,
+    DataStoreOptions,
+    DEFAULT_STORE_OPTIONS,
+} from "./store_module";
 import { PersistentStore } from "@/io/persistence";
+import { NpcTrait } from "@/classes/npc/NpcTrait";
+import { NpcWeapon } from "@/classes/npc/NpcWeapon";
+import { NpcFeatureType } from "@/classes/npc/NpcFeature";
+import { quirks } from "lancer-data";
+import {
+    DamageType,
+    MechType,
+    MountType,
+    RangeType,
+    SystemType,
+    WeaponSize,
+    WeaponType,
+} from "@/classes/enums";
+import { IDamageData } from "@/classes/Damage";
+import { IRangeData } from "@/classes/Range";
+import { ITagCompendiumData } from "@/classes/Tag";
+import { ITagData } from "@/classes/GeneralInterfaces";
+import { ICounterData } from "@/classes/Counter";
 
 const CORE_BONUSES = "CoreBonuses";
 const FACTIONS = "Factions";
@@ -170,6 +193,9 @@ export class CompendiumStore extends AbsStoreModule {
     // Should we always include the core data?
     private _include_core: boolean = true;
 
+    // Should we attempt to provide dummy systems etc if unable to lookup?
+    private _shim_default_items: boolean = false;
+
     public get ContentPacks(): ContentPack[] {
         return this._content_packs;
     }
@@ -188,6 +214,7 @@ export class CompendiumStore extends AbsStoreModule {
     public constructor(persistence: PersistentStore, options: DataStoreOptions) {
         super(persistence, options);
         this._include_core = !options.disable_core_data;
+        this._shim_default_items = options.shim_fallback_items;
     }
 
     // Add the given pack to loaded state. Replaces existing packs with given id
@@ -283,7 +310,7 @@ export class CompendiumStore extends AbsStoreModule {
         itemType: T,
         id: string
     ): ICompendium[T][0] | null {
-        let v = this.getReferenceByID(itemType, id);
+        let v = this.getReferenceByIDCareful(itemType, id);
         if (!v) {
             return v;
         } else {
@@ -299,7 +326,12 @@ export class CompendiumStore extends AbsStoreModule {
     ): ICompendium[T][0] | null {
         const items = this.getItemCollection(itemType);
         // Typescript cannot consolidate predicates, so we treat as any.
-        const i = (items as Array<any>).find(x => x.ID === id || x.id === id);
+        let i = (items as Array<any>).find(x => x.ID === id || x.id === id);
+
+        if (this._shim_default_items && i === null) {
+            // We gotta shim
+            i = this.gen_default_item(id, itemType) as T;
+        }
         return i || null;
     }
 
@@ -337,5 +369,270 @@ export class CompendiumStore extends AbsStoreModule {
         // Save the content packs to static storage
         let data_packs = this._content_packs.map(ContentPack.Serialize);
         await this.persistence.set_item(FILEKEY_CONTENT_PACKS, data_packs);
+    }
+
+    gen_default_item(id: string, item_category: CompendiumCategory): any {
+        const source = "Unknown Source";
+        const brew = "unknown";
+        const license = "unknown";
+        const effect = "Unknown effect";
+        const detail = "Unknown detail";
+        const counters = [] as ICounterData[];
+        const effects = [effect] as string[];
+        const description = "Unrecognized " + item_category;
+        const damage: IDamageData[] = [{ type: DamageType.Kinetic, val: "1" }];
+        const range: IRangeData[] = [{ type: RangeType.Range, val: 8 }];
+        const tags = [] as ITagData[];
+        const name = `//${id}//`;
+        const logo = "gms";
+        const icon = "jammed";
+        const color = "grey";
+        const quote = "Unknown quote";
+        const sp = 1;
+        const license_level = 0;
+
+        switch (item_category) {
+            case CORE_BONUSES:
+                return new CoreBonus({
+                    source,
+                    brew,
+                    counters,
+                    description,
+                    effect,
+                    name,
+                    id,
+                });
+            case FACTIONS:
+                return new Faction({
+                    name,
+                    color,
+                    description,
+                    id,
+                    logo,
+                });
+            case FRAMES:
+                return new Frame({
+                    brew,
+                    counters,
+                    description,
+                    id,
+                    license,
+                    license_level,
+                    mechtype: [MechType.Balanced],
+                    mounts: [MountType.Main],
+                    name,
+                    source,
+                    traits: [],
+                    stats: {
+                        armor: 0,
+                        edef: 8,
+                        evasion: 8,
+                        heatcap: 5,
+                        hp: 8,
+                        repcap: 5,
+                        save: 10,
+                        sensor_range: 10,
+                        size: 1,
+                        sp: 5,
+                        speed: 5,
+                        tech_attack: 0,
+                    },
+                    core_system: {
+                        active_effect: effect,
+                        active_name: name,
+                        description,
+                        name,
+                        tags,
+                    },
+                });
+
+                break;
+            case LICENSES:
+                return new License(this.gen_default_item(id, "Frames"));
+            case MANUFACTURERS:
+                return new Manufacturer({
+                    id,
+                    name,
+                    logo,
+                    color,
+                    description,
+                    quote,
+                });
+            case NPC_CLASSES:
+                const dup = <T>(x: T): [T, T, T] => {
+                    return [x, x, x];
+                };
+                return new NpcClass({
+                    base_features: [],
+                    brew,
+                    id,
+                    info: { flavor: description, tactics: description },
+                    name,
+                    optional_features: [],
+                    power: 100,
+                    role: "striker",
+                    stats: {
+                        activations: dup(1),
+                        agility: dup(0),
+                        armor: dup(0),
+                        edef: dup(8),
+                        engineering: dup(0),
+                        evade: dup(8),
+                        heatcap: dup(8),
+                        hp: dup(8),
+                        hull: dup(0),
+                        save: dup(10),
+                        sensor: dup(10),
+                        size: dup([1]),
+                        speed: dup(5),
+                        systems: dup(0),
+                    },
+                });
+            case NPC_TEMPLATES:
+                return new NpcTemplate({
+                    power: 100,
+                    base_features: [],
+                    brew,
+                    description,
+                    id,
+                    name,
+                    optional_features: [],
+                });
+            case NPC_FEATURES:
+                return new NpcTrait({
+                    brew,
+                    hide_active: false,
+                    id,
+                    locked: false,
+                    name,
+                    tags: [],
+                    type: NpcFeatureType.Trait,
+                    origin: {
+                        base: true,
+                        name,
+                        type: "unknown",
+                    },
+                });
+            case WEAPON_MODS:
+                return new WeaponMod({
+                    name,
+                    description,
+                    id,
+                    sp,
+                    applied_string: description,
+                    applied_to: [WeaponType.Rifle],
+                    brew,
+                    counters,
+                    effect,
+                    license,
+                    license_level: 0,
+                    restricted_mounts: [],
+                    source,
+                    tags,
+                });
+            case MECH_WEAPONS:
+                return new MechWeapon({
+                    name,
+                    description,
+                    id,
+                    mount: WeaponSize.Main,
+                    counters,
+                    brew,
+                    damage,
+                    effect,
+                    type: WeaponType.Rifle,
+                    tags,
+                    source,
+                    range,
+                    sp: 0,
+                    license_level,
+                    license,
+                });
+            case MECH_SYSTEM:
+                return new MechSystem({
+                    name,
+                    description,
+                    id,
+                    tags,
+                    source,
+                    license_level,
+                    license,
+                    effect,
+                    counters,
+                    sp,
+                    brew,
+                    type: SystemType.System,
+                });
+            case PILOT_GEAR:
+                return new PilotGear({ name, description, id, brew, counters, tags });
+            case PILOT_ARMOR:
+                return new PilotArmor({ name, description, id, tags, brew, counters });
+            case PILOT_WEAPONS:
+                return new PilotWeapon({
+                    name,
+                    description,
+                    id,
+                    counters,
+                    brew,
+                    damage,
+                    tags,
+                    range,
+                });
+            case PILOT_EQUIPMENT:
+                return this.gen_default_item(id, "PilotGear");
+            case TALENTS:
+                return new Talent({
+                    brew,
+                    counters,
+                    description,
+                    id,
+                    name,
+                    ranks: [
+                        {
+                            description: effect,
+                            name: "Rank 1",
+                        },
+                        {
+                            description: effect,
+                            name: "Rank 2",
+                        },
+                        {
+                            description: effect,
+                            name: "Rank 3",
+                        },
+                    ],
+                });
+            case SKILLS:
+                return new Skill({
+                    brew,
+                    counters,
+                    name,
+                    detail,
+                    description,
+                    id,
+                    family: "unknown",
+                });
+            case STATUSES_AND_CONDITIONS:
+                return Status.Deserialize({ name, type: "Status", icon, effects });
+            case STATUSES:
+                return Status.Deserialize({ name, type: "Status", icon, effects });
+            case CONDITIONS:
+                return Status.Deserialize({ name, type: "Condition", icon, effects });
+            case QUIRKS:
+                return "unknown quirk";
+            case RESERVES:
+                return new Reserve({
+                    id,
+                    used: false,
+                    description,
+                    name,
+                });
+            case ENVIRONMENTS:
+                return new Environment();
+            case SITREPS:
+                return new Sitrep();
+            case TAGS:
+                return new Tag({ brew, counters, name, id, description });
+        }
     }
 }

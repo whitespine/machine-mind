@@ -11,7 +11,8 @@ export type load_setter_handler<T> = (x: load_setter<T>) => void;
 export abstract class AbsStoreModule {
     protected persistence: PersistentStore;
 
-    constructor(persistence: PersistentStore, options: DataStoreOptions) {
+    constructor(persistence: PersistentStore, options: Partial<DataStoreOptions>) {
+        let full_options = { ...DEFAULT_STORE_OPTIONS, ...options } as DataStoreOptions; // Shim defaults
         this.persistence = persistence;
     }
 
@@ -21,9 +22,14 @@ export abstract class AbsStoreModule {
 }
 
 export interface DataStoreOptions {
-    disable_core_data?: boolean;
+    // Whether to include the lancer core data
+    disable_core_data: boolean;
+
+    // Whether the system should use generic default compendium items, where able, to handle errors
+    shim_fallback_items: boolean;
 }
 
 export const DEFAULT_STORE_OPTIONS: DataStoreOptions = {
     disable_core_data: false,
+    shim_fallback_items: false,
 };

@@ -14,7 +14,7 @@ export interface ITalentData extends ICompendiumItemData {
 export class Talent extends CompendiumItem {
     private _ranks: ITalentRank[];
 
-    public constructor(talentData: any) {
+    public constructor(talentData: ITalentData) {
         super(talentData);
         this._ranks = talentData.ranks;
     }
