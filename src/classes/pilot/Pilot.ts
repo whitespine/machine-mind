@@ -592,7 +592,7 @@ export class Pilot {
 
     public getSkillRank(id: string): number {
         const index = this._skills.findIndex(x => x.Skill.ID === id);
-        return index > -1 ? this._talents[index].Rank : 0;
+        return index > -1 ? this._skills[index].Rank : 0;
     }
 
     // -- Talents -----------------------------------------------------------------------------------
