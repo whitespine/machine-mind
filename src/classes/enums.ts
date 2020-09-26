@@ -1,3 +1,6 @@
+// TODO: make raw coercers for all of these. For now, we just kinda trust (bad idea, bro!)
+
+
 // Holds enums that are as of yet seen nowhere else
 export enum MountType {
     Main = "Main",
@@ -7,6 +10,27 @@ export enum MountType {
     MainAux = "Main/Aux",
     Flex = "Flex",
     Integrated = "Integrated",
+}
+
+// Defaults to main
+export function getMountType(raw: string): MountType {
+    switch(raw.toLowerCase()) {
+        default:
+    case "main":
+        return  MountType.Main;
+    case "heavy":
+        return MountType.Heavy;
+    case "auxaux":
+        return MountType.AuxAux;
+    case "aux":
+        return MountType.Aux;
+    case "mainaux":
+        return MountType.MainAux;
+    case "flex":
+        return MountType.Flex;
+    case "integrated":
+        return MountType.Integrated;
+    }
 }
 
 export const CORE_BREW_ID = "core";
@@ -21,12 +45,44 @@ export enum FittingSize {
     Integrated = "Integrated",
 }
 
+export function getFittingSize(raw: string): FittingSize {
+    switch(raw.toLowerCase()) {
+            case "auxiliary":
+                return FittingSize.Auxiliary;
+        default:
+            case "main":
+                return FittingSize.Main;
+            case "flex":
+                return FittingSize.Flex;
+            case "heavy":
+                return FittingSize.Heavy;
+            case "integrated":
+                return FittingSize.Integrated;
+    }
+}
+
 export enum WeaponSize {
     Aux = "Auxiliary",
     Main = "Main",
     Heavy = "Heavy",
     Superheavy = "Superheavy",
 }
+
+export function getWeaponSize(raw: string): WeaponSize {
+    switch(raw.toLowerCase()) {
+        default:
+            case "main":
+                return WeaponSize.Main;
+            case "auxiliary":
+                return WeaponSize.Aux;
+            case "heavy":
+                return WeaponSize.Heavy;
+            case "superheavyj":
+                return WeaponSize.Superheavy;
+    }
+}
+
+
 
 export enum WeaponType {
     Rifle = "Rifle",

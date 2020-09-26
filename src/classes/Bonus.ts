@@ -1,4 +1,5 @@
 import { DamageType, Pilot, RangeType, WeaponSize, WeaponType } from '@/class';
+import * as pmath from "parsemath";
 // Bonuses - we'll need to elaborate on these later... currently they don't work
 
 import { ident, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
@@ -106,28 +107,15 @@ export function CreateBonus(data: IBonusData): Bonus {
     return r;
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
-// Evaluates arbitrary javascript functions
-// TODO: Make this not a fuckign logic bomb
-let warned = false;
-function fastEval(obj: string): any {
-  if(!warned) {
-    warned  = true;
-    console.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Fix this vulneraability!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
-  return Function('"use strict";return (' + obj + ')')();
-}
-
-
 // Get the numeric value of a bonus expression, for a given pilot
 // Note: Currently very much a WIP
-export function Evaluate(bonus: Bonus, pilot: Pilot) {
+export function Evaluate(bonus: Bonus, pilot: Pilot): number{
     if (typeof bonus.Value === 'number') return Math.ceil(bonus.Value)
     let valStr = bonus.Value
     valStr = valStr.replaceAll(`{ll}`, pilot.Level.toString())
     valStr = valStr.replaceAll(`{grit}`, pilot.Grit.toString())
-    // valStr = valStr.replace(/[^-()\d/*+.]/g, '')
-    return Math.ceil(fastEval(valStr))
+
+    return Math.ceil(pmath.parse(valStr));
 }
 
 

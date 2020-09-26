@@ -48,8 +48,8 @@ export function CreatePilotLoadout(data: IPilotLoadoutData) {
         CanAddGear,
         CanAddWeapons
     });
-    mb.with(new Mixlet("ID","id", uuid(), ident, ident);
-    mb.with(new Mixlet("Name","name", "New Loadout", ident, ident);
+    mb.with(new Mixlet("ID","id", uuid(), ident, ident));
+    mb.with(new Mixlet("Name","name", "New Loadout", ident, ident));
     mb.with(new Mixlet("Armor","armor", [], (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
     mb.with(new Mixlet("Weapons","weapons", [], (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
     mb.with(new Mixlet("Gear","gear", [], (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));

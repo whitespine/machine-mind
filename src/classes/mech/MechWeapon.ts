@@ -1,30 +1,118 @@
 import _ from "lodash";
 import {
+    Action,
+    Bonus,
+    Counter,
     Damage,
     DamageType,
+    Deployable,
     ItemType,
     Mech,
     MechEquipment,
+    MountType,
     Range,
     RangeType,
+    Synergy,
+    TagInstance,
     WeaponMod,
     WeaponSize,
     WeaponType,
 } from "@/class";
-import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData } from "@/interface";
+import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
 import { store } from "@/hooks";
+import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, Mixlet, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
+import { getMountType } from '../enums';
+import { DamagesMixReader, DamagesMixWriter } from '../Damage';
+import { RangesMixReader, RangesMixWriter } from '../Range';
 
 // TODO:
 // class WeaponAmmo {}
 
-export interface IMechWeaponData extends IMechEquipmentData {
-    mount: WeaponSize;
-    type: WeaponType;
-    damage: IDamageData[] | null;
-    range: IRangeData[];
+export interface IMechWeaponData {
+  "id": string,
+  "name": string,
+  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  "license": string, // reference to the Frame name of the associated license
+  "license_level": number, // set to zero for this item to be available to a LL0 character
+  "mount": MountType,
+  "type": WeaponType,
+  "damage"?: IDamageData[],
+  "range"?: IRangeData[],
+  "tags"?: ITagInstanceData[],
+  "sp"?: number,
+  "description": string, // v-html
+  "effect"?: string // v-html
+  "on_attack"?: string // v-html
+  "on_hit"?: string // v-html
+  "on_crit"?: string // v-html
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[],
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
 }
 
-export class MechWeapon extends MechEquipment {
+export interface MechWeapon extends MixLinks<IMechWeaponData> {
+    // Fields. There are a lot - mech equips do be like that
+    ID: string;
+    Name: string;
+    Source: string; // MANUFACTURER NAME
+    License: string; // FRAME NAME
+    LicenseLevel: number;
+    Mount: MountType;
+    Type: WeaponType;
+    Damage: Damage[];
+    Range: Range[];
+    Tags: TagInstance[];
+    SP: number;
+    Description: string;
+    Effect: string;
+    OnAttack: string;
+    OnHit: string;
+    OnCrit: string;
+    Actions: Action[];
+    Bonuses: Bonus[];
+    Synergies: Synergy[];
+    Deployables: Deployable[];
+    Counters: Counter[];
+    Integrated: string[];
+
+    // Methods
+
+
+}
+
+export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
+    let mb = new MixBuilder<MechWeapon, IMechWeaponData>({});
+    mb.with(new Mixlet("ID", "id", uuid(), ident, ident ));
+    mb.with(new Mixlet("Name", "name", "New Weapon", ident, ident));
+    mb.with(new Mixlet("Source", "source", "MANUFACTURER", ident, ident));
+    mb.with(new Mixlet("License", "license", "LICENSE", ident, ident));
+    mb.with(new Mixlet("LicenseLevel", "license_level", 0, ident, ident));
+    mb.with(new Mixlet("Mount", "mount", MountType.Main, getMountType, ident));
+    mb.with(new Mixlet("Type", "type", WeaponType.Rifle, ident, ident));
+    mb.with(new Mixlet("Damage", "damage", [], DamagesMixReader, DamagesMixWriter));
+    mb.with(new Mixlet("Range", "range", [], RangesMixReader, RangesMixWriter));
+    mb.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
+    mb.with(new Mixlet("SP", "sp", 0, ident, ident));
+    mb.with(new Mixlet("Description", "description", "", ident, ident));
+    mb.with(new Mixlet("Effect", "effect", "", ident, ident));
+    mb.with(new Mixlet("OnAttack", "on_attack", "", ident, ident));
+    mb.with(new Mixlet("OnHit", "on_hit", "", ident, ident));
+    mb.with(new Mixlet("OnCrit", "on_crit", "", ident, ident));
+
+    mb.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
+    mb.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
+    mb.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
+    mb.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    mb.with(new Mixlet("Counters", "counters", [], CounterM));
+    mb.with(new Mixlet("Integrated", "integrated", [], ident, ident ));
+}
+
+
+
+export class MeechWeapon extends MechEquipment {
     private _size: WeaponSize;
     private _weapon_type: WeaponType;
     private _damage: Damage[] | null;

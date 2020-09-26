@@ -2,9 +2,8 @@ import { ItemType } from "@/class";
 
 import { VCompendiumItem } from "@/interface";
 import { store } from "@/hooks";
-import { MixLinks, MixBuilder, Mixlet, uuid } from '@/mixmeta';
-import { DEFAULT_BREW_ID } from './CompendiumItem';
-import { ident } from 'lodash';
+import { MixLinks, MixBuilder, Mixlet, uuid, ident } from '@/mixmeta';
+import { DEFAULT_BREW_ID } from './enums';
 
 export interface ITagTemplateData {
     id: string;
@@ -41,10 +40,7 @@ export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
     b.with(new Mixlet("Description", "description", "", ident, ident));
     b.with(new Mixlet("FilterIgnore", "filter_ignore", false, ident, ident));
     b.with(new Mixlet("Hidden", "hidden", false, ident, ident));
-    let r = b.finalize();
-    if(data) {
-        r.Deserialize(data);
-    }
+    let r = b.finalize(data);
     return r;
 }
 
@@ -52,10 +48,7 @@ export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
     let b = new MixBuilder<TagInstance, ITagInstanceData>({});
     b.with(new Mixlet("TemplateID", "id", uuid(), ident, ident));
     b.with(new Mixlet("Val", "val", "", ident, ident));
-    let r = b.finalize();
-    if(data) {
-        r.Deserialize(data);
-    }
+    let r = b.finalize(data);
     return r;
 }
 

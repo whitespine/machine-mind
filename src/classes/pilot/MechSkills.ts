@@ -1,83 +1,55 @@
 import { Rules, HASE } from "@/class";
 import { store } from "@/hooks";
+import { ident, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
 
 // It's HASE, baby!
-export class MechSkills  {
-    private hull: number;
-    private agi: number;
-    private sys: number;
-    private eng: number;
 
-    public constructor(h: number, a: number, s: number, e: number) {
-        this.hull = h;
-        this.agi = a;
-        this.sys = s;
-        this.eng = e;
-    }
+export type IMechSkills = [number, number, number, number];
 
-    private save(): void {
-        store.pilots.saveData();
-    }
+export interface MechSkills  extends MixLinks<IMechSkills>{
+Hull: number;
+Agi: number;
+Sys: number;
+Eng: number;
 
-    public get Hull(): number {
-        return this.hull;
-    }
+// Methods
+// Add one to specified skill
+    Increment(field: HASE): void;
+// Sub one to specified skill
+    Decrement(field: HASE): void;
+// Reset all skills to zero
+    Reset(): void ;
+// Add all skills
+    Sum(): number;
+}
 
-    public set Hull(val: number) {
-        this.hull = val;
-    }
+export function CreateMechSkills(data: IMechSkills) {
+    let mb = new MixBuilder<MechSkills, IMechSkills>({
+        Increment, Decrement, Reset, Sum
+    });
+    mb.with(new Mixlet("Hull", 0, 0, ident, ident));
+    mb.with(new Mixlet("Agi", 1, 0, ident, ident));
+    mb.with(new Mixlet("Sys", 2, 0, ident, ident));
+    mb.with(new Mixlet("Eng", 3, 0, ident, ident));
+    return mb.finalize(data);
+}
 
-    public get Agi(): number {
-        return this.agi;
-    }
-
-    public set Agi(val: number) {
-        this.agi = val;
-    }
-
-    public get Sys(): number {
-        return this.sys;
-    }
-
-    public set Sys(val: number) {
-        this.sys = val;
-    }
-
-    public get Eng(): number {
-        return this.eng;
-    }
-
-    public set Eng(val: number) {
-        this.eng = val;
-    }
-
-    public Increment(field: HASE): void {
+    function Increment(this: MechSkills, field: HASE): void {
         if (this[field] < Rules.MaxHase) this[field] += 1;
-        this.save();
     }
 
-    public Decrement(field: HASE): void {
+    function Decrement(this: MechSkills, field: HASE): void {
         if (this[field] > 0) this[field] -= 1;
-        this.save();
     }
 
-    public Reset(): void {
-        this.hull = 0;
-        this.agi = 0;
-        this.sys = 0;
-        this.eng = 0;
-        this.save();
+    function Reset(this: MechSkills): void {
+        this.Hull = 0;
+        this.Agi = 0;
+        this.Sys = 0;
+        this.Eng = 0;
     }
 
-    public get Sum(): number {
-        return this.hull + this.agi + this.sys + this.eng;
-    }
-
-    public static Serialize(item: MechSkills): number[] {
-        return [item.Hull, item.Agi, item.Sys, item.Eng];
-    }
-
-    public static Deserialize(itemData: number[]): MechSkills {
-        return new MechSkills(itemData[0], itemData[1], itemData[2], itemData[3]);
+    function Sum(this: MechSkills): number {
+        return this.Hull + this.Agi + this.Sys + this.Eng;
     }
 }
