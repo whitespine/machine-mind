@@ -22,31 +22,4 @@ export abstract class Loadout {
         this._id = id ? id : uuid();
         this._name = ordArr[count];
     }
-
-    protected save(): void {
-        store.pilots.saveData();
-    }
-
-    public get ID(): string {
-        return this._id;
-    }
-
-    public set ID(id: string) {
-        this._id = id;
-        this.save();
-    }
-
-    public RenewID(): void {
-        this._id = uuid();
-        this.save();
-    }
-
-    public get Name(): string {
-        return this._name;
-    }
-
-    public set Name(newName: string) {
-        this._name = newName;
-        this.save();
-    }
 }

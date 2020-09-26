@@ -1,4 +1,5 @@
 import { RangeType } from "@/class";
+import { ident, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -9,66 +10,86 @@ export interface IRangeData {
     bonus?: number | null;
 }
 
-export class Range {
-    private _range_type: RangeType;
-    private _value: number;
-    private _override: boolean;
-    private _bonus: number;
+export interface Range extends MixLinks<IRangeData>{
+    Type: RangeType;
+    Value: number;
+    Override: boolean;
+    Bonus: number | null
 
-    public constructor(range: IRangeData) {
-        this._range_type = range.type as RangeType;
-        this._value = range.val;
-        this._override = range.override || false;
-        this._bonus = range.bonus || 0;
+    // Methods
+      Icon(): string;
+      DiscordEmoji(): string;
+      Text(): string;
+
+}
+
+export function CreateRange(data: IRangeData): Range {
+    let mb = new MixBuilder<Range, IRangeData>({});
+    mb.with(new Mixlet("Type", "type", RangeType.Range, getRangeType, ident));
+    mb.with(new Mixlet("Value", "val", 1, ident, ident));
+    mb.with(new Mixlet("Override", "override",false, ident, ident));
+    mb.with(new Mixlet("Bonus", "bonus", null, ident, ident));
+
+    let rv = mb.finalize(data);
+    return rv;
+}
+
+// Error correction
+function getRangeType(str?: string | null): RangeType {
+    switch (str?.toLowerCase()) {
+        case "blast":
+            return RangeType.Blast;
+        case "burst":
+            return RangeType.Burst;
+        case "cone":
+            return RangeType.Cone;
+        case "line":
+            return RangeType.Line;
+        case "threat":
+            return RangeType.Threat;
+        case "thrown":
+            return RangeType.Thrown;
+        default:
+        case "range":
+            return RangeType.Range;
     }
+}
 
-    public Serialize(): IRangeData {
-        return {
-            type: this._range_type,
-            val: this._value,
-            override: this._override,
-            bonus: this._bonus
-        }
+ 
+ //   public get Value(): string {
+   //     if (this._bonus) return (this._value + this._bonus).toString();
+  //      return this._value.toString();
+ //   }
+
+  //  public get Max(): number {
+    //    return this._value + this._bonus;
+  //  }
+
+  function Icon(this: Range,): string {
+
+    return `cci-${this.Type.toLowerCase()}`;
+}
+
+function DiscordEmoji(this: Range,): string {
+    switch (this.Type) {
+        case RangeType.Range:
+        case RangeType.Threat:
+        case RangeType.Thrown:
+            return `:cc_${this.Type.toLowerCase()}:`;
     }
+    return `:cc_aoe_${this.Type.toLowerCase()}:`;
+}
 
-    public get Override(): boolean {
-        return this._override;
-    }
+function Text(this: Range): string {
+    if (this.Override) return this.Value.toString();
+    if (this.Bonus) return `${this.Type} ${this.Value} (+${this.Bonus})`;
+    return `${this.Type} ${this.Value}`;
+}
 
-    public get Type(): RangeType {
-        return this._range_type;
-    }
-
-    public get Value(): string {
-        if (this._bonus) return (this._value + this._bonus).toString();
-        return this._value.toString();
-    }
-
-    public get Max(): number {
-        return this._value + this._bonus;
-    }
-
-    public get Icon(): string {
-        return `cci-${this._range_type.toLowerCase()}`;
-    }
-
-    public get DiscordEmoji(): string {
-        switch (this._range_type) {
-            case RangeType.Range:
-            case RangeType.Threat:
-            case RangeType.Thrown:
-                return `:cc_${this._range_type.toLowerCase()}:`;
-        }
-        return `:cc_aoe_${this._range_type.toLowerCase()}:`;
-    }
-
-    public get Text(): string {
-        if (this._override) return this.Value.toString();
-        if (this._bonus) return `${this._range_type} ${this.Value} (+${this._bonus})`;
-        return `${this._range_type} ${this.Value}`;
-    }
-
-    public static AddBonuses(
+// Compute range bonuses.
+// Not yet functional....
+/*
+function    AddBonuses(this: Range,
         ranges: Range[],
         bonuses: { type: RangeType; val: number }[]
     ): Range[] {
@@ -90,3 +111,6 @@ export class Range {
         return output;
     }
 }
+*/
+export const RangesMixReader = (x: IRangeData[] | null | undefined) => (x || []).map(CreateRange);
+export const RangesMixWriter = (x: Range[]) => x.map(i => i.Serialize());

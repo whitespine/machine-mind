@@ -25,17 +25,17 @@ export {
     ActivationType,
     Duration,
 } from "./classes/enums";
-export { Action } from "./classes/Action";
-export { Bonus } from "./classes/Bonus";
+export { Action, CreateAction } from "./classes/Action";
+export { Bonus, CreateBonus } from "./classes/Bonus";
 export { Drone } from "./classes/Drone";
 export { Deployable } from "./classes/Deployable";
 export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
-export { Damage } from "./classes/Damage";
-export { Range } from "./classes/Range";
+export { Damage, CreateDamage } from "./classes/Damage";
+export { Range, CreateRange } from "./classes/Range";
 export { Synergy } from "@/classes/Synergy";
 export { Skill } from "./classes/pilot/Skill";
-export { CreatePilotArmor, PilotArmor, PilotGear, CreatePilotGeaar, PilotWeapon, CreatePilotWeapon } from "./classes/pilot/PilotEquipment";
+export { PilotArmor, CreatePilotArmor, PilotGear, CreatePilotGear, PilotWeapon, CreatePilotWeapon, PilotEquipment } from "./classes/pilot/PilotEquipment";
 export { ActiveState } from "./classes/mech/ActiveState";
 export { CoreSystem } from "./classes/mech/CoreSystem";
 export { Frame } from "./classes/mech/Frame";

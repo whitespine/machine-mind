@@ -1,4 +1,3 @@
-import _, { ident } from "lodash";
 import uuid from "uuid/v4";
 import {
     Rules,
@@ -15,14 +14,16 @@ import {
     Mech,
     CustomSkill,
     Organization,
-    CompendiumItem,
     ContentPack,
-    Faction,
+    Faction, 
+    Counter
 } from "@/class";
 import * as gistApi from "@/io/apis/gist";
-import { ICounterData, IAction, IPilotLoadoutData, IMechData, IMechState, IOrganizationData, IReserveData, IRankedData, ICounterSaveData } from "@/interface";
+import { ICounterData, IActionData, IPilotLoadoutData, IMechData, IMechState, IOrganizationData, IReserveData, IRankedData, ICounterSaveData } from "@/interface";
 import { store } from "@/hooks";
 import { ActiveState } from "../mech/ActiveState";
+import { MixLinks, MixBuilder, Mixlet, ident } from '@/mixmeta';
+import { VCompendiumItem } from '../CompendiumItem';
 
 export interface IPilotData {
     id: string;
@@ -62,124 +63,141 @@ export interface IPilotData {
     brews: string[];
     state?: IMechState | null;
 }
-export class Pilot {
-    private _cloudID: string;
-    private _cloudOwnerID: string;
-    private _lastCloudUpdate: string;
-    private _cloud_portrait: string;
+export interface Pilot extends MixLinks<IPilotData> {
+    ID: string;
 
-    private _callsign: string;
-    private _name: string;
-    private _player_name: string;
-    private _status: string;
-    private _factionID: string;
-    private _text_appearance: string;
-    private _notes: string;
-    private _quirk: string;
-    private _history: string;
+    Callsign: string;
+    Name: string;
+    PlayerName: string;
 
-    private _group: string;
-    private _sortIndex: number;
-    private _campaign: string;
+    Background: string;
+    Notes: string;
+    History: string;
+    Portrait: string;
+    TextAppearance: string;
+    Quirk: string;
 
-    private _id: string;
-    private _level: number;
-    private _portrait: string;
-    private _current_hp: number;
-    private _background: string;
+    Group: string;
+    SortIndex: number;
 
-    private _licenses: PilotLicense[];
-    private _skills: PilotSkill[];
-    private _talents: PilotTalent[];
-    private _core_bonuses: CoreBonus[];
-    private _mechSkills: MechSkills;
+    Campaign: string;
+    FactionID: string;
 
-    private _reserves: Reserve[];
-    private _orgs: Organization[];
+    CloudID: string;
+    CloudOwnerID: string;
+    CloudPortrait: string;
+    LastCloudUpdate: string;
 
-    private _loadout: PilotLoadout;
+    Level: number;
+    Status: string;
+    CurrentHP: number;
+    Loadout: PilotLoadout;
+    ActiveMech: string | null;
+    CounterData: [];
 
-    private _mechs: Mech[];
-    private _state: ActiveState | null;
+    CoreBonuses: CoreBonus[];
+    Licenses: PilotLicense[];
+    MechSkills: MechSkills;
+    Reserves: Reserve[];
+    Skills: PilotSkill[];
+    Talents: PilotTalent[];
+    Orgs: Organization[];
+    Mechs: Mech[];
+    CustomCounters: Counter[];
+    State: ActiveState | null;
 
-    private cc_ver: string;
-    private _brews: string[];
+    Brews: string[];
+    CCVersion: string;
 
-    public constructor() {
-        this._id = uuid();
-        this._cloudID = "";
-        this._cloudOwnerID = "";
-        this._lastCloudUpdate = "";
-        this._level = 0;
-        this._callsign = "";
-        this._name = "";
-        this._player_name = "";
-        this._status = "Active";
-        this._text_appearance = "";
-        this._notes = "";
-        this._history = "";
-        this._factionID = "";
-        this._portrait = "";
-        this._cloud_portrait = "";
-        this._quirk = "";
-        this._loadout = new PilotLoadout(0);
-        this._current_hp = this.MaxHP;
-        this._background = "";
-        this._licenses = [];
-        this._skills = [];
-        this._talents = [];
-        this._state = null;
-        this._mechSkills = new MechSkills(0, 0, 0, 0);
-        this._core_bonuses = [];
-        this._mechs = [];
-        this._reserves = [];
-        this._orgs = [];
-        this._brews = [];
-        this._group = "";
-        this._sortIndex = 0;
-        this._campaign = "";
-        this.cc_ver = store.getVersion || "UNKNOWN";
-        // this._initCounters()
-    }
-
-    // -- Utility -----------------------------------------------------------------------------------
-    private save(): void {
-        store.pilots.saveData();
-    }
-
-    public SetBrewForce(brews: string[]): void {
-        this._brews = brews;
-    }
-
-    // Set the pilots brews based on which brews its frames, licenses, etc come from
-    public SetBrewData(): void {
-        const packs = store.compendium.ContentPacks;
-
-        function collectBrewGroup(items: CompendiumItem[]): string[] {
-            return items
-                .filter(x => x != null)
-                .map(i => i.Brew)
-                .filter(x => x.toLowerCase() !== "core");
-        }
-
-        let brews = collectBrewGroup(this._loadout.Items);
-        this._mechs.forEach(m => {
-            brews = _.union(brews, collectBrewGroup([m.Frame]));
-            m.Loadouts.forEach(ml => {
-                brews = _.union(brews, collectBrewGroup(ml.Weapons));
-                brews = _.union(brews, collectBrewGroup(ml.Systems));
-            });
-        });
-        brews = brews.map(x => packs.find(y => y.ID === x)).map(z => `${z?.Name} @ ${z?.Version}`);
-        this._brews = brews;
-    }
+    // Methods
+    // Updates brew field to reflect all attached content
+    SetBrewData(this: Pilot): void;
 
     // Check if the lancer has any of the following "possessions"
-    public has(
+    has(feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve, rank?: number | null): boolean;
+
+    // Get the rank of the specified skill/talent. Returns 0 if none
+    rank(this: Pilot, feature: Skill | CustomSkill | Talent): number;
+
+}
+
+export function CreatePilot(data: IPilotData): Pilot {
+    let b = new MixBuilder<Pilot, IPilotData>({
+        has,
+
+    });
+    b.with(new Mixlet("ID", "id", uuid(), ident, ident));
+    b.with(new Mixlet("Campaign", "campaign", "", ident, ident));
+    b.with(new Mixlet("Group", "group", "", ident, ident));
+    b.with(new Mixlet("SortIndex", "sort_index", 0, ident, ident));
+    b.with(new Mixlet("CloudID", "cloudID", "", ident, ident));
+    b.with(new Mixlet("CloudOwnerID", "cloudOwnerID", "", ident, ident));
+    b.with(new Mixlet("LastCloudUpdate", "lastCloudUpdate", "", ident, ident));
+    b.with(new Mixlet("Level", "level", 0, ident, ident));
+    b.with(new Mixlet("Callsign", "callsign", "", ident, ident));
+    b.with(new Mixlet("Name", "name", "", ident, ident));
+    b.with(new Mixlet("PlayerName", "player_name", "", ident, ident));
+    b.with(new Mixlet("Status", "status", "Active", ident, ident));
+    b.with(new Mixlet("FactionID", "factionID", "", ident, ident));
+    b.with(new Mixlet("TextAppearance", "text_appearance", "", ident, ident));
+    b.with(new Mixlet("Notes", "notes", "", ident, ident));
+    b.with(new Mixlet("History", "history", "", ident, ident));
+    b.with(new Mixlet("Portrait", "portrait", "", ident, ident));
+    b.with(new Mixlet("CloudPortrait", "cloud_portrait", "", ident, ident));
+    b.with(new Mixlet("Quirk", "quirk", "", ident, ident));
+    b.with(new Mixlet("CurrentHP", "current_hp", 0, ident, ident));
+    b.with(new Mixlet("Background", "background", "", ident, ident));
+    b.with(new Mixlet("MechSkills", "mechSkills", new MechSkills(0,0,0,0), ident, ident));
+    b.with(new Mixlet("Licenses", "licenses", [], ident, ident));
+    b.with(new Mixlet("Skills", "skills", [], ident, ident));
+    b.with(new Mixlet("Talents", "talents", [], ident, ident));
+    b.with(new Mixlet("CoreBonuses", "core_bonuses", [], ident, ident));
+    b.with(new Mixlet("Reserves", "reserves", [], ident, ident));
+    b.with(new Mixlet("Orgs", "orgs", [], ident, ident));
+    b.with(new Mixlet("Loadout", "loadout", new PilotLoadout(0), ident, ident));
+    b.with(new Mixlet("Mechs", "mechs", [], ident, ident));
+    b.with(new Mixlet("ActiveMech", "active_mech", null, ident, ident));
+    b.with(new Mixlet("CCVersion", "cc_ver", "", ident, ident));
+    b.with(new Mixlet("CounterData", "counter_data", [], ident, ident));
+    b.with(new Mixlet("CustomCounters", "custom_counters", [], ident, ident));
+    b.with(new Mixlet("Brews", "brews", [], ident, ident));
+    b.with(new Mixlet("State", "state", null, ident, ident));
+
+    // Finalize and check.
+    let r = b.finalize(data);
+    return r;
+}
+
+
+// Method definitions
+function SetBrewData(this: Pilot): void {
+    const packs = store.compendium.ContentPacks;
+
+    function collectBrewGroup(items: VCompendiumItem[]): string[] {
+      return items
+        .filter(x => x != null)
+        .map(i => i.Brew)
+        .filter(x => x.toLowerCase() !== 'core')
+    }
+
+    let brews = collectBrewGroup(this.Loadout.Items)
+    this.Mechs.forEach(m => {
+      brews = _.union(brews, collectBrewGroup([m.Frame]))
+      m.Loadouts.forEach(ml => {
+        brews = _.union(brews, collectBrewGroup(ml.Weapons))
+        brews = _.union(brews, collectBrewGroup(ml.Systems))
+      })
+    })
+    brews = brews.map(x => packs.find(y => y.ID === x)).map(z => `${z.Name} @ ${z.Version}`)
+    this.Brews = brews
+  }
+
+    function has(
+        this: Pilot,
         feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve,
         rank?: number | null
     ): boolean {
-        if (
+          if (
             feature instanceof Skill ||
             feature instanceof Talent ||
             feature instanceof CustomSkill
@@ -187,9 +205,9 @@ export class Pilot {
             let pilot_rank = this.rank(feature);
             return pilot_rank >= (rank || 1);
         } else if (feature instanceof CoreBonus) {
-            return this._core_bonuses.some(x => x.ID === feature.ID);
+            return this.CoreBonuses.some(x => x.ID === feature.ID);
         } else if (feature instanceof License) {
-            const license = this._licenses.find(x => x.License.Name === feature.Name);
+            const license = this.Licenses.find(x => x.License.Name === feature.Name);
             return !!(license && license.Rank >= (rank || 0));
         } else if (feature instanceof Reserve) {
             const e = this.Reserves.find(
@@ -202,7 +220,7 @@ export class Pilot {
     }
 
     // Get the rank of the specified skill/talent. Returns 0 if none
-    public rank(feature: Skill | CustomSkill | Talent): number {
+    function rank(this: Pilot, feature: Skill | CustomSkill | Talent): number {
         if (feature instanceof Skill) {
             let valid = [feature.ID, feature.Name];
             let found = this._skills.find(
@@ -216,202 +234,60 @@ export class Pilot {
     }
 
     // -- Attributes --------------------------------------------------------------------------------
-    public get ID(): string {
+    export function getID(): string {
         return this._id;
     }
 
-    public RenewID(): void {
+    export function RenewID(): void {
         this._id = uuid();
         this._cloudID = "";
         this.save();
     }
 
-    public get Level(): number {
+    export function getLevel(): number {
         return this._level;
     }
 
-    public set Level(level: number) {
+    export function set Level(level: number) {
         this._level = level;
         this.save();
     }
 
-    public ApplyLevel(update: IPilotData): void {
+    export function ApplyLevel(update: IPilotData): void {
         this.setPilotData(update);
         this.save();
     }
 
-    public get Power(): number {
+    export function getPower(): number {
         return (this.Level + 1) * 100;
     }
 
-    public get Background(): string {
-        return this._background;
-    }
-
-    public set Background(bg: string) {
-        this._background = bg;
-        this.save();
-    }
-
-    public get Brews(): string[] {
-        return this._brews;
-    }
-
-    public get Callsign(): string {
-        return this._callsign;
-    }
-
-    public set Callsign(newVal: string) {
-        this._callsign = newVal;
-        this.save();
-    }
-
-    public get Name(): string {
-        return this._name;
-    }
-
-    public set Name(newVal: string) {
-        this._name = newVal;
-        this.save();
-    }
-
-    public get PlayerName(): string {
-        return this._player_name;
-    }
-
-    public set PlayerName(newVal: string) {
-        this._player_name = newVal;
-        this.save();
-    }
-
-    public get Status(): string {
-        return this._status;
-    }
-
-    public set Status(newVal: string) {
-        this._status = newVal;
-        this.save();
-    }
-
-    public get Faction(): Faction {
+    export function getFaction(): Faction {
         let v = store.compendium.getReferenceByID("Factions", this._factionID);
         return v;
     }
 
-    public set Faction(faction: Faction) {
+    export function set Faction(faction: Faction) {
         this._factionID = faction.ID;
         this.save();
     }
 
-    public get HasIdent(): boolean {
+    export function getHasIdent(): boolean {
         return !!(this.Name && this.Callsign);
     }
 
-    public get TextAppearance(): string {
-        return this._text_appearance;
-    }
+  
 
-    public set TextAppearance(newVal: string) {
-        this._text_appearance = newVal;
-        this.save();
-    }
-
-    public get Notes(): string {
-        return this._notes;
-    }
-
-    public set Notes(newVal: string) {
-        this._notes = newVal;
-        this.save();
-    }
-
-    public get Quirk(): string {
-        return this._quirk;
-    }
-
-    public set Quirk(newVal: string) {
-        this._quirk = newVal;
-        this.save();
-    }
-
-    public get History(): string {
-        return this._history;
-    }
-
-    public set History(_history: string) {
-        this._history = _history;
-        this.save();
-    }
-
-    /*
-    public SetLocalImage(src: string): void {
-        this._portrait = src;
-        this.save();
-    }
-
-    public get LocalImage(): string {
-        return this._portrait;
-    }
-
-    public get Image(): string {
-        return this.Portrait;
-    }
-
-    public get Portrait(): string {
-        if (this._cloud_portrait) return this._cloud_portrait;
-        else if (Capacitor.platform !== "web" && this._portrait)
-            returnimageManagement.getImagePath(ImageTag.Pilot, this._portrait);
-        else returnimageManagement.getImagePath(ImageTag.Pilot, "nodata.png", true);
-    }
-    */
-
-    // -- Cloud -------------------------------------------------------------------------------------
-    public get CloudImage(): string {
-        return this._cloud_portrait;
-    }
-
-    public set CloudImage(src: string) {
-        this._cloud_portrait = src;
-        this.save();
-    }
-
-    public get CloudID(): string {
-        return this._cloudID;
-    }
-
-    public set CloudID(id: string) {
-        this._cloudID = id;
-        this.save();
-    }
-
-    public get CloudOwnerID(): string {
-        return this._cloudOwnerID;
-    }
-
-    public set CloudOwnerID(id: string) {
-        this._cloudOwnerID = id;
-        this.save();
-    }
-
-    public get LastCloudUpdate(): string {
-        return this._lastCloudUpdate;
-    }
-
-    public set LastCloudUpdate(id: string) {
-        this._lastCloudUpdate = id;
-        this.save();
-    }
-
-    public get IsUserOwned(): boolean {
+    export function getIsUserOwned(): boolean {
         return this.CloudOwnerID === store.user.ID;
     }
 
-    public SetCloudImage(src: string): void {
+    export function SetCloudImage(src: string): void {
         this._cloud_portrait = src;
         this.save();
     }
 
-    public async CloudSave(): Promise<any> {
+    export async function CloudSave(): Promise<any> {
         this.SetBrewData();
         if (!this.CloudOwnerID) {
             this.CloudOwnerID = store.user.ID;
@@ -427,7 +303,7 @@ export class Pilot {
         }
     }
 
-    public async CloudLoad(): Promise<any> {
+    export async function CloudLoad(): Promise<any> {
         if (!this.CloudID) return Promise.reject("No Cloud ID");
         return gistApi.loadPilot(this.CloudID).then((gist: any) => {
             this.setPilotData(gist);
@@ -435,24 +311,24 @@ export class Pilot {
         });
     }
 
-    public CloudCopy(): Promise<any> {
+    export function CloudCopy(): Promise<any> {
         this.CloudID = "";
         this.CloudOwnerID = "";
         return this.CloudSave();
     }
 
-    public setCloudInfo(id: string): void {
+    export function setCloudInfo(id: string): void {
         this.CloudID = id;
         this.CloudOwnerID = store.user.ID;
         this.LastCloudUpdate = new Date().toString();
     }
 
     // -- Stats -------------------------------------------------------------------------------------
-    public get Grit(): number {
+    export function getGrit(): number {
         return Math.ceil(this._level / 2);
     }
 
-    public get MaxHP(): number {
+    export function getMaxHP(): number {
         let health = Rules.BasePilotHP + this.Grit;
         this.Loadout.Armor.forEach(x => {
             if (x) health += x.HPBonus;
@@ -460,11 +336,11 @@ export class Pilot {
         return health;
     }
 
-    public get CurrentHP(): number {
+    export function getCurrentHP(): number {
         return this._current_hp;
     }
 
-    public set CurrentHP(hp: number) {
+    export function set CurrentHP(hp: number) {
         if (hp > this.MaxHP) this._current_hp = this.MaxHP;
         else if (hp < 0) this._current_hp = 0;
         else this._current_hp = hp;
@@ -476,11 +352,11 @@ export class Pilot {
         this.save();
     }
 
-    public Heal(): void {
+    export function Heal(): void {
         this.CurrentHP = this.MaxHP;
     }
 
-    public get Armor(): number {
+    export function getArmor(): number {
         let armor = 0;
         this.Loadout.Armor.forEach(x => {
             if (x) armor += x.Armor;
@@ -488,7 +364,7 @@ export class Pilot {
         return armor;
     }
 
-    public get Speed(): number {
+    export function getSpeed(): number {
         let speed = Rules.BasePilotSpeed;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -498,7 +374,7 @@ export class Pilot {
         return speed;
     }
 
-    public get Evasion(): number {
+    export function getEvasion(): number {
         let evasion = Rules.BasePilotEvasion;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -508,7 +384,7 @@ export class Pilot {
         return evasion;
     }
 
-    public get EDefense(): number {
+    export function getEDefense(): number {
         let edef = Rules.BasePilotEdef;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -519,7 +395,7 @@ export class Pilot {
     }
 
     //TODO: collect passives, eg:
-    public get LimitedBonus(): number {
+    export function getLimitedBonus(): number {
         let bonus = Math.floor(this.MechSkills.Eng / 2);
         if (this._core_bonuses.find(x => x.ID === "cb_integrated_ammo_feeds")) {
             bonus += 2;
@@ -527,43 +403,43 @@ export class Pilot {
         return bonus;
     }
 
-    public get AICapacity(): number {
+    export function getAICapacity(): number {
         let tlos = store.compendium.getReferenceByID("CoreBonuses", "cb_the_lesson_of_shaping");
         return this.has(tlos) ? 2 : 1;
     }
 
     // -- Skills ------------------------------------------------------------------------------------
-    public get Skills(): PilotSkill[] {
+    export function getSkills(): PilotSkill[] {
         return this._skills;
     }
 
-    public set Skills(skills: PilotSkill[]) {
+    export function set Skills(skills: PilotSkill[]) {
         this._skills = skills;
         this.save();
     }
 
-    public get CurrentSkillPoints(): number {
+    export function getCurrentSkillPoints(): number {
         return this._skills.reduce((sum, skill) => sum + skill.Rank, 0);
     }
 
-    public get MaxSkillPoints(): number {
+    export function getMaxSkillPoints(): number {
         const bonus = this.Reserves.filter(x => x.ID === "reserve_skill").length;
         return Rules.MinimumPilotSkills + this._level + bonus;
     }
 
-    public get IsMissingSkills(): boolean {
+    export function getIsMissingSkills(): boolean {
         return this.CurrentSkillPoints < this.MaxSkillPoints;
     }
 
-    public get TooManySkills(): boolean {
+    export function getTooManySkills(): boolean {
         return this.CurrentSkillPoints > this.MaxSkillPoints;
     }
 
-    public get HasFullSkills(): boolean {
+    export function getHasFullSkills(): boolean {
         return this.CurrentSkillPoints === this.MaxSkillPoints;
     }
 
-    public CanAddSkill(skill: Skill | CustomSkill): boolean {
+    export function CanAddSkill(skill: Skill | CustomSkill): boolean {
         if (this._level === 0) {
             return this._skills.length < Rules.MinimumPilotSkills && !this.has(skill);
         } else {
@@ -577,7 +453,7 @@ export class Pilot {
         }
     }
 
-    public AddSkill(skill: Skill | CustomSkill): void {
+    export function AddSkill(skill: Skill | CustomSkill): void {
         const index = this._skills.findIndex(x => _.isEqual(x.Skill, skill));
         if (index === -1) {
             this._skills.push(new PilotSkill(skill));
@@ -587,15 +463,15 @@ export class Pilot {
         this.save();
     }
 
-    public AddCustomSkill(cs: { skill: string; description: string; detail: string }): void {
+    export function AddCustomSkill(cs: { skill: string; description: string; detail: string }): void {
         this.AddSkill(new CustomSkill(cs.skill, cs.description, cs.detail));
     }
 
-    public CanRemoveSkill(skill: Skill | CustomSkill): boolean {
+    export function CanRemoveSkill(skill: Skill | CustomSkill): boolean {
         return this.has(skill);
     }
 
-    public RemoveSkill(skill: Skill | CustomSkill): void {
+    export function RemoveSkill(skill: Skill | CustomSkill): void {
         const index = this._skills.findIndex(x => x.Skill.ID === skill.ID);
         if (index === -1) {
             console.error(
@@ -611,7 +487,7 @@ export class Pilot {
         this.save();
     }
 
-    public ClearSkills(): void {
+    export function ClearSkills(): void {
         for (let i = this._skills.length - 1; i >= 0; i--) {
             while (this._skills[i]) {
                 this.RemoveSkill(this._skills[i].Skill);
@@ -620,41 +496,41 @@ export class Pilot {
     }
 
     // -- Talents -----------------------------------------------------------------------------------
-    public get Talents(): PilotTalent[] {
+    export function getTalents(): PilotTalent[] {
         return this._talents;
     }
 
-    public set Talents(talents: PilotTalent[]) {
+    export function set Talents(talents: PilotTalent[]) {
         this._talents = talents;
         this.save();
     }
 
-    public get CurrentTalentPoints(): number {
+    export function getCurrentTalentPoints(): number {
         return this._talents.reduce((sum, talent) => sum + talent.Rank, 0);
     }
 
-    public get MaxTalentPoints(): number {
+    export function getMaxTalentPoints(): number {
         return Rules.MinimumPilotTalents + this._level;
     }
 
-    public get IsMissingTalents(): boolean {
+    export function getIsMissingTalents(): boolean {
         return this.CurrentTalentPoints < this.MaxTalentPoints;
     }
 
-    public get TooManyTalents(): boolean {
+    export function getTooManyTalents(): boolean {
         return this.CurrentTalentPoints > this.MaxTalentPoints;
     }
 
-    public get HasFullTalents(): boolean {
+    export function getHasFullTalents(): boolean {
         return this.CurrentTalentPoints === this.MaxTalentPoints;
     }
 
-    public getTalentRank(id: string): number {
+    export function getTalentRank(id: string): number {
         const index = this._talents.findIndex(x => x.Talent.ID === id);
         return index > -1 ? this._talents[index].Rank : 0;
     }
 
-    public AddTalent(talent: Talent): void {
+    export function AddTalent(talent: Talent): void {
         const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent));
         if (index === -1) {
             this._talents.push(new PilotTalent(talent));
@@ -666,7 +542,7 @@ export class Pilot {
         this.save();
     }
 
-    public RemoveTalent(talent: Talent): void {
+    export function RemoveTalent(talent: Talent): void {
         const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent));
         if (index === -1) {
             console.error(`Talent "${talent.Name}" does not exist on Pilot ${this._callsign}`);
@@ -682,7 +558,7 @@ export class Pilot {
         this.save();
     }
 
-    public ClearTalents(): void {
+    export function ClearTalents(): void {
         for (let i = this._talents.length - 1; i >= 0; i--) {
             while (this._talents[i]) {
                 this.RemoveTalent(this._talents[i].Talent);
@@ -702,7 +578,7 @@ export class Pilot {
         });
     }
 
-    public get TalentActions(): IAction[] {
+    export function getTalentActions(): IAction[] {
         let talent_actions: IAction[] = [];
         for (let talent of this._talents) {
             for (let rank of talent.UnlockedRanks) {
@@ -714,41 +590,41 @@ export class Pilot {
     }
 
     // -- Core Bonuses ------------------------------------------------------------------------------
-    public get CoreBonuses(): CoreBonus[] {
+    export function getCoreBonuses(): CoreBonus[] {
         return this._core_bonuses;
     }
 
-    public set CoreBonuses(coreBonuses: CoreBonus[]) {
+    export function set CoreBonuses(coreBonuses: CoreBonus[]) {
         this._core_bonuses = coreBonuses;
         this.save();
     }
 
-    public get CurrentCBPoints(): number {
+    export function getCurrentCBPoints(): number {
         return this._core_bonuses.length;
     }
 
-    public get MaxCBPoints(): number {
+    export function getMaxCBPoints(): number {
         return Math.floor(this._level / 3);
     }
 
-    public get IsMissingCBs(): boolean {
+    export function getIsMissingCBs(): boolean {
         return this.CurrentCBPoints < this.MaxCBPoints;
     }
 
-    public get TooManyCBs(): boolean {
+    export function getTooManyCBs(): boolean {
         return this.CurrentCBPoints > this.MaxCBPoints;
     }
 
-    public get HasCBs(): boolean {
+    export function getHasCBs(): boolean {
         return this.CurrentCBPoints === this.MaxCBPoints;
     }
 
-    public AddCoreBonus(coreBonus: CoreBonus): void {
+    export function AddCoreBonus(coreBonus: CoreBonus): void {
         this._core_bonuses.push(coreBonus);
         this.save();
     }
 
-    public RemoveCoreBonus(coreBonus: CoreBonus): void {
+    export function RemoveCoreBonus(coreBonus: CoreBonus): void {
         const index = this._core_bonuses.findIndex(x => _.isEqual(coreBonus, x));
         if (index === -1) {
             console.error(
@@ -761,7 +637,7 @@ export class Pilot {
         this.save();
     }
 
-    public ClearCoreBonuses(): void {
+    export function ClearCoreBonuses(): void {
         for (let i = this._core_bonuses.length - 1; i >= 0; i--) {
             this.RemoveCoreBonus(this._core_bonuses[i]);
         }
@@ -781,47 +657,47 @@ export class Pilot {
     }
 
     // -- Licenses ----------------------------------------------------------------------------------
-    public get Licenses(): PilotLicense[] {
+    export function getLicenses(): PilotLicense[] {
         return this._licenses;
     }
 
-    public set Licenses(licenses: PilotLicense[]) {
+    export function set Licenses(licenses: PilotLicense[]) {
         this._licenses = licenses;
         this.save();
     }
 
-    public LicenseLevel(manufacturerID: string): number {
+    export function LicenseLevel(manufacturerID: string): number {
         return this.Licenses.filter(
             x => x.License.Source.toLowerCase() === manufacturerID.toLowerCase()
         ).reduce((a, b) => +a + +b.Rank, 0);
     }
 
-    public get CurrentLicensePoints(): number {
+    export function getCurrentLicensePoints(): number {
         return this._licenses.reduce((sum, license) => sum + license.Rank, 0);
     }
 
-    public get MaxLicensePoints(): number {
+    export function getMaxLicensePoints(): number {
         return this._level;
     }
 
-    public get IsMissingLicenses(): boolean {
+    export function getIsMissingLicenses(): boolean {
         return this.CurrentLicensePoints < this.MaxLicensePoints;
     }
 
-    public get TooManyLicenses(): boolean {
+    export function getTooManyLicenses(): boolean {
         return this.CurrentLicensePoints > this.MaxLicensePoints;
     }
 
-    public get HasLicenses(): boolean {
+    export function getHasLicenses(): boolean {
         return this.CurrentLicensePoints === this.MaxLicensePoints;
     }
 
-    public getLicenseRank(_name: string): number {
+    export function getLicenseRank(_name: string): number {
         const index = this._licenses.findIndex(x => x.License.Name === _name);
         return index > -1 ? this._licenses[index].Rank : 0;
     }
 
-    public AddLicense(license: License): void {
+    export function AddLicense(license: License): void {
         const index = this._licenses.findIndex(x => _.isEqual(x.License, license));
         if (index === -1) {
             this._licenses.push(new PilotLicense(license, 1));
@@ -831,7 +707,7 @@ export class Pilot {
         this.save();
     }
 
-    public RemoveLicense(license: License): void {
+    export function RemoveLicense(license: License): void {
         const index = this._licenses.findIndex(x => _.isEqual(x.License, license));
         if (index === -1) {
             console.error(
@@ -847,7 +723,7 @@ export class Pilot {
         this.save();
     }
 
-    public ClearLicenses(): void {
+    export function ClearLicenses(): void {
         for (let i = this._licenses.length - 1; i >= 0; i--) {
             while (this._licenses[i]) {
                 this.RemoveLicense(this._licenses[i].License);
@@ -856,125 +732,26 @@ export class Pilot {
     }
 
     // -- Mech Skills -------------------------------------------------------------------------------
-    public get MechSkills(): MechSkills {
+    export function getMechSkills(): MechSkills {
         return this._mechSkills;
     }
 
-    public set MechSkills(mechskills: MechSkills) {
+    export function set MechSkills(mechskills: MechSkills) {
         this._mechSkills = mechskills;
         this.save();
     }
 
-    public resetHASE(): void {
-        this._mechSkills.Reset();
-    }
-
-    public get CurrentHASEPoints(): number {
-        return this._mechSkills.Sum;
-    }
-
-    public get MaxHASEPoints(): number {
-        return Rules.MinimumMechSkills + this._level;
-    }
-
-    public get IsMissingHASE(): boolean {
-        return this.CurrentHASEPoints < this.MaxHASEPoints;
-    }
-
-    public get TooManyHASE(): boolean {
-        return this.CurrentHASEPoints > this.MaxHASEPoints;
-    }
-
-    public get HasFullHASE(): boolean {
-        return this.CurrentHASEPoints === this.MaxHASEPoints;
-    }
-
-    // -- Downtime Reserves -------------------------------------------------------------------------
-    public get Reserves(): Reserve[] {
-        return this._reserves;
-    }
-
-    public set Reserves(reserves: Reserve[]) {
-        this._reserves = reserves;
-        this.save();
-    }
-
-    public RemoveReserve(index: number): void {
-        this._reserves.splice(index, 1);
-        this.save();
-    }
-
-    public get Organizations(): Organization[] {
-        return this._orgs;
-    }
-
-    public set Organizations(orgs: Organization[]) {
-        this._orgs = orgs;
-        this.save();
-    }
-
-    public RemoveOrganization(index: number): void {
-        this._orgs.splice(index, 1);
-        this.save();
-    }
-
-    // -- Loadouts ----------------------------------------------------------------------------------
-    public get Loadout(): PilotLoadout {
-        return this._loadout;
-    }
-
-    public set Loadout(l: PilotLoadout) {
-        this._loadout = l;
-        this.save();
-    }
 
     // -- Mechs -----------------------------------------------------------------------------------
-    public get Mechs(): Mech[] {
-        return this._mechs;
-    }
 
-    public AddMech(mech: Mech): void {
-        this._mechs.push(mech);
-        this.save();
-    }
-
-    public RemoveMech(mech: Mech): void {
-        const index = this._mechs.findIndex(x => _.isEqual(x, mech));
-        if (index === -1) {
-            console.error(`Loadout "${mech.Name}" does not exist on Pilot ${this._callsign}`);
-        } else {
-            this._mechs.splice(index, 1);
-        }
-        this.save();
-    }
-
-    public CloneMech(mech: Mech): void {
-        const mechData = Mech.Serialize(mech);
-        const clone = Mech.Deserialize(mechData, this);
-        clone.RenewID();
-        clone.Name += "*";
-        clone.IsActive = false;
-        this._mechs.push(clone);
-        this.save();
-    }
-
-    
-    // Controls the active state. Due to volatility, you should always route methods through the State getter
-    public set ActiveMech(mech: Mech | null) {
-        if(mech) {
-            this._state = new ActiveState(this);
-        } else {
-            this._state = null;
-        }
-    }
 
     // -- COUNTERS ----------------------------------------------------------------------------------
 
     private _counterSaveData: ICounterSaveData[] = [];
-    public get CounterSaveData(): ICounterSaveData[] {
+    export function getCounterSaveData(): ICounterSaveData[] {
         return this._counterSaveData;
     }
-    public saveCounter(inputData: ICounterSaveData): void {
+    export function saveCounter(inputData: ICounterSaveData): void {
         const index = this._counterSaveData.findIndex(datum => datum.id === inputData.id);
         if (index < 0) {
             this._counterSaveData = [...this._counterSaveData, inputData];
@@ -986,11 +763,11 @@ export class Pilot {
     }
 
     private _customCounters: ICounterData[] = [];
-    public get CustomCounterData(): ICounterData[] {
+    export function getCustomCounterData(): ICounterData[] {
         return this._customCounters || [];
     }
 
-    public createCustomCounter(name: string): void {
+    export function createCustomCounter(name: string): void {
         const counter = {
             name,
             id: uuid(),
@@ -1000,7 +777,7 @@ export class Pilot {
         this.save();
     }
 
-    public deleteCustomCounter(id: string): void {
+    export function deleteCustomCounter(id: string): void {
         const index = this._customCounters.findIndex(c => c.custom && c.id === id);
         if (index > -1) {
             this._customCounters.splice(index, 1);
@@ -1009,7 +786,7 @@ export class Pilot {
         this.save();
     }
 
-    public get CounterData(): ICounterData[] {
+    export function getCounterData(): ICounterData[] {
         return [
             this.Talents?.flatMap(pilotTalent =>
                 pilotTalent.Talent.Counters.filter(x => !x.level || x.level <= pilotTalent.Rank)
@@ -1027,135 +804,87 @@ export class Pilot {
             .flat()
             .filter(x => x) as ICounterData[];
     }
-
-    // -- Organization ------------------------------------------------------------------------------
-    public get Group(): string {
-        return this._group;
-    }
-
-    public set Group(val: string) {
-        this._group = val;
-        this.save();
-    }
-
-    public get SortIndex(): number {
-        return this._sortIndex;
-    }
-
-    public set SortIndex(val: number) {
-        this._sortIndex = val;
-        this.save();
-    }
-
-    public get Campaign(): string {
-        return this._campaign;
-    }
-
-    public set Campaign(val: string) {
-        this._campaign = val;
-        this.save();
-    }
-
-      // -- Active Mode -------------------------------------------------------------------------------
-    public get Actions(): IAction[] {
-        return this.TalentActions
-    }
-
-    public get State(): ActiveState | null {
-        return this._state;
-    }
-
-
-
-    // -- I/O ---------------------------------------------------------------------------------------
-    public static Serialize(p: Pilot): IPilotData {
-        return {
-            id: p.ID,
-            campaign: p.Campaign,
-            group: p.Group,
-            sort_index: p.SortIndex,
-            cloudID: p.CloudID,
-            cloudOwnerID: p.CloudOwnerID,
-            lastCloudUpdate: p.LastCloudUpdate,
-            level: p.Level,
-            callsign: p.Callsign,
-            name: p.Name,
-            player_name: p.PlayerName,
-            status: p.Status,
-            factionID: p._factionID,
-            text_appearance: p.TextAppearance,
-            notes: p.Notes,
-            history: p.History,
-            portrait: p._portrait,
-            cloud_portrait: p._cloud_portrait,
-            quirk: p.Quirk,
-            current_hp: p.CurrentHP,
-            reserves: p.Reserves.length ? p.Reserves.map(x => Reserve.Serialize(x)) : [],
-            orgs: p.Organizations.length ? p.Organizations.map(x => Organization.Serialize(x)) : [],
-            background: p.Background,
-            mechSkills: MechSkills.Serialize(p.MechSkills),
-            licenses: p.Licenses.map(x => PilotLicense.Serialize(x)),
-            skills: p.Skills.map(x => PilotSkill.Serialize(x)),
-            talents: p.Talents.map(x => PilotTalent.Serialize(x)),
-            core_bonuses: p.CoreBonuses.map(x => x.ID),
-            loadout: PilotLoadout.Serialize(p.Loadout),
-            mechs: p.Mechs.length ? p.Mechs.map(x => Mech.Serialize(x)) : [],
-            active_mech: p.ActiveMech ? p.ActiveMech.ID : null,
-            cc_ver: p.cc_ver,
-            counter_data: p.CounterSaveData,
-            custom_counters: p.CustomCounterData,
-            brews: p._brews || [],
-            state: p.State ? ActiveState.Serialize(p.State) : null
-        };
-    }
-
-    public static Deserialize(pilotData: IPilotData): Pilot {
-        const p = new Pilot();
-        p.setPilotData(pilotData);
-        return p;
-    }
-
-    private setPilotData(data: IPilotData): void {
-        this._campaign = data.campaign || "";
-        this._group = data.group || "";
-        this._sortIndex = data.sort_index || 0;
-        this._cloudID = data.cloudID || "";
-        this._cloudOwnerID = data.cloudOwnerID || "";
-        this._lastCloudUpdate = data.lastCloudUpdate || "";
-        this._id = data.id;
-                this._loadout = data.loadout ? PilotLoadout.Deserialize(data.loadout) : new PilotLoadout(0)
-    this._state = data.state ? ActiveState.Deserialize(this, data.state) : new ActiveState(this)
-        this._level = data.level;
-        this._callsign = data.callsign;
-        this._name = data.name;
-        this._player_name = data.player_name;
-        this._status = data.status || "ACTIVE";
-        this._factionID = data.factionID;
-        this._text_appearance = data.text_appearance;
-        this._notes = data.notes;
-        this._history = data.history;
-        this._portrait = data.portrait;
-        this._cloud_portrait = data.cloud_portrait;
-        this._quirk = data.quirk;
-        this._current_hp = data.current_hp;
-        this._background = data.background;
-        this._mechSkills = MechSkills.Deserialize(data.mechSkills);
-        this._licenses = data.licenses.map((x: IRankedData) => PilotLicense.Deserialize(x));
-        this._skills = data.skills.map((x: IRankedData) => PilotSkill.Deserialize(x));
-        this._talents = data.talents.map((x: IRankedData) => PilotTalent.Deserialize(x));
-        this._core_bonuses = data.core_bonuses.map((x: string) => CoreBonus.Deserialize(x));
-        this._reserves = data.reserves
-            ? data.reserves.map((x: IReserveData) => Reserve.Deserialize(x))
-            : [];
-        this._orgs = data.orgs
-            ? data.orgs.map((x: IOrganizationData) => Organization.Deserialize(x))
-            : [];
-        this._mechs = data.mechs.length
-            ? data.mechs.map((x: IMechData) => Mech.Deserialize(x, this))
-            : [];
-        this.cc_ver = data.cc_ver || "";
-        this._counterSaveData = data.counter_data || [];
-        this._customCounters = (data.custom_counters as ICounterData[]) || [];
-        this._brews = data.brews || [];
-    }
 }
+
+
+// Set the pilots brews based on which brews its frames, licenses, etc come from
+export function SetBrewData(override?: string[]): void {
+    if(override) {
+        this.brews = override;
+
+    }
+    const packs = store.compendium.ContentPacks;
+
+    function collectBrewGroup(items: CompendiumItem[]): string[] {
+        return items
+            .filter(x => x != null)
+            .map(i => i.Brew)
+            .filter(x => x.toLowerCase() !== "core");
+    }
+
+    let brews = collectBrewGroup(this._loadout.Items);
+    this._mechs.forEach(m => {
+        brews = _.union(brews, collectBrewGroup([m.Frame]));
+        m.Loadouts.forEach(ml => {
+            brews = _.union(brews, collectBrewGroup(ml.Weapons));
+            brews = _.union(brews, collectBrewGroup(ml.Systems));
+        });
+    });
+    brews = brews.map(x => packs.find(y => y.ID === x)).map(z => `${z?.Name} @ ${z?.Version}`);
+    this._brews = brews;
+}
+
+
+export function resetHASE(pilot: Pilot): void {
+    this._mechSkills.Reset();
+}
+
+export function CurrentHASEPoints(pilot: Pilot): number {
+    return this._mechSkills.Sum;
+}
+
+export function MaxHASEPoints(pilot: Pilot): number {
+    return Rules.MinimumMechSkills + this._level;
+}
+
+export function IsMissingHASE(pilot: Pilot): boolean {
+    return this.CurrentHASEPoints < this.MaxHASEPoints;
+}
+
+export function TooManyHASE(pilot: Pilot): boolean {
+    return this.CurrentHASEPoints > this.MaxHASEPoints;
+}
+
+export function HasFullHASE(pilot: Pilot): boolean {
+    return this.CurrentHASEPoints === this.MaxHASEPoints;
+}
+
+export function RemoveMech(mech: Mech): void {
+        const index = this._mechs.findIndex(x => _.isEqual(x, mech));
+        if (index === -1) {
+            console.error(`Loadout "${mech.Name}" does not exist on Pilot ${this._callsign}`);
+        } else {
+            this._mechs.splice(index, 1);
+        }
+        this.save();
+    }
+
+    export function CloneMech(mech: Mech): void {
+        const mechData = Mech.Serialize(mech);
+        const clone = Mech.Deserialize(mechData, this);
+        clone.RenewID();
+        clone.Name += "*";
+        clone.IsActive = false;
+        this._mechs.push(clone);
+        this.save();
+    }
+
+    
+    // Controls the active state. Due to volatility, you should always route methods through the State getter
+    export function set ActiveMech(mech: Mech | null) {
+        if(mech) {
+            this._state = new ActiveState(this);
+        } else {
+            this._state = null;
+        }
+    }

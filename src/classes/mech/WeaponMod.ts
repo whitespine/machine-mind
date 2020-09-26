@@ -8,7 +8,7 @@ import {
     MechEquipment,
     SystemType,
 } from "@/class";
-import { IDamageData, ITagData, IEquipmentData, IRangeData, IMechEquipmentData } from "@/interface";
+import { IDamageData, ITagInstanceData, IEquipmentData, IRangeData, IMechEquipmentData } from "@/interface";
 import { store } from "@/hooks";
 
 export interface IWeaponModData extends IMechEquipmentData {
@@ -17,8 +17,8 @@ export interface IWeaponModData extends IMechEquipmentData {
     applied_string: string;
     description: string;
     restricted_mounts: WeaponSize[];
-    tags: ITagData[];
-    added_tags?: ITagData[] | null;
+    tags: ITagInstanceData[];
+    added_tags?: ITagInstanceData[] | null;
     added_damage?: IDamageData | null;
     added_range?: IRangeData | null;
 }
@@ -27,7 +27,7 @@ export class WeaponMod extends MechEquipment {
     private _applied_to: WeaponType[];
     private _applied_string: string;
     private _restricted_mounts: WeaponSize[];
-    private _added_tags: ITagData[];
+    private _added_tags: ITagInstanceData[];
     private _added_damage: Damage | null;
     private _added_range: Range | null;
 

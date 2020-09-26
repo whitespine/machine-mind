@@ -34,8 +34,8 @@ export interface ISystemModData {
   license: string, // Frame Name
   license_level: number, // set to 0 to be available to all Pilots
   effect: string, // v-html
-  tags: ITagData[], // tags related to the mod itself
-  added_tags: ITagData[] // tags propogated to the system the mod is installed on
+  tags: ITagInstanceData[], // tags related to the mod itself
+  added_tags: ITagInstanceData[] // tags propogated to the system the mod is installed on
   actions?: IActionData[] | null,
   bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent system
   synergies?: ISynergyData[] | null,

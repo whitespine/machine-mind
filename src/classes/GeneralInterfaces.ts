@@ -109,15 +109,6 @@ export interface IOrganizationData {
     actions: string;
 }
 
-export interface IPilotLoadoutData {
-    id: string;
-    name: string;
-    armor: (IEquipmentData | null)[];
-    weapons: (IEquipmentData | null)[];
-    gear: (IEquipmentData | null)[];
-    extendedWeapons: (IEquipmentData | null)[];
-    extendedGear: (IEquipmentData | null)[];
-}
 
 export interface IHistoryItem {
     field: string;

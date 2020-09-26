@@ -1,289 +1,144 @@
+import { DamageType, Pilot, RangeType, WeaponSize, WeaponType } from '@/class';
 // Bonuses - we'll need to elaborate on these later... currently they don't work
 
-import { MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
+import { ident, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
 
-// export type IBonusData = BonusSkillPoint | BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
+// export type IBonusData = BonusSkillPoint , BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
 
 // This is gonna be tedious...
-export type IBonusData =
-    | {
-          id: "skill_point";
-          value: number;
-      }
-    | {
-          id: "mech_skill_point";
-          value: number;
-      }
-    | {
-          id: "talent_point";
-          value: number;
-      }
-    | {
-          // Add Pilot License point 	integer
-          id: "license_point";
-          value: number;
-      }
-    | {
-          // Add Pilot CORE Bonus point 	integer
-          id: "cb_point";
-          value: number;
-      }
-    | {
-          // Add Pilot Gear capacity 	integer
-          id: "pilot_gear";
-          value: number;
-      }
-    | {
-          // Add threat (all melee weapons) 	integer
-          id: "threat";
-          value: number;
-      }
-    | {
-          // Add threat (kinetic melee weapons only) 	integer
-          id: "threat_kinetic";
-          value: number;
-      }
-    | {
-          // Add threat (explosive melee weapons only) 	integer
-          id: "threat_explosive";
-          value: number;
-      }
-    | {
-          // Add threat (energy melee weapons only) 	integer
-          id: "threat_energy";
-          value: number;
-      }
-    | {
-          // Add threat (burn melee weapons only) 	integer
-          id: "threat_burn";
-          value: number;
-      }
-    | {
-          // Add Range (all ranged weapons) 	integer
-          id: "range";
-          value: number;
-      }
-    | {
-          // Add range (kinetic melee weapons only) 	integer
-          id: "range_kinetic";
-          value: number;
-      }
-    | {
-          // Add range (explosive melee weapons only) 	integer
-          id: "range_explosive";
-          value: number;
-      }
-    | {
-          // Add range (energy melee weapons only) 	integer
-          id: "range_energy";
-          value: number;
-      }
-    | {
-          // Add range (burn melee weapons only) 	integer
-          id: "range_burn";
-          value: number;
-      }
-    | {
-          // Add Mech HP 	integer
-          id: "hp";
-          value: number;
-      }
-    | {
-          // Add Mech Armor 	integer
-          id: "armor";
-          value: number;
-      }
-    | {
-          // Add Mech Structure 	integer
-          id: "structure";
-          value: number;
-      }
-    | {
-          // Add Mech Reactor Stress 	integer
-          id: "stress";
-          value: number;
-      }
-    | {
-          // Add Mech Heat Capacity 	integer
-          id: "heatcap";
-          value: number;
-      }
-    | {
-          // Add Mech Repair Capacity 	integer
-          id: "repcap";
-          value: number;
-      }
-    | {
-          // Add Mech CORE Power 	integer
-          id: "core_power";
-          value: number;
-      }
-    | {
-          // Add Mech Speed 	integer
-          id: "speed";
-          value: number;
-      }
-    | {
-          // Add Mech Evasion 	integer
-          id: "evasion";
-          value: number;
-      }
-    | {
-          // Add Mech E-Defense 	integer
-          id: "edef";
-          value: number;
-      }
-    | {
-          // Add Mech Sensor Range 	integer
-          id: "sensor";
-          value: number;
-      }
-    | {
-          // Add Mech Tech Attack 	integer
-          id: "tech_attack";
-          value: number;
-      }
-    | {
-          // Add Mech Save 	integer
-          id: "save";
-          value: number;
-      }
-    | {
-          // Add Mech SP 	integer
-          id: "sp";
-          value: number;
-      }
-    | {
-          // Add Mech Size 	integer
-          id: "size";
-          value: number;
-      }
-    | {
-          // Add AI Capacity 	integer
-          id: "ai_cap";
-          value: number;
-      }
-    | {
-          // Half cost for Structure repairs 	boolean
-          id: "cheap_struct";
-          value: boolean;
-      }
-    | {
-          // Half cost for Reactor Stress repairs 	boolean
-          id: "cheap_stress";
-          value: boolean;
-      }
-    | {
-          // Overcharge Track 	DieRoll[]
-          id: "overcharge",
-          value: string[]
-      }
-    | {
-          // Add Limited equipment uses 	integer
-          id: "limited_bonus";
-          value: number;
-      }
-    | {
-          // Add Pilot HP 	integer
-          id: "pilot_hp";
-          value: number;
-      }
-    | {
-          // Add Pilot Armor 	integer
-          id: "pilot_armor";
-          value: number;
-      }
-    | {
-          // Add Pilot Evasion 	integer
-          id: "pilot_evasion";
-          value: number;
-      }
-    | {
-          // Add Pilot E-Defense 	integer
-          id: "pilot_edef";
-          value: number;
-      }
-    | {
-          // Add Pilot Speed 	integer
-          id: "pilot_speed";
-          value: number;
-      }
-    | {
-          // Add HP to all deployed Drones and Deployables 	integer
-          id: "deployable_hp";
-          value: number;
-      }
-    | {
-          // Add size to all deployed Drones and Deployables 	integer
-          id: "deployable_size";
-          value: number;
-      }
-    | {
-          // Add charges to all deployed Drones and Deployables 	integer
-          id: "deployable_charges";
-          value: number;
-      }
-    | {
-          // Add armor to all deployed Drones and Deployables 	integer
-          id: "deployable_armor";
-          value: number;
-      }
-    | {
-          // Add evasion to all deployed Drones and Deployables 	integer
-          id: "deployable_evasion";
-          value: number;
-      }
-    | {
-          // Add edef to all deployed Drones and Deployables 	integer
-          id: "deployable_edef";
-          value: number;
-      }
-    | {
-          // Add heatcap to all deployed Drones and Deployables 	integer
-          id: "deployable_heatcap";
-          value: number;
-      }
-    | {
-          // Add repcap to all deployed Drones and Deployables 	integer
-          id: "deployable_repcap";
-          value: number;
-      }
-    | {
-          // Add sensor range to all deployed Drones and Deployables 	integer
-          id: "deployable_sensor_range";
-          value: number;
-      }
-    | {
-          // Add tech attack to all deployed Drones and Deployables 	integer
-          id: "deployable_tech_attack";
-          value: number;
-      }
-    | {
-          // Add save to all deployed Drones and Deployables 	integer
-          id: "deployable_save";
-          value: number;
-      }
-    | {
-          // Add speed to all deployed Drones and Deployables 	integer
-          id: "deployable_speed";
-          value: number;
-      };
+export enum BonusType {
+          SkillPoint = "skill_point",   // integer
+          MechSkillPoint = "mech_skill_point"  , // integer
+          TalentPoint = "talent_point"  , // integer
+          LicensePoint = "license_point" , // integer
+          CoreBonusPoint = "cb_point" , // integer
+
+          Range = "range" , // integer
+          Threat = "threat" , // integer
+          Damage = "damage" , // integer
+
+
+          HP = "hp" , // integer
+          Armor = "armor" , // integer
+          Structure = "structure" , // integer
+          Stress = "stress" , // integer
+          Heatcap = "heatcap" , // integer
+          Repcap = "repcap" , // integer
+          CorePower = "core_power" , // integer
+          Speed = "speed" , // integer
+          Evasion = "evasion" , // integer
+          EDef = "edef" , // integer
+          Sensor = "sensor" , // integer
+
+          Attack = "attack" , // integer
+          TechAttack = "tech_attack" , // integer
+
+          Grapple ="grapple", // integer
+          Ram ="ram", // integer
+          Save = "save" , // integer
+          SP = "sp" , // integer
+          Size = "size" , // integer
+          AICap = "ai_cap" , // integer
+          CheapStruct = "cheap_struct" , // boolean
+          CheapStress = "cheap_stress" , // boolean
+          Overcharge = "overcharge" , //Overcharge Track 	DieRoll[] as string[]
+          LimitedBonus = "limited_bonus" , // integer
+          PilotHP = "pilot_hp" , // integer
+          PilotArmor = "pilot_armor" , // integer
+          PilotEvasion = "pilot_evasion" , // integer
+          PilotEDef = "pilot_edef" , // integer
+          PilotSpeed = "pilot_speed" , // integer
+
+          PilotGearCap = "pilot_gear_cap" , // integer
+          PilotWeaponCap = "pilot_weapon_cap" , // integer
+
+
+          DeployableHP = "deployable_hp" , // integer
+          DeployableSize = "deployable_size" , // integer
+          DeployableCharges = "deployable_charges" , // integer
+          DeployableArmor = "deployable_armor" , // integer
+          DeployableEvasion = "deployable_evasion" , // integer
+          DeployableEDef = "deployable_edef" , // integer
+          DeployableHeatCap = "deployable_heatcap" , // integer
+          DeployableRepairCap = "deployable_repcap" , // integer
+          DeployableSensorRange = "deployable_sensor_range" , // integer
+          DeployableTechAttack = "deployable_tech_attack" , // integer
+          DeployableSave = "deployable_save" , // integer 
+          DeployableSpeed = "deployable_speed", //
+          Placeholder = "placeholder",
+}  // integer
+
+// Lists all of the keys/values, for validation purposes
+export const BonusTypeIDList: string[] = Object.keys(BonusType).map(k => BonusType[k as any])
+
+export interface IBonusData {
+  id: string;
+  value: any
+  damage_types?: DamageType[] | null
+  range_types?: RangeType[] | null
+  weapon_types?: WeaponType[] | null
+  weapon_sizes?: WeaponSize[] | null
+}
+
 
 // Todo - uh... more??? It's a bit barebones for now...
 export interface Bonus extends MixLinks<IBonusData> {
-  ID: string,
-  Value: any
+  // Data
+  ID: BonusType,
+  Value: any;
+
+  // Methods
+  //...
 }
+
 
 export function CreateBonus(data: IBonusData): Bonus {
     let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new Mixlet("ID", "id", "n/a", ident, ident));
-    b.with(new Mixlet("Value", "value", "", ident, ident));
+    b.with(new Mixlet("ID", "id", BonusType.Placeholder, ident as any, ident as any)); // The "as any" is necessary because we don't really have a good way of validating these....
+    b.with(new Mixlet("Value", "value", 0, ident, ident));
 
+
+    // Finalize and check. We don't fail
     let r = b.finalize(data);
+    if(!BonusTypeIDList.includes(r.ID)) {
+      console.error(`Unrecognized bonus type ${r.ID}`);
+    }
     return r;
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
+// Evaluates arbitrary javascript functions
+// TODO: Make this not a fuckign logic bomb
+let warned = false;
+function fastEval(obj: string): any {
+  if(!warned) {
+    warned  = true;
+    console.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Fix this vulneraability!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
+  return Function('"use strict";return (' + obj + ')')();
+}
+
+
+// Get the numeric value of a bonus expression, for a given pilot
+// Note: Currently very much a WIP
+export function Evaluate(bonus: Bonus, pilot: Pilot) {
+    if (typeof bonus.Value === 'number') return Math.ceil(bonus.Value)
+    let valStr = bonus.Value
+    valStr = valStr.replaceAll(`{ll}`, pilot.Level.toString())
+    valStr = valStr.replaceAll(`{grit}`, pilot.Grit.toString())
+    // valStr = valStr.replace(/[^-()\d/*+.]/g, '')
+    return Math.ceil(fastEval(valStr))
+}
+
+
+ export function get(id: BonusType, pilot: Pilot): number {
+    return pilot.Bonuses.filter(x => x.ID === id).reduce(
+      (sum, bonus) => sum + this.Evaluate(bonus, pilot),
+      0
+    )
+  }
+
+
 // Use these for mixin shorthand elsewhere
-export const BonusMixReader = (x: IBonusData[] | null | undefined) => (x || []).map(CreateBonus);
-export const BonusMixWriter = (x: Bonus[]) => x.map(i => i.Serialize());
+export const BonusesMixReader = (x: IBonusData[] | null | undefined) => (x || []).map(CreateBonus);
+export const BonusesMixWriter = (x: Bonus[]) => x.map(i => i.Serialize());

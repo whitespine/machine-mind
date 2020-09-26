@@ -1,100 +1,103 @@
 import {
     Rules,
-    PilotEquipment,
     PilotArmor,
     PilotWeapon,
     PilotGear,
     Loadout,
     ItemType,
+    PilotEquipment
 } from "@/class";
-import { IPilotLoadoutData } from "../GeneralInterfaces";
+import { IPilotArmorData, IPilotGearData, IPilotWeaponData } from '@/interface';
+import { ident, MixBuilder, Mixlet, MixLinks, uuid } from '@/mixmeta';
+import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './PilotEquipment';
 
-export class PilotLoadout extends Loadout {
-    private _armor: (PilotArmor | null)[];
-    private _gear: (PilotGear | null)[];
-    private _weapons: (PilotWeapon | null)[];
-    private _extendedWeapons: (PilotWeapon | null)[];
-    private _extendedGear: (PilotGear | null)[];
+export interface IPilotLoadoutData {
+    id: string;
+    name: string;
+    armor: (IPilotArmorData | null)[]; // Accounts for gaps in the inventory slots.... Were it my call this wouldn't be how it was, but it ain't my way
+    weapons: (IPilotWeaponData | null)[];
+    gear: (IPilotGearData | null)[];
+    extendedWeapons: (IPilotWeaponData | null)[];
+    extendedGear: (IPilotGearData | null)[];
+}
 
-    public constructor(count: number, id?: string) {
-        super(count, id);
-        this._armor = Array(Rules.MaxPilotArmor).fill(null);
-        this._gear = Array(Rules.MaxPilotGear).fill(null);
-        this._weapons = Array(Rules.MaxPilotWeapons).fill(null);
-        this._extendedWeapons = Array(1).fill(null);
-        this._extendedGear = Array(2).fill(null);
+export interface PilotLoadout extends MixLinks<IPilotLoadoutData> {
+    ID: string;
+    Name: string;
+    Armor: PilotArmor[];
+    Gear: PilotGear[];
+    Weapons: PilotWeapon[];
+    // ExtendedWeapons: PilotWeapon[];
+    // ExtendedGear: PilotGear[];
+
+    // Methods
+    Items(): PilotEquipment[];
+    Add(item: PilotEquipment): void;
+    // Remove();
+
+    CanAddArmor(): boolean;
+    CanAddWeapons(): boolean;
+    CanAddGear(): boolean;
+}
+
+export function CreatePilotLoadout(data: IPilotLoadoutData) {
+    let mb = new MixBuilder<PilotLoadout, IPilotLoadoutData>({
+        CanAddArmor,
+        Add,
+        Items, 
+        CanAddGear,
+        CanAddWeapons
+    });
+    mb.with(new Mixlet("ID","id", uuid(), ident, ident);
+    mb.with(new Mixlet("Name","name", "New Loadout", ident, ident);
+    mb.with(new Mixlet("Armor","armor", [], (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new Mixlet("Weapons","weapons", [], (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new Mixlet("Gear","gear", [], (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
+
+
+    return mb.finalize(data);
+}
+
+
+
+    function Items(this: PilotLoadout): PilotEquipment[] {
+        return (this.Armor as PilotEquipment[])
+            .concat(this.Weapons as PilotEquipment[])
+            .concat(this.Gear as PilotEquipment[]);
     }
 
-    public get Armor(): (PilotArmor | null)[] {
-        return this._armor;
-    }
+function CanAddArmor(this: PilotLoadout) {
+    return this.Armor.length < Rules.MaxPilotArmor;
+}
+function CanAddWeapons(this: PilotLoadout) {
+    return this.Weapons.length < Rules.MaxPilotWeapons;
+}
+function CanAddGear(this: PilotLoadout) {
+    return this.Gear.length < Rules.MaxPilotGear;
+}
 
-    public set Armor(items: (PilotArmor | null)[]) {
-        this._armor = items;
-        this.save();
+function Add(this: PilotLoadout, item: PilotEquipment) { //, slot: number, extended?: boolean | null): void {
+    switch (item.Type) {
+        case ItemType.PilotArmor:
+            this.Armor.push(item as PilotArmor);
+            break;
+        case ItemType.PilotWeapon:
+            // if (extended) this._extendedWeapons.splice(slot, 1, item as PilotWeapon);
+            // else this._weapons.splice(slot, 1, item as PilotWeapon);
+            this.Weapons.push(item as PilotWeapon);
+            break;
+        case ItemType.PilotGear:
+            // if (extended) this._extendedGear[slot] = item as PilotGear;
+            // else this._gear.splice(slot, 1, item as PilotGear);
+            this.Gear.push(item as PilotGear);
+            break;
+        default:
+            break;
     }
+}
 
-    public get Weapons(): (PilotWeapon | null)[] {
-        return this._weapons;
-    }
 
-    public set Weapons(items: (PilotWeapon | null)[]) {
-        this._weapons = items;
-        this.save();
-    }
-
-    public get ExtendedWeapons(): (PilotWeapon | null)[] {
-        return this._extendedWeapons;
-    }
-
-    public set ExtendedWeapons(items: (PilotWeapon | null)[]) {
-        this._extendedWeapons = items;
-        this.save();
-    }
-
-    public get Gear(): (PilotGear | null)[] {
-        return this._gear;
-    }
-
-    public set Gear(items: (PilotGear | null)[]) {
-        this._gear = items;
-        this.save();
-    }
-
-    public get ExtendedGear(): (PilotGear | null)[] {
-        return this._extendedGear;
-    }
-
-    public set ExtendedGear(items: (PilotGear | null)[]) {
-        this._extendedGear = items;
-        this.save();
-    }
-
-    public get Items(): PilotEquipment[] {
-        return (this._armor as PilotEquipment[])
-            .concat(this._weapons as PilotEquipment[])
-            .concat(this._gear as PilotEquipment[]);
-    }
-
-    public Add(item: PilotEquipment, slot: number, extended?: boolean | null): void {
-        switch (item.ItemType) {
-            case ItemType.PilotArmor:
-                this._armor[slot] = item as PilotArmor;
-                break;
-            case ItemType.PilotWeapon:
-                if (extended) this._extendedWeapons.splice(slot, 1, item as PilotWeapon);
-                else this._weapons.splice(slot, 1, item as PilotWeapon);
-                break;
-            case ItemType.PilotGear:
-                if (extended) this._extendedGear[slot] = item as PilotGear;
-                else this._gear.splice(slot, 1, item as PilotGear);
-                break;
-            default:
-                break;
-        }
-        this.save();
-    }
-
+/*
     public Remove(item: PilotEquipment, slot: number, extended?: boolean | null): void {
         switch (item.ItemType) {
             case ItemType.PilotArmor:
@@ -144,3 +147,5 @@ export class PilotLoadout extends Loadout {
         return loadout;
     }
 }
+
+*/

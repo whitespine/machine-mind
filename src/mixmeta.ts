@@ -1,5 +1,6 @@
 import { ItemType, Deployable, DamageType } from '@/class';
 import { IDeployableData } from '@/interface';
+import { uniqueId } from 'lodash';
 import { keys } from 'ts-transformer-keys';
 
 // Simplifies serialization implementation to be more generally consistent. Many of the more common 
@@ -73,7 +74,7 @@ export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcNam
             this.val = this.default_val;
             this.defined = true; // Null is at least an explicit val
         } else {
-            this.val = this.reader(raw);
+            this.val = this.reader(raw as NonNullable<Src[SrcName]>);
             this.defined = true;
         }
 
@@ -95,7 +96,7 @@ export interface MixLinks<SrcType extends object> {
     // Keep our mixlets nice and tidy
     _mix_list: Array<AnyMixlet<this, SrcType>>;
     _mix_map: Map<string, AnyMixlet<this, SrcType>>;
-    _query_val(key: string): any | undefined;
+    _query_val(key: string): [boolean, any | undefined]; // First is success, second is value
     _set_val(key: string, val: any): boolean;
 
     // Add mixlets dynamically, useful if we want to add things outside of the standard builder
@@ -129,7 +130,14 @@ export function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends
     }
 
     // Setup query. Return the requested value, if we can find it
-    target._query_val = (key: string) => target._mix_map.get(key)?.val;
+    target._query_val = (key: string) => {
+        let r = target._mix_map.get(key);
+        if(r !== undefined) {
+            return [true, r.val];
+        } else {
+            return [false, undefined];
+        }
+    }
 
     // Setup set (up, dog!). Set the requested value, if we can find it. Return success. We trust outer typing to handle types
     target._set_val = (key: string, val: any) => {
@@ -164,11 +172,18 @@ export function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends
 const handler: ProxyHandler<MixLinks<any>> = {
     get: (target, key) => {
         if(typeof key === "string") {
-            return target._query_val(key);
+            // Check mixin first, fallback to key (for Serialize, methods, etc)
+            let queried = target._query_val(key);
+            if(queried[0]) { 
+                return queried[1]; 
+            } else {
+                return target[key];
+            }
         } else {
             return undefined;
         }
     },
+    // We don't allow setting any way except by mixin.
     set: (target, key, value, receiver) => {
         if(typeof key === "string") {
             return target._set_val(key, value);
@@ -205,6 +220,12 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
         return this;
     }
 
+    // Lets us add data pre-finalize without exposing our inner item
+    // Note that because they are added this way they will NOT be mixed!
+    fnset<K extends keyof HostType>(key: K, val: HostType[K]) {
+        this.host[key] = val;
+    }
+
     // Finish it off. Deserialize if data provided
     finalize(data: SrcType | null): HostType {
         // Copy the array just to remove any potential lingering "this" connotations. Hopefully js garbage collection is smart enough to ignore it, but proxies are weird
@@ -237,11 +258,33 @@ function rand_char(): string {
 
 export function uuid(): string {
     let s = "";
-    for(let i=0; i<32; i++) {
+    for(let i=0; i<64; i++) {
         s += rand_char();
     }
     return s;
 }
+
+// Duplicating etc
+/** 
+ * Create an exact copy of a piece of data by serializing then deserializing the data
+ */
+export function duplicate<V extends MixLinks<T>, T extends object>(x: V): V {
+    // TODO: This may be volatile.
+    let copy = {...x}; // Copy x, to get its builtin functions for later Deser.
+    let deser = x.Serialize();
+    copy.Deserialize(deser);
+    return x;
+}
+
+/**
+ * Create an exact copy of a piece of data by serializing then deserializing the data,
+ * THEN change the ID
+ */
+// export function duplicate_renew<V extends MixLinks<T> & {ID: string}, T extends object>(x: V): V {
+    // let cp = duplicate(x as any) as V; // Typescript's reasoning can't quite handle this case
+    // cp.ID = uuid();
+    // return cp;
+// }
 
 // This function makes sure all properties were set properly
 // Note that it considers undefined to be erroneous. If you want undefined, use null
@@ -254,6 +297,21 @@ function validate_props<T extends object>(v: T) {
     }
 }
 
+
+
+// Re-export stuff
+export function ident<T>(t: T): T { return t; }
+export {ActionsMixReader, ActionsMixWriter, FrequencyMixReader, FrequencyMixWriter} from "@/classes/Action";
+export {BonusesMixReader as BonusMixReader, BonusesMixWriter as BonusMixWriter} from "@/classes/Bonus";
+export {SynergyMixReader, SynergyMixWriter} from "@/classes/Synergy";
+export {TagInstanceMixWriter, TagTemplateMixWriter, TagTemplateMixReader, TagInstanceMixReader} from "@/classes/Tag";
+export {DeployableMixReader, DeployableMixWriter} from "@/classes/Deployable";
+export {DamagesMixReader,DamagesMixWriter } from "@/classes/Damage";
+export {RangesMixReader,RangesMixWriter } from "@/classes/Range";
+
+
+
+/*
 // A simple example
 interface Raw {
     raw_actions: number[]
@@ -263,12 +321,4 @@ interface Ract {
 }
 
 let x = new Mixlet<Ract, "actions", Raw, "raw_actions">("actions", "raw_actions", [], (x: number[]) => x.map(e => ""+e),  (y: string[]) => y.map(Number.parseInt));
-
-
-// Re-export stuff
-export function ident<T>(t: T): T { return t; }
-export {ActionMixReader, ActionMixWriter} from "@/classes/Action";
-export {BonusMixReader, BonusMixWriter} from "@/classes/Bonus";
-export {SynergyMixReader, SynergyMixWriter} from "@/classes/Synergy";
-export {TagInstanceMixWriter, TagTemplateMixWriter, TagTemplateMixReader, TagInstanceMixReader} from "@/classes/Tag";
-export {DeployableMixReader, DeployableMixWriter} from "@/classes/Deployable";
+*/

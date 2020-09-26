@@ -2,8 +2,8 @@ import { ActivationType, Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
 import { MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
 import { ident } from 'lodash';
-import { Action, ActionMixReader, ActionMixWriter } from './Action';
-import { Bonus, BonusMixReader, BonusMixWriter } from './Bonus';
+import { Action, ActionsMixReader, ActionsMixWriter } from './Action';
+import { Bonus, BonusesMixReader, BonusesMixWriter } from './Bonus';
 import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
 import { ITagInstanceData, TagInstance, TagInstanceMixReader, TagInstanceMixWriter } from './Tag';
 
@@ -84,8 +84,8 @@ export function CreateDeployable(data: IDeployableData | null): Deployable {
     b.with(new Mixlet("TechAttack", "tech_attack", null, ident, ident)); 
     b.with(new Mixlet("Save", "save", null, ident, ident)); 
     b.with(new Mixlet("Speed", "speed", null, ident, ident)); 
-    b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter)); 
-    b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter)); 
+    b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter)); 
+    b.with(new Mixlet("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter)); 
     b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, ident)); 
     b.with(new Mixlet("Counters", "counters", [], CounterMixReader, CounterMixWriter)); 
     b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter)); 

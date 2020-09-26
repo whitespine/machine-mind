@@ -1,8 +1,8 @@
-import { INpcFeatureData, ITagData } from "@/interface";
+import { INpcFeatureData, ITagInstanceData } from "@/interface";
 import { NpcFeature, NpcFeatureType } from "@/class";
 
 export interface INpcTechData extends INpcFeatureData {
-    tags: ITagData[];
+    tags: ITagInstanceData[];
     tech_type: string;
     accuracy?: number[] | null;
     attack_bonus?: number[] | null;

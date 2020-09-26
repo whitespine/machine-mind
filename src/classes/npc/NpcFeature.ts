@@ -1,5 +1,5 @@
 import { Tag } from "@/class";
-import { ITagData } from "@/interface";
+import { ITagInstanceData } from "@/interface";
 
 export enum NpcFeatureType {
     Trait = "Trait",
@@ -23,7 +23,7 @@ export interface INpcFeatureData {
     effect?: string | null;
     bonus?: object | null;
     override?: object | null;
-    tags: ITagData[];
+    tags: ITagInstanceData[];
     brew: string;
     hide_active: boolean;
     type: NpcFeatureType;
@@ -37,7 +37,7 @@ export abstract class NpcFeature {
     private _bonus: object;
     private _override: object;
     private _locked: boolean;
-    private _tags: ITagData[];
+    private _tags: ITagInstanceData[];
     private _brew: string;
     private _hide_active: boolean;
     protected type: NpcFeatureType;

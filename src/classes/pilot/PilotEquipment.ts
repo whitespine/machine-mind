@@ -1,22 +1,28 @@
-import { Action, Bonus, Damage, Deployable, ItemType, Synergy, TagInstance } from "@/class";
-import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem } from "@/interface";
-import { ActionMixReader, ActionMixWriter, BonusMixReader, BonusMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, Mixlet, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
+import { Action, Bonus, Damage, Deployable, ItemType, Synergy, TagInstance, Range } from "@/class";
+import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem, ICompendiumItemData } from "@/interface";
+import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, Mixlet, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
 import { DEFAULT_BREW_ID } from '../enums';
 
 
 ///////////////////////////////////////////////////////////
 // Data
 ///////////////////////////////////////////////////////////
-
 export type IPilotEquipmentData = IPilotWeaponData | IPilotArmorData | IPilotGearData;
+export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
 export interface IPilotWeaponData {
   id: string,
   name: string, // v-html
   type: "Weapon",
   description: string,
+  tags: ITagInstanceData[],
   range: IRangeData[],
   damage: IDamageData[],
+  actions?: IActionData[], // these are only available to UNMOUNTED pilots
+  bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
+  synergies?: ISynergyData[] | null;
+  deployables?: IDeployableData[] | null;
 }
+
 export interface IPilotArmorData  {
   "id": string,
   "name": string, // v-html
@@ -28,6 +34,7 @@ export interface IPilotArmorData  {
   "synergies"?: ISynergyData[],
   "deployables"?: IDeployableData[], // these are only available to UNMOUNTED pilots
 }
+
 export interface IPilotGearData {
   id: string,
   name: string, // v-html
@@ -45,14 +52,13 @@ export interface IPilotGearData {
 /////////////////////////////////////////////////////////
 
 export interface PilotArmor extends MixLinks<IPilotArmorData>, VCompendiumItem {
-  Tags: Tag[],
+  Tags: TagInstance[],
   Actions: Action[],
   Bonuses: Bonus[],
   Synergies: Synergy[],
   Deployables: Deployable[],
   Type: ItemType.PilotArmor
 }
-
 
 export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
     // Init with deduced cc props
@@ -67,7 +73,7 @@ export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
 
     // Don't need type
     b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter));
+    b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
     b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
     b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
     b.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
@@ -97,7 +103,7 @@ export function CreatePilotGear(data: IPilotGearData | null): PilotGear {
     b.with(new Mixlet("Name", "name", "New Armor", ident, ident));
 
     b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter));
+    b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
     b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
     b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
     b.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
@@ -107,13 +113,14 @@ export function CreatePilotGear(data: IPilotGearData | null): PilotGear {
 }
 
 export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VCompendiumItem {
+    Effect: string
+    Tags: TagInstance[];
     Range: Range[];
     Damage: Damage[];
-    //Tags: Tag[];
-    //Actions: Action[]; // these are only available to UNMOUNTED pilots
-    //Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
-    //Synergies: Synergy[];
-    //Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
+    Actions: Action[]; // these are only available to UNMOUNTED pilots
+    Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
+    Synergies: Synergy[];
+    Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
     Type: ItemType.PilotWeapon;
 }
 
@@ -124,19 +131,25 @@ export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
         Type: ItemType.PilotWeapon
     });
 
-    // Mixin the rest
+    // Mostly the same as the others
     b.with(new Mixlet("ID", "id", uuid(), ident, ident));
     b.with(new Mixlet("Name", "name", "New Armor", ident, ident));
 
-    // b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixReader));
-    // b.with(new Mixlet("Actions", "actions", [], ActionMixReader, ActionMixWriter));
-    // b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    // b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    // b.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
+    b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
+    b.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
+    b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
+    b.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+
+    // Mixin Range and damage
+    b.with(new Mixlet("Damage", "damage", [], DamagesMixReader, DamagesMixWriter));
+    b.with(new Mixlet("Range", "range", [], RangesMixReader, RangesMixWriter));
 
     let r = b.finalize(data);
     return r;
 }
+
+// TODO: Re-add methods to pilot weapons
 
 
 

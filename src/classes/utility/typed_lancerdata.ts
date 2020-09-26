@@ -31,7 +31,6 @@ import {
     ITalentData,
     IMechWeaponData,
     IMechSystemData,
-    ITagData,
     ISkillData,
     IFrameData,
     IFactionData,
@@ -41,7 +40,7 @@ import {
     INpcFeatureData,
     INpcTemplateData,
     IPilotEquipmentData,
-    ITagCompendiumData,
+    ITagTemplateData,
     IStatusData,
     ISitrepData,
     IEnvironmentData,
@@ -82,7 +81,7 @@ export const sitreps = _sitreps as ISitrepData[];
 export const skills = _skills as ISkillData[];
 export const statuses = _statuses as IStatusData[];
 export const systems = _systems as IMechSystemData[];
-export const tags = _tags as ITagCompendiumData[];
+export const tags = _tags as ITagTemplateData[];
 export const talents = _talents as ITalentData[];
 export const weapons = _weapons as IMechWeaponData[];
 

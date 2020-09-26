@@ -1,6 +1,6 @@
-import { Range, Damage, NpcFeature, NpcFeatureType } from "@/class";
-import { INpcFeatureData, ITagData, IRangeData } from "@/interface";
-import { DamageType } from "../enums";
+import { Range, Damage, NpcFeature, NpcFeatureType, CreateRange} from "@/class";
+import { INpcFeatureData, ITagInstanceData, IRangeData } from "@/interface";
+import { DamageType } from "../enums";d
 
 export interface INpcDamageData {
     type: string;
@@ -14,7 +14,7 @@ export interface INpcWeaponData extends INpcFeatureData {
     on_hit: string;
     accuracy: number[];
     attack_bonus: number[];
-    tags: ITagData[];
+    tags: ITagInstanceData[];
     type: NpcFeatureType.Weapon;
 }
 
@@ -33,7 +33,7 @@ export class NpcWeapon extends NpcFeature {
         this._damage_data = data.damage;
         this._accuracy = data.accuracy || [0, 0, 0];
         this._attack_bonus = data.attack_bonus || [0, 0, 0];
-        this._range = data.range.map(x => new Range(x));
+        this._range = data.range.map(x => CreateRange(x));
         this.type = NpcFeatureType.Weapon;
     }
 
