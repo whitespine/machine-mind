@@ -37,10 +37,11 @@ const readZipJSON = async function<T>(zip: JSZip, filename: string): Promise<T |
 };
 
 const getPackID = async function(manifest: IContentPackManifest): Promise<string> {
-    const enc = new TextEncoder();
+    // const enc = new TextEncoder();
     const signature = `${manifest.author}/${manifest.name}`;
-    const hash = await crypto.subtle.digest("SHA-1", enc.encode(signature));
-    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))));
+    // const hash = await crypto.subtle.digest("SHA-1", enc.encode(signature));
+    // return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))));
+    return signature;
 };
 
 async function getZipData<T>(zip: JSZip, filename: string): Promise<T[]> {
