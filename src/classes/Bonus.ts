@@ -67,6 +67,7 @@ export enum BonusType {
           DeployableSave = "deployable_save" , // integer 
           DeployableSpeed = "deployable_speed", //
           Placeholder = "placeholder",
+          Unrecognized = "unrecognized",
 }  // integer
 
 // Lists all of the keys/values, for validation purposes
@@ -100,7 +101,7 @@ export interface Bonus extends MixLinks<IBonusData> {
 
 export function CreateBonus(data: IBonusData): Bonus {
     let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new Mixlet("ID", "id", BonusType.Placeholder, ident as any, ident as any)); // The "as any" is necessary because we don't really have a good way of validating these....
+    b.with(new Mixlet("ID", "id", BonusType.Placeholder, (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
     b.with(new Mixlet("Value", "value", 0, ident, ident));
 
 

@@ -27,7 +27,6 @@ export {
 } from "./classes/enums";
 export { Action, CreateAction } from "./classes/Action";
 export { Bonus, CreateBonus } from "./classes/Bonus";
-export { Drone } from "./classes/Drone";
 export { Deployable } from "./classes/Deployable";
 export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";

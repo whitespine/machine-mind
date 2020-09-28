@@ -1,5 +1,5 @@
 import { ICounterSaveData } from "@/interface";
-import { ident, MixBuilder, Mixlet, MixLinks, uuid } from "@/mixmeta";
+import { ident, ident_drop_null, MixBuilder, Mixlet, MixLinks, uuid } from "@/mixmeta";
 
 /* eslint-disable @typescript-eslint/camelcase */
 export interface ICounterData {
@@ -14,7 +14,7 @@ export interface Counter extends MixLinks<ICounterData> {
     ID: string;
     Name: string;
     Min: number;
-    Max: number;
+    Max: number | null;
     Default: number;
 
     // This changes over time
@@ -38,7 +38,7 @@ export function CreateCounter(data: ICounterData) {
     mb.with(new Mixlet("ID", "id", uuid(), ident, ident));
     mb.with(new Mixlet("Name", "name", "New Counter", ident, ident));
     mb.with(new Mixlet("Min", "min", 0, ident, ident));
-    mb.with(new Mixlet("Max", "max", null, ident, ident));
+    mb.with(new Mixlet("Max", "max", null, ident, ident_drop_null));
     mb.with(new Mixlet("Default", "default_value", data.default_value || 0, ident, ident));
 
     let rv = mb.finalize(data);

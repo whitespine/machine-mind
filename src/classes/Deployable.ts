@@ -1,6 +1,6 @@
 import { ActivationType, Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
-import { MixBuilder, Mixlet, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null } from '@/mixmeta';
+import { MixBuilder, Mixlet, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null, uuid } from '@/mixmeta';
 import { Action, ActionsMixReader, ActionsMixWriter } from './Action';
 import { Bonus, BonusesMixReader, BonusesMixWriter } from './Bonus';
 import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
@@ -94,11 +94,15 @@ export function CreateDeployable(data: IDeployableData | null): Deployable {
     return r;
 }
 
-// Use these for mixin shorthand elsewhere in items that have many actions
-export const DeployableMixReader = (x: IDeployableData[] | undefined) => (x || []).map(CreateDeployable);
-export const DeployableMixWriter = (x: Deployable[]) => x.map(i => i.Serialize());
+// function Deploy(this: Deployable, owner?: string, index?: string) {
+    // if(index === undefined) {
+        // index = "" + (++this.name_ctr);
+    // }
 
-/*
+    // this.BaseName = `${owner ? `${owner}'s ` : ""}${data.name}${n ? ` (#${n})` : ""}`;
+// }
+
+
 export interface IDeployedData {
     id: string;
     assigned_name: string;
@@ -107,130 +111,46 @@ export interface IDeployedData {
     overshield?: number;
     isDestroyed?: boolean;
 }
-export class Deployed {
-    private _deployable: Deployable;
-    private _current_hp: number;
-    private _current_overshield: number;
-    private _current_duration: number | null;
-    private _isDestroyed: boolean;
-    private _name: string = "";
 
-    constructor(data: IDeployedData) {
-        this._deployable = store.compendium.getReferenceByID("Deployables", data.id);
-        this._current_hp = this._deployable.MaxHP;
-        this._isDestroyed = false;
-        this._name = data.assigned_name;
-        this._current_duration = data.current_duration || null;
-        this._current_overshield = data.overshield;
-    }
+export interface Deployed extends MixLinks<IDeployedData> {
+    // Data
+    ID: string; // UID of this instance. Used to differentiate items in a scene
+    InstanceName: string;
+    CurrentHP: number;
+    CurrentDuration: number | null; // Null indicates infinite
+    Overshield: number;
+    Destroyed: boolean;
 
-    public Serialize(): IDeployedData {
-        return {
-            id: this._deployable.ID,
-            assigned_name: this.Name,
-            current_hp: this.CurrentHP,
-            isDestroyed: this.IsDestroyed,
-            overshield: this.Overshield
-        };
-    }
-
-    public get Deployable(): Deployable {
-        return this._deployable;
-    }
-
-
-    public get IsDestroyed(): boolean {
-        return this._isDestroyed;
-    }
-
-    public set IsDestroyed(val: boolean) {
-        this._isDestroyed = val;
-        this.save();
-    }
-
-    public get Name(): string {
-        return this._name;
-    }
-
-    public set Name(name: string) {
-        this._name = name;
-        this.save();
-    }
-    
-    public get CurrentOvershield(): number {
-        return this._current_overshield;
-    }
-
-    public set CurrentOvershield(overshield: number) {
-        this._current_overshield = overshield;
-        this.save();
-    }
-
-    public get CurrentHP(): number {
-        return this._current_hp;
-    }
-
-    // Bounded setter, updates destroyed
-    public set CurrentHP(hp: number) {
-        if (hp > this._deployable.MaxHP) this._current_hp = this._deployable.MaxHP;
-        else if (hp <= 0) {
-            this.IsDestroyed = true;
-            this._current_hp = 0;
-        } else this._current_hp = hp;
-        this.save();
-    }
-
+    // Methods
     // Apply damage, first to overshields, then to hp
-    public InflictDamage(amt: number) {
-        // If OS can tank, do it.
-        if(amt <= this.CurrentOvershield) {
-            this.CurrentOvershield -= amt;
-        } 
-
-        // Otherwise, neutralize OS, and then apply remained to hp
-        amt -= this.CurrentOvershield;
-        this.CurrentOvershield = 0;
-        this.CurrentHP -= amt;
-    }
-
-    private save(): void {
-        store.pilots.saveData();
-    }
+    InflictDamage(amt: number): void;
 }
 
-export class Deployable {
-    public readonly ID: string;
-    public readonly Source: string;
-    public readonly License: string;
-    public readonly Detail: string;
-    public readonly Size: number;
-    public readonly MaxHP: number;
-    public readonly Armor: number;
-    public readonly Evasion: number;
-    public readonly EDefense: number;
-    private name_ctr: number = 1;
+// Create our deployable. Note that this doesn't object does not have any self-concept/knowledge of where it came from. It must be tracked properly with/by its corresponding deploybable
+export function CreateDeployed(data: IDeployedData | null): Deployed {
+    let mb = new MixBuilder<Deployed, IDeployedData>({InflictDamage});
+    mb.with(new Mixlet("ID", "id", uuid(), ident, ident));
+    mb.with(new Mixlet("InstanceName", "assigned_name", "Deployment #?", ident, ident));
+    mb.with(new Mixlet("CurrentHP", "current_hp", 0, ident, ident));
+    mb.with(new Mixlet("CurrentDuration", "current_duration", null, ident, ident_drop_null));
+    mb.with(new Mixlet("Overshield", "overshield", 0, ident, ident));
+    mb.with(new Mixlet("Destroyed", "isDestroyed", false, ident, ident));
 
-    public constructor(data: IDeployableData, parent_item: CompendiumItem, owner?: string) {
-        this.ID = parent_item.ID + data.(); // TODO: Unify how we do this with compcon
-        this.Source = data.source;
-        this.License = data.license;
-        this.Detail = data.detail;
-        this.Size = data.size;
-        this.MaxHP = data.hp;
-        this.Armor = data.armor || 0;
-        this.Evasion = data.evasion;
-        this.EDefense = data.edef;
-    }
+    return mb.finalize(data);
 }
 
+function InflictDamage(this: Deployed, amt: number) {
+    // If OS can tank, do it.
+    if(amt <= this.Overshield) {
+        this.Overshield -= amt;
+    } 
 
-    public Deploy(owner?: string, index?: string) {
-        if(index === undefined) {
-            index = "" + (++this.name_ctr);
-        }
-
-        this.BaseName = `${owner ? `${owner}'s ` : ""}${data.name}${n ? ` (#${n})` : ""}`;
-    }
-
+    // Otherwise, neutralize OS, and then apply remained to hp
+    amt -= this.Overshield;
+    this.Overshield = 0;
+    this.CurrentHP -= amt;
 }
-*/
+
+// Use these for mixin shorthand elsewhere in items that have many actions
+export const DeployableMixReader = (x: IDeployableData[] | undefined) => (x || []).map(CreateDeployable);
+export const DeployableMixWriter = (x: Deployable[]) => x.map(i => i.Serialize());

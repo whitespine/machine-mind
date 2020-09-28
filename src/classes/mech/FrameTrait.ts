@@ -1,52 +1,58 @@
-import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, IMMItemData } from '@/interface';
-import { ItemType, TraitUseType } from '../enums';
-import { MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated, MMItem } from '@/class';
+import { Action, Bonus, Counter } from '@/class';
+import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData} from '@/interface';
+import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, CountersMixReader, CountersMixWriter, ident, ident_drop_null, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
+import { Deployable, DeployableMixReader, DeployableMixWriter } from '../Deployable';
+import { Synergy, SynergyMixReader, SynergyMixWriter } from '../Synergy';
 
 
 
-export interface IFrameTraitData extends IMMItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
-    // All else is contained in above
-  use?: TraitUseType;
+export enum TraitUse {
+    Turn = "Turn",
+    NextTurn = 'Next Turn',
+    Round = 'Round',
+    NextRound = 'Next Round',
+    Scene = 'Scene' ,
+    Encounter = 'Encounter' ,
+    Mission= 'Mission',
+}
+// const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
+
+export interface IFrameTraitData {
+  "name": string,
+  "description": string, // v-html
+  "use"?: TraitUse
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[]
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[] 
 }
 
+export interface FrameTrait extends MixLinks<IFrameTraitData> {
+    Name: string;
+    Description: string;
+    Use: TraitUse | null;
+    Actions: Action[];
+    Bonuses: Bonus[]
+    Synergies: Synergy[];
+    Deployables: Deployable[];
+    Counters: Counter[];
+    Integrated: string[];
+}
 
-export class FrameTrait extends MMItem<IFrameTraitData> {
-    // Mixins
-    public readonly Actions: MixActions;
-    public readonly Bonuses: MixBonuses;
-    public readonly Synergies: MixSynergies ;
-    public readonly Deployables: MixDeployables ;
-    public readonly Counters: MixCounters ;
-    public readonly Integrated: MixIntegrated ;
+export function CreateFrameTrait(data: IFrameTraitData | null) {
+    let mb = new MixBuilder<FrameTrait, IFrameTraitData>({});
+    mb.with(new Mixlet("Name", "name", "Undefined Trait", ident, ident));
+    mb.with(new Mixlet("Description", "description", "No description", ident, ident));
+    mb.with(new Mixlet("Use", "use", null, ident, ident_drop_null)); // Sub unrecognized for null
 
-    private _use: TraitUseType | null; 
-    public get Use(): TraitUseType | null { return this._use ;}
-    public set Use(nv: TraitUseType | null) { this._use = nv ;}
+    mb.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
+    mb.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
+    mb.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
+    mb.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    mb.with(new Mixlet("Counters", "counters", [], CountersMixReader, CountersMixWriter));
+    mb.with(new Mixlet("Integrated", "integrated", [], ident, ident ));
 
-    public constructor(ftd: IFrameTraitData) {
-        super(ftd);
-
-        // Handle mixins
-        let mixins = [
-            this.Actions = new MixActions(),
-            this.Bonuses = new MixBonuses(),
-            this.Synergies = new MixSynergies(),
-            this.Deployables = new MixDeployables(),
-            this.Counters = new MixCounters(),
-            this.Integrated = new MixIntegrated()
-        ];
-        this.register_mixins(mixins);
-        this.load(ftd);
-
-        // Handle specific data
-        this._use = ftd.use || null;
-    }
-
-    protected serialize_self() {
-        return {
-            ...super.serialize_self(),
-            use: this._use
-        };
-    }
 }
 
