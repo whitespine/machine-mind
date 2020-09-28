@@ -21,36 +21,25 @@ import {
 import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
 import { store } from "@/hooks";
 import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, Mixlet, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
-import { getMountType } from '../enums';
+import { getMountType, getWeaponSize } from '../enums';
 import { DamagesMixReader, DamagesMixWriter } from '../Damage';
 import { RangesMixReader, RangesMixWriter } from '../Range';
+import { CountersMixReader, CountersMixWriter } from '../Counter';
 
 // TODO:
 // class WeaponAmmo {}
 
-export interface IMechWeaponData {
-  "id": string,
-  "name": string,
-  "source": string, // must be the same as the Manufacturer ID to sort correctly
-  "license": string, // reference to the Frame name of the associated license
-  "license_level": number, // set to zero for this item to be available to a LL0 character
-  "mount": MountType,
+export interface IMechWeaponData extends IMechEquipmentData {
+  // Ss
+  "mount": WeaponSize,
   "type": WeaponType,
-  "damage"?: IDamageData[],
-  "range"?: IRangeData[],
-  "tags"?: ITagInstanceData[],
-  "sp"?: number,
-  "description": string, // v-html
-  "effect"?: string // v-html
   "on_attack"?: string // v-html
   "on_hit"?: string // v-html
   "on_crit"?: string // v-html
-  "actions"?: IActionData[],
-  "bonuses"?: IBonusData[]
-  "synergies"?: ISynergyData[],
-  "deployables"?: IDeployableData[],
-  "counters"?: ICounterData[],
-  "integrated"?: string[]
+  "damage"?: IDamageData[],
+  "range"?: IRangeData[],
+  "profiles"?: Partial<IMechWeaponData>[], // Current profile overrides
+  "selected_profile"?: number;
 }
 
 export interface MechWeapon extends MixLinks<IMechWeaponData> {
@@ -60,7 +49,7 @@ export interface MechWeapon extends MixLinks<IMechWeaponData> {
     Source: string; // MANUFACTURER NAME
     License: string; // FRAME NAME
     LicenseLevel: number;
-    Mount: MountType;
+    Mount: WeaponSize;
     Type: WeaponType;
     Damage: Damage[];
     Range: Range[];
@@ -90,7 +79,7 @@ export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
     mb.with(new Mixlet("Source", "source", "MANUFACTURER", ident, ident));
     mb.with(new Mixlet("License", "license", "LICENSE", ident, ident));
     mb.with(new Mixlet("LicenseLevel", "license_level", 0, ident, ident));
-    mb.with(new Mixlet("Mount", "mount", MountType.Main, getMountType, ident));
+    mb.with(new Mixlet("Mount", "mount", WeaponSize.Main, getWeaponSize, ident));
     mb.with(new Mixlet("Type", "type", WeaponType.Rifle, ident, ident));
     mb.with(new Mixlet("Damage", "damage", [], DamagesMixReader, DamagesMixWriter));
     mb.with(new Mixlet("Range", "range", [], RangesMixReader, RangesMixWriter));
@@ -106,70 +95,34 @@ export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
     mb.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
     mb.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
     mb.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
-    mb.with(new Mixlet("Counters", "counters", [], CounterM));
+    mb.with(new Mixlet("Counters", "counters", [], CountersMixReader, CountersMixWriter));
     mb.with(new Mixlet("Integrated", "integrated", [], ident, ident ));
+
+    return mb.finalize(data);
 }
 
+     public get TotalSP(): number {
+        // if (!this.Mod) return this.sp;
+        // return this.Mod.SP + this.sp;
+     }
 
+    // public get ModSP(): number {
+        // return this.Mod ? this.Mod.SP : 0;
+    // }
 
-export class MeechWeapon extends MechEquipment {
-    private _size: WeaponSize;
-    private _weapon_type: WeaponType;
-    private _damage: Damage[] | null;
-    private _range: Range[];
-    private _mod: WeaponMod | null;
-    private _custom_damage_type: string | null;
-    // private ammo?: WeaponAmmo | null;
+    // public get Damage(): Damage[] {
+        // if (this._damage && this.Mod && this.Mod.AddedDamage)
+            // return this._damage.concat(this.Mod.AddedDamage);
+        // return this._damage || [];
+    // }
 
-    public constructor(weaponData: IMechWeaponData) {
-        super(weaponData);
-        this._size = weaponData.mount;
-        this._weapon_type = weaponData.type;
-        if (weaponData.damage) {
-            this._damage = weaponData.damage.map(x => new Damage(x));
-        } else {
-            this._damage = null;
-        }
-        this._range = weaponData.range.map(x => new Range(x));
-        this._mod = null;
-        this._item_type = ItemType.MechWeapon;
-        this._custom_damage_type = null;
-    }
-
-    public get Size(): WeaponSize {
-        return this._size;
-    }
-
-    public get Type(): WeaponType {
-        return this._weapon_type;
-    }
-
-    public get TotalSP(): number {
-        if (!this.Mod) return this.sp;
-        return this.Mod.SP + this.sp;
-    }
-
-    public get SP(): number {
-        return this.sp;
-    }
-
-    public get ModSP(): number {
-        return this.Mod ? this.Mod.SP : 0;
-    }
-
-    public get Damage(): Damage[] {
-        if (this._damage && this.Mod && this.Mod.AddedDamage)
-            return this._damage.concat(this.Mod.AddedDamage);
-        return this._damage || [];
-    }
-
-    public get MaxDamage(): number {
-        if (0 === this.Damage.length) {
-            return 0;
-        } else {
-            return this.Damage[0].Max;
-        }
-    }
+    // public get MaxDamage(): number {
+        // if (0 === this.Damage.length) {
+            // return 0;
+        // } else {
+            // return this.Damage[0].Max;
+        // }
+    // }
 
     public get DamageTypeOverride(): string {
         return this._custom_damage_type || "";
@@ -197,10 +150,7 @@ export class MeechWeapon extends MechEquipment {
         }
     }
 
-    public get Range(): Range[] {
-        return this._range || [];
-    }
-
+    /*
     public getTotalRange(mech: Mech): Range[] {
         const comp = store.compendium;
         const bonuses = [] as { type: RangeType; val: number }[];
@@ -244,51 +194,9 @@ export class MeechWeapon extends MechEquipment {
             }
         return Range.AddBonuses(this.Range, bonuses);
     }
+    */
 
     public get RangeType(): RangeType[] {
         return this._range?.map(x => x.Type) || [];
-    }
-
-    public set Mod(_mod: WeaponMod | null) {
-        this._mod = _.cloneDeep(_mod);
-    }
-
-    public get Mod(): WeaponMod | null {
-        return this._mod || null;
-    }
-
-    public get Color(): string {
-        return "mech-weapon";
-    }
-
-    public static Serialize(item: MechWeapon): IMechWeaponSaveData {
-        return {
-            id: item.ID,
-            uses: item.Uses || 0,
-            destroyed: item.Destroyed,
-            cascading: item.IsCascading,
-            loaded: item.Loaded,
-            note: item.Note,
-            mod: item.Mod ? WeaponMod.Serialize(item.Mod) : null,
-            flavorName: item._flavor_name,
-            flavorDescription: item._flavor_description,
-            customDamageType: item._custom_damage_type || null,
-            maxUseOverride: item.max_use_override || 0,
-        };
-    }
-
-    public static Deserialize(data: IMechWeaponSaveData): MechWeapon {
-        const item = store.compendium.instantiate("MechWeapons", data.id) as MechWeapon;
-        item._uses = data.uses || 0;
-        item._destroyed = data.destroyed || false;
-        item._cascading = data.cascading || false;
-        item._loaded = data.loaded || true;
-        item._mod = data.mod ? WeaponMod.Deserialize(data.mod) : null;
-        item._note = data.note;
-        item._flavor_name = data.flavorName;
-        item._flavor_description = data.flavorDescription;
-        item._custom_damage_type = data.customDamageType || null;
-        item.max_use_override = data.maxUseOverride || 0;
-        return item;
     }
 }

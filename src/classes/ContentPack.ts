@@ -63,9 +63,9 @@ export interface IContentPackManifest {
     item_prefix: string; // Note - this is applied only on initial load. Dynamic, at runtime packs do not care about this
     author: string;
     version: string;
-    description?: string | null;
-    website?: string | null;
-    image_url?: string | null;
+    description?: string ;
+    website?: string ;
+    image_url?: string ;
 }
 export interface IContentPackData {
     manufacturers: IManufacturerData[];
@@ -84,12 +84,12 @@ export interface IContentPackData {
     npcTemplates: INpcTemplateData[];
 
     // New additions courtesy of whitespine
-    skills?: ISkillData[] | null;
-    statuses?: IStatusData[] | null;
-    reserves?: IReserveData[] | null;
-    environments?: IEnvironmentData[] | null;
-    sitreps?: ISitrepData[] | null;
-    quirks?: string[] | null;
+    skills?: ISkillData[] ;
+    statuses?: IStatusData[] ;
+    reserves?: IReserveData[] ;
+    environments?: IEnvironmentData[] ;
+    sitreps?: ISitrepData[] ;
+    quirks?: string[] ;
 }
 
 export interface IContentPack {
@@ -115,13 +115,13 @@ export class ContentPack {
     public get Version(): string {
         return this._manifest.version;
     }
-    public get Description(): string | null {
-        return this._manifest.description || null;
+    public get Description(): string  {
+        return this._manifest.description || null
     }
-    public get Website(): string | null {
+    public get Website(): string {
         return this._manifest.website || null;
     }
-    public get ImageURL(): string | null {
+    public get ImageURL(): string {
         return this._manifest.image_url || null;
     }
 

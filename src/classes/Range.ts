@@ -7,14 +7,14 @@ export interface IRangeData {
     type: RangeType;
     val: number;
     override?: boolean | null;
-    bonus?: number | null;
+    // bonus?: number | null;
 }
 
 export interface Range extends MixLinks<IRangeData>{
     Type: RangeType;
     Value: number;
     Override: boolean;
-    Bonus: number | null
+    // Bonus: number | null
 
     // Methods
       Icon(): string;
@@ -28,14 +28,14 @@ export function CreateRange(data: IRangeData): Range {
     mb.with(new Mixlet("Type", "type", RangeType.Range, getRangeType, ident));
     mb.with(new Mixlet("Value", "val", 1, ident, ident));
     mb.with(new Mixlet("Override", "override",false, ident, ident));
-    mb.with(new Mixlet("Bonus", "bonus", null, ident, ident));
+    // mb.with(new Mixlet("Bonus", "bonus", null, ident, ident));
 
     let rv = mb.finalize(data);
     return rv;
 }
 
 // Error correction
-function getRangeType(str?: string | null): RangeType {
+function getRangeType(str?: string): RangeType {
     switch (str?.toLowerCase()) {
         case "blast":
             return RangeType.Blast;
@@ -112,5 +112,5 @@ function    AddBonuses(this: Range,
     }
 }
 */
-export const RangesMixReader = (x: IRangeData[] | null | undefined) => (x || []).map(CreateRange);
+export const RangesMixReader = (x: IRangeData[] | undefined) => (x || []).map(CreateRange);
 export const RangesMixWriter = (x: Range[]) => x.map(i => i.Serialize());

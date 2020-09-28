@@ -18,7 +18,7 @@ export abstract class Loadout {
     private _id: string;
     protected _name: string;
 
-    public constructor(count: number, id?: string | null) {
+    public constructor(count: number, id?: string) {
         this._id = id ? id : uuid();
         this._name = ordArr[count];
     }

@@ -49,7 +49,7 @@ export interface ILicenseRequirement {
     license: License; // The license it comes from
     rank: number; // The rank of that license
     items: string[]; // The items used in that license
-    missing?: boolean | null; // When displaying, whether this license is present
+    missing?: boolean; // When displaying, whether this license is present
 }
 
 // Utility class to check if all requirements are satisfied

@@ -24,6 +24,7 @@ import { store } from "@/hooks";
 import { ActiveState } from "../mech/ActiveState";
 import { MixLinks, MixBuilder, Mixlet, ident } from '@/mixmeta';
 import { VCompendiumItem } from '../CompendiumItem';
+import { CreateMechSkills } from './MechSkills';
 
 export interface IPilotData {
     id: string;
@@ -56,12 +57,12 @@ export interface IPilotData {
     orgs: IOrganizationData[];
     loadout: IPilotLoadoutData;
     mechs: IMechData[];
-    active_mech: string | null;
+    active_mech: string;
     cc_ver: string;
     counter_data: ICounterSaveData[];
     custom_counters: object[];
     brews: string[];
-    state?: IMechState | null;
+    state?: IMechState;
 }
 export interface Pilot extends MixLinks<IPilotData> {
     ID: string;
@@ -92,7 +93,7 @@ export interface Pilot extends MixLinks<IPilotData> {
     Status: string;
     CurrentHP: number;
     Loadout: PilotLoadout;
-    ActiveMech: string | null;
+    ActiveMech: string;
     CounterData: [];
 
     CoreBonuses: CoreBonus[];
@@ -104,7 +105,7 @@ export interface Pilot extends MixLinks<IPilotData> {
     Orgs: Organization[];
     Mechs: Mech[];
     CustomCounters: Counter[];
-    State: ActiveState | null;
+    State: ActiveState;
 
     Brews: string[];
     CCVersion: string;
@@ -114,7 +115,7 @@ export interface Pilot extends MixLinks<IPilotData> {
     SetBrewData(this: Pilot): void;
 
     // Check if the lancer has any of the following "possessions"
-    has(feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve, rank?: number | null): boolean;
+    has(feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve, rank?: number): boolean;
 
     // Get the rank of the specified skill/talent. Returns 0 if none
     rank(this: Pilot, feature: Skill | CustomSkill | Talent): number;
@@ -147,10 +148,10 @@ export function CreatePilot(data: IPilotData): Pilot {
     b.with(new Mixlet("Quirk", "quirk", "", ident, ident));
     b.with(new Mixlet("CurrentHP", "current_hp", 0, ident, ident));
     b.with(new Mixlet("Background", "background", "", ident, ident));
-    b.with(new Mixlet("MechSkills", "mechSkills", new MechSkills(0,0,0,0), ident, ident));
+    b.with(new Mixlet("MechSkills", "mechSkills", CreateMechSkills([0,0,0,0]), (x) => CreateMechSkills(x), (x) => x.Serialize()));
     b.with(new Mixlet("Licenses", "licenses", [], ident, ident));
     b.with(new Mixlet("Skills", "skills", [], ident, ident));
-    b.with(new Mixlet("Talents", "talents", [], ident, ident));
+    b.with(new Mixlet("Talents", "talents", [], (x) => (x || []).map(CreateTalent), (x) => x.map(y => y.Serialize()));
     b.with(new Mixlet("CoreBonuses", "core_bonuses", [], ident, ident));
     b.with(new Mixlet("Reserves", "reserves", [], ident, ident));
     b.with(new Mixlet("Orgs", "orgs", [], ident, ident));
@@ -195,7 +196,7 @@ function SetBrewData(this: Pilot): void {
     function has(
         this: Pilot,
         feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve,
-        rank?: number | null
+        rank?: number
     ): boolean {
           if (
             feature instanceof Skill ||
@@ -881,7 +882,7 @@ export function RemoveMech(mech: Mech): void {
 
     
     // Controls the active state. Due to volatility, you should always route methods through the State getter
-    export function set ActiveMech(mech: Mech | null) {
+    export function set ActiveMech(mech: Mech) {
         if(mech) {
             this._state = new ActiveState(this);
         } else {

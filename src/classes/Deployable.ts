@@ -1,7 +1,6 @@
 import { ActivationType, Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
-import { MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
-import { ident } from 'lodash';
+import { MixBuilder, Mixlet, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null } from '@/mixmeta';
 import { Action, ActionsMixReader, ActionsMixWriter } from './Action';
 import { Bonus, BonusesMixReader, BonusesMixWriter } from './Bonus';
 import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
@@ -65,7 +64,7 @@ export interface Deployable extends MixLinks<IDeployableData> {
 
 export function CreateDeployable(data: IDeployableData | null): Deployable {
     let b = new MixBuilder<Deployable, IDeployableData>({});
-    b.with(new Mixlet("Name", "name", "New Deployable", ident(, ident));
+    b.with(new Mixlet("Name", "name", "New Deployable", ident, ident));
     b.with(new Mixlet("Type", "type", "custom", ident, ident));
     b.with(new Mixlet("Detail", "detail", "No description", ident, ident));
     b.with(new Mixlet("Activation", "activation", ActivationType.None, ident, ident));
@@ -75,19 +74,19 @@ export function CreateDeployable(data: IDeployableData | null): Deployable {
     b.with(new Mixlet("Size", "size", .5, ident, ident)); // deployables tend to be smaller
     b.with(new Mixlet("Cost", "cost", 1, ident, ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
     b.with(new Mixlet("Armor", "armor", 0, ident, ident)); 
-    b.with(new Mixlet("HP", "hp", null, ident, ident)); 
-    b.with(new Mixlet("Evasion", "hp", null, ident, ident)); 
-    b.with(new Mixlet("EDef", "edef", null, ident, ident)); 
-    b.with(new Mixlet("HeatCap", "heatcap", null, ident, ident)); 
-    b.with(new Mixlet("RepairCap", "repcap", null, ident, ident)); 
-    b.with(new Mixlet("SensorRange", "sensor_range", null, ident, ident)); 
-    b.with(new Mixlet("TechAttack", "tech_attack", null, ident, ident)); 
-    b.with(new Mixlet("Save", "save", null, ident, ident)); 
-    b.with(new Mixlet("Speed", "speed", null, ident, ident)); 
+    b.with(new Mixlet("HP", "hp", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("Evasion", "hp", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("EDef", "edef", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("HeatCap", "heatcap", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("RepairCap", "repcap", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("SensorRange", "sensor_range", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("TechAttack", "tech_attack", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("Save", "save", null, ident, ident_drop_null)); 
+    b.with(new Mixlet("Speed", "speed", null, ident, ident_drop_null)); 
     b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter)); 
     b.with(new Mixlet("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter)); 
-    b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, ident)); 
-    b.with(new Mixlet("Counters", "counters", [], CounterMixReader, CounterMixWriter)); 
+    b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter)); 
+    b.with(new Mixlet("Counters", "counters", [], CountersMixReader, CountersMixWriter)); 
     b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter)); 
     
 
@@ -96,7 +95,7 @@ export function CreateDeployable(data: IDeployableData | null): Deployable {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const DeployableMixReader = (x: IDeployableData[] | null | undefined) => (x || []).map(CreateDeployable);
+export const DeployableMixReader = (x: IDeployableData[] | undefined) => (x || []).map(CreateDeployable);
 export const DeployableMixWriter = (x: Deployable[]) => x.map(i => i.Serialize());
 
 /*

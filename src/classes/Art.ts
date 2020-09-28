@@ -1,5 +1,5 @@
 export interface IArtLocation {
-  tag?: string | null,
-  src?: string | null,
-  url?: string | null
+  tag?: string ,
+  src?: string ,
+  url?: string 
 }

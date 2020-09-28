@@ -7,7 +7,7 @@ import * as pmath from "parsemath";
 export interface IDamageData {
     type: DamageType;
     val: string | number;
-    override?: boolean | null; // If player can set the damage of this, I guess????
+    override?: boolean ; // If player can set the damage of this, I guess????
 }
 
 export interface Damage extends MixLinks<IDamageData> {
@@ -44,7 +44,7 @@ export function CreateDamage(data: IDamageData): Damage {
     return rv;
 }
 
-function getDamageType(str?: string | null): DamageType {
+function getDamageType(str?: string ): DamageType {
     switch (str?.toLowerCase()) {
         case "kinetic":
             return DamageType.Kinetic;
@@ -90,5 +90,5 @@ function Text(this: Damage): string {
     return `${this.Value} ${this.Type} Damage`;
 }
 
-export const DamagesMixReader = (x: IDamageData[] | null | undefined) => (x || []).map(CreateDamage);
+export const DamagesMixReader = (x: IDamageData[]  | undefined) => (x || []).map(CreateDamage);
 export const DamagesMixWriter = (x: Damage[]) => x.map(i => i.Serialize());

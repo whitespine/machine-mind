@@ -10,7 +10,7 @@ export enum MissionStepType {
 }
 
 export interface IMissionData {
-    id?: string | null;
+    id?: string;
     name: string;
     note: string;
     campaign: string;

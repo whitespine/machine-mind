@@ -52,27 +52,27 @@ export interface IDamageRollResult {
 export interface IRankedData {
     id: string;
     rank: number;
-    custom?: boolean | null;
-    custom_desc?: string | null;
-    custom_detail?: string | null;
+    custom?: boolean ;
+    custom_desc?: string ;
+    custom_detail?: string ;
 }
 
-export interface IEquipmentData {
+export interface IEquipmentSaveData {
     id: string;
     destroyed: boolean;
     cascading: boolean;
     note: string;
-    uses?: number | null;
-    flavorName?: string | null;
-    flavorDescription?: string | null;
-    customDamageType?: string | null;
+    uses?: number ;
+    flavorName?: string ;
+    flavorDescription?: string ;
+    customDamageType?: string ;
 }
 
-export interface IMechWeaponSaveData extends IEquipmentData {
+export interface IMechWeaponSaveData extends IEquipmentSaveData {
     loaded: boolean;
-    mod?: IEquipmentData | null;
-    customDamageType?: string | null;
-    maxUseOverride?: number | null;
+    mod?: IEquipmentSaveData ;
+    customDamageType?: string ;
+    maxUseOverride?: number ;
 }
 
 export interface ICounterSaveData {
@@ -82,13 +82,13 @@ export interface ICounterSaveData {
 
 export interface IReserveData {
     id: string;
-    type?: string | null;
-    name?: string | null;
-    label?: string | null;
-    description?: string | null;
-    resource_name?: string | null;
-    resource_note?: string | null;
-    resource_cost?: string | null;
+    type?: string ;
+    name?: string ;
+    label?: string ;
+    description?: string ;
+    resource_name?: string ;
+    resource_note?: string ;
+    resource_cost?: string ;
     used: boolean;
 }
 

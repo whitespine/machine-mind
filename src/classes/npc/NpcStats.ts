@@ -18,11 +18,11 @@ export interface INpcStats {
     engineering: number;
     sizes: number[];
     size: number;
-    structure?: number | null;
-    stress?: number | null;
-    reactions: string[] | null;
-    bonuses?: INpcStats | null;
-    overrides?: INpcStats | null;
+    structure?: number;
+    stress?: number;
+    reactions: string[];
+    bonuses?: INpcStats;
+    overrides?: INpcStats;
 }
 
 export class NpcStats {

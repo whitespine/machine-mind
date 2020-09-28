@@ -12,7 +12,7 @@ export interface IActiveMissionData {
     step: number;
     round: number;
     start: string;
-    end?: string | null;
+    end?: string;
     note: string;
     result: string;
 }

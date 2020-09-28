@@ -75,10 +75,10 @@ export const BonusTypeIDList: string[] = Object.keys(BonusType).map(k => BonusTy
 export interface IBonusData {
   id: string;
   value: any
-  damage_types?: DamageType[] | null
-  range_types?: RangeType[] | null
-  weapon_types?: WeaponType[] | null
-  weapon_sizes?: WeaponSize[] | null
+  damage_types?: DamageType[] 
+  range_types?: RangeType[] 
+  weapon_types?: WeaponType[] 
+  weapon_sizes?: WeaponSize[] 
 }
 
 
@@ -87,6 +87,11 @@ export interface Bonus extends MixLinks<IBonusData> {
   // Data
   ID: BonusType,
   Value: any;
+
+  DamageTypes: DamageType[] | null;
+  RangeTypes: RangeType[] | null;
+  WeaponTypes: WeaponType[] | null;
+  WeaponSizes: WeaponSize[] | null;
 
   // Methods
   //...
@@ -128,5 +133,5 @@ export function Evaluate(bonus: Bonus, pilot: Pilot): number{
 
 
 // Use these for mixin shorthand elsewhere
-export const BonusesMixReader = (x: IBonusData[] | null | undefined) => (x || []).map(CreateBonus);
+export const BonusesMixReader = (x: IBonusData[]  | undefined) => (x || []).map(CreateBonus);
 export const BonusesMixWriter = (x: Bonus[]) => x.map(i => i.Serialize());

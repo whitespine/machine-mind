@@ -62,23 +62,9 @@ class Drone {
         store.pilots.saveData();
     }
 
-    public get Name(): string {
-        return this._name ? this._name : this.BaseName;
-    }
-
-    public set Name(name: string) {
-        this._name = name;
-        this.save();
-    }
-
-    public get Overshield(): number {
-        return this._overshield;
-    }
-
-    public set Overshield(val: number) {
-        this._overshield = val;
-        this.save();
-    }
+    // public get Name(): string {
+        // return this._name ? this._name : this.BaseName;
+    // }
 
     public get CurrentHP(): number {
         if (this._current_hp > this.MaxHP) this.CurrentHP = this.MaxHP;
@@ -101,15 +87,6 @@ class Drone {
     public set CurrentHeat(heat: number) {
         if (heat > this.MaxHeat) this._current_heat = this.MaxHeat;
         else this._current_heat = heat;
-        this.save();
-    }
-
-    public get IsDestroyed(): boolean {
-        return this._isDestroyed;
-    }
-
-    public set IsDestroyed(val: boolean) {
-        this._isDestroyed = val;
         this.save();
     }
 

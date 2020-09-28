@@ -17,7 +17,7 @@ export interface IMMItemData {
     name: string;
 
     // The description
-    description?: string | null;
+    description?: string ;
 }
 
 // Handles a single item
@@ -64,21 +64,17 @@ export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcNam
 
     // Loads this mixlet from the specified raw data
     public load(from: Src) {
-        let raw: Src[SrcName] | undefined | null = from[this.src_key];
+        let raw: Src[SrcName] | undefined = from[this.src_key];
 
         // Silently promotes undefineds (IE not provided) to nulls. I think this might be a blindspot in typescripts checking
         if(raw === undefined) {
             this.val = this.default_val;
             this.defined = false;
-         }else if( raw === null) {
-            this.val = this.default_val;
-            this.defined = true; // Null is at least an explicit val
         } else {
+            // It was defined
             this.val = this.reader(raw as NonNullable<Src[SrcName]>);
             this.defined = true;
         }
-
-        this.val = this.reader(raw);
     }
 
     // Writes this mixlet to the specified raw data
@@ -301,6 +297,10 @@ function validate_props<T extends object>(v: T) {
 
 // Re-export stuff
 export function ident<T>(t: T): T { return t; }
+export function ident_drop_null<T>(t: T): NonNullable<T> | undefined { 
+    return t ?? undefined;
+}
+
 export {ActionsMixReader, ActionsMixWriter, FrequencyMixReader, FrequencyMixWriter} from "@/classes/Action";
 export {BonusesMixReader as BonusMixReader, BonusesMixWriter as BonusMixWriter} from "@/classes/Bonus";
 export {SynergyMixReader, SynergyMixWriter} from "@/classes/Synergy";
@@ -308,6 +308,7 @@ export {TagInstanceMixWriter, TagTemplateMixWriter, TagTemplateMixReader, TagIns
 export {DeployableMixReader, DeployableMixWriter} from "@/classes/Deployable";
 export {DamagesMixReader,DamagesMixWriter } from "@/classes/Damage";
 export {RangesMixReader,RangesMixWriter } from "@/classes/Range";
+export {CountersMixReader,CountersMixWriter } from "@/classes/Counter";
 
 
 

@@ -4,8 +4,8 @@ import { NpcFeature, NpcFeatureType } from "@/class";
 export interface INpcTechData extends INpcFeatureData {
     tags: ITagInstanceData[];
     tech_type: string;
-    accuracy?: number[] | null;
-    attack_bonus?: number[] | null;
+    accuracy?: number[];
+    attack_bonus?: number[];
     type: NpcFeatureType.Tech;
 }
 

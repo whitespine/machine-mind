@@ -4,8 +4,8 @@ import { WeaponType, WeaponSize, SystemType } from './enums';
 export type SynergyLocation = "any" | "active_effects" | "rest" | "weapon" | "system" | "move" | "boost" | "other" | "ram" | "grapple" | "tech_attack" | "overcharge" | "skill_check" | "overwatch" | "improvised_attack" | "disengage" | "stabilize" | "tech" | "lock_on" | "hull" | "agility" | "systems" | "engineering";
 export interface ISynergyData {
     locations: SynergyLocation[]; 
-    types?: Array<WeaponType | SystemType> | null;
-    sizes?: WeaponSize[] | null;
+    types?: Array<WeaponType | SystemType>;
+    sizes?: WeaponSize[];
     detail: string; // v-html
 }
 
@@ -102,5 +102,5 @@ export class Synergy {
 }
 
 // Use these for mixin shorthand elsewhere
-export const SynergyMixReader = (x: ISynergyData[] | null | undefined) => (x || []).map(i => new Synergy(i));
+export const SynergyMixReader = (x: ISynergyData[] | undefined) => (x || []).map(i => new Synergy(i));
 export const SynergyMixWriter = (x: Synergy[]) => x.map(i => i.save());

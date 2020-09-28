@@ -1,13 +1,23 @@
-import { LicensedItem, Tag, ItemEffect } from "@/class";
-import { ILicensedItemData, ITagData } from "@/interface";
+import { LicensedItem, TagInstance } from "@/class";
+import { IActionData, IBonusData, ICounterData, IDeployableData, ILicensedItemData, ISynergyData, ITagInstanceData } from "@/interface";
 import { ItemType } from "../enums";
 
 export interface IMechEquipmentData extends ILicensedItemData {
-    sp: number;
-    tags: ITagData[];
-    effect: string | object | object[];
-    talent_item?: boolean | null;
-    frame_id?: boolean | null;
+  "id": string,
+  "name": string,
+  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  "license": string, // reference to the Frame name of the associated license
+  "license_level": number, // set to zero for this item to be available to a LL0 character
+  "tags"?: ITagInstanceData[],
+  "sp"?: number,
+  "description": string, // v-html
+  "effect"?: string // v-html
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[],
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
 }
 
 export abstract class MechEquipment extends LicensedItem {

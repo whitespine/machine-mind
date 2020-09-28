@@ -18,9 +18,9 @@ export interface IWeaponModData extends IMechEquipmentData {
     description: string;
     restricted_mounts: WeaponSize[];
     tags: ITagInstanceData[];
-    added_tags?: ITagInstanceData[] | null;
-    added_damage?: IDamageData | null;
-    added_range?: IRangeData | null;
+    added_tags?: ITagInstanceData[];
+    added_damage?: IDamageData;
+    added_range?: IRangeData;
 }
 
 export class WeaponMod extends MechEquipment {

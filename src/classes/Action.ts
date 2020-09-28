@@ -4,13 +4,13 @@ import { Mixlet, MixBuilder, MixLinks, uuid, ident  } from '@/mixmeta';
 export interface IActionData {
   name: string,
   activation: ActivationType,
-  cost?: number | null,
-  frequency?: string | null,
-  init?: string | null,
+  cost?: number,
+  frequency?: string ,
+  init?: string ,
   trigger?: string,
-  terse?: string | null, // terse text used in the action menu. The fewer characters the better.
+  terse?: string , // terse text used in the action menu. The fewer characters the better.
   detail: string, // v-html
-  pilot?: boolean | null // Only available while unmounted
+  pilot?: boolean  // Only available while unmounted
 }
 
 export enum ActivePeriod {
@@ -56,7 +56,7 @@ export function CreateAction(data: IActionData | null): Action {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const ActionsMixReader = (x: IActionData[] | null | undefined) => (x || []).map(CreateAction);
+export const ActionsMixReader = (x: IActionData[]  | undefined) => (x || []).map(CreateAction);
 export const ActionsMixWriter = (x: Action[]) => x.map(i => i.Serialize());
 
 
@@ -101,23 +101,23 @@ export class Frequency {
     }
   }
 
-  public Serialize(): string | null {
+  public Serialize(): string | undefined {
     if(this.Duration != ActivePeriod.Unlimited) {
       return `${this.Uses} / ${this.Duration}`
     } else {
-      return null
+      return undefined
     }
 
   }
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const FrequencyMixReader = (x: string | null | undefined) => new Frequency(x || "");
+export const FrequencyMixReader = (x: string  | undefined) => new Frequency(x || "");
 export const FrequencyMixWriter = (x: Frequency) => x.Serialize();
 
 /*
 export interface ISimpleActions {
-     actions?: IActionData[] | null;
+     actions?: IActionData[];
 }
 
 export interface VSimpleActions {

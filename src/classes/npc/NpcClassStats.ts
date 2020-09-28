@@ -13,8 +13,8 @@ export interface INpcClassStats {
     systems: number[];
     engineering: number[];
     size: number[][];
-    structure?: number[] | null;
-    stress?: number[] | null;
+    structure?: number[];
+    stress?: number[];
 }
 
 export class NpcClassStats {

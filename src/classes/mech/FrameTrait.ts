@@ -6,7 +6,7 @@ import { MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixI
 
 export interface IFrameTraitData extends IMMItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
     // All else is contained in above
-  use?: TraitUseType | null;
+  use?: TraitUseType;
 }
 
 

@@ -7,7 +7,7 @@ import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters,
 export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
   source: string, // must be the same as the Manufacturer ID to sort correctly
   effect: string, // v-html
-  mounted_effect?: string | null
+  mounted_effect?: string
 }
 export class CoreBonus extends CompendiumItem<ICoreBonusData> {
     // Mixins

@@ -4,7 +4,7 @@ export interface IManufacturerData {
     id: string;
     name: string;
     logo: string;
-    logo_url?: string | null;
+    logo_url?: string;
     light: string;
     description: string;
     dark: string;

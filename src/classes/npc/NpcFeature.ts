@@ -20,9 +20,9 @@ export interface INpcFeatureData {
     name: string;
     origin: IOriginData;
     locked: boolean;
-    effect?: string | null;
-    bonus?: object | null;
-    override?: object | null;
+    effect?: string;
+    bonus?: object;
+    override?: object;
     tags: ITagInstanceData[];
     brew: string;
     hide_active: boolean;

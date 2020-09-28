@@ -6,7 +6,7 @@ export interface IFactionData {
     description: string;
     logo: string;
     color: string;
-    logo_url?: string | null;
+    logo_url?: string;
 }
 
 export class Faction {

@@ -19,8 +19,8 @@ export interface IPilotWeaponData {
   damage: IDamageData[],
   actions?: IActionData[], // these are only available to UNMOUNTED pilots
   bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
-  synergies?: ISynergyData[] | null;
-  deployables?: IDeployableData[] | null;
+  synergies?: ISynergyData[];
+  deployables?: IDeployableData[];
 }
 
 export interface IPilotArmorData  {
@@ -41,10 +41,10 @@ export interface IPilotGearData {
   type: "Gear",
   description: string,
   tags: ITagInstanceData[],
-  actions?: IActionData[] | null, // these are only available to UNMOUNTED pilots
-  bonuses?: IBonusData[] | null, // these bonuses are applied to the pilot, not parent system
-  synergies?: ISynergyData[] | null,
-  deployables?: IDeployableData[] | null, // these are only available to UNMOUNTED pilots
+  actions?: IActionData[], // these are only available to UNMOUNTED pilots
+  bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
+  synergies?: ISynergyData[],
+  deployables?: IDeployableData[], // these are only available to UNMOUNTED pilots
 }
 
 /////////////////////////////////////////////////////////

@@ -6,11 +6,9 @@ import { IArtLocation } from '../Art';
 export interface IFrameStats {
     size: number;
     armor: number;
-    // structuremod?: number | null;
     hp: number;
     evasion: number;
     edef: number;
-    // stressmod?: number | null;
     heatcap: number;
     repcap: number;
     sensor_range: number;
@@ -33,8 +31,8 @@ export interface IFrameData  {
   stats: IFrameStats,
   traits: IFrameTraitData[],
   core_system: ICoreSystemData,
-  image_url?: string | null,
-  other_art?: IArtLocation[] | null
+  image_url?: string,
+  other_art?: IArtLocation[]
 }
 
 export class Frame extends LicensedItem {

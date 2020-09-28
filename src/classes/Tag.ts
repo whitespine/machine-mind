@@ -9,13 +9,13 @@ export interface ITagTemplateData {
     id: string;
     name: string;
     description: string;
-    filter_ignore?: boolean | null;
-    hidden?: boolean | null;
+    filter_ignore?: boolean;
+    hidden?: boolean;
 }
 
 export interface ITagInstanceData {
     id: string;
-    val?: string | number | null;
+    val?: string | number;
 }
 
 export interface TagTemplate extends MixLinks<ITagTemplateData>, VCompendiumItem {
@@ -27,7 +27,7 @@ export interface TagTemplate extends MixLinks<ITagTemplateData>, VCompendiumItem
 
 export interface TagInstance extends MixLinks<ITagInstanceData> {
     TemplateID: string;
-    Val: number | string | null;
+    Val: number | string;
 }
 
 export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
@@ -53,9 +53,9 @@ export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const TagTemplateMixReader = (x: ITagTemplateData[] | null | undefined) => (x || []).map(CreateTagTemplate);
+export const TagTemplateMixReader = (x: ITagTemplateData[] | undefined) => (x || []).map(CreateTagTemplate);
 export const TagTemplateMixWriter = (x: TagTemplate[]) => x.map(i => i.Serialize());
-export const TagInstanceMixReader = (x: ITagInstanceData[] | null | undefined) => (x || []).map(CreateTagInstance);
+export const TagInstanceMixReader = (x: ITagInstanceData[] | undefined) => (x || []).map(CreateTagInstance);
 export const TagInstanceMixWriter = (x: TagInstance[]) => x.map(i => i.Serialize());
 
 /*

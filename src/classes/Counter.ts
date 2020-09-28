@@ -5,16 +5,16 @@ import { ident, MixBuilder, Mixlet, MixLinks, uuid } from "@/mixmeta";
 export interface ICounterData {
     id: string;
     name: string;
-    min?: number | null;
-    max?: number | null;
-    default_value?: number | null;
+    min?: number ;
+    max?: number;
+    default_value?: number;
 }
 
 export interface Counter extends MixLinks<ICounterData> {
     ID: string;
     Name: string;
     Min: number;
-    Max: number | null;
+    Max: number;
     Default: number;
 
     // This changes over time
@@ -97,6 +97,6 @@ function LoadData(this: Counter, data: ICounterSaveData): void {
 
 // Mixin stuff
 
-export const CountersMixReader = (x: ICounterData[] | null | undefined) =>
+export const CountersMixReader = (x: ICounterData[]  | undefined) =>
     (x || []).map(CreateCounter);
 export const CountersMixWriter = (x: Counter[]) => x.map(i => i.Serialize());

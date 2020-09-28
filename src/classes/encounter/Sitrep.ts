@@ -6,11 +6,11 @@ export interface ISitrepData {
     description: string;
     pcVictory: string;
     enemyVictory: string;
-    noVictory?: string | null;
-    deployment?: string | null;
-    objective?: string | null;
-    controlZone?: string | null;
-    extraction?: string | null;
+    noVictory?: string;
+    deployment?: string;
+    objective?: string;
+    controlZone?: string;
+    extraction?: string;
 }
 
 export class Sitrep {

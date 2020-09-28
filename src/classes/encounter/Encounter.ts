@@ -13,13 +13,13 @@ export interface IEncounterData {
     reinforcements: { id: string; side: EncounterSide }[];
     labels: string[];
     sitrep: ISitrepData;
-    campaign?: string | null;
-    gmNotes?: string | null;
-    narrativeNotes?: string | null;
-    environment?: string | null;
-    environmentDetails?: string | null;
-    cloud_map?: string | null;
-    local_map?: string | null;
+    campaign?: string;
+    gmNotes?: string;
+    narrativeNotes?: string;
+    environment?: string;
+    environmentDetails?: string;
+    cloud_map?: string;
+    local_map?: string;
 }
 
 export class Encounter implements IMissionStep {

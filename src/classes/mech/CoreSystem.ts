@@ -11,15 +11,15 @@ export interface ICoreSystemData extends IHasDeployables, IHasCounters, IHasInte
   active_effect: string, // v-html
   activation: ActivationType,
   deactivation?: ActivationType,
-  use?: CoreUseType | null;
+  use?: CoreUseType;
 
   active_actions: IActionData[],
   active_bonuses: IBonusData[],
   active_synergies: ISynergyData[],
 
-  passive_name?: string | null,
-  passive_effect?: string | null, // v-html, 
-  passive_actions?: IActionData[] | null,
+  passive_name?: string,
+  passive_effect?: string, // v-html, 
+  passive_actions?: IActionData[],
 }
 
 
