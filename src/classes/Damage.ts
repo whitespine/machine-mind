@@ -1,5 +1,5 @@
 import { DamageType } from "@/class";
-import { ident, MixBuilder, Mixlet, MixLinks } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks } from "@/mixmeta";
 import * as pmath from "parsemath";
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
@@ -21,7 +21,7 @@ export interface Damage extends MixLinks<IDamageData> {
     Max(): number;
 
     // Vaarious formatting options
-    Icon: string;
+    Icon(): string;
     Text(): string;
     DiscordEmoji(): string;
     Color(): string;
@@ -36,9 +36,9 @@ export function CreateDamage(data: IDamageData): Damage {
         Max,
     });
     // Add our props
-    mb.with(new Mixlet("Type", "type", DamageType.Variable, getDamageType, ident));
-    mb.with(new Mixlet("Value", "val", "1", x => "" + x, ident)); // Coerce to strings on way in
-    mb.with(new Mixlet("Override", "override", false, ident, ident)); // We assume not overridden
+    mb.with(new RWMix("Type", "type", DamageType.Variable, getDamageType, ident));
+    mb.with(new RWMix("Value", "val", "1", x => "" + x, ident)); // Coerce to strings on way in
+    mb.with(new RWMix("Override", "override", false, ident, ident)); // We assume not overridden
 
     let rv = mb.finalize(data);
     return rv;

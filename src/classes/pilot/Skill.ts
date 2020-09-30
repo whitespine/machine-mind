@@ -1,50 +1,36 @@
-import { CompendiumItem, SkillFamily, ItemType } from "@/class";
-import { ICompendiumItemData } from "@/interface";
-import { store } from "@/hooks";
+import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
+import { IRegistryItemData, VRegistryItem } from '../CompendiumItem';
 
-export interface ISkillData extends ICompendiumItemData {
-    detail: string;
-    family: string;
+export enum SkillFamily {
+    str = "str",
+    dex = "dex",
+    int = "int",
+    cha = "cha",
+    con = "con",
+    custom = "custom"
+}
+export interface ISkillData extends IRegistryItemData {
+    id: string,
+    name: string,
+    description: string, // terse, prefer fewest chars
+    detail: string; // v-html
+    family: SkillFamily; // TODO: Probably just drop this. Kinda dumb to hardcode limiters when they don't really matter aside from visual categorization
 }
 
-export class Skill extends CompendiumItem {
-    private _detail: string;
-    private _family: SkillFamily;
+export interface Skill extends MixLinks<ISkillData>, VRegistryItem {
+    ID: string;
+    Name: string; // The trigger name
+    Description: string;
+    Detail: string;
+    Family: SkillFamily;
+}
 
-    public constructor(data: ISkillData) {
-        super(data);
-        this._detail = data.detail;
-        this._family = SkillFamily[data.family] as SkillFamily;
-        this._item_type = ItemType.Skill;
-    }
-
-    public get Detail(): string {
-        return this._detail;
-    }
-
-    public get Trigger(): string {
-        return this._name;
-    }
-
-    public get Family(): string {
-        return this._family;
-    }
-
-    public static Deserialize(id: string): Skill {
-        let v = store.compendium.getReferenceByID("Skills", id);
-        return v;
-    }
-
-    public static Serialize(dat: Skill): ISkillData {
-        return {
-            detail: dat._detail,
-            family: dat._family,
-
-            brew: dat._brew,
-            counters: dat.Counters,
-            description: dat._description,
-            id: dat.ID,
-            name: dat._name,
-        };
-    }
+export function CreateSkill(data: ISkillData | null) {
+    const mb = new MixBuilder<Skill, ISkillData>({});
+    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
+    mb.with(new RWMix("Name", "name", "NEW TRIGGER", ident, ident));
+    mb.with(new RWMix("Description", "description", "No description", ident, ident));
+    mb.with(new RWMix("Detail", "detail", "", ident, ident));
+    mb.with(new RWMix("Family", "family", SkillFamily.con, ident, ident));
+    return mb.finalize(data);
 }

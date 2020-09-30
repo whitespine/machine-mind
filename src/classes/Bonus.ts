@@ -2,7 +2,7 @@ import { DamageType, Pilot, RangeType, WeaponSize, WeaponType } from '@/class';
 import * as pmath from "parsemath";
 // Bonuses - we'll need to elaborate on these later... currently they don't work
 
-import { ident, MixBuilder, Mixlet, MixLinks } from '@/mixmeta';
+import { ident, MixBuilder, RWMix, MixLinks } from '@/mixmeta';
 
 // export type IBonusData = BonusSkillPoint , BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
 
@@ -101,8 +101,8 @@ export interface Bonus extends MixLinks<IBonusData> {
 
 export function CreateBonus(data: IBonusData): Bonus {
     let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new Mixlet("ID", "id", BonusType.Placeholder, (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
-    b.with(new Mixlet("Value", "value", 0, ident, ident));
+    b.with(new RWMix("ID", "id", BonusType.Placeholder, (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
+    b.with(new RWMix("Value", "value", 0, ident, ident));
 
 
     // Finalize and check. We don't fail

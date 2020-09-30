@@ -8,7 +8,7 @@ import {
     PilotEquipment
 } from "@/class";
 import { IPilotArmorData, IPilotGearData, IPilotWeaponData } from '@/interface';
-import { ident, MixBuilder, Mixlet, MixLinks, uuid } from '@/mixmeta';
+import { ident, MixBuilder, RWMix, MixLinks, uuid } from '@/mixmeta';
 import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './PilotEquipment';
 
 export interface IPilotLoadoutData {
@@ -48,11 +48,11 @@ export function CreatePilotLoadout(data: IPilotLoadoutData) {
         CanAddGear,
         CanAddWeapons
     });
-    mb.with(new Mixlet("ID","id", uuid(), ident, ident));
-    mb.with(new Mixlet("Name","name", "New Loadout", ident, ident));
-    mb.with(new Mixlet("Armor","armor", [], (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new Mixlet("Weapons","weapons", [], (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new Mixlet("Gear","gear", [], (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("ID","id", uuid(), ident, ident));
+    mb.with(new RWMix("Name","name", "New Loadout", ident, ident));
+    mb.with(new RWMix("Armor","armor", [], (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("Weapons","weapons", [], (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("Gear","gear", [], (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
 
 
     return mb.finalize(data);

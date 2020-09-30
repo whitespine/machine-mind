@@ -12,8 +12,10 @@ import {
 } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store } from "@/hooks";
-import { IActor, IMechLoadoutData } from "@/interface";
+import { VActor, IMechLoadoutData } from "@/interface";
 import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
+import { ident, MixBuilder, RWMix, MixLinks, ser_one } from '@/mixmeta';
+import { CreateFrame } from './Frame';
 
 export interface IMechData {
     id: string;
@@ -48,42 +50,84 @@ export interface IMechData {
     cc_ver: string;
 }
 
-export class Mech implements IActor {
-    private _id: string;
-    private _name: string;
-    private _notes: string;
-    private _gm_note: string;
-    private _portrait: string;
-    private _cloud_portrait: string;
-    private _frame: Frame;
-    private _loadouts: MechLoadout[];
-    private _active_loadout: MechLoadout | null | undefined;
-    private _current_structure: number;
-    private _current_hp: number;
-    private _overshield: number;
-    private _current_stress: number;
-    private _current_heat: number;
-    private _current_repairs: number;
-    private _current_core_energy: number;
-    private _current_overcharge: number;
-    private _activations: number;
-    private _active: boolean;
-    private _pilot: Pilot;
-    private _cc_ver: string;
-    private _statuses: string[];
-    private _conditions: string[];
-    private _resistances: string[];
-    private _reactions: string[];
-    private _ejected: boolean;
-    private _destroyed: boolean;
-    private _defeat: string;
-    private _reactor_destroyed: boolean;
-    private _meltdown_imminent: boolean;
-    private _burn: number;
-    private _actions: number;
-    private _currentMove: number;
+export interface Mech implements VActor extends MixLinks<IMechData> {
+     Id: string;
+     Name: string;
+     Notes: string;
+     GmNote: string;
+     Portrait: string;
+     CloudPortrait: string;
+     Frame: Frame;
+     Loadouts: MechLoadout[];
+     ActiveLoadout: MechLoadout | null | undefined;
+     CurrentStructure: number;
+     CurrentHP: number;
+     Overshield: number;
+     CurrentStress: number;
+     CurrentHeat: number;
+     CurrentRepairs: number;
+     CurrentCorePower: number;
+     CurrentOvercharge: number; // as a number of uses so far
+     Activations: number;
+     Active: boolean;
+     Pilot: Pilot;
+     Cc_ver: string;
+     Statuses: string[];
+     Conditions: string[];
+     Resistances: string[];
+     Reactions: string[];
+     Ejected: boolean;
+     Destroyed: boolean;
+     Defeat: string;
+     ReactorDestroyed: boolean;
+     MeltdownImminent: boolean;
+     Burn: number;
 
-    public constructor(frame: Frame, pilot: Pilot) {
+     // Per-turn tracking
+     // Actions: number;
+     CurrentMove: number;
+}
+
+
+function CreateMech(data: IMechData): Mech {
+    let mb = new MixBuilder<Mech, IMechData>({});
+     mb.with(new RWMix("Id", "id", "", ident, ident);
+     mb.with(new RWMix("Name","name", "", ident, ident);
+     mb.with(new RWMix("Notes","notes", "", ident, ident);
+     mb.with(new RWMix("GmNote","gm_note", "", ident, ident);
+     mb.with(new RWMix("Portrait","portrait" , "", ident, ident);
+     mb.with(new RWMix("CloudPortrait","cloud_portrait" , null, ident, ident);
+     mb.with(new RWMix("Frame","frame", CreateFrame(null), CreateFrame, ser_one);
+     mb.with(new RWMix("Loadouts","loadouts" MechLoadout[];
+     mb.with(new RWMix("ActiveLoadout","current_structure" MechLoadout | null | undefined;
+     mb.with(new RWMix("CurrentStructure","current_hp" number;
+     mb.with(new RWMix("CurrentHP","overshield" number;
+     mb.with(new RWMix("Overshield","current_stress" number;
+     mb.with(new RWMix("CurrentStress","current_heat" number;
+     mb.with(new RWMix("CurrentHeat","current_repairs" number;
+     mb.with(new RWMix("CurrentRepairs","current_overcharge" number;
+     mb.with(new RWMix("CurrentCorePower","current_core_energy" number;
+     mb.with(new RWMix("CurrentOvercharge","loadouts" number; // as a number of uses so far
+     mb.with(new RWMix("Activations","active_loadout_index" number;
+     mb.with(new RWMix("Active","statuses" boolean;
+     mb.with(new RWMix("Pilot","conditions" Pilot;
+     mb.with(new RWMix("Cc_ver","resistances" , "", ident, ident);
+     mb.with(new RWMix("Statuses","reactions" string[];
+     mb.with(new RWMix("Conditions","burn" string[];
+     mb.with(new RWMix("Resistances","ejected" string[];
+     mb.with(new RWMix("Reactions","destroyed" string[];
+     mb.with(new RWMix("Ejected","defeat" boolean;
+     mb.with(new RWMix("Destroyed","activations" boolean;
+     mb.with(new RWMix("Defeat","meltdown_imminent" , "", ident, ident);
+     mb.with(new RWMix("ReactorDestroyed","reactor_destroyed" boolean;
+     mb.with(new RWMix("Meltdown_imminent","cc_ver" boolean;
+     mb.with(new RWMix("Burn", "burn";
+     mb.with(new RWMix("Actions", "actions";
+     mb.with(new RWMix("CurrentMove", number;
+}
+
+function NewMech(frame: Frame, pilot: Pilot): Mech {
+
         this._id = uuid();
         this._name = "";
         this._notes = "";
@@ -124,78 +168,78 @@ export class Mech implements IActor {
     }
 
     // -- Info --------------------------------------------------------------------------------------
-    public get ID(): string {
+    function getD(): string {
         return this._id;
     }
 
-    public RenewID(): void {
+    function RenewID(): void {
         this._id = uuid();
     }
 
-    public get Name(): string {
+    function getame(): string {
         return this._name;
     }
 
-    public set Name(name: string) {
+    function set Name(name: string) {
         this._name = name;
         this.save();
     }
 
-    public get EncounterName(): string {
+    function getncounterName(): string {
         return this.Pilot.Callsign;
     }
 
-    public get Icon(): string {
+    function getcon(): string {
         return "cci-pilot";
     }
 
-    public get Notes(): string {
+    function getotes(): string {
         return this._notes;
     }
 
-    public set Notes(notes: string) {
+    function set Notes(notes: string) {
         this._notes = notes;
         this.save();
     }
 
-    public get GmNote(): string {
+    function getmNote(): string {
         return this._gm_note;
     }
 
-    public set GmNote(val: string) {
+    function set GmNote(val: string) {
         this._gm_note = val;
         this.save();
     }
 
-    public get Frame(): Frame {
+    function getrame(): Frame {
         return this._frame;
     }
 
-    public get Pilot(): Pilot {
+    function getilot(): Pilot {
         return this._pilot;
     }
 
-    public get IsActive(): boolean {
+    function getsActive(): boolean {
         return this._active;
     }
 
-    public set IsActive(toggle: boolean) {
+    function set IsActive(toggle: boolean) {
         this._active = toggle;
         if (this.IsActive) this.FullRepair();
         this.save();
     }
 
-    public get IsCascading(): boolean {
+    function getsCascading(): boolean {
         if (!this.ActiveLoadout || !this.ActiveLoadout.AICount) return false;
         return this.ActiveLoadout.Equipment.some(x => x.IsCascading);
     }
 
     // Get the license list, and whether they are satisfied
-    public get RequiredLicenseList(): ILicenseRequirement[] {
+    function getequiredLicenseList(): ILicenseRequirement[] {
         return this.RequiredLicenses().check_satisfied(this.Pilot);
     }
 
-    public RequiredLicenses(): LicensedRequirementBuilder {
+    function RequiredLicenses(): LicensedRequirementBuilder {
         // Get the requirements
         let requirements: LicensedRequirementBuilder;
         if (this.ActiveLoadout) {
@@ -208,29 +252,29 @@ export class Mech implements IActor {
         return requirements.add_item(this.Frame);
     }
 
-    public SetCloudImage(src: string): void {
+    function SetCloudImage(src: string): void {
         this._cloud_portrait = src;
         this.save();
     }
 
-    public get CloudImage(): string {
+    function getloudImage(): string {
         return this._cloud_portrait;
     }
 
-    public SetLocalImage(src: string): void {
+    function SetLocalImage(src: string): void {
         this._portrait = src;
         this.save();
     }
 
-    public get LocalImage(): string {
+    function getocalImage(): string {
         return this._portrait;
     }
 
-    public get Image(): string {
+    function getmage(): string {
         return this.Portrait;
     }
 
-    public get Portrait(): string {
+    function getortrait(): string {
         if (this._cloud_portrait) return this._cloud_portrait;
         if (this._portrait) return imageManagement.getImagePath(ImageTag.Mech, this._portrait);
         return this.Frame.DefaultImage;
@@ -241,75 +285,75 @@ export class Mech implements IActor {
         return !!(bonus && this.Pilot.has(bonus));
     }
 
-    private get HasFomorian(): boolean {
+    private getasFomorian(): boolean {
         return this.has_cb("cb_fomorian_frame");
     }
 
-    private get HasSlopedPlating(): boolean {
+    private getasSlopedPlating(): boolean {
         return this.has_cb("cb_sloped_plating");
     }
 
-    private get HasLessonOfTheOpenDoor(): boolean {
+    private getasLessonOfTheOpenDoor(): boolean {
         return this.has_cb("cb_the_lesson_of_the_open_door");
     }
 
-    private get HasFullSubjectivitySync(): boolean {
+    private getasFullSubjectivitySync(): boolean {
         return this.has_cb("cb_full_subjectivity_sync");
     }
 
-    private get HasLessonOfDisbelief(): boolean {
+    private getasLessonOfDisbelief(): boolean {
         return this.has_cb("cb_the_lesson_of_disbelief");
     }
 
-    private get HasIntegratedAmmoFeeds(): boolean {
+    private getasIntegratedAmmoFeeds(): boolean {
         return this.has_cb("cb_integrated_ammo_feeds");
     }
 
-    private get HasSuperiorByDesign(): boolean {
+    private getasSuperiorByDesign(): boolean {
         return this.has_cb("cb_superior_by_design");
     }
 
-    private get HasReinforcedFrame(): boolean {
+    private getasReinforcedFrame(): boolean {
         return this.has_cb("cb_reinforced_frame");
     }
 
     // -- Attributes --------------------------------------------------------------------------------
-    public get Size(): number {
+    function getize(): number {
         if (this._frame.Size === Rules.MaxFrameSize) return Rules.MaxFrameSize;
         if (this.HasFomorian) {
             return this._frame.Size === 0.5 ? 1 : this._frame.Size + 1;
         } else return this._frame.Size;
     }
 
-    public get SizeIcon(): string {
+    function getizeIcon(): string {
         return `cci-size-${this.Size === 0.5 ? "half" : this.Size}`;
     }
 
-    public get SizeContributors(): string[] {
+    function getizeContributors(): string[] {
         const output = [`FRAME Base Size: ${this.Frame.Size}`];
         if (this.HasFomorian) output.push(`FOMORIAN FRAME (IPS-N CORE Bonus): +1`);
         return output;
     }
 
-    public get Armor(): number {
+    function getrmor(): number {
         // Decide if core bonuses apply
         const bonus = this.HasSlopedPlating && this._frame.Armor < Rules.MaxMechArmor;
         return this._frame.Armor + (bonus ? 1 : 0);
     }
 
-    public get ArmorContributors(): string[] {
+    function getrmorContributors(): string[] {
         const output = [`FRAME Base Armor: ${this.Frame.Armor}`];
         if (this.HasSlopedPlating) output.push(`SLOPED PLATING (IPS-N CORE Bonus): +1`);
         return output;
     }
 
-    public get SaveTarget(): number {
+    function getaveTarget(): number {
         let bonus = this._pilot.Grit;
         if (this.HasLessonOfTheOpenDoor) bonus += 2;
-        return this._frame.SaveTarget + bonus;
+        return this._frame.SaveTarget bonus;
     }
 
-    public get SaveTargetContributors(): string[] {
+    function getaveTargetContributors(): string[] {
         const output = [
             `FRAME Base Save Target: ${this.Frame.SaveTarget}`,
             `Pilot GRIT Bonus: +${this._pilot.Grit}`,
@@ -319,7 +363,7 @@ export class Mech implements IActor {
         return output;
     }
 
-    public get Evasion(): number {
+    function getvasion(): number {
         let bonus = this.Agi;
         if (this.HasFullSubjectivitySync) {
             bonus += 2;
@@ -327,7 +371,7 @@ export class Mech implements IActor {
         return this._frame.Evasion + bonus;
     }
 
-    public get EvasionContributors(): string[] {
+    function getvasionContributors(): string[] {
         const output = [
             `FRAME Base Evasion: ${this.Frame.Evasion}`,
             `Pilot AGILITY Bonus: +${this.Agi}`,
@@ -337,33 +381,33 @@ export class Mech implements IActor {
         return output;
     }
 
-    public get Speed(): number {
+    function getpeed(): number {
         const bonus = Math.floor(this.Agi / 2);
         return this._frame.Speed + bonus;
     }
 
-    public get SpeedContributors(): string[] {
+    function getpeedContributors(): string[] {
         return [
             `FRAME Base Speed: ${this.Frame.Speed}`,
             `Pilot AGILITY Bonus: +${Math.floor(this.Agi / 2)}`,
         ];
     }
 
-    public get SensorRange(): number {
+    function getensorRange(): number {
         return this._frame.SensorRange;
     }
 
-    public get SensorRangeContributors(): string[] {
+    function getensorRangeContributors(): string[] {
         return [`FRAME Base Sensor Range: ${this.Frame.SensorRange}`];
     }
 
-    public get EDefense(): number {
+    function getDefense(): number {
         let bonus = this.Sys;
         if (this.HasLessonOfDisbelief) bonus += 2;
         return this._frame.EDefense + bonus;
     }
 
-    public get EDefenseContributors(): string[] {
+    function getDefenseContributors(): string[] {
         const output = [
             `FRAME Base E-Defense: ${this.Frame.EDefense}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
@@ -373,77 +417,77 @@ export class Mech implements IActor {
         return output;
     }
 
-    public get LimitedBonus(): number {
+    function getimitedBonus(): number {
         let bonus = 0;
         if (this.HasIntegratedAmmoFeeds) bonus += 2;
         return Math.floor(this.Eng / 2) + bonus;
     }
 
-    public get LimitedContributors(): string[] {
+    function getimitedContributors(): string[] {
         const output = [`Pilot ENGINEERING Bonus: +${Math.floor(this.Eng / 2)}`];
         if (this.HasIntegratedAmmoFeeds) output.push(`INTEGRATED AMMO FEEDS (HA CORE Bonus): +2`);
         return output;
     }
 
-    public get AttackBonus(): number {
+    function getttackBonus(): number {
         return this._pilot.Grit;
     }
 
-    public get AttackBonusContributors(): string[] {
+    function getttackBonusContributors(): string[] {
         return [`Pilot GRIT Bonus: ${this._pilot.Grit}`];
     }
 
-    public get TechAttack(): number {
+    function getechAttack(): number {
         const bonus = this.Sys;
         return this._frame.TechAttack + bonus;
     }
 
-    public get TechAttackContributors(): string[] {
+    function getechAttackContributors(): string[] {
         return [
             `FRAME Base Tech Attack: ${this.Frame.TechAttack}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
         ];
     }
 
-    public get Grapple(): number {
+    function getrapple(): number {
         return Rules.BaseGrapple;
     }
 
-    public get Ram(): number {
+    function getam(): number {
         return Rules.BaseRam;
     }
 
-    public get SaveBonus(): number {
+    function getaveBonus(): number {
         return this._pilot.Grit;
     }
 
-    public get SaveBonusContributors(): string[] {
+    function getaveBonusContributors(): string[] {
         return [`Pilot GRIT Bonus: ${this._pilot.Grit}`];
     }
 
     // -- HASE --------------------------------------------------------------------------------------
-    public get Hull(): number {
+    function getull(): number {
         return this._pilot.MechSkills.Hull;
     }
 
-    public get Agi(): number {
+    function getgi(): number {
         return this._pilot.MechSkills.Agi;
     }
 
-    public get Sys(): number {
+    function getys(): number {
         return this._pilot.MechSkills.Sys;
     }
 
-    public get Eng(): number {
+    function getng(): number {
         return this._pilot.MechSkills.Eng;
     }
 
     // -- Stats -------------------------------------------------------------------------------------
-    public get CurrentStructure(): number {
+    function geturrentStructure(): number {
         return this._current_structure;
     }
 
-    public set CurrentStructure(structure: number) {
+    function set CurrentStructure(structure: number) {
         if (structure > this.MaxStructure) this._current_structure = this.MaxStructure;
         else if (structure < 0) this._current_structure = 0;
         else this._current_structure = structure;
@@ -451,29 +495,29 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public get MaxStructure(): number {
+    function getaxStructure(): number {
         return this._frame.Structure;
     }
 
-    public get StructureContributors(): string[] {
+    function gettructureContributors(): string[] {
         return [`FRAME Base Structure: ${this.Frame.Structure}`];
     }
 
-    public get Overshield(): number {
+    function getvershield(): number {
         return this._overshield;
     }
 
-    public set Overshield(val: number) {
+    function set Overshield(val: number) {
         this._overshield = val;
         this.save();
     }
 
-    public get CurrentHP(): number {
+    function geturrentHP(): number {
         if (this._current_hp > this.MaxHP) this.CurrentHP = this.MaxHP;
         return this._current_hp;
     }
 
-    public set CurrentHP(hp: number) {
+    function set CurrentHP(hp: number) {
         if (hp > this.MaxHP) this._current_hp = this.MaxHP;
         else if (hp <= 0) {
             this.CurrentStructure -= 1;
@@ -482,14 +526,14 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public AddDamage(dmg: number, resistance?: string | null): void {
+    function AddDamage(dmg: number, resistance?: string | null): void {
         if (resistance && this._resistances.includes(resistance)) {
             dmg = Math.ceil(dmg / 2);
         }
         this.CurrentHP -= dmg;
     }
 
-    public get MaxHP(): number {
+    function getaxHP(): number {
         let bonus = this._pilot.Grit + this.Hull * 2;
         if (this.ActiveLoadout) {
             const personalizations = this.ActiveLoadout.GetSystem("ms_personalizations");
@@ -499,7 +543,7 @@ export class Mech implements IActor {
         return this._frame.HP + bonus;
     }
 
-    public get HPContributors(): string[] {
+    function getPContributors(): string[] {
         const output = [
             `FRAME Base HP: ${this.Frame.HP}`,
             `Pilot GRIT Bonus: +${this._pilot.Grit}`,
@@ -511,21 +555,21 @@ export class Mech implements IActor {
         return output;
     }
 
-    public get CurrentSP(): number {
+    function geturrentSP(): number {
         if (!this.ActiveLoadout) return this.MaxSP;
         return this.ActiveLoadout.TotalSP;
     }
 
-    public get MaxSP(): number {
+    function getaxSP(): number {
         const bonus = this._pilot.Grit + Math.floor(this.Sys / 2);
         return this.Frame.SP + bonus;
     }
 
-    public get FreeSP(): number {
+    function getreeSP(): number {
         return this.MaxSP - this.CurrentSP;
     }
 
-    public get SPContributors(): string[] {
+    function getPContributors(): string[] {
         return [
             `FRAME Base SP: ${this.Frame.SP}`,
             `Pilot GRIT Bonus: +${this._pilot.Grit}`,
@@ -533,11 +577,11 @@ export class Mech implements IActor {
         ];
     }
 
-    public get CurrentHeat(): number {
+    function geturrentHeat(): number {
         return this._current_heat;
     }
 
-    public set CurrentHeat(heat: number) {
+    function set CurrentHeat(heat: number) {
         if (heat > this.HeatCapacity) {
             this.CurrentStress = this.CurrentStress - 1;
             this.CurrentHeat = heat - this.HeatCapacity;
@@ -546,7 +590,7 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public AddHeat(heat: number): void {
+    function AddHeat(heat: number): void {
         heat = this._resistances.includes("Heat") ? Math.ceil(heat / 2) : heat;
         let newHeat = this._current_heat + heat;
         while (newHeat > this.HeatCapacity) {
@@ -556,7 +600,7 @@ export class Mech implements IActor {
         this.CurrentHeat = newHeat;
     }
 
-    public ReduceHeat(heat: number, resist?: boolean | null): void {
+    function ReduceHeat(heat: number, resist?: boolean | null): void {
         if (resist) heat = this._resistances.includes("Heat") ? Math.ceil(heat / 2) : heat;
         while (heat > this.CurrentHeat) {
             heat -= this.CurrentHeat;
@@ -566,17 +610,17 @@ export class Mech implements IActor {
         this.CurrentHeat -= heat;
     }
 
-    public get IsInDangerZone(): boolean {
+    function getsInDangerZone(): boolean {
         return this.IsActive && this._current_heat >= Math.ceil(this.HeatCapacity / 2);
     }
 
-    public get HeatCapacity(): number {
+    function geteatCapacity(): number {
         let bonus = this.Eng;
         if (this.HasSuperiorByDesign) bonus += 2;
         return this._frame.HeatCap + bonus;
     }
 
-    public get HeatCapContributors(): string[] {
+    function geteatCapContributors(): string[] {
         const output = [
             `FRAME Base Heat Capacity: ${this.Frame.HeatCap}`,
             `Pilot ENGINEERING Bonus: +${this.Eng}`,
@@ -585,116 +629,116 @@ export class Mech implements IActor {
         return output;
     }
 
-    public get CurrentStress(): number {
+    function geturrentStress(): number {
         return this._current_stress;
     }
 
-    public set CurrentStress(stress: number) {
+    function set CurrentStress(stress: number) {
         if (stress > this.MaxStress) this._current_stress = this.MaxStress;
         else if (stress < 0) this._current_stress = 0;
         else this._current_stress = stress;
         this.save();
     }
 
-    public get MaxStress(): number {
+    function getaxStress(): number {
         return this._frame.HeatStress;
     }
 
-    public get StressContributors(): string[] {
+    function gettressContributors(): string[] {
         return [`FRAME Base Reactor Stress: ${this.Frame.HeatStress}`];
     }
 
-    public get CurrentRepairs(): number {
+    function geturrentRepairs(): number {
         return this._current_repairs;
     }
 
-    public set CurrentRepairs(rep: number) {
+    function set CurrentRepairs(rep: number) {
         if (rep > this.RepairCapacity) this._current_repairs = this.RepairCapacity;
         else if (rep < 0) this._current_repairs = 0;
         else this._current_repairs = rep;
         this.save();
     }
 
-    public get RepairCapacity(): number {
+    function getepairCapacity(): number {
         const bonus = Math.floor(this.Hull / 2);
         return this._frame.RepCap + bonus;
     }
 
-    public get RepCapContributors(): string[] {
+    function getepCapContributors(): string[] {
         return [
             `FRAME Base Repair Capacity: ${this.Frame.RepCap}`,
             `Pilot HULL Bonus: +${Math.floor(this.Hull / 2)}`,
         ];
     }
 
-    public get CurrentCoreEnergy(): number {
+    function geturrentCoreEnergy(): number {
         return this._current_core_energy;
     }
 
-    public set CurrentCoreEnergy(energy: number) {
+    function set CurrentCoreEnergy(energy: number) {
         this._current_core_energy = energy;
         this.save();
     }
 
-    public get CurrentOvercharge(): number {
+    function geturrentOvercharge(): number {
         return this._current_overcharge;
     }
 
-    public set CurrentOvercharge(overcharge: number) {
+    function set CurrentOvercharge(overcharge: number) {
         this._current_overcharge = overcharge;
         this.save();
     }
 
     // -- Encounter Management ----------------------------------------------------------------------
-    public get Activations(): number {
+    function getctivations(): number {
         return this._activations;
     }
 
-    public set Activations(val: number) {
+    function set Activations(val: number) {
         this._activations = val;
         this.save();
     }
 
-    public get Actions(): number {
+    function getctions(): number {
         return this._actions;
     }
 
-    public set Actions(val: number) {
+    function set Actions(val: number) {
         this._actions = val;
         this.save();
     }
 
-    public get CurrentMove(): number {
+    function geturrentMove(): number {
         return this._currentMove;
     }
 
-    public set CurrentMove(val: number) {
+    function set CurrentMove(val: number) {
         this._currentMove = val;
         this.save();
     }
 
-    public get MaxMove(): number {
+    function getaxMove(): number {
         return this.Speed;
     }
 
-    public get Reactions(): string[] {
+    function geteactions(): string[] {
         return this._reactions;
     }
 
-    public set Reactions(val: string[]) {
+    function set Reactions(val: string[]) {
         this._reactions = val;
     }
 
-    public AddReaction(r: string): void {
+    function AddReaction(r: string): void {
         if (!this.Reactions.some(x => x === r)) this.Reactions.push(r);
     }
 
-    public RemoveReaction(r: string): void {
+    function RemoveReaction(r: string): void {
         const idx = this.Reactions.findIndex(x => x === r);
         if (idx > -1) this.Reactions.splice(idx, 1);
     }
 
-    public NewTurn(): void {
+    function NewTurn(): void {
         this._activations = 1;
         this._actions = 2;
         this._currentMove = this.MaxMove;
@@ -702,7 +746,7 @@ export class Mech implements IActor {
     }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
-    public get StatusString(): string[] {
+    function gettatusString(): string[] {
         const out: string[] = [];
         if (this.ReactorDestroyed) out.push("reactorDestroyed");
         if (this.Destroyed) out.push("destroyed");
@@ -716,48 +760,14 @@ export class Mech implements IActor {
         return out;
     }
 
-    public get Defeat(): string {
-        return this._defeat;
-    }
-
-    public set Defeat(val: string) {
-        this._defeat = val;
-        this.save();
-    }
-
-    public get Destroyed(): boolean {
-        return this._destroyed;
-    }
-
-    public set Destroyed(b: boolean) {
+    /*
+    function set Destroyed(b: boolean) {
         this._destroyed = b;
         this._defeat = b ? "Destroyed" : "";
         this.save();
     }
 
-    public get Ejected(): boolean {
-        return this._ejected;
-    }
-
-    public set Ejected(b: boolean) {
-        this._ejected = b;
-        this.save();
-    }
-
-    public get MeltdownImminent(): boolean {
-        return this._meltdown_imminent;
-    }
-
-    public set MeltdownImminent(meltdown: boolean) {
-        this._meltdown_imminent = meltdown;
-        this.save();
-    }
-
-    public get ReactorDestroyed(): boolean {
-        return this._reactor_destroyed;
-    }
-
-    public set ReactorDestroyed(destroyed: boolean) {
+    function set ReactorDestroyed(destroyed: boolean) {
         this._meltdown_imminent = false;
         this._destroyed = false;
         this._reactor_destroyed = destroyed;
@@ -765,13 +775,13 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public Destroy(): void {
+    function Destroy(): void {
         this._destroyed = true;
         this._defeat = "Destroyed";
         this.save();
     }
 
-    public Repair(): void {
+    function Repair(): void {
         this._destroyed = false;
         this._reactor_destroyed = false;
         this._meltdown_imminent = false;
@@ -783,53 +793,23 @@ export class Mech implements IActor {
         this.save();
     }
 
-    public get IsShutDown(): boolean {
+    function getsShutDown(): boolean {
         return this.Statuses.includes("SHUT DOWN");
     }
 
-    public get IsStunned(): boolean {
+    function getsStunned(): boolean {
         return this._conditions.includes("STUNNED");
     }
 
-    public get Conditions(): string[] {
-        return this._conditions;
-    }
-
-    public set Conditions(conditions: string[]) {
-        this._conditions = conditions;
-        this.save();
-    }
-
-    public get Statuses(): string[] {
-        return this._statuses;
-    }
-
-    public set Statuses(statuses: string[]) {
-        this._statuses = statuses;
-        this.save();
-    }
-
-    public get Resistances(): string[] {
-        return this._resistances;
-    }
-
-    public set Resistances(resistances: string[]) {
-        this._resistances = resistances;
-        this.save();
-    }
-
-    public get Burn(): number {
-        return this._burn;
-    }
-
-    public set Burn(burn: number) {
+    function set Burn(burn: number) {
         this._burn = burn;
         if (this._burn < 0) this._burn = 0;
         this.save();
     }
+    */
 
     // -- Active Mode Utilities ---------------------------------------------------------------------
-    public FullRepair(): void {
+    function full_repair(): void {
         this.CurrentStructure = this.MaxStructure;
         this.CurrentHP = this.MaxHP;
         this.CurrentStress = this.MaxStress;
@@ -855,7 +835,8 @@ export class Mech implements IActor {
     }
 
     // -- Integrated/Talents ------------------------------------------------------------------------
-    public get IntegratedMounts(): IntegratedMount[] {
+    function get_integrated_mounts(): IntegratedMount[] {
+        /*
         const intg: IntegratedMount[] = [];
         if (this._frame.CoreSystem.getIntegrated()) {
             intg.push(new IntegratedMount(this._frame.CoreSystem.getIntegrated()!, "CORE System"));
@@ -876,9 +857,10 @@ export class Mech implements IActor {
             intg.push(new IntegratedMount(engWeapon, "Engineer"));
         }
         return intg;
+        */
     }
 
-    public get IntegratedSystems(): MechSystem[] {
+    function get_integrated_systems(): MechSystem[] {
         const intg: MechSystem[] = [];
 
         let armory = store.compendium.getReferenceByID("Talents", "t_walking_armory");
@@ -904,31 +886,7 @@ export class Mech implements IActor {
     }
 
     // -- Loadouts ----------------------------------------------------------------------------------
-    public get Loadouts(): MechLoadout[] {
-        return this._loadouts;
-    }
-
-    public set Loadouts(loadouts: MechLoadout[]) {
-        this._loadouts = loadouts;
-        this.save();
-    }
-
-    public get ActiveLoadout(): MechLoadout | null | undefined {
-        return this._active_loadout;
-    }
-
-    public set ActiveLoadout(loadout: MechLoadout | null | undefined) {
-        this._active_loadout = loadout;
-        this.save();
-    }
-
-    public AddLoadout(): void {
-        this._loadouts.push(new MechLoadout(this));
-        this.ActiveLoadout = this._loadouts[this._loadouts.length - 1];
-        this.save();
-    }
-
-    public RemoveLoadout(): void {
+    function RemoveLoadout(): void {
         if (this._loadouts.length === 1) {
             console.error(`Cannot remove last Mech Loadout`);
         } else {
@@ -939,7 +897,7 @@ export class Mech implements IActor {
         }
     }
 
-    public CloneLoadout(): void {
+    function CloneLoadout(): void {
         const index = this._loadouts.findIndex(x => x.ID === this.ActiveLoadout?.ID);
         if (index > -1) {
             const newLoadout = MechLoadout.Deserialize(
@@ -956,107 +914,25 @@ export class Mech implements IActor {
         }
     }
 
-    public UpdateLoadouts(): void {
+    function UpdateLoadouts(): void {
         this._loadouts.forEach(x => {
             x.UpdateIntegrated(this);
         });
     }
 
     // -- Mountable CORE Bonuses --------------------------------------------------------------------
-    public get PilotBonuses(): CoreBonus[] {
+    function get_pilot_bonuses(): CoreBonus[] {
         return this.Pilot.CoreBonuses.filter(x => x.IsMountable);
     }
 
-    public get AppliedBonuses(): CoreBonus[] {
+    function get_applied_bonuses(): CoreBonus[] {
         return _.flatten(
             this.ActiveLoadout?.AllEquippableMounts(true, true).map(x => x.Bonuses) || []
         );
     }
 
-    public get AvailableBonuses(): CoreBonus[] {
+    function get_available_bonuses(): CoreBonus[] {
         return this.PilotBonuses.filter(x => !this.AppliedBonuses.includes(x));
     }
 
     // -- I/O ---------------------------------------------------------------------------------------
-    public static Serialize(m: Mech): IMechData {
-        return {
-            id: m.ID,
-            name: m.Name,
-            notes: m.Notes,
-            gm_note: m.GmNote,
-            portrait: m._portrait,
-            cloud_portrait: m._cloud_portrait,
-            frame: m.Frame.ID,
-            active: m._active,
-            current_structure: m._current_structure,
-            current_hp: m._current_hp,
-            overshield: m._overshield,
-            current_stress: m._current_stress,
-            current_heat: m._current_heat,
-            current_repairs: m._current_repairs,
-            current_overcharge: m._current_overcharge,
-            current_core_energy: m._current_core_energy,
-            loadouts: m.Loadouts.map(x => MechLoadout.Serialize(x)),
-            active_loadout_index: m.Loadouts.findIndex(x => x.ID === m.ActiveLoadout?.ID),
-            statuses: m._statuses,
-            conditions: m._conditions,
-            resistances: m._resistances,
-            reactions: m._reactions,
-            burn: m._burn,
-            ejected: m._ejected,
-            destroyed: m._destroyed,
-            defeat: m._defeat,
-            activations: m._activations,
-            meltdown_imminent: m._meltdown_imminent,
-            reactor_destroyed: m._reactor_destroyed,
-            cc_ver: store.getVersion || "ERR",
-        };
-    }
-
-    public static Deserialize(data: IMechData, pilot: Pilot): Mech {
-        const f = store.compendium.getReferenceByID("Frames", data.frame);
-        const m = new Mech(f, pilot);
-        m._id = data.id;
-        m._name = data.name;
-        m._notes = data.notes;
-        m._gm_note = data.gm_note;
-        m._portrait = data.portrait;
-        m._cloud_portrait = data.cloud_portrait;
-        m._active = data.active;
-        m._current_structure = data.current_structure;
-        m._current_hp = data.current_hp;
-        m._overshield = data.overshield || 0;
-        m._current_stress = data.current_stress;
-        m._current_heat = data.current_heat;
-        m._current_repairs = data.current_repairs;
-        m._current_overcharge = data.current_overcharge || 0;
-        m._current_core_energy = data.current_core_energy != null ? data.current_core_energy : 1;
-        m._cc_ver = data.cc_ver;
-        if (
-            data.active_loadout_index === null ||
-            data.active_loadout_index === undefined ||
-            !data.loadouts.length
-        ) {
-            m._loadouts = [new MechLoadout(m)];
-            m._active_loadout = m._loadouts[0];
-        } else {
-            m._loadouts = data.loadouts.map((x: IMechLoadoutData) => MechLoadout.Deserialize(x, m));
-            m._active_loadout = data.active_loadout_index
-                ? m._loadouts[data.active_loadout_index]
-                : m._loadouts[0];
-        }
-        m._statuses = data.statuses || [];
-        m._conditions = data.conditions || [];
-        m._resistances = data.resistances || [];
-        m._reactions = data.reactions || [];
-        m._burn = data.burn || 0;
-        m._ejected = data.ejected || false;
-        m._destroyed = data.destroyed || false;
-        m._defeat = data.defeat || "";
-        m._activations = data.activations || 1;
-        m._meltdown_imminent = data.meltdown_imminent || false;
-        m._reactor_destroyed = data.reactor_destroyed || false;
-        m._cc_ver = data.cc_ver || "";
-        return m;
-    }
-}

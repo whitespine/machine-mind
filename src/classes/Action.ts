@@ -1,5 +1,5 @@
 import { ActivationType } from "@/class";
-import { Mixlet, MixBuilder, MixLinks, uuid, ident  } from '@/mixmeta';
+import { RWMix, MixBuilder, MixLinks, uuid, ident  } from '@/mixmeta';
 
 export interface IActionData {
   name: string,
@@ -39,15 +39,15 @@ export function CreateAction(data: IActionData | null): Action {
       Uses: 0 // tmp value to not make validation angery
     });
 
-    b.with(new Mixlet("Name", "name", "", ident, ident));
-    b.with(new Mixlet("Activation", "activation", ActivationType.None, ident, ident ));
-    b.with(new Mixlet("Terse", "terse", "",  ident, ident));
-    b.with(new Mixlet("Detail", "detail", "",  ident, ident));
-    b.with(new Mixlet("Cost", "cost", 0,  ident, ident));
-    b.with(new Mixlet("Frequency", "frequency", new Frequency(""),  FrequencyMixReader, FrequencyMixWriter));
-    b.with(new Mixlet("Init", "init", "",  ident, ident));
-    b.with(new Mixlet("Trigger", "trigger", "",  ident, ident));
-    b.with(new Mixlet("IsPilotAction", "pilot", false,  ident, ident));
+    b.with(new RWMix("Name", "name", "", ident, ident));
+    b.with(new RWMix("Activation", "activation", ActivationType.None, ident, ident ));
+    b.with(new RWMix("Terse", "terse", "",  ident, ident));
+    b.with(new RWMix("Detail", "detail", "",  ident, ident));
+    b.with(new RWMix("Cost", "cost", 0,  ident, ident));
+    b.with(new RWMix("Frequency", "frequency", new Frequency(""),  FrequencyMixReader, FrequencyMixWriter));
+    b.with(new RWMix("Init", "init", "",  ident, ident));
+    b.with(new RWMix("Trigger", "trigger", "",  ident, ident));
+    b.with(new RWMix("IsPilotAction", "pilot", false,  ident, ident));
 
     // Fix uses to match frequency (basically, refill uses to max);
     let r = b.finalize(data);
@@ -114,19 +114,3 @@ export class Frequency {
 // Use these for mixin shorthand elsewhere in items that have many actions
 export const FrequencyMixReader = (x: string  | undefined) => new Frequency(x || "");
 export const FrequencyMixWriter = (x: Frequency) => x.Serialize();
-
-/*
-export interface ISimpleActions {
-     actions?: IActionData[];
-}
-
-export interface VSimpleActions {
-     Actions: Action[];
-}
-
-// Jam in a mixin to quickly load/save actions in the default position
-export function simple_actions<Host extends MixLinks<Src> & VSimpleActions, Src extends ISimpleActions>(): Augmentor<Host> {
-    return (item) => item._add_mixlet(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-}
-*/
-//}: Augmentor<VSimpleActions> = function<Host extends MixLinks<ISimpleActions> & VSimpleActions>(item: Host): Host {

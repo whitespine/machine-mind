@@ -1,63 +1,33 @@
 import { Action, Bonus, Damage, Deployable, ItemType, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem, ICompendiumItemData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
+import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
 import { DEFAULT_BREW_ID } from '../enums';
 
 
 ///////////////////////////////////////////////////////////
 // Data
 ///////////////////////////////////////////////////////////
-export type IPilotEquipmentData = IPilotWeaponData | IPilotArmorData | IPilotGearData;
-export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
-export interface IPilotWeaponData {
+export interface IQuirkData extends ICompendiumItemData {
   id: string,
   name: string, // v-html
-  type: "Weapon",
+  type: "Quirk",
   description: string,
-  tags: ITagInstanceData[],
-  range: IRangeData[],
-  damage: IDamageData[],
   actions?: IActionData[], // these are only available to UNMOUNTED pilots
   bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   synergies?: ISynergyData[];
   deployables?: IDeployableData[];
 }
 
-export interface IPilotArmorData  {
-  "id": string,
-  "name": string, // v-html
-  "type": "Armor",
-  "description": string,
-  "tags": ITagInstanceData[],
-  "actions"?: IActionData[], // these are only available to UNMOUNTED pilots
-  "bonuses"?: IBonusData[], // these bonuses are applied to the pilot, not parent system
-  "synergies"?: ISynergyData[],
-  "deployables"?: IDeployableData[], // these are only available to UNMOUNTED pilots
-}
+export interface Quirk extends MixLinks<IQuirkData>, VCompendiumItem {
+    ID: string;
+    Name: string;
+    Type: ItemType.QUIRK
 
-export interface IPilotGearData {
-  id: string,
-  name: string, // v-html
-  type: "Gear",
-  description: string,
-  tags: ITagInstanceData[],
-  actions?: IActionData[], // these are only available to UNMOUNTED pilots
-  bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
-  synergies?: ISynergyData[],
-  deployables?: IDeployableData[], // these are only available to UNMOUNTED pilots
-}
-
-/////////////////////////////////////////////////////////
-// Classes
-/////////////////////////////////////////////////////////
-
-export interface PilotArmor extends MixLinks<IPilotArmorData>, VCompendiumItem {
   Tags: TagInstance[],
   Actions: Action[],
   Bonuses: Bonus[],
   Synergies: Synergy[],
   Deployables: Deployable[],
-  Type: ItemType.PilotArmor
 }
 
 export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {

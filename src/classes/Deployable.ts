@@ -1,6 +1,6 @@
 import { ActivationType, Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
-import { MixBuilder, Mixlet, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null, uuid } from '@/mixmeta';
+import { MixBuilder, RWMix, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null, uuid } from '@/mixmeta';
 import { Action, ActionsMixReader, ActionsMixWriter } from './Action';
 import { Bonus, BonusesMixReader, BonusesMixWriter } from './Bonus';
 import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
@@ -64,30 +64,30 @@ export interface Deployable extends MixLinks<IDeployableData> {
 
 export function CreateDeployable(data: IDeployableData | null): Deployable {
     let b = new MixBuilder<Deployable, IDeployableData>({});
-    b.with(new Mixlet("Name", "name", "New Deployable", ident, ident));
-    b.with(new Mixlet("Type", "type", "custom", ident, ident));
-    b.with(new Mixlet("Detail", "detail", "No description", ident, ident));
-    b.with(new Mixlet("Activation", "activation", ActivationType.None, ident, ident));
-    b.with(new Mixlet("Deactivation", "deactivation", ActivationType.None, ident, ident));
-    b.with(new Mixlet("Recall", "recall", ActivationType.None, ident, ident));
-    b.with(new Mixlet("Redeploy", "redeploy", ActivationType.None, ident, ident));
-    b.with(new Mixlet("Size", "size", .5, ident, ident)); // deployables tend to be smaller
-    b.with(new Mixlet("Cost", "cost", 1, ident, ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
-    b.with(new Mixlet("Armor", "armor", 0, ident, ident)); 
-    b.with(new Mixlet("HP", "hp", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("Evasion", "hp", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("EDef", "edef", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("HeatCap", "heatcap", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("RepairCap", "repcap", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("SensorRange", "sensor_range", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("TechAttack", "tech_attack", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("Save", "save", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("Speed", "speed", null, ident, ident_drop_null)); 
-    b.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter)); 
-    b.with(new Mixlet("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter)); 
-    b.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter)); 
-    b.with(new Mixlet("Counters", "counters", [], CountersMixReader, CountersMixWriter)); 
-    b.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter)); 
+    b.with(new RWMix("Name", "name", "New Deployable", ident, ident));
+    b.with(new RWMix("Type", "type", "custom", ident, ident));
+    b.with(new RWMix("Detail", "detail", "No description", ident, ident));
+    b.with(new RWMix("Activation", "activation", ActivationType.None, ident, ident));
+    b.with(new RWMix("Deactivation", "deactivation", ActivationType.None, ident, ident));
+    b.with(new RWMix("Recall", "recall", ActivationType.None, ident, ident));
+    b.with(new RWMix("Redeploy", "redeploy", ActivationType.None, ident, ident));
+    b.with(new RWMix("Size", "size", .5, ident, ident)); // deployables tend to be smaller
+    b.with(new RWMix("Cost", "cost", 1, ident, ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
+    b.with(new RWMix("Armor", "armor", 0, ident, ident)); 
+    b.with(new RWMix("HP", "hp", null, ident, ident_drop_null)); 
+    b.with(new RWMix("Evasion", "hp", null, ident, ident_drop_null)); 
+    b.with(new RWMix("EDef", "edef", null, ident, ident_drop_null)); 
+    b.with(new RWMix("HeatCap", "heatcap", null, ident, ident_drop_null)); 
+    b.with(new RWMix("RepairCap", "repcap", null, ident, ident_drop_null)); 
+    b.with(new RWMix("SensorRange", "sensor_range", null, ident, ident_drop_null)); 
+    b.with(new RWMix("TechAttack", "tech_attack", null, ident, ident_drop_null)); 
+    b.with(new RWMix("Save", "save", null, ident, ident_drop_null)); 
+    b.with(new RWMix("Speed", "speed", null, ident, ident_drop_null)); 
+    b.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter)); 
+    b.with(new RWMix("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter)); 
+    b.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter)); 
+    b.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter)); 
+    b.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter)); 
     
 
     let r = b.finalize(data);
@@ -129,12 +129,12 @@ export interface Deployed extends MixLinks<IDeployedData> {
 // Create our deployable. Note that this doesn't object does not have any self-concept/knowledge of where it came from. It must be tracked properly with/by its corresponding deploybable
 export function CreateDeployed(data: IDeployedData | null): Deployed {
     let mb = new MixBuilder<Deployed, IDeployedData>({InflictDamage});
-    mb.with(new Mixlet("ID", "id", uuid(), ident, ident));
-    mb.with(new Mixlet("InstanceName", "assigned_name", "Deployment #?", ident, ident));
-    mb.with(new Mixlet("CurrentHP", "current_hp", 0, ident, ident));
-    mb.with(new Mixlet("CurrentDuration", "current_duration", null, ident, ident_drop_null));
-    mb.with(new Mixlet("Overshield", "overshield", 0, ident, ident));
-    mb.with(new Mixlet("Destroyed", "isDestroyed", false, ident, ident));
+    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
+    mb.with(new RWMix("InstanceName", "assigned_name", "Deployment #?", ident, ident));
+    mb.with(new RWMix("CurrentHP", "current_hp", 0, ident, ident));
+    mb.with(new RWMix("CurrentDuration", "current_duration", null, ident, ident_drop_null));
+    mb.with(new RWMix("Overshield", "overshield", 0, ident, ident));
+    mb.with(new RWMix("Destroyed", "isDestroyed", false, ident, ident));
 
     return mb.finalize(data);
 }

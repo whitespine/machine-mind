@@ -80,34 +80,7 @@ export interface ICounterSaveData {
     val: number;
 }
 
-export interface IReserveData {
-    id: string;
-    type?: string ;
-    name?: string ;
-    label?: string ;
-    description?: string ;
-    resource_name?: string ;
-    resource_note?: string ;
-    resource_cost?: string ;
-    used: boolean;
-}
 
-export interface IProjectData extends IReserveData {
-    complicated: boolean;
-    can_finish: boolean;
-    finished: boolean;
-    progress: number;
-    requirements: string[];
-}
-
-export interface IOrganizationData {
-    name: string;
-    purpose: string;
-    description: string;
-    efficiency: number;
-    influence: number;
-    actions: string;
-}
 
 
 export interface IHistoryItem {

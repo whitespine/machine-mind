@@ -4,14 +4,8 @@ import {
     Bonus,
     Counter,
     Damage,
-    DamageType,
     Deployable,
-    ItemType,
-    Mech,
-    MechEquipment,
-    MountType,
     Range,
-    RangeType,
     Synergy,
     TagInstance,
     WeaponMod,
@@ -19,12 +13,8 @@ import {
     WeaponType,
 } from "@/class";
 import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
-import { store } from "@/hooks";
-import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, Mixlet, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
-import { getMountType, getWeaponSize } from '../enums';
-import { DamagesMixReader, DamagesMixWriter } from '../Damage';
-import { RangesMixReader, RangesMixWriter } from '../Range';
-import { CountersMixReader, CountersMixWriter } from '../Counter';
+import { ActionsMixReader, ActionsMixWriter, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, RangesMixReader, DamagesMixReader, DamagesMixWriter, RangesMixWriter, CountersMixReader, CountersMixWriter, DeployableMixReader, BonusesMixReader, BonusesMixWriter } from '@/mixmeta';
+import { DamageType, getMountType, getWeaponSize, RangeType } from '../enums';
 
 // TODO:
 // class WeaponAmmo {}
@@ -49,10 +39,10 @@ export interface MechWeapon extends MixLinks<IMechWeaponData> {
     Source: string; // MANUFACTURER NAME
     License: string; // FRAME NAME
     LicenseLevel: number;
-    Mount: WeaponSize;
+    Size: WeaponSize;
     Type: WeaponType;
-    Damage: Damage[];
-    Range: Range[];
+    BaseDamage: Damage[];
+    BaseRange: Range[];
     Tags: TagInstance[];
     SP: number;
     Description: string;
@@ -67,82 +57,55 @@ export interface MechWeapon extends MixLinks<IMechWeaponData> {
     Counters: Counter[];
     Integrated: string[];
 
+    // This comes not from our data, but from our loadout stuff
+    Mod: WeaponMod;
+
     // Methods
-
-
 }
 
 export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
     let mb = new MixBuilder<MechWeapon, IMechWeaponData>({});
-    mb.with(new Mixlet("ID", "id", uuid(), ident, ident ));
-    mb.with(new Mixlet("Name", "name", "New Weapon", ident, ident));
-    mb.with(new Mixlet("Source", "source", "MANUFACTURER", ident, ident));
-    mb.with(new Mixlet("License", "license", "LICENSE", ident, ident));
-    mb.with(new Mixlet("LicenseLevel", "license_level", 0, ident, ident));
-    mb.with(new Mixlet("Mount", "mount", WeaponSize.Main, getWeaponSize, ident));
-    mb.with(new Mixlet("Type", "type", WeaponType.Rifle, ident, ident));
-    mb.with(new Mixlet("Damage", "damage", [], DamagesMixReader, DamagesMixWriter));
-    mb.with(new Mixlet("Range", "range", [], RangesMixReader, RangesMixWriter));
-    mb.with(new Mixlet("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    mb.with(new Mixlet("SP", "sp", 0, ident, ident));
-    mb.with(new Mixlet("Description", "description", "", ident, ident));
-    mb.with(new Mixlet("Effect", "effect", "", ident, ident));
-    mb.with(new Mixlet("OnAttack", "on_attack", "", ident, ident));
-    mb.with(new Mixlet("OnHit", "on_hit", "", ident, ident));
-    mb.with(new Mixlet("OnCrit", "on_crit", "", ident, ident));
+    mb.with(new RWMix("ID", "id", uuid(), ident, ident ));
+    mb.with(new RWMix("Name", "name", "New Weapon", ident, ident));
+    mb.with(new RWMix("Source", "source", "MANUFACTURER", ident, ident));
+    mb.with(new RWMix("License", "license", "LICENSE", ident, ident));
+    mb.with(new RWMix("LicenseLevel", "license_level", 0, ident, ident));
+    mb.with(new RWMix("Size", "mount", WeaponSize.Main, getWeaponSize, ident));
+    mb.with(new RWMix("Type", "type", WeaponType.Rifle, ident, ident));
+    mb.with(new RWMix("BaseDamage", "damage", [], DamagesMixReader, DamagesMixWriter));
+    mb.with(new RWMix("BaseRange", "range", [], RangesMixReader, RangesMixWriter));
+    mb.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
+    mb.with(new RWMix("SP", "sp", 0, ident, ident));
+    mb.with(new RWMix("Description", "description", "", ident, ident));
+    mb.with(new RWMix("Effect", "effect", "", ident, ident));
+    mb.with(new RWMix("OnAttack", "on_attack", "", ident, ident));
+    mb.with(new RWMix("OnHit", "on_hit", "", ident, ident));
+    mb.with(new RWMix("OnCrit", "on_crit", "", ident, ident));
 
-    mb.with(new Mixlet("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    mb.with(new Mixlet("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    mb.with(new Mixlet("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    mb.with(new Mixlet("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
-    mb.with(new Mixlet("Counters", "counters", [], CountersMixReader, CountersMixWriter));
-    mb.with(new Mixlet("Integrated", "integrated", [], ident, ident ));
+    mb.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter));
+    mb.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
+    mb.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", [], ident, ident ));
 
     return mb.finalize(data);
 }
 
-     public get TotalSP(): number {
-        // if (!this.Mod) return this.sp;
-        // return this.Mod.SP + this.sp;
+     function TotalSP(this: MechWeapon): number {
+        if (!this.Mod) return this.SP;
+        return this.Mod.SP + this.SP;
      }
 
-    // public get ModSP(): number {
+    // function ModSP(): number {
         // return this.Mod ? this.Mod.SP : 0;
     // }
 
-    // public get Damage(): Damage[] {
-        // if (this._damage && this.Mod && this.Mod.AddedDamage)
-            // return this._damage.concat(this.Mod.AddedDamage);
-        // return this._damage || [];
-    // }
-
-    // public get MaxDamage(): number {
-        // if (0 === this.Damage.length) {
-            // return 0;
-        // } else {
-            // return this.Damage[0].Max;
-        // }
-    // }
-
-    public get DamageTypeOverride(): string {
-        return this._custom_damage_type || "";
-    }
-
-    public set DamageTypeOverride(val: string) {
-        this._custom_damage_type = val;
-        this.save();
-    }
-
-    public set MaxUseOverride(val: number) {
-        this.max_use_override = val;
-        this.save();
-    }
-
-    public get DamageType(): DamageType[] {
+    function DamageType(this: MechWeapon): DamageType[] {
         return this._damage?.map(x => x.Type) || [];
     }
 
-    public get DefaultDamageType(): DamageType {
+    function DefaultDamageType(this: MechWeapon): DamageType {
         if (0 === this.DamageType.length) {
             return DamageType.Variable;
         } else {
@@ -196,7 +159,7 @@ export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
     }
     */
 
-    public get RangeType(): RangeType[] {
-        return this._range?.map(x => x.Type) || [];
+    function RangeTypes(this: MechWeapon): RangeType[] {
+        return this.Range.map(x => x.Type);
     }
 }

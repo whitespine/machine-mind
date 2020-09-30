@@ -1,5 +1,5 @@
 import { ICounterSaveData } from "@/interface";
-import { ident, ident_drop_null, MixBuilder, Mixlet, MixLinks, uuid } from "@/mixmeta";
+import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, uuid } from "@/mixmeta";
 
 /* eslint-disable @typescript-eslint/camelcase */
 export interface ICounterData {
@@ -35,11 +35,11 @@ export function CreateCounter(data: ICounterData) {
         Validate,
         Set, Reset, Increment, Decrement, SaveData, LoadData
     });
-    mb.with(new Mixlet("ID", "id", uuid(), ident, ident));
-    mb.with(new Mixlet("Name", "name", "New Counter", ident, ident));
-    mb.with(new Mixlet("Min", "min", 0, ident, ident));
-    mb.with(new Mixlet("Max", "max", null, ident, ident_drop_null));
-    mb.with(new Mixlet("Default", "default_value", data.default_value || 0, ident, ident));
+    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
+    mb.with(new RWMix("Name", "name", "New Counter", ident, ident));
+    mb.with(new RWMix("Min", "min", 0, ident, ident));
+    mb.with(new RWMix("Max", "max", null, ident, ident_drop_null));
+    mb.with(new RWMix("Default", "default_value", data.default_value || 0, ident, ident));
 
     let rv = mb.finalize(data);
 

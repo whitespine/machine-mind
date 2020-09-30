@@ -18,78 +18,149 @@ import {
     PilotWeapon,
     PilotArmor,
     PilotGear,
-    Tag,
+    TagInstance, TagTemplate,
     License,
     Status,
     Environment,
-    Sitrep,
+    Sitrep, ItemType, PilotEquipment, Deployable, Quirk, Pilot
 } from "@/class";
 import { logger } from "@/hooks";
-import { PilotEquipment } from "@/classes/pilot/PilotEquipment";
-import { CORE_BREW_ID } from "@/classes/CompendiumItem";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
-import { Deployable } from '@/classes/Deployable';
+import { CORE_BREW_ID } from '@/classes/enums';
+import { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, IReserveData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IRegistryItemData, IStatusData, IDeployableData, IQuirkData, IPilotData, VRegistryItem } from '@/interface';
 
-const CORE_BONUSES = "CoreBonuses";
-const DEPLOYABLES = "Deployables";
-const FACTIONS = "Factions";
-const FRAMES = "Frames";
-const LICENSES = "Licenses";
-const MANUFACTURERS = "Manufacturers";
-const NPC_CLASSES = "NpcClasses";
-const NPC_TEMPLATES = "NpcTemplates";
-const NPC_FEATURES = "NpcFeatures";
-const WEAPON_MODS = "WeaponMods";
-const MECH_WEAPONS = "MechWeapons";
-const MECH_SYSTEM = "MechSystems";
-const PILOT_GEAR = "PilotGear";
-const PILOT_ARMOR = "PilotArmor";
-const PILOT_WEAPONS = "PilotWeapons";
-const PILOT_EQUIPMENT = "PilotEquipment";
-const TALENTS = "Talents";
-const SKILLS = "Skills";
-const STATUSES_AND_CONDITIONS = "StatusesAndConditions";
-const STATUSES = "Statuses"; // excludes conditions
-const CONDITIONS = "Conditions"; // excludes statuses
-const QUIRKS = "Quirks";
-const RESERVES = "Reserves";
-const ENVIRONMENTS = "Environments";
-const SITREPS = "Sitreps";
-const TAGS = "Tags";
+/*
+Contains logic for looking up item templates by ID, or for examining lists of options
+Everything herein implements VCompendiumItem
+*/
+
 export const FILEKEY_CONTENT_PACKS = "extra_content.json";
 
-// Contains the core compendium data
-export class Compendium {
-    [CORE_BONUSES]: CoreBonus[] = [];
-    [FACTIONS]: Faction[] = [];
-    [FRAMES]: Frame[] = [];
-    [MANUFACTURERS]: Manufacturer[] = [];
-    [NPC_CLASSES]: NpcClass[] = [];
-    [NPC_TEMPLATES]: NpcTemplate[] = [];
-    [NPC_FEATURES]: NpcFeature[] = [];
-    [WEAPON_MODS]: WeaponMod[] = [];
-    [MECH_WEAPONS]: MechWeapon[] = [];
-    [MECH_SYSTEM]: MechSystem[] = [];
-    [TALENTS]: Talent[] = [];
-    [SKILLS]: Skill[] = [];
-    [STATUSES_AND_CONDITIONS]: Status[] = [];
-    [RESERVES]: Reserve[] = [];
-    [ENVIRONMENTS]: Environment[] = [];
-    [SITREPS]: Sitrep[] = [];
-    [TAGS]: Tag[] = [];
-    [LICENSES]: License[] = []; // Come from frames
-    [PILOT_GEAR]: PilotGear[] = [];
-    [PILOT_ARMOR]: PilotArmor[] = []; // Come from pilot gear
-    [PILOT_WEAPONS]: PilotWeapon[] = []; // Come from pilot gear
-    [PILOT_EQUIPMENT]: PilotEquipment[] = []; // Come from pilot gear
-    [STATUSES]: Status[] = []; // Come from statuses
-    [CONDITIONS]: Status[] = []; // Come from statuses
-    [DEPLOYABLES]: Deployable[] = []; // Comes from anything with a DEPLOYABLES sub-item, usually systems (but also some weapons like the ghast nexus)
+// interface RawSuper {[key in keyof ItemType]: IRegistryItemData}; // This just makes sure the below is all as-expected
+type RawSuper = {[key in ItemType]: IRegistryItemData};
+interface RawTypeMapping extends RawSuper{
+    [ItemType.CORE_BONUS]: ICoreBonusData;
+    [ItemType.FACTION]: IFactionData;
+    [ItemType.FRAME]: IFrameData;
+    [ItemType.MANUFACTURER]: IManufacturerData;
+    [ItemType.NPC_CLASS]: INpcClassData;
+    [ItemType.NPC_TEMPLATE]: INpcTemplateData;
+    [ItemType.NPC_FEATURE]: INpcFeatureData;
+    [ItemType.WEAPON_MOD]: IWeaponModData;
+    [ItemType.MECH_WEAPON]: IMechWeaponData;
+    [ItemType.MECH_SYSTEM]: IMechSystemData;
+    [ItemType.TALENT]: ITalentData;
+    [ItemType.SKILL]: ISkillData ;
+    [ItemType.RESERVE]: IReserveData ;
+    [ItemType.ENVIRONMENT]: IEnvironmentData ;
+    [ItemType.SITREP]: ISitrepData ;
+    [ItemType.TAG]: ITagTemplateData ;
+    // [ItemType.LICENSES]: ILicenseData ;  // As it turns out there's no reason for licenses to exist, really...
+    [ItemType.PILOT_GEAR]: IPilotGearData ;
+    [ItemType.PILOT_ARMOR]: IPilotArmorData ;
+    [ItemType.PILOT_WEAPON]: IPilotWeaponData ;
+    [ItemType.PILOT_EQUIPMENT]: IPilotEquipmentData ;
+    [ItemType.STATUS]: IStatusData ;
+    [ItemType.CONDITION]: IStatusData ;
+    [ItemType.DEPLOYABLE]: IDeployableData ;
 
-    // These are not ID'd
-    [QUIRKS]: string[] = [];
+    [ItemType.QUIRK]: IQuirkData;
+
+    // We now track these as well
+    [ItemType.PILOT]: IPilotData;
+}
+
+type LiveSuper = {[key in ItemType]: VRegistryItem};
+interface LiveTypeMapping extends LiveSuper {
+    [ItemType.CORE_BONUS]: CoreBonus;
+    [ItemType.FACTION]: Faction;
+    [ItemType.FRAME]: Frame;
+    [ItemType.MANUFACTURER]: Manufacturer;
+    [ItemType.NPC_CLASS]: NpcClass;
+    [ItemType.NPC_TEMPLATE]: NpcTemplate;
+    [ItemType.NPC_FEATURE]: NpcFeature;
+    [ItemType.WEAPON_MOD]: WeaponMod;
+    [ItemType.MECH_WEAPON]: MechWeapon;
+    [ItemType.MECH_SYSTEM]: MechSystem;
+    [ItemType.TALENT]: Talent;
+    [ItemType.SKILL]: Skill ;
+    [ItemType.RESERVE]: Reserve ;
+    [ItemType.ENVIRONMENT]: Environment ;
+    [ItemType.SITREP]: Sitrep ;
+    [ItemType.TAG]: TagTemplate ;
+    [ItemType.LICENSE]: License ;
+    [ItemType.PILOT_GEAR]: PilotGear ;
+    [ItemType.PILOT_ARMOR]: PilotArmor ;
+    [ItemType.PILOT_WEAPON]: PilotWeapon ;
+    [ItemType.PILOT_EQUIPMENT]: PilotEquipment ;
+    [ItemType.STATUS]: Status ;
+    [ItemType.CONDITION]: Status ;
+    [ItemType.DEPLOYABLE]: Deployable ;
+    [ItemType.QUIRK]: Quirk ;
+    [ItemType.PILOT]: Pilot ;
+}
+
+// This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
+export abstract class Registry {
+    // Fetches the specific raw item of a category by its ID
+    abstract raw_by_id<T extends keyof RawTypeMapping>(cat: T, id: string): RawTypeMapping[T];
+
+    // Fetches all raw items of a category
+    abstract raw_list<T extends keyof RawTypeMapping>(cat: T): Array<RawTypeMapping[T]>;
+
+    // Instantiates a live interface of the specific raw item. 
+    abstract by_id<T extends keyof LiveTypeMapping>(cat: T, id: string): LiveTypeMapping[T];
+
+    // Instantiates live interfaces of the specified category. Slightly expensive
+    abstract list<T extends keyof LiveTypeMapping>(cat: T): Array<LiveTypeMapping[T]>;
+
+    // Save the given live item, propagating any changes made to it to the backend data source
+    // If this is a new item, adds it
+    abstract save_item<T extends VRegistryItem>(v: T): void;
+
+    // Delete the given id in the given category. Return deleted item, or null if not found
+    abstract delete_id<T extends keyof RawTypeMapping>(cat: T, id: string): RawTypeMapping[T] | null;
+
+    // Delete the given item. Returns success (failure indicates it was unable to find itself for deletion)
+    delete_live<T extends keyof LiveTypeMapping>(v: LiveTypeMapping[T]): boolean {
+        let typed_v: VRegistryItem = v;
+        return this.delete_id(typed_v.Type, typed_v.ID);
+    }
+}
+
+// Contains all lookupable items
+export class StaticCompendium {
+    [ItemType.CORE_BONUS]: CoreBonus[] = [];
+    [ItemType.FACTION]: Faction[] = [];
+    [ItemType.FRAME]: Frame[] = [];
+    [ItemType.MANUFACTURER]: Manufacturer[] = [];
+    [ItemType.NPC_CLASS]: NpcClass[] = [];
+    [ItemType.NPC_TEMPLATE]: NpcTemplate[] = [];
+    [ItemType.NPC_FEATURE]: NpcFeature[] = [];
+    [ItemType.WEAPON_MOD]: WeaponMod[] = [];
+    [ItemType.MECH_WEAPON]: MechWeapon[] = [];
+    [ItemType.MECH_SYSTEM]: MechSystem[] = [];
+    [ItemType.TALENT]: Talent[] = [];
+    [ItemType.SKILL]: Skill[] = [];
+    [ItemType.RESERVE]: Reserve[] = [];
+    [ItemType.ENVIRONMENT]: Environment[] = [];
+    [ItemType.SITREP]: Sitrep[] = [];
+    [ItemType.TAG]: TagTemplate[] = [];
+    [ItemType.LICENSE]: License[] = []; // Come from frames
+    [ItemType.PILOT_GEAR]: PilotGear[] = [];
+    [ItemType.PILOT_ARMOR]: PilotArmor[] = []; // Come from pilot gear
+    [ItemType.PILOT_WEAPON]: PilotWeapon[] = []; // Come from pilot gear
+    [ItemType.PILOT_EQUIPMENT]: PilotEquipment[] = []; // Come from pilot gear
+    [ItemType.STATUS]: Status[] = []; // Come from statuses
+    [ItemType.CONDITION]: Status[] = []; // Come from statuses
+    [ItemType.DEPLOYABLE]: Deployable[] = []; // Comes from anything with a DEPLOYABLES sub-item, usually systems (but also some weapons like the ghast nexus)
+    [ItemType.QUIRK]: string[] = []; // These are not ID'd natively. However, we've added the ability for this to provide bonuses, actions, and deployables, just for fun
+
+    get_cat<T extends CompendiumCategory>(cat: T): ICompendium[T] & Array<VCompendiumItem> {
+        return this[cat];
+    }
 }
 
 export interface ICompendium extends Compendium {}
@@ -98,33 +169,7 @@ export interface ICompendium extends Compendium {}
 export type CompendiumCategory = keyof ICompendium;
 
 // All the keys specifically in content packs. Note that some of these items are missing/ not yet able to be homebrewed
-export const PackKeys: Array<keyof ContentPack & keyof Compendium> = [
-    CORE_BONUSES,
-    FACTIONS,
-    FRAMES,
-    LICENSES,
-    MANUFACTURERS,
-    NPC_CLASSES,
-    NPC_TEMPLATES,
-    NPC_FEATURES,
-    WEAPON_MODS,
-    MECH_WEAPONS,
-    MECH_SYSTEM,
-    PILOT_GEAR,
-    PILOT_ARMOR,
-    PILOT_WEAPONS,
-    PILOT_EQUIPMENT,
-    TALENTS,
-    SKILLS,
-    STATUSES_AND_CONDITIONS,
-    STATUSES, // We did these ourselves
-    CONDITIONS, // We did these ourselves
-    RESERVES, // We did these ourselves
-    ENVIRONMENTS, // We did these ourselves
-    SITREPS, // We did these ourselves
-    TAGS, // We did these ourselves
-    QUIRKS, // We did these ourselves
-];
+export const PackKeys = Object.keys(ItemType).map(k => ItemType[k]) as Array<keyof Compendium>;
 
 // This is all compendium keys, IE items that  you can lookup by collection (and sometimes ID)
 export const CompendiumKeys: CompendiumCategory[] = Object.keys(new Compendium()) as any;
@@ -264,7 +309,7 @@ export class CompendiumStore extends AbsStoreModule {
         this.compendium = comp;
 
         // Update frame licenses
-        for (let l of comp[LICENSES]) {
+        for (let l of comp[ItemType.LICENSE]) {
             l.updateUnlocks();
         }
     }
@@ -281,18 +326,19 @@ export class CompendiumStore extends AbsStoreModule {
     }
 
     // Instantiate an item from a collection
-    // Note that functionally, this is just getReferenceByID except if you want to change it afterwards (e.g. an NPC)
+    // Note that functionally, this is just getReferenceByID except it also clones
     public instantiateCareful<T extends CompendiumCategory>(
         itemType: T,
         id: string
-    ): ICompendium[T][0] | null {
-        let v = this.getReferenceByID(itemType, id);
+    ): Compendium[T][0] | null {
+        let v = this.getReferenceByIDCareful(itemType, id);
         if (!v) {
             return v;
         } else {
             return lodash.cloneDeep(v);
         }
     }
+
 
     // Get a specific item from an item collection
     // public getReferenceByID<T>(itemType: LookupType, id: string): T | { err: string } { // Can we make this generic work?
@@ -301,6 +347,7 @@ export class CompendiumStore extends AbsStoreModule {
         id: string
     ): ICompendium[T][0] | null {
         const items = this.getItemCollection(itemType);
+
         // Typescript cannot consolidate predicates, so we treat as any.
         const i = (items as Array<any>).find(x => x.ID === id || x.id === id);
         return i || null;

@@ -1,83 +1,58 @@
-import { Reserve, ReserveType } from "@/class";
-import { IProjectData } from "@/classes/GeneralInterfaces";
+import { ItemType, Reserve, ReserveType } from "@/class";
+import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta';
+import { IReserveData } from './Reserve';
 
-export class Project extends Reserve {
-    private _complicated: boolean;
-    private _can_finish: boolean;
-    private _finished: boolean;
-    private _progress: number;
-    private _requirements: string[];
 
-    public constructor(data: IProjectData) {
-        super(data);
-        this.type = ReserveType.Project;
-        this._complicated = data.complicated;
-        this._can_finish = data.can_finish;
-        this._finished = data.finished;
-        this._progress = data.progress;
-        this._requirements = data.requirements;
-    }
-
-    public get IsComplicated(): boolean {
-        return this._complicated;
-    }
-
-    public get CanFinish(): boolean {
-        return this._can_finish;
-    }
-
-    public set CanFinish(b: boolean) {
-        this._can_finish = b;
-        this.save();
-    }
-
-    public get IsFinished(): boolean {
-        return this._finished;
-    }
-
-    public set IsFinished(b: boolean) {
-        this._finished = b;
-        this.save();
-    }
-
-    public get Progress(): number {
-        return this._progress;
-    }
-
-    public set Progress(p: number) {
-        this._progress = p;
-        this.save();
-    }
-
-    public get Requirements(): string[] {
-        return this._requirements;
-    }
-
-    public set Requirements(r: string[]) {
-        this._requirements = r;
-        this.save();
-    }
-
-    public static Serialize(project: Project): IProjectData {
-        return {
-            id: project.ID,
-            type: ReserveType.Project,
-            name: project.Name,
-            label: project.ResourceLabel,
-            description: project.Description,
-            resource_name: project.ResourceName,
-            resource_note: project.Note,
-            resource_cost: project.ResourceCost,
-            used: project.Used,
-            complicated: project.IsComplicated,
-            can_finish: project.CanFinish,
-            finished: project.IsFinished,
-            progress: project.Progress,
-            requirements: project.Requirements,
-        };
-    }
-
-    public static Deserialize(data: IProjectData): Project {
-        return new Project(data);
-    }
+export interface IProjectData extends IReserveData {
+    complicated: boolean;
+    can_finish: boolean;
+    finished: boolean;
+    progress: number;
+    requirements: string[];
 }
+
+export interface Project extends MixLinks<IProjectData> {
+    // Dup of reserve.
+    ID: string;
+    Type: ItemType.RESERVE;
+    Name: string;
+    Label: string;
+    Description: string;
+    ReserveType: ReserveType;
+    ResourceName: string;
+    ResourceNote: string;
+    ResourceCost: string;
+    Used: boolean; // Only relevant on "owned" instances
+
+    ///////
+    Complicated: boolean;
+    CanFinish: boolean;
+    Finished: boolean;
+    Progress: number;
+    Requirements: string[];
+}
+
+export function CreateProject(data: IProjectData | null): Project {
+    let mb = new MixBuilder<Project, IProjectData>({});
+
+    ///////////////////
+    // Unfortunately thjis is redundant with Reserve. We haven't really got a good way of efficiently handling subclasses. Much like foundry ;)
+    mb.with(new RWMix("ID", "name", uuid(), ident, ident));
+    mb.with(new RWMix("Name", "name", "New reserve", ident, ident));
+    mb.with(new RWMix("Description", "description", "No description", ident, ident));
+    mb.with(new RWMix("ReserveType", "type", ReserveType.Resources, restrict_enum(ReserveType, ReserveType.Resources), ident));
+    mb.with(new RWMix("ResourceCost", "resource_cost", "", ident, ident));
+    mb.with(new RWMix("ResourceNote", "resource_note", "", ident, ident));
+    mb.with(new RWMix("ResourceName", "resource_name", "", ident, ident));
+    mb.with(new RWMix("Used", "used", false, ident, ident));
+    ////////////////////
+    mb.with(new RWMix("Complicated", "complicated", false, ident, ident));
+    mb.with(new RWMix("CanFinish", "can_finish", false, ident, ident));
+    mb.with(new RWMix("Finished", "finished", false, ident, ident));
+    mb.with(new RWMix("Progress", "progress", 0, ident, ident));
+    mb.with(new RWMix("Requirements", "requirements", [], ident, ident));
+    return mb.finalize(data);
+
+}
+
+

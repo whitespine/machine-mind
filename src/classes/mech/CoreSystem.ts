@@ -1,119 +1,97 @@
-import { MechWeapon, Tag, ActivationType, MMItem, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated } from "@/class";
-import { ICompendiumItemData, ITagData, IActionData, IDeployableData, ICounterData, IBonusData, ISynergyData, IHasDeployables, IHasTags, IHasCounters, IHasIntegrated, IMMItemData, IHasActions, IHasBonuses, IHasSynergies } from "@/interface";
-import { store } from "@/hooks";
-import { CoreUseType } from '../enums';
-import { MixinHost } from '../CompendiumItem';
+import { Action, ActivationType, Bonus, Counter, Deployable, Synergy, TagInstance} from "@/class";
+import { ITagInstanceData, IActionData, IDeployableData, ICounterData, IBonusData, ISynergyData} from "@/interface";
+import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, CountersMixReader, CountersMixWriter, DeployableMixReader, DeployableMixWriter, ident, ident_drop_null, MixBuilder, RWMix, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter } from '@/mixmeta';
+import { FrameEffectUse } from '../enums';
 
-// Note - though this extends IMMItemData, we don't expect it to have a description
-export interface ICoreSystemData extends IHasDeployables, IHasCounters, IHasIntegrated, IHasTags {
-  name: string,
-  active_name: string,
-  active_effect: string, // v-html
-  activation: ActivationType,
-  deactivation?: ActivationType,
-  use?: CoreUseType;
+export interface ICoreSystemData {
+  "name": string,
+  "description": string, // v-html
+  "active_name": string,
+  "active_effect": string, // v-html
+  "activation": ActivationType,
+  "deactivation"?: ActivationType,
+  "use"?: FrameEffectUse;
+  "active_actions": IActionData[],
+  "active_bonuses": IBonusData[],
+  "active_synergies": ISynergyData[],
+  
+  // Basically the same but passives
+  "passive_name"?: string,
+  "passive_effect"?: string, // v-html, 
+  "passive_actions"?: IActionData[],
+  "passive_bonuses"?: IBonusData[],
+  "passive_synergies"?: ISynergyData[],
 
-  active_actions: IActionData[],
-  active_bonuses: IBonusData[],
-  active_synergies: ISynergyData[],
+  // And all the rest
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
+  "tags": ITagInstanceData[]
+}
 
-  passive_name?: string,
-  passive_effect?: string, // v-html, 
-  passive_actions?: IActionData[],
+export interface CoreSystem extends MixLinks<ICoreSystemData> {
+    Name: string;
+    Description: string;
+
+    Activation: ActivationType;
+    Deactivation: ActivationType | null;
+    Use: FrameEffectUse | null;
+
+    ActiveName: string;
+    ActiveEffect: string;
+    ActiveActions: Action[];
+    ActiveBonuses: Bonus[];
+    ActiveSynergies: Synergy[];
+
+    PassiveName: string | null;
+    PassiveEffect: string | null;
+    PassiveActions: Action[] | null;
+    PassiveBonuses: Bonus[] | null;
+    PassiveSynergies: Synergy[] | null;
+
+    Deployables: Deployable[];
+    Counters: Counter[];
+    Integrated: string[];
+    Tags: TagInstance[];
+
+    // Methods
+    has_passive(): boolean; // Checks for the non-nullity of any passive fields
+}
+
+export function CreateCoreSystem(data: ICoreSystemData | null): CoreSystem {
+    let mb = new MixBuilder<CoreSystem, ICoreSystemData>({
+        has_passive
+    });
+    mb.with(new RWMix("Name", "name", "New Core System", ident, ident));
+    mb.with(new RWMix("Description", "description", "No description", ident, ident));
+    mb.with(new RWMix("Use", "use", null, ident, ident_drop_null));
+
+    mb.with(new RWMix("PassiveName", "passive_name", null, ident, ident_drop_null));
+    mb.with(new RWMix("PassiveEffect", "passive_effect", null, ident, ident_drop_null));
+    mb.with(new RWMix("PassiveActions", "passive_actions", null, ActionsMixReader, nundefmaparr(ActionsMixWriter)));
+    mb.with(new RWMix("PassiveBonuses", "passive_bonuses", null, BonusesMixReader, nundefmaparr(BonusesMixWriter)));
+    mb.with(new RWMix("PassiveSynergies", "passive_synergies", null, SynergyMixReader, nundefmaparr(SynergyMixWriter)));
+
+    mb.with(new RWMix("ActiveName", "active_name", "Core Active", ident, ident));
+    mb.with(new RWMix("ActiveEffect", "active_effect", "No effect", ident, ident));
+    mb.with(new RWMix("ActiveActions", "active_actions", [], ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("ActiveBonuses", "active_bonuses", [], BonusesMixReader, BonusesMixWriter));
+    mb.with(new RWMix("ActiveSynergies", "active_synergies", [], SynergyMixReader, SynergyMixWriter));
+
+    mb.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", [], ident, ident ));
+    mb.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter ));
+
+    return mb.finalize(data);
+}
+
+function has_passive(this: CoreSystem) {
+    return !!(this.PassiveActions || this.PassiveBonuses || this.PassiveName || this.PassiveSynergies || this.PassiveEffect);
 }
 
 
-// Used to represent passive/active states
-export interface ICoreSystemPartData extends IHasActions, IHasBonuses, IHasActions {};
-export class CoreSystemPart extends MixinHost<ICoreSystemPart> {
-    public readonly Actions: MixActions = new MixActions();
-    public readonly 
-    constructor() {
-        super();
-        this.register_mixins
-    }
-
-    protected serialize_self() {
-        return {}; // we're all mixins
-    }
-}
-
-
-export class CoreSystem extends MMItem<ICoreSystemData> {
-    private _passive: CoreSystemPart;
-    private _active: CoreSystemPart;
-}
-
-export class CoreSystemPart extends MMItem<ICoreSystemPart> {
-    // Mixins. 
-    public readonly Actions: MixActions;
-    public readonly Bonuses: MixBonuses;
-    public readonly Synergies: MixSynergies;
-
-    public readonly Deployables: MixDeployables ;
-    public readonly Counters: MixCounters ;
-    public readonly Integrated: MixIntegrated ;
-
-    private _use: UseType | null; 
-    public get Use(): UseType | null { return this._use ;}
-    public set Use(nv: UseType | null) { this._use = nv ;}
-
-    public constructor(ftd: IFrameTraitData) {
-        super(ftd);
-
-        // Handle mixins
-        let mixins = [
-            this.Actions = new MixActions(),
-            this.Bonuses = new MixBonuses(),
-            this.Synergies = new MixSynergies(),
-            this.Deployables = new MixDeployables(),
-            this.Counters = new MixCounters(),
-            this.Integrated = new MixIntegrated()
-        ];
-        this.register_mixins(mixins);
-        this.load(ftd);
-
-        // Handle specific data
-        this._use = ftd.use || null;
-    }
-
-    protected serialize_self() {
-        return {
-            ...super.serialize_self(),
-            use: this._use
-        };
-    }
-}
-
-
-export class CoreSystem extends MMItem<ICoreSystemData> {
-    private _integrated: string | null;
-    private _passive_name: string | null;
-    private _passive_effect: string | null;
-    private _active_name: string;
-    private _active_effect: string;
-    private _use: CoreUseType | null;
-
-    public constructor(coreData: ICoreSystemData) {
-        super(coreData);
-        this._name = coreData.name;
-        this._description = coreData.description;
-        this._integrated = coreData.integrated ? coreData.integrated.id : null;
-        this._passive_name = coreData.passive_name || null;
-        this._passive_effect = coreData.passive_effect || null;
-        this._active_name = coreData.active_name;
-        this._active_effect = coreData.active_effect;
-        this._tags = coreData.tags;
-    }
-
-    public get Name(): string {
-        return this._name;
-    }
-
-    public get Description(): string {
-        return this._description;
-    }
-
+/*
     public get Integrated(): MechWeapon | null {
         if (!this._integrated) return null;
         return store.compendium.getReferenceByID("MechWeapons", this._integrated);
@@ -123,24 +101,15 @@ export class CoreSystem extends MMItem<ICoreSystemData> {
         if (!this._integrated) return null;
         return store.compendium.instantiate("MechWeapons", this._integrated);
     }
+*/
 
-    public get PassiveName(): string | null {
-        return this._passive_name || null;
-    }
 
-    public get PassiveEffect(): string | null {
-        return this._passive_effect || null;
-    }
-
-    public get ActiveName(): string {
-        return this._active_name;
-    }
-
-    public get ActiveEffect(): string {
-        return this._active_effect;
-    }
-
-    public get Tags(): Tag[] {
-        return Tag.Deserialize(this._tags);
-    }
+// Simple lambda wrapper to handle our could-be-array-could-be-null
+function nundefmaparr<I, O>(converter: (v: I[]) => O[]): (v: I[] | null) => O[] | undefined {
+    return (v: I[] | null) => {
+        if(v) {
+            return converter(v);
+        }else {
+            return undefined;
+        };
 }

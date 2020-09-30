@@ -1,27 +1,8 @@
-import { ItemType, Deployable, DamageType } from '@/class';
-import { IDeployableData } from '@/interface';
-import { uniqueId } from 'lodash';
 import { keys } from 'ts-transformer-keys';
+import {Registry } from './store/compendium';
 
-// Simplifies serialization implementation to be more generally consistent. Many of the more common 
-export abstract class Mixin<T> {
-    constructor(){}
-
-    public abstract load(data: T): void;
-    public abstract save(): T;
-}
-
-// Represents something that is stored / searchable in the compendium
-export interface IMMItemData {
-    // The display name
-    name: string;
-
-    // The description
-    description?: string ;
-}
-
-// Handles a single item
-export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcName extends keyof Src> {
+// Handles a single property in a single item, specifically one that saves/stores from a single
+export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName extends keyof Src> {
     // What key we expose in the actual class
     public prop_key: HostKey;
 
@@ -37,6 +18,10 @@ export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcNam
     // Flag demarcates if we were able to legitimately load data, or if we just used the default due to undefined
     private defined: boolean = false;
 
+    // Hooks. Apply in order.
+    private pre_setters: Array<(nv:Host[HostKey]) => Host[HostKey]> = []; // Can override the data that is passed in. If an error is thrown, the write is dropped
+    private post_setters: Array<() => any> = []; // Called post set. Should be careful about setting mixlets from here so as to not cause errors
+
     // Writes data to compendium/saves etc like so
     public writer: (x: Host[HostKey]) => Src[SrcName];
 
@@ -48,8 +33,22 @@ export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcNam
         return v;
     }
     public set_val(v: Host[HostKey]) {
+        // Apply all pre setters
+        try {
+            for(let s of this.pre_setters) {
+                v = s(v);
+            }
+        } catch(e) {
+            console.log(`Dropping set ${this.prop_key} due to encountered error:`, e);
+            return;
+        }
         this.defined = true; // Clearly it is being explicitly set, so....
         this.val = v;
+
+        // Call all post setters
+        for(let s of this.post_setters) {
+            s();
+        }
     }
 
     // Constructor is straightforward enough
@@ -83,9 +82,18 @@ export class Mixlet<Host, HostKey extends keyof Host, Src extends object, SrcNam
             to[this.src_key] = this.writer(this.val);
         }
     }
+
+    // Add new hooks
+    public add_pre_set_hook(hook: (v: Host[HostKey]) => Host[HostKey]) {
+        this.pre_setters.push(hook);
+    }
+
+    public add_post_set_hook(hook: () => any) {
+        this.post_setters.push(hook);
+    }
 }
 
-type AnyMixlet<HostType, SrcType extends object> = Mixlet<HostType, any, SrcType, any>;
+type AnyMixlet<HostType, SrcType extends object> = RWMix<HostType, any, SrcType, any>;
 
 // This interface should be extended by any interface representing a mix amalgam, with the SrcType being the IWhatever that it saves/loads from
 export interface MixLinks<SrcType extends object> {
@@ -106,7 +114,7 @@ export interface MixLinks<SrcType extends object> {
 }
 
 // We add this into our item prior to proxying it
-export function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends object>(target_: Partial<HostType>, mixlets: Array<AnyMixlet<HostType, SrcType>>) {
+function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends object>(target_: Partial<HostType>, mixlets: Array<AnyMixlet<HostType, SrcType>>) {
     // We just assume we're all good, lol
     let target = target_ as HostType;
 
@@ -165,7 +173,7 @@ export function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends
 }
 
 // This static object just wraps our behavior on concretes
-const handler: ProxyHandler<MixLinks<any>> = {
+const proxy_handler: ProxyHandler<MixLinks<any>> = {
     get: (target, key) => {
         if(typeof key === "string") {
             // Check mixin first, fallback to key (for Serialize, methods, etc)
@@ -189,8 +197,11 @@ const handler: ProxyHandler<MixLinks<any>> = {
     }
 };
 
-// Note on augmentors: x is partial. we do not denote it as such for convenience, but it is
-export type Augmentor<HostType> = (x: HostType) => any;
+// Needed for items that require registry access
+export interface InitializationContext {
+    brew: string;
+    registry: Registry;
+}
 
 // Just a wrapper around the functionality of making a properly proxied ConcreteMix easily
 export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends object> {
@@ -204,17 +215,14 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
         this.host = host;
     }
 
-    // Add a new prop to the proxy
-    with<HostName extends keyof HostType, SrcName extends keyof SrcType>(mixlet: Mixlet<HostType, HostName, SrcType, SrcName>): this {
+    // Add a new prop to the proxy. Return the mixlet for ease of chaining
+    with<HostName extends keyof HostType, SrcName extends keyof SrcType>(mixlet: RWMix<HostType, HostName, SrcType, SrcName>): RWMix<HostType, HostName, SrcType, SrcName> {
         this.mix_list.push(mixlet);
-        return this;
+        return mixlet;
     }
 
-    // An alternate syntax to the above, designed for more general purpose operations
-    augment(augmentor: Augmentor<HostType>): this {
-        augmentor(this.host as HostType);    
-        return this;
-    }
+    // Add a new prop to the proxy that isn't serialized in any way - it is derived at creation time from the finalization context
+    // withContextDerived<HostName extends keyof HostType, HostVal extends HostType[HostName]>(key: HostName, generator
 
     // Lets us add data pre-finalize without exposing our inner item
     // Note that because they are added this way they will NOT be mixed!
@@ -231,7 +239,7 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
         pour_mixlets(this.host, mix_list);
 
         // Create our proxy
-        let rv = new Proxy(this.host as HostType, handler);
+        let rv = new Proxy(this.host as HostType, proxy_handler);
 
         // Validate
         validate_props<HostType>(rv);
@@ -293,16 +301,30 @@ function validate_props<T extends object>(v: T) {
     }
 }
 
-
-
-// Re-export stuff
+// Helper functions
 export function ident<T>(t: T): T { return t; }
 export function ident_drop_null<T>(t: T): NonNullable<T> | undefined { 
     return t ?? undefined;
 }
+export function ser_one<T extends {Serialize(): G}, G>(t: T): G {
+    return t.Serialize();
+}
+export function ser_many<T extends {Serialize(): G}, G>(t: T[]): G[] {
+    return t.map(v => v.Serialize());
+}
 
+// Easily lock into enums using restrict_enum
+export function restrict_choices<T extends string>(choices: T[], default_choice: T): (x: string | undefined) => T {
+    return (x: string | undefined) => choices.includes((x || "") as T) ? (x as T) : default_choice;
+}
+export function restrict_enum<T extends string>(enum_: {[key: string]: T}, default_choice: T): (x: string | undefined) => T {
+    let choices = Object.keys(enum_).map(k => enum_[k]);
+    return restrict_choices(choices, default_choice);
+}
+
+// Re-export stuff
 export {ActionsMixReader, ActionsMixWriter, FrequencyMixReader, FrequencyMixWriter} from "@/classes/Action";
-export {BonusesMixReader as BonusMixReader, BonusesMixWriter as BonusMixWriter} from "@/classes/Bonus";
+export {BonusesMixReader, BonusesMixWriter} from "@/classes/Bonus";
 export {SynergyMixReader, SynergyMixWriter} from "@/classes/Synergy";
 export {TagInstanceMixWriter, TagTemplateMixWriter, TagTemplateMixReader, TagInstanceMixReader} from "@/classes/Tag";
 export {DeployableMixReader, DeployableMixWriter} from "@/classes/Deployable";

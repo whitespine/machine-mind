@@ -2,7 +2,7 @@ import { ItemType } from "@/class";
 
 import { VCompendiumItem } from "@/interface";
 import { store } from "@/hooks";
-import { MixLinks, MixBuilder, Mixlet, uuid, ident } from '@/mixmeta';
+import { MixLinks, MixBuilder, RWMix, uuid, ident } from '@/mixmeta';
 import { DEFAULT_BREW_ID } from './enums';
 
 export interface ITagTemplateData {
@@ -35,19 +35,19 @@ export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
         ItemType: ItemType.Tag,
         Brew: DEFAULT_BREW_ID
     });
-    b.with(new Mixlet("ID", "id", uuid(), ident, ident));
-    b.with(new Mixlet("Name", "name", "New Tag", ident, ident));
-    b.with(new Mixlet("Description", "description", "", ident, ident));
-    b.with(new Mixlet("FilterIgnore", "filter_ignore", false, ident, ident));
-    b.with(new Mixlet("Hidden", "hidden", false, ident, ident));
+    b.with(new RWMix("ID", "id", uuid(), ident, ident));
+    b.with(new RWMix("Name", "name", "New Tag", ident, ident));
+    b.with(new RWMix("Description", "description", "", ident, ident));
+    b.with(new RWMix("FilterIgnore", "filter_ignore", false, ident, ident));
+    b.with(new RWMix("Hidden", "hidden", false, ident, ident));
     let r = b.finalize(data);
     return r;
 }
 
 export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
     let b = new MixBuilder<TagInstance, ITagInstanceData>({});
-    b.with(new Mixlet("TemplateID", "id", uuid(), ident, ident));
-    b.with(new Mixlet("Val", "val", "", ident, ident));
+    b.with(new RWMix("TemplateID", "id", uuid(), ident, ident));
+    b.with(new RWMix("Val", "val", "", ident, ident));
     let r = b.finalize(data);
     return r;
 }

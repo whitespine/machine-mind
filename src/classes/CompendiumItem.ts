@@ -1,28 +1,23 @@
-import { ItemType, Action, Bonus, Synergy, Deployable, Counter } from "@/class";
-import { ICounterData } from '@/interface';
+import { ItemType} from "@/class";
 
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, itemtype, and brew
 
-// Many of our "classes" extend this to indicate that they are hosted/managed by the compendium structure
-// Has an ID and type, as well as tracks the brew it came from
-export interface VCompendiumItem {
+// This entity lives in our registry, and is "indexable" for lack of a better word
+export interface VRegistryItem {
     readonly ID: string;
     readonly Name: string;
     readonly Type: ItemType;
-    readonly Description: string;
+    // readonly Description: string;
     readonly Brew: string;
 }
 
-/*
-I am admittedly not _entirely_ sure why this is whaat it is. But it is, so.... guess we just gotta deal
-*/
-
-export interface ICompendiumItemData {
+// Any item that will be accessible via registry must at least bear these two tags
+export interface IRegistryItemData {
   id: string
   name: string
-  description: string
-  brew?: string
-  STINKY: "yes"
+  // type: ItemType; // Note that this DOESN'T COME FREE! We MUST add it if not initially present when we intake items
+  // description: string
+  // brew?: string -- deduced separately
   // counters?: ICounterData[]
 }

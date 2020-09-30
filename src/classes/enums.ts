@@ -93,21 +93,34 @@ export enum WeaponType {
     Melee = "Melee",
 }
 
-export enum ItemType {
+export enum EntryType {
     None = "",
-    Action = "Action",
-    CoreBonus = "CoreBonus",
-    Frame = "Frame",
-    PilotArmor = "PilotArmor",
-    PilotWeapon = "PilotWeapon",
-    PilotGear = "PilotGear",
-    Skill = "Skill",
-    Talent = "Talent",
-    Tag = "Tag",
-    MechWeapon = "MechWeapon",
-    MechSystem = "MechSystem",
-    WeaponMod = "WeaponMod",
-    NpcFeature = "NpcFeature",
+    CORE_BONUS = "CoreBonuses",
+    DEPLOYABLE = "Deployables",
+    FACTION = "Factions",
+    FRAME = "Frames",
+    // LICENSE = "Licenses",
+    MANUFACTURER = "Manufacturers",
+    NPC_CLASS = "NpcClasses",
+    NPC_TEMPLATE = "NpcTemplates",
+    NPC_FEATURE = "NpcFeatures",
+    WEAPON_MOD = "WeaponMods",
+    MECH_WEAPON = "MechWeapons",
+    MECH_SYSTEM = "MechSystems",
+    PILOT_GEAR = "PilotGear",
+    PILOT_ARMOR = "PilotArmor",
+    PILOT_WEAPON = "PilotWeapons",
+    PILOT_EQUIPMENT = "PilotEquipment",
+    TALENT = "Talents",
+    SKILL = "Skills",
+    STATUS = "Statuses", 
+    CONDITION = "Conditions",
+    QUIRK = "Quirks",
+    RESERVE = "Reserves",
+    ENVIRONMENT = "Environments",
+    SITREP = "Sitreps",
+    TAG = "Tags",
+    PILOT = "Pilot"
 }
 
 export enum SystemType {
@@ -131,18 +144,14 @@ export enum Duration {
     Mission = "Mission",
 }
 
-export enum TraitUseType {
-    Round= "Round",
-    Scene= "Scene",
-    Encounter= "Encounter",
-    Mission= "Mission",
-}
-
-export enum CoreUseType {
-    Round= "Round",
-    Scene= "Next Round",
-    Encounter= "Scene",
-    Mission= "Encounter",
+export enum FrameEffectUse {// Handles cores and traits usage duration thingies
+    Turn = "Turn",
+    NextTurn = 'Next Turn',
+    Round = 'Round',
+    NextRound = 'Next Round',
+    Scene = 'Scene' ,
+    Encounter = 'Encounter' ,
+    Mission= 'Mission',
 }
 
 export enum ActivationType {
@@ -154,13 +163,6 @@ export enum ActivationType {
     Reaction = "Reaction",
     Protocol = "Protocol",
     Free = "Free"
-}
-
-export enum SkillFamily {
-    str = "str",
-    dex = "dex",
-    int = "int",
-    cha = "cha",
 }
 
 export enum RangeType {

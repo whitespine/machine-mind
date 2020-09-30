@@ -1,6 +1,6 @@
 import { LicensedItem, TagInstance } from "@/class";
 import { IActionData, IBonusData, ICounterData, IDeployableData, ILicensedItemData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ItemType } from "../enums";
+import { EntryType } from "../enums";
 
 export interface IMechEquipmentData extends ILicensedItemData {
   "id": string,

@@ -2,8 +2,9 @@ import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "
 import { ILicensedItemData, IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICoreSystemData, IFrameTraitData } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 import { IArtLocation } from '../Art';
-import { FrameTrait } from './FrameTrait';
-import { ident, MixBuilder, Mixlet, MixLinks, uuid } from '@/mixmeta';
+import { CreateFrameTrait, FrameTrait } from './FrameTrait';
+import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, ser_many, ser_one, uuid } from '@/mixmeta';
+import { CreateCoreSystem } from './CoreSystem';
 
 // Handles the base numberage
 export interface IFrameStats {
@@ -19,6 +20,22 @@ export interface IFrameStats {
     save: number;
     speed: number;
     sp: number;
+}
+
+// We take those of the everest
+const DEFAULT_STATS: IFrameStats = {
+    armor: 0,
+    edef: 8,
+    evasion: 8,
+    heatcap: 6,
+    hp: 10,
+    repcap: 5,
+    save: 10,
+    sensor_range: 10,
+    size: 1,
+    sp: 6,
+    speed: 4,
+    tech_attack: 0
 }
 
 
@@ -49,34 +66,36 @@ export interface Frame extends MixLinks<IFrameData>{
     YPosition: number,
     Description: string,
     Mounts: MountType[],
-    Stats: FrameStats,
+    BaseStats: IFrameStats,
     Traits: FrameTrait[],
     Core: CoreSystem,
     ImageURL: string | null;
     OtherArt: IArtLocation[];
+
+    // Methods
+    default_image(): string;
 }
 
 export function CreateFrame(data: IFrameData | null): Frame {
-    let mb = new MixBuilder<Frame, IFrameData>({});
-    mb.with(new Mixlet("ID", "id", uuid(), ident, ident));
-    mb.with(new Mixlet("LicenseLevel", "license_level", 1, ident, ident));
-    mb.with(new Mixlet("Source", "source", "GMS", ident, ident));
-    mb.with(new Mixlet("Name", "name", "New Frame", ident, ident));
-    mb.with(new Mixlet("Mechtype", "mechtype", [], ident, ident));
-    mb.with(new Mixlet("YPosition", "y_pos", 0, ident, ident));
-    mb.with(new Mixlet("Description", "description", "No description", ident, ident));
-    mb.with(new Mixlet("Mounts", "mounts", [], ident, ident));
-    mb.with(new Mixlet("Stats", "stats", [], ident, ident));
-    mb.with(new Mixlet("Traits", "traits", [], ident, ident));
-    mb.with(new Mixlet("Core", "core_system", CreateCoreSystem(null), ident, ident));
-    mb.with(new Mixlet("ImageURL", "image_url", null, ident, ident));
-    mb.with(new Mixlet("OtherArt", "other_art", [], ident, ident));
-
+    let mb = new MixBuilder<Frame, IFrameData>({default_image});
+    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
+    mb.with(new RWMix("LicenseLevel", "license_level", 1, ident, ident));
+    mb.with(new RWMix("Source", "source", "GMS", ident, ident));
+    mb.with(new RWMix("Name", "name", "New Frame", ident, ident));
+    mb.with(new RWMix("Mechtype", "mechtype", [], ident, ident));
+    mb.with(new RWMix("YPosition", "y_pos", 0, ident, ident));
+    mb.with(new RWMix("Description", "description", "No description", ident, ident));
+    mb.with(new RWMix("Mounts", "mounts", [], ident, ident));
+    mb.with(new RWMix("BaseStats", "stats", {...DEFAULT_STATS}, ident, ident));
+    mb.with(new RWMix("Traits", "traits", [], (x) => x.map(CreateFrameTrait), ser_many));
+    mb.with(new RWMix("Core", "core_system", CreateCoreSystem(null), CreateCoreSystem, ser_one));
+    mb.with(new RWMix("ImageURL", "image_url", null, ident, ident_drop_null));
+    mb.with(new RWMix("OtherArt", "other_art", [], ident, ident));
 
     return mb.finalize(data);
 }
 
-function DefaultImage(this: Frame): string {
+function default_image(this: Frame): string {
     if (this.ImageURL) return this.ImageURL;
     return imageManagement.getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
 }

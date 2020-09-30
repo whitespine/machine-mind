@@ -7,43 +7,25 @@
 export * from "@/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
 export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
-export {
-    MountType,
-    FittingSize,
-    WeaponSize,
-    WeaponType,
-    ItemType,
-    SystemType,
-    SkillFamily,
-    RangeType,
-    DamageType,
-    HASE,
-    MechType,
-    ReserveType,
-    OrgType,
-    EncounterSide,
-    ActivationType,
-    Duration,
-} from "./classes/enums";
+export * from "./classes/enums";
 export { Action, CreateAction } from "./classes/Action";
 export { Bonus, CreateBonus } from "./classes/Bonus";
-export { Deployable } from "./classes/Deployable";
+export { Deployable, CreateDeployable, Deployed, CreateDeployed } from "./classes/Deployable";
 export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage, CreateDamage } from "./classes/Damage";
 export { Range, CreateRange } from "./classes/Range";
-export { Synergy } from "@/classes/Synergy";
-export { Skill } from "./classes/pilot/Skill";
+export { Synergy, CreateSynergy } from "@/classes/Synergy";
+export { Skill, CreateSkill } from "./classes/pilot/Skill";
 export { PilotArmor, CreatePilotArmor, PilotGear, CreatePilotGear, PilotWeapon, CreatePilotWeapon, PilotEquipment } from "./classes/pilot/PilotEquipment";
 export { ActiveState } from "./classes/mech/ActiveState";
-export { CoreSystem } from "./classes/mech/CoreSystem";
-export { Frame } from "./classes/mech/Frame";
+export { CoreSystem, CreateCoreSystem } from "./classes/mech/CoreSystem";
+export { Frame, CreateFrame } from "./classes/mech/Frame";
 export { MechEquipment } from "./classes/mech/MechEquipment";
 export { MechSystem } from "./classes/mech/MechSystem";
 export { WeaponMod } from "./classes/mech/WeaponMod";
-export { MechWeapon } from "./classes/mech/MechWeapon";
+export { MechWeapon, CreateMechWeapon } from "./classes/mech/MechWeapon";
 
-export { CustomSkill } from "./classes/pilot/CustomSkill";
 export { Loadout } from "./classes/Loadout";
 export { Talent, TalentRankUtil } from "./classes/pilot/Talent";
 export { License } from "./classes/License";
@@ -52,6 +34,7 @@ export { PilotLicense } from "./classes/pilot/PilotLicense";
 export { PilotLoadout } from "./classes/pilot/PilotLoadout";
 export { PilotSkill } from "./classes/pilot/PilotSkill";
 export { PilotTalent } from "./classes/pilot/PilotTalent";
+export { Quirk } from "./classes/pilot/Quirk";
 export { Pilot } from "./classes/pilot/Pilot";
 export { TagInstance, TagTemplate } from "./classes/Tag";
 export { MechLoadout } from "./classes/mech/MechLoadout";
@@ -60,10 +43,10 @@ export { IntegratedMount } from "./classes/mech/IntegratedMount";
 export { EquippableMount } from "./classes/mech/EquippableMount";
 export { WeaponSlot } from "./classes/mech/WeaponSlot";
 export { Mech } from "./classes/mech/Mech";
-export { Reserve } from "./classes/pilot/reserves/Reserve";
-export { Project } from "./classes/pilot/reserves/Project";
-export { Organization } from "./classes/pilot/reserves/Organization";
-export { Manufacturer } from "./classes/Manufacturer";
+export { Reserve, CreateReserve } from "./classes/pilot/reserves/Reserve";
+export { Project, CreateProject} from "./classes/pilot/reserves/Project";
+export { Organization, CreateOrganization } from "./classes/pilot/reserves/Organization";
+export { Manufacturer, CreateManufacturer } from "./classes/Manufacturer";
 export { Faction } from "./classes/Faction";
 export { Statblock } from "./classes/Statblock";
 export {
@@ -95,4 +78,4 @@ export { NpcStats } from "@/classes/npc/NpcStats";
 export { NpcClass } from "@/classes/npc/NpcClass";
 export { NpcTemplate } from "@/classes/npc/NpcTemplate";
 export { Npc } from "@/classes/npc/Npc";
-export { Compendium } from "./store/compendium";
+export { Registry } from "./store/compendium";

@@ -2,14 +2,31 @@ import { CompendiumItem, ItemType, Manufacturer, EquippableMount } from "@/class
 import { store } from "@/hooks";
 
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData } from "@/interface";
-import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated } from '../CompendiumItem';
+import { MixLinks } from '@/mixmeta';
+import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated, VCompendiumItem } from '../CompendiumItem';
 
 export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
-  source: string, // must be the same as the Manufacturer ID to sort correctly
-  effect: string, // v-html
-  mounted_effect?: string
+  "id": string,
+  "name": string,
+  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  "effect": string, // v-html
+  "description": string, // v-html
+  "mounted_effect"?: string
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[]
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
 }
-export class CoreBonus extends CompendiumItem<ICoreBonusData> {
+
+export interface CoreBonus extends MixLinks<ICoreBonusData>, VCompendiumItem {
+  
+
+
+}
+
+export class CoreBonusold extends CompendiumItem<ICoreBonusData> {
     // Mixins
     public readonly Actions = new MixActions();
     public readonly Bonuses = new MixBonuses();

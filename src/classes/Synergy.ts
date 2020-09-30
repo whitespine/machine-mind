@@ -1,40 +1,44 @@
 import { MechEquipment, Pilot, MechWeapon, ItemType, MechSystem, Frame } from "@/class";
+import { ident, MixBuilder, MixLinks, RWMix, ser_many } from '@/mixmeta';
 import { WeaponType, WeaponSize, SystemType } from './enums';
 
 export type SynergyLocation = "any" | "active_effects" | "rest" | "weapon" | "system" | "move" | "boost" | "other" | "ram" | "grapple" | "tech_attack" | "overcharge" | "skill_check" | "overwatch" | "improvised_attack" | "disengage" | "stabilize" | "tech" | "lock_on" | "hull" | "agility" | "systems" | "engineering";
 export interface ISynergyData {
     locations: SynergyLocation[]; 
-    types?: Array<WeaponType | SystemType>;
-    sizes?: WeaponSize[];
     detail: string; // v-html
+    system_types?: SystemType[];
+    weapon_types?: WeaponType[];
+    weapon_sizes?: WeaponSize[];
+
+    // Methods: quick check applicability
+    allows_weapon(wep: MechWeapon): boolean;
+    allows_system(wep: MechSystem): boolean;
 }
 
-export class Synergy {
-    locations: SynergyLocation[] | "any";  // null => any
-    types: Array<WeaponType | SystemType> | "any";
-    sizes: WeaponSize[] | "any";
-    detail: string; // v-html
+export interface Synergy extends MixLinks<ISynergyData> {
+    Locations: SynergyLocation[];
+    Detail: string;
+    SystemTypes: SystemType[];
+    WeaponTypes: WeaponType[];
+    WeaponSizes: WeaponSize[];
+}
 
-    constructor(data: ISynergyData) {
-        this.locations = data.locations;
-        this.types = data.types || "any";
-        this.sizes = data.sizes || "any";
-        this.detail = data.detail;
-    }
+export function CreateSynergy(data: ISynergyData | null): Synergy{
+    let mb = new MixBuilder<Synergy, ISynergyData>({});
+    mb.with(new RWMix("Locations", "locations", ["any"], ident, ident));
+    mb.with(new RWMix("Detail", "detail", "Synergy effect here.", ident, ident));
+    mb.with(new RWMix("SystemTypes", "system_types", [], ident, ident));
+    mb.with(new RWMix("WeaponTypes", "weapon_types", [], ident, ident));
+    mb.with(new RWMix("WeaponSizes", "weapon_sizes", [], ident, ident));
 
-    public save(): ISynergyData {
-        return {
-            locations: this.locations == "any" ? ["any"] : this.locations, // TODO: is any allowed here?
-            types: this.types == "any" ? null : this.types, 
-            sizes: this.sizes == "any" ? null : this.sizes,
-            detail: this.detail
-        }
-    }
+    return mb.finalize(data);
+}
 
-
+function allows_weapon(this: Synergy, weapon: MechWeapon): boolean {
+    return this.WeaponSizes.includes(weapon.Mount
 
     // Filters a list of synergies to the given piece of equipment/location
-    public static MatchSynergies(
+    function MatchSynergies(
         item: MechEquipment,
         active_synergies: Synergy[],
         location: SynergyLocation
@@ -102,5 +106,5 @@ export class Synergy {
 }
 
 // Use these for mixin shorthand elsewhere
-export const SynergyMixReader = (x: ISynergyData[] | undefined) => (x || []).map(i => new Synergy(i));
-export const SynergyMixWriter = (x: Synergy[]) => x.map(i => i.save());
+export const SynergyMixReader = (x: ISynergyData[] | undefined) => (x || []).map(CreateSynergy);
+export const SynergyMixWriter = ser_many;

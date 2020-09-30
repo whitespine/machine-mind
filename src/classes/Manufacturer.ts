@@ -1,4 +1,7 @@
+import { ItemType } from '@/class';
 import { imageManagement, ImageTag } from "@/hooks";
+import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
+import { VRegistryItem } from './CompendiumItem';
 
 export interface IManufacturerData {
     id: string;
@@ -11,52 +14,38 @@ export interface IManufacturerData {
     quote: string;
 }
 
-export class Manufacturer {
-    private _id: string;
-    private _name: string;
-    private _description: string;
-    private _quote: string;
-    private _logo: string;
-    private _light: string;
-    private _dark: string;
-    private _logo_url: string | null;
+export interface Manufacturer extends MixLinks<IManufacturerData>, VRegistryItem {
+    ID: string;
+    Type: ItemType.MANUFACTURER;
+    Name: string;
+    Description: string;
+    Logo: string;
+    LogoURL: string;
+    Light: string; 
+    Dark: string ;
+    Quote: string;
+}
 
-    public constructor(data: IManufacturerData) {
-        this._id = data.id;
-        this._name = data.name;
-        this._description = data.description;
-        this._quote = data.quote;
-        this._logo = data.logo;
-        this._light = data.light;
-        this._dark = data.dark;
-        this._logo_url = data.logo_url || null;
-    }
+export function CreateManufacturer(data: IManufacturerData | null): Manufacturer {
+    let mb = new MixBuilder<Manufacturer, IManufacturerData>({});
+    mb.with(new RWMix("ID", "name", uuid(), ident, ident));
+    mb.with(new RWMix("Name", "name", "New Manufacturer", ident, ident));
+    mb.with(new RWMix("Description", "description", "No description", ident, ident));
+    mb.with(new RWMix("Logo", "logo", "", ident, ident));
+    mb.with(new RWMix("LogoURL", "logo_url", "", ident, ident));
+    mb.with(new RWMix("Light", "light", "", ident, ident));
+    mb.with(new RWMix("Dark", "dark",  "", ident, ident));
+    mb.with(new RWMix("Quote", "quote",  "", ident, ident));
 
-    public get ID(): string {
-        return this._id;
-    }
+    return mb.finalize(data);
+}
 
-    public get Name(): string {
-        return this._name;
-    }
 
-    public get Description(): string {
-        return this._description;
-    }
-
-    public get Quote(): string {
-        return this._quote;
-    }
-
+/*
     public GetColor(dark?: boolean): string {
         return dark ? this._dark : this._light;
     }
-    public get Light(): string {
-        return this._light;
-    }
-    public get Dark(): string {
-        return this._dark;
-    }
+ 
 
     public get LogoIsExternal(): boolean {
         return !!this._logo_url;
@@ -68,4 +57,4 @@ export class Manufacturer {
             return imageManagement.getImagePath(ImageTag.Logo, `${this._logo}.svg`, true);
         else return ""; // TODO: placeholder logo?
     }
-}
+*/
