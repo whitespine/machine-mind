@@ -1,5 +1,5 @@
 import { keys } from 'ts-transformer-keys';
-import {Registry } from './store/compendium';
+import {Registry } from './classes/registry';
 
 // Handles a single property in a single item, specifically one that saves/stores from a single
 export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName extends keyof Src> {
@@ -10,10 +10,10 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     public src_key: SrcName;
 
     // Our current held data
-    public val: Host[HostKey];
+    public val!: Host[HostKey];
 
     // Our fallback if we can't read
-    public default_val: Host[HostKey];
+    // public default_val: Host[HostKey];
 
     // Flag demarcates if we were able to legitimately load data, or if we just used the default due to undefined
     private defined: boolean = false;
@@ -26,7 +26,7 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     public writer: (x: Host[HostKey]) => Src[SrcName];
 
     // Reads data from compendium pack/saves like so. Uses default if value not present/null
-    public reader: (x: NonNullable<Src[SrcName]>) => Host[HostKey];
+    public reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Host[HostKey];
 
     // Here for overriding purposes
     public get_val(v: Host[HostKey]) {
@@ -52,28 +52,22 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     }
 
     // Constructor is straightforward enough
-    public constructor(prop_key: HostKey, src_key: SrcName, default_val: Host[HostKey], reader: (x: NonNullable<Src[SrcName]>) => Host[HostKey], writer: (x: Host[HostKey]) => Src[SrcName]) {
+    public constructor(prop_key: HostKey, src_key: SrcName, reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Host[HostKey], writer: (x: Host[HostKey]) => Src[SrcName]) {
         this.prop_key = prop_key;
         this.src_key = src_key;
-        this.val = default_val;
-        this.default_val = default_val;
+        // this.val = default_val;
+        // this.default_val = default_val;
         this.reader = reader;
         this.writer = writer; 
     }
 
     // Loads this mixlet from the specified raw data
-    public load(from: Src) {
+    public load(from: Src, ctx: Registry) {
         let raw: Src[SrcName] | undefined = from[this.src_key];
+        this.val = this.reader(raw, ctx);
 
-        // Silently promotes undefineds (IE not provided) to nulls. I think this might be a blindspot in typescripts checking
-        if(raw === undefined) {
-            this.val = this.default_val;
-            this.defined = false;
-        } else {
-            // It was defined
-            this.val = this.reader(raw as NonNullable<Src[SrcName]>);
-            this.defined = true;
-        }
+        // Was it defined? We only write back out if it was. Maybe change this behavior later to get better "default" performance
+        this.defined = raw !== undefined;
     }
 
     // Writes this mixlet to the specified raw data
@@ -110,7 +104,7 @@ export interface MixLinks<SrcType extends object> {
     Serialize(): SrcType;
 
     // Just have each mixlet read in. Return self
-    Deserialize(x: SrcType): this;
+    Deserialize(x: SrcType, reg_ctx: Registry): this;
 }
 
 // We add this into our item prior to proxying it
@@ -164,9 +158,9 @@ function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends object
     }
 
     // Just have each mixlet read in
-    target.Deserialize = (x: SrcType) => {
+    target.Deserialize = (x: SrcType, reg_ctx: Registry) => {
         for(let m of target._mix_list) {
-            m.load(x);
+            m.load(x, reg_ctx);
         }
         return target;
     }
@@ -231,7 +225,7 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
     }
 
     // Finish it off. Deserialize if data provided
-    finalize(data: SrcType | null): HostType {
+    finalize(data: SrcType | null, reg_ctx: Registry): HostType {
         // Copy the array just to remove any potential lingering "this" connotations. Hopefully js garbage collection is smart enough to ignore it, but proxies are weird
         let mix_list = [...this.mix_list];
 
@@ -246,7 +240,7 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
 
         // Deserialize
         if(data) {
-            rv.Deserialize(data);
+            rv.Deserialize(data, reg_ctx);
         }
 
         // And we done
@@ -268,28 +262,6 @@ export function uuid(): string {
     return s;
 }
 
-// Duplicating etc
-/** 
- * Create an exact copy of a piece of data by serializing then deserializing the data
- */
-export function duplicate<V extends MixLinks<T>, T extends object>(x: V): V {
-    // TODO: This may be volatile.
-    let copy = {...x}; // Copy x, to get its builtin functions for later Deser.
-    let deser = x.Serialize();
-    copy.Deserialize(deser);
-    return x;
-}
-
-/**
- * Create an exact copy of a piece of data by serializing then deserializing the data,
- * THEN change the ID
- */
-// export function duplicate_renew<V extends MixLinks<T> & {ID: string}, T extends object>(x: V): V {
-    // let cp = duplicate(x as any) as V; // Typescript's reasoning can't quite handle this case
-    // cp.ID = uuid();
-    // return cp;
-// }
-
 // This function makes sure all properties were set properly
 // Note that it considers undefined to be erroneous. If you want undefined, use null
 // Example usage: validate_props(x);
@@ -302,15 +274,63 @@ function validate_props<T extends object>(v: T) {
 }
 
 // Helper functions
+// Just write what you read
 export function ident<T>(t: T): T { return t; }
+
+// Write what you read, substitute if undefined
+export function def<T>(default_val: T): (x: T | undefined) => T { 
+    return (x: T | undefined) => {
+        if(x === undefined) {
+            return default_val;
+        } else {
+            return x;
+        }
+    }
+}
+// Some helpers to handle specific types
+type def_typed<T> =(default_val: T) => ((x: T | undefined) => T);
+export const defs: def_typed<string> = def;
+export const defn: def_typed<number> = def;
+export const defb: def_typed<boolean> = def;
+
+// Write what you read, lazy sub on default. Callback doesn't need to use registry
+export type RegFetcher<T> = (reg: Registry) => T;
+export function def_lazy<T>(default_val: RegFetcher<T>): (x: T | undefined, reg_ctx: Registry) => T {
+    return (x: T | undefined, reg_ctx: Registry) => {
+        if(x === undefined) {
+            return default_val(reg_ctx);
+        } else {
+            return x;
+        }
+    }
+}
+
+// ident, and get VERY angry if undefined >:(((. Use this if undef really just isn't a case we want to handle
+
+
+// Return input, except map null to undefined
 export function ident_drop_null<T>(t: T): NonNullable<T> | undefined { 
     return t ?? undefined;
 }
+
+// Serialize the provided item using its own serialization function
 export function ser_one<T extends {Serialize(): G}, G>(t: T): G {
     return t.Serialize();
 }
+
+// Serialize an array
 export function ser_many<T extends {Serialize(): G}, G>(t: T[]): G[] {
     return t.map(v => v.Serialize());
+}
+
+// Wraps a function such that it defaults its param to an empty array. Does not assume that our output will be an array, but definitely supports that
+export function def_empty<I, O>(func: (vals: Array<I>) => O): (vals: Array<I> | undefined) => O {
+    return (v: Array<I> | undefined) => func(v || []);
+}
+
+// Wraps a function such that it maps over an array, defaulting to an empty array if none is given
+export function def_empty_map<I, O>(func: (val: I) => O): (vals: Array<I> | undefined) => O[] {
+    return (v: Array<I> | undefined) => [].map(func);
 }
 
 // Easily lock into enums using restrict_enum
@@ -333,15 +353,3 @@ export {RangesMixReader,RangesMixWriter } from "@/classes/Range";
 export {CountersMixReader,CountersMixWriter } from "@/classes/Counter";
 
 
-
-/*
-// A simple example
-interface Raw {
-    raw_actions: number[]
-}
-interface Ract {
-    actions: string[]
-}
-
-let x = new Mixlet<Ract, "actions", Raw, "raw_actions">("actions", "raw_actions", [], (x: number[]) => x.map(e => ""+e),  (y: string[]) => y.map(Number.parseInt));
-*/

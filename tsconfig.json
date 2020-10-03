@@ -9,14 +9,12 @@
     "importHelpers": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "noEmit": false,
     "declaration": true,
-    "types": [
-      "jest"
-    ],
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -35,7 +33,7 @@
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "tests/**/*.tsx", "babyjail/classes/dice/DiceRoller.ts"
   ],
   "exclude": [
     "node_modules"

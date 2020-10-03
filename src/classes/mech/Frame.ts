@@ -1,4 +1,4 @@
-import { Rules, LicensedItem, MountType, ItemType, MechType, CoreSystem } from "@/class";
+import { Rules, LicensedItem, MountType, EntryType, MechType, CoreSystem } from "@/class";
 import { ILicensedItemData, IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICoreSystemData, IFrameTraitData } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 import { IArtLocation } from '../Art';
@@ -78,19 +78,19 @@ export interface Frame extends MixLinks<IFrameData>{
 
 export function CreateFrame(data: IFrameData | null): Frame {
     let mb = new MixBuilder<Frame, IFrameData>({default_image});
-    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
-    mb.with(new RWMix("LicenseLevel", "license_level", 1, ident, ident));
-    mb.with(new RWMix("Source", "source", "GMS", ident, ident));
-    mb.with(new RWMix("Name", "name", "New Frame", ident, ident));
-    mb.with(new RWMix("Mechtype", "mechtype", [], ident, ident));
-    mb.with(new RWMix("YPosition", "y_pos", 0, ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Mounts", "mounts", [], ident, ident));
-    mb.with(new RWMix("BaseStats", "stats", {...DEFAULT_STATS}, ident, ident));
-    mb.with(new RWMix("Traits", "traits", [], (x) => x.map(CreateFrameTrait), ser_many));
-    mb.with(new RWMix("Core", "core_system", CreateCoreSystem(null), CreateCoreSystem, ser_one));
-    mb.with(new RWMix("ImageURL", "image_url", null, ident, ident_drop_null));
-    mb.with(new RWMix("OtherArt", "other_art", [], ident, ident));
+    mb.with(new RWMix("ID", "id", ident, ident));
+    mb.with(new RWMix("LicenseLevel", "license_level", ident, ident));
+    mb.with(new RWMix("Source", "source", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Mechtype", "mechtype", ident, ident));
+    mb.with(new RWMix("YPosition", "y_pos", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Mounts", "mounts", ident, ident));
+    mb.with(new RWMix("BaseStats", "stats", ident, ident));
+    mb.with(new RWMix("Traits", "traits", (x) => x.map(CreateFrameTrait), ser_many));
+    mb.with(new RWMix("Core", "core_system", CreateCoreSystem, ser_one));
+    mb.with(new RWMix("ImageURL", "image_url", ident, ident_drop_null));
+    mb.with(new RWMix("OtherArt", "other_art", ident, ident));
 
     return mb.finalize(data);
 }

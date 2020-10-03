@@ -2,7 +2,7 @@ import {
     Tag,
     WeaponType,
     WeaponSize,
-    ItemType,
+    EntryType,
     Damage,
     Range,
     MechEquipment,
@@ -50,7 +50,7 @@ export class WeaponMod extends MechEquipment {
         } else {
             this._added_range = null;
         }
-        this._item_type = ItemType.WeaponMod;
+        this._item_type = EntryType.WeaponMod;
     }
 
     public get Type(): SystemType {

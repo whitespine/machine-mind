@@ -1,4 +1,4 @@
-import { CompendiumItem, ItemType, Manufacturer, Pilot, License } from "@/class";
+import { CompendiumItem, EntryType, Manufacturer, Pilot, License } from "@/class";
 import { ICompendiumItemData } from "@/interface";
 import { store } from "@/hooks";
 import _ from "lodash";
@@ -31,7 +31,7 @@ export abstract class LicensedItem extends CompendiumItem {
     }
 
     public get License(): string {
-        return this.ItemType === ItemType.Frame ? this.Name : this._license;
+        return this.EntryType === EntryType.Frame ? this.Name : this._license;
     }
 
     public get LicenseLevel(): number {

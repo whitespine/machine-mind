@@ -101,8 +101,8 @@ export interface Bonus extends MixLinks<IBonusData> {
 
 export function CreateBonus(data: IBonusData): Bonus {
     let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new RWMix("ID", "id", BonusType.Placeholder, (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
-    b.with(new RWMix("Value", "value", 0, ident, ident));
+    b.with(new RWMix("ID", "id", (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
+    b.with(new RWMix("Value", "value", ident, ident));
 
 
     // Finalize and check. We don't fail

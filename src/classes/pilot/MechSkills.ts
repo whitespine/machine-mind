@@ -27,10 +27,10 @@ export function CreateMechSkills(data: IMechSkills) {
     let mb = new MixBuilder<MechSkills, IMechSkills>({
         Increment, Decrement, Reset, Sum
     });
-    mb.with(new RWMix("Hull", 0, 0, ident, ident));
-    mb.with(new RWMix("Agi", 1, 0, ident, ident));
-    mb.with(new RWMix("Sys", 2, 0, ident, ident));
-    mb.with(new RWMix("Eng", 3, 0, ident, ident));
+    mb.with(new RWMix("Hull", 0, ident, ident));
+    mb.with(new RWMix("Agi", 1, ident, ident));
+    mb.with(new RWMix("Sys", 2, ident, ident));
+    mb.with(new RWMix("Eng", 3, ident, ident));
     return mb.finalize(data);
 }
 

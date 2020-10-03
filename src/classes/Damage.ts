@@ -1,5 +1,5 @@
 import { DamageType } from "@/class";
-import { ident, MixBuilder, RWMix, MixLinks } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks, def, defb } from "@/mixmeta";
 import * as pmath from "parsemath";
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
@@ -7,7 +7,7 @@ import * as pmath from "parsemath";
 export interface IDamageData {
     type: DamageType;
     val: string | number;
-    override?: boolean ; // If player can set the damage of this, I guess????
+    override?: boolean; // If player can set the damage of this, I guess????
 }
 
 export interface Damage extends MixLinks<IDamageData> {
@@ -36,9 +36,9 @@ export function CreateDamage(data: IDamageData): Damage {
         Max,
     });
     // Add our props
-    mb.with(new RWMix("Type", "type", DamageType.Variable, getDamageType, ident));
-    mb.with(new RWMix("Value", "val", "1", x => "" + x, ident)); // Coerce to strings on way in
-    mb.with(new RWMix("Override", "override", false, ident, ident)); // We assume not overridden
+    mb.with(new RWMix("Type", "type", getDamageType, ident));
+    mb.with(new RWMix("Value", "val", x => "" + x, ident)); // Coerce to strings on way in
+    mb.with(new RWMix("Override", "override", defb(false), ident)); // We assume not overridden
 
     let rv = mb.finalize(data);
     return rv;

@@ -47,16 +47,18 @@ export { Reserve, CreateReserve } from "./classes/pilot/reserves/Reserve";
 export { Project, CreateProject} from "./classes/pilot/reserves/Project";
 export { Organization, CreateOrganization } from "./classes/pilot/reserves/Organization";
 export { Manufacturer, CreateManufacturer } from "./classes/Manufacturer";
-export { Faction } from "./classes/Faction";
+export { Faction, CreateFaction } from "./classes/Faction";
 export { Statblock } from "./classes/Statblock";
+/*
 export {
     DiceRoller,
     D20RollResult,
     DamageRollResult,
     ParsedDieString,
     DieSet,
-} from "./classes/dice/DiceRoller";
+} from "../babyjail/classes/dice/DiceRoller";
 export { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
+*/
 export { Encounter } from "./classes/encounter/Encounter";
 export { Rest } from "./classes/encounter/Rest";
 export { Mission, MissionStepType } from "./classes/encounter/Mission";
@@ -78,4 +80,4 @@ export { NpcStats } from "@/classes/npc/NpcStats";
 export { NpcClass } from "@/classes/npc/NpcClass";
 export { NpcTemplate } from "@/classes/npc/NpcTemplate";
 export { Npc } from "@/classes/npc/Npc";
-export { Registry } from "./store/compendium";
+export { Registry, EntryType } from "@/classes/registry";

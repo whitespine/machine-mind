@@ -1,5 +1,5 @@
 //
-import { ItemType, ReserveType } from "@/class";
+import { EntryType, ReserveType } from "@/class";
 import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta';
 import { VRegistryItem } from '@/interface';
 
@@ -19,7 +19,7 @@ export interface IReserveData {
 // We might wish to find a way to disentangle these concepts, but for the time being that feels difficult
 export interface Reserve extends MixLinks<IReserveData>, VRegistryItem {
     ID: string;
-    Type: ItemType.RESERVE;
+    Type: EntryType.RESERVE;
     Name: string;
     Label: string;
     Description: string;
@@ -32,14 +32,14 @@ export interface Reserve extends MixLinks<IReserveData>, VRegistryItem {
 
 export function CreateReserve(data: IReserveData | null): Reserve {
     let mb = new MixBuilder<Reserve, IReserveData>({});
-    mb.with(new RWMix("ID", "name", uuid(), ident, ident));
-    mb.with(new RWMix("Name", "name", "New reserve", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("ReserveType", "type", ReserveType.Resources, restrict_enum(ReserveType, ReserveType.Resources), ident));
-    mb.with(new RWMix("ResourceCost", "resource_cost", "", ident, ident));
-    mb.with(new RWMix("ResourceNote", "resource_note", "", ident, ident));
-    mb.with(new RWMix("ResourceName", "resource_name", "", ident, ident));
-    mb.with(new RWMix("Used", "used", false, ident, ident));
+    mb.with(new RWMix("ID", "name", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("ReserveType", "type", restrict_enum(ReserveType, ReserveType.Resources), ident));
+    mb.with(new RWMix("ResourceCost", "resource_cost", ident, ident));
+    mb.with(new RWMix("ResourceNote", "resource_note", ident, ident));
+    mb.with(new RWMix("ResourceName", "resource_name", ident, ident));
+    mb.with(new RWMix("Used", "used", ident, ident));
     return mb.finalize(data);
 }
 

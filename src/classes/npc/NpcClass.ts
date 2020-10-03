@@ -87,7 +87,7 @@ export class NpcClass {
         return this._stats;
     }
 
-    public get ItemType(): string {
+    public get EntryType(): string {
         return "NPC Class";
     }
 }

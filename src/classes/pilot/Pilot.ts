@@ -23,7 +23,7 @@ import { ICounterData, IActionData, IMechData, IMechState, IOrganizationData, IR
 import { store } from "@/hooks";
 import { ActiveState } from "../mech/ActiveState";
 import { MixLinks, MixBuilder, RWMix, ident, ser_many } from '@/mixmeta';
-import { VCompendiumItem } from '../CompendiumItem';
+import { VCompendiumItem } from '../registry;
 import { CreateMechSkills } from './MechSkills';
 
 export interface IPilotData {
@@ -126,42 +126,42 @@ export function CreatePilot(data: IPilotData): Pilot {
     let b = new MixBuilder<Pilot, IPilotData>({
         has, rank, SetBrewData
     });
-    b.with(new RWMix("ID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Campaign", "campaign", "", ident, ident));
-    b.with(new RWMix("Group", "group", "", ident, ident));
-    b.with(new RWMix("SortIndex", "sort_index", 0, ident, ident));
-    b.with(new RWMix("CloudID", "cloudID", "", ident, ident));
-    b.with(new RWMix("CloudOwnerID", "cloudOwnerID", "", ident, ident));
-    b.with(new RWMix("LastCloudUpdate", "lastCloudUpdate", "", ident, ident));
-    b.with(new RWMix("Level", "level", 0, ident, ident));
-    b.with(new RWMix("Callsign", "callsign", "", ident, ident));
-    b.with(new RWMix("Name", "name", "", ident, ident));
-    b.with(new RWMix("PlayerName", "player_name", "", ident, ident));
-    b.with(new RWMix("Status", "status", "Active", ident, ident));
-    b.with(new RWMix("FactionID", "factionID", "", ident, ident));
-    b.with(new RWMix("TextAppearance", "text_appearance", "", ident, ident));
-    b.with(new RWMix("Notes", "notes", "", ident, ident));
-    b.with(new RWMix("History", "history", "", ident, ident));
-    b.with(new RWMix("Portrait", "portrait", "", ident, ident));
-    b.with(new RWMix("CloudPortrait", "cloud_portrait", "", ident, ident));
-    b.with(new RWMix("Quirk", "quirk", "", ident, ident));
-    b.with(new RWMix("CurrentHP", "current_hp", 0, ident, ident));
-    b.with(new RWMix("Background", "background", "", ident, ident));
-    b.with(new RWMix("MechSkills", "mechSkills", CreateMechSkills([0,0,0,0]), CreateMechSkills, (x) => x.Serialize()));
-    b.with(new RWMix("Licenses", "licenses", [], x?.map(CreateLicense) || [], (x) => x.map(y => y.Serialize()));
-    b.with(new RWMix("Skills", "skills", [], (x) => x?.map(CreateSkill) || [], ser_many);
-    b.with(new RWMix("Talents", "talents", [], (x) => (x || []).map(CreateTalent), ser_many);
-    b.with(new RWMix("CoreBonuses", "core_bonuses", [], ident, ident));
-    b.with(new RWMix("Reserves", "reserves", [], ident, ident));
-    b.with(new RWMix("Orgs", "orgs", [], ident, ident));
-    b.with(new RWMix("Loadout", "loadout", new PilotLoadout(0), ident, ident));
-    b.with(new RWMix("Mechs", "mechs", [], ident, ident));
-    b.with(new RWMix("ActiveMech", "active_mech", null, ident, ident));
-    b.with(new RWMix("CCVersion", "cc_ver", "", ident, ident));
-    b.with(new RWMix("CounterData", "counter_data", [], ident, ident));
-    b.with(new RWMix("CustomCounters", "custom_counters", [], ident, ident));
-    b.with(new RWMix("Brews", "brews", [], ident, ident));
-    b.with(new RWMix("State", "state", null, ident, ident));
+    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("Campaign", "campaign", ident, ident));
+    b.with(new RWMix("Group", "group", ident, ident));
+    b.with(new RWMix("SortIndex", "sort_index", ident, ident));
+    b.with(new RWMix("CloudID", "cloudID", ident, ident));
+    b.with(new RWMix("CloudOwnerID", "cloudOwnerID", ident, ident));
+    b.with(new RWMix("LastCloudUpdate", "lastCloudUpdate", ident, ident));
+    b.with(new RWMix("Level", "level", ident, ident));
+    b.with(new RWMix("Callsign", "callsign", ident, ident));
+    b.with(new RWMix("Name", "name", ident, ident));
+    b.with(new RWMix("PlayerName", "player_name", ident, ident));
+    b.with(new RWMix("Status", "status", ident, ident));
+    b.with(new RWMix("FactionID", "factionID", ident, ident));
+    b.with(new RWMix("TextAppearance", "text_appearance", ident, ident));
+    b.with(new RWMix("Notes", "notes", ident, ident));
+    b.with(new RWMix("History", "history", ident, ident));
+    b.with(new RWMix("Portrait", "portrait", ident, ident));
+    b.with(new RWMix("CloudPortrait", "cloud_portrait", ident, ident));
+    b.with(new RWMix("Quirk", "quirk", ident, ident));
+    b.with(new RWMix("CurrentHP", "current_hp", ident, ident));
+    b.with(new RWMix("Background", "background", ident, ident));
+    b.with(new RWMix("MechSkills", "mechSkills",0,0,0]), CreateMechSkills, (x) => x.Serialize()));
+    b.with(new RWMix("Licenses", "licenses", x?.map(CreateLicense) || [], (x) => x.map(y => y.Serialize()));
+    b.with(new RWMix("Skills", "skills", (x) => x?.map(CreateSkill) || [], ser_many);
+    b.with(new RWMix("Talents", "talents", (x) => (x || []).map(CreateTalent), ser_many);
+    b.with(new RWMix("CoreBonuses", "core_bonuses", ident, ident));
+    b.with(new RWMix("Reserves", "reserves", ident, ident));
+    b.with(new RWMix("Orgs", "orgs", ident, ident));
+    b.with(new RWMix("Loadout", "loadout", ident, ident));
+    b.with(new RWMix("Mechs", "mechs", ident, ident));
+    b.with(new RWMix("ActiveMech", "active_mech", ident, ident));
+    b.with(new RWMix("CCVersion", "cc_ver", ident, ident));
+    b.with(new RWMix("CounterData", "counter_data", ident, ident));
+    b.with(new RWMix("CustomCounters", "custom_counters", ident, ident));
+    b.with(new RWMix("Brews", "brews", ident, ident));
+    b.with(new RWMix("State", "state", ident, ident));
 
     // Finalize and check.
     let r = b.finalize(data);

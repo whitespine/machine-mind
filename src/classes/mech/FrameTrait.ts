@@ -33,16 +33,16 @@ export interface FrameTrait extends MixLinks<IFrameTraitData> {
 
 export function CreateFrameTrait(data: IFrameTraitData | null): FrameTrait {
     let mb = new MixBuilder<FrameTrait, IFrameTraitData>({});
-    mb.with(new RWMix("Name", "name", "Undefined Trait", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Use", "use", null, ident, ident_drop_null));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Use", "use", ident, ident_drop_null));
 
-    mb.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    mb.with(new RWMix("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    mb.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    mb.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
-    mb.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter));
-    mb.with(new RWMix("Integrated", "integrated", [], ident, ident ));
+    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", ident, ident ));
 
     return mb.finalize(data);
 }

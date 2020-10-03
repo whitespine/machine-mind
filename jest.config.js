@@ -1,19 +1,13 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'jsdom',
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+  testEnvironment: 'node',
+  globals: {
+    "ts-jest": {
+      "compiler": "ttypescript"
+    }
   },
-  moduleFileExtensions: [
-    "js",
-    "ts",
-    "json",
-    "vue"
-  ],
-  transform: {
-    ".*\\.(vue)$": "vue-jest",
-    "^.+\\.tsx?$": "ts-jest"
-  },
-  testURL: "http://localhost/",
-  testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$"
-}
+      testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    testPathIgnorePatterns: ["/lib/", "/node_modules/"],
+    moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+    collectCoverage: true,
+};

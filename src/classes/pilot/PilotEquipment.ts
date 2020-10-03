@@ -1,7 +1,7 @@
-import { Action, Bonus, Damage, Deployable, ItemType, Synergy, TagInstance, Range } from "@/class";
-import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem, ICompendiumItemData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, BonusMixReader, BonusMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
-import { DEFAULT_BREW_ID } from '../enums';
+import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
+import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
+import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
+import { VRegistryItem } from '../registry;
 
 
 ///////////////////////////////////////////////////////////
@@ -51,68 +51,66 @@ export interface IPilotGearData {
 // Classes
 /////////////////////////////////////////////////////////
 
-export interface PilotArmor extends MixLinks<IPilotArmorData>, VCompendiumItem {
+export interface PilotArmor extends MixLinks<IPilotArmorData>, VRegistryItem {
   Tags: TagInstance[],
   Actions: Action[],
   Bonuses: Bonus[],
   Synergies: Synergy[],
   Deployables: Deployable[],
-  Type: ItemType.PilotArmor
+  Type: EntryType.PilotArmor
 }
 
 export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
     // Init with deduced cc props
     let b = new MixBuilder<PilotArmor, IPilotArmorData>({
-        Brew: DEFAULT_BREW_ID,
-        Type: ItemType.PilotArmor
+        Type: EntryType.PilotArmor
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Name", "name", "New Armor", ident, ident));
+    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("Name", "name", ident, ident));
 
     // Don't need type
-    b.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    b.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
     let r = b.finalize(data);
     return r;
 }
 
-export interface PilotGear extends MixLinks<IPilotGearData>, VCompendiumItem {
+export interface PilotGear extends MixLinks<IPilotGearData>, VRegistryItem {
     Tags: TagInstance[];
     Actions: Action[]; // these are only available to UNMOUNTED pilots
     Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies: Synergy[];
     Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
-    Type: ItemType.PilotGear;
+    Type: EntryType.PilotGear;
 }
 
 export function CreatePilotGear(data: IPilotGearData | null): PilotGear {
     // Init with deduced cc props
     let b = new MixBuilder<PilotGear, IPilotGearData>({
-        Brew: DEFAULT_BREW_ID,
-        Type: ItemType.PilotGear
+        Type: EntryType.PilotGear
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Name", "name", "New Armor", ident, ident));
+    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("Name", "name", ident, ident));
 
-    b.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    b.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
     let r = b.finalize(data);
     return r;
 }
 
-export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VCompendiumItem {
+export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VRegistryItem {
     Effect: string
     Tags: TagInstance[];
     Range: Range[];
@@ -121,29 +119,28 @@ export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VCompendiumItem
     Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies: Synergy[];
     Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
-    Type: ItemType.PilotWeapon;
+    Type: EntryType.PilotWeapon;
 }
 
 export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
     // Init with deduced cc props
     let b = new MixBuilder<PilotWeapon, IPilotWeaponData>({
-        Brew: DEFAULT_BREW_ID,
-        Type: ItemType.PilotWeapon
+        Type: EntryType.PilotWeapon
     });
 
     // Mostly the same as the others
-    b.with(new RWMix("ID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Name", "name", "New Armor", ident, ident));
+    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("Name", "name", ident, ident));
 
-    b.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", [], BonusMixReader, BonusMixWriter));
-    b.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
+    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
     // Mixin Range and damage
-    b.with(new RWMix("Damage", "damage", [], DamagesMixReader, DamagesMixWriter));
-    b.with(new RWMix("Range", "range", [], RangesMixReader, RangesMixWriter));
+    b.with(new RWMix("Damage", "damage", DamagesMixReader, DamagesMixWriter));
+    b.with(new RWMix("Range", "range", RangesMixReader, RangesMixWriter));
 
     let r = b.finalize(data);
     return r;

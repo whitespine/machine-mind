@@ -39,15 +39,15 @@ export function CreateAction(data: IActionData | null): Action {
       Uses: 0 // tmp value to not make validation angery
     });
 
-    b.with(new RWMix("Name", "name", "", ident, ident));
-    b.with(new RWMix("Activation", "activation", ActivationType.None, ident, ident ));
-    b.with(new RWMix("Terse", "terse", "",  ident, ident));
-    b.with(new RWMix("Detail", "detail", "",  ident, ident));
-    b.with(new RWMix("Cost", "cost", 0,  ident, ident));
-    b.with(new RWMix("Frequency", "frequency", new Frequency(""),  FrequencyMixReader, FrequencyMixWriter));
-    b.with(new RWMix("Init", "init", "",  ident, ident));
-    b.with(new RWMix("Trigger", "trigger", "",  ident, ident));
-    b.with(new RWMix("IsPilotAction", "pilot", false,  ident, ident));
+    b.with(new RWMix("Name", "name", "", ident));
+    b.with(new RWMix("Activation", "activation", ActivationType.None, ident ));
+    b.with(new RWMix("Terse", "terse",  ident, ident));
+    b.with(new RWMix("Detail", "detail",  ident, ident));
+    b.with(new RWMix("Cost", "cost",  ident, ident));
+    b.with(new RWMix("Frequency", "frequency",  FrequencyMixReader, FrequencyMixWriter));
+    b.with(new RWMix("Init", "init",  ident, ident));
+    b.with(new RWMix("Trigger", "trigger",  ident, ident));
+    b.with(new RWMix("IsPilotAction", "pilot",  ident, ident));
 
     // Fix uses to match frequency (basically, refill uses to max);
     let r = b.finalize(data);

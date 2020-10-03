@@ -1,9 +1,9 @@
-import { CompendiumItem, ItemType, Manufacturer, EquippableMount } from "@/class";
+import { CompendiumItem, EntryType, Manufacturer, EquippableMount } from "@/class";
 import { store } from "@/hooks";
 
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData } from "@/interface";
 import { MixLinks } from '@/mixmeta';
-import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated, VCompendiumItem } from '../CompendiumItem';
+import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated, VRegistryItem } from '../registry;
 
 export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
   "id": string,
@@ -20,7 +20,12 @@ export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBo
   "integrated"?: string[]
 }
 
-export interface CoreBonus extends MixLinks<ICoreBonusData>, VCompendiumItem {
+export interface CoreBonus extends MixLinks<ICoreBonusData>, VRegistryItem {
+  Type: EntryType.CORE_BONUS
+  ID: string;
+  Name: string;
+  Description: string;
+  Source: string;
   
 
 

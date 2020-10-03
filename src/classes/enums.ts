@@ -34,7 +34,7 @@ export function getMountType(raw: string): MountType {
 }
 
 export const CORE_BREW_ID = "core";
-export const DEFAULT_BREW_ID = "dyn";
+export const USER_BREW_ID = "dyn";
 
 // governs what can be added to a mount (weapon slot)
 export enum FittingSize {
@@ -93,35 +93,6 @@ export enum WeaponType {
     Melee = "Melee",
 }
 
-export enum EntryType {
-    None = "",
-    CORE_BONUS = "CoreBonuses",
-    DEPLOYABLE = "Deployables",
-    FACTION = "Factions",
-    FRAME = "Frames",
-    // LICENSE = "Licenses",
-    MANUFACTURER = "Manufacturers",
-    NPC_CLASS = "NpcClasses",
-    NPC_TEMPLATE = "NpcTemplates",
-    NPC_FEATURE = "NpcFeatures",
-    WEAPON_MOD = "WeaponMods",
-    MECH_WEAPON = "MechWeapons",
-    MECH_SYSTEM = "MechSystems",
-    PILOT_GEAR = "PilotGear",
-    PILOT_ARMOR = "PilotArmor",
-    PILOT_WEAPON = "PilotWeapons",
-    PILOT_EQUIPMENT = "PilotEquipment",
-    TALENT = "Talents",
-    SKILL = "Skills",
-    STATUS = "Statuses", 
-    CONDITION = "Conditions",
-    QUIRK = "Quirks",
-    RESERVE = "Reserves",
-    ENVIRONMENT = "Environments",
-    SITREP = "Sitreps",
-    TAG = "Tags",
-    PILOT = "Pilot"
-}
 
 export enum SystemType {
     System = "System",

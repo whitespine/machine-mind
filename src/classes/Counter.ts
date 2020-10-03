@@ -35,11 +35,11 @@ export function CreateCounter(data: ICounterData) {
         Validate,
         Set, Reset, Increment, Decrement, SaveData, LoadData
     });
-    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
-    mb.with(new RWMix("Name", "name", "New Counter", ident, ident));
-    mb.with(new RWMix("Min", "min", 0, ident, ident));
-    mb.with(new RWMix("Max", "max", null, ident, ident_drop_null));
-    mb.with(new RWMix("Default", "default_value", data.default_value || 0, ident, ident));
+    mb.with(new RWMix("ID", "id", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Min", "min", ident, ident));
+    mb.with(new RWMix("Max", "max", ident, ident_drop_null));
+    mb.with(new RWMix("Default", "default_value", ident, ident));
 
     let rv = mb.finalize(data);
 

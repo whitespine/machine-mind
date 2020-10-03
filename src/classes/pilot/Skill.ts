@@ -1,5 +1,5 @@
 import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
-import { IRegistryItemData, VRegistryItem } from '../CompendiumItem';
+import { IRegistryItemData, VRegistryItem } from '../registry;
 
 export enum SkillFamily {
     str = "str",
@@ -27,10 +27,10 @@ export interface Skill extends MixLinks<ISkillData>, VRegistryItem {
 
 export function CreateSkill(data: ISkillData | null) {
     const mb = new MixBuilder<Skill, ISkillData>({});
-    mb.with(new RWMix("ID", "id", uuid(), ident, ident));
-    mb.with(new RWMix("Name", "name", "NEW TRIGGER", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Detail", "detail", "", ident, ident));
-    mb.with(new RWMix("Family", "family", SkillFamily.con, ident, ident));
+    mb.with(new RWMix("ID", "id", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Detail", "detail", ident, ident));
+    mb.with(new RWMix("Family", "family", ident, ident));
     return mb.finalize(data);
 }

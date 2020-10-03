@@ -1,4 +1,4 @@
-import { ItemType, Reserve, ReserveType } from "@/class";
+import { EntryType, Reserve, ReserveType } from "@/class";
 import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta';
 import { IReserveData } from './Reserve';
 
@@ -14,7 +14,7 @@ export interface IProjectData extends IReserveData {
 export interface Project extends MixLinks<IProjectData> {
     // Dup of reserve.
     ID: string;
-    Type: ItemType.RESERVE;
+    Type: EntryType.RESERVE;
     Name: string;
     Label: string;
     Description: string;
@@ -37,20 +37,20 @@ export function CreateProject(data: IProjectData | null): Project {
 
     ///////////////////
     // Unfortunately thjis is redundant with Reserve. We haven't really got a good way of efficiently handling subclasses. Much like foundry ;)
-    mb.with(new RWMix("ID", "name", uuid(), ident, ident));
-    mb.with(new RWMix("Name", "name", "New reserve", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("ReserveType", "type", ReserveType.Resources, restrict_enum(ReserveType, ReserveType.Resources), ident));
-    mb.with(new RWMix("ResourceCost", "resource_cost", "", ident, ident));
-    mb.with(new RWMix("ResourceNote", "resource_note", "", ident, ident));
-    mb.with(new RWMix("ResourceName", "resource_name", "", ident, ident));
-    mb.with(new RWMix("Used", "used", false, ident, ident));
+    mb.with(new RWMix("ID", "name", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("ReserveType", "type", restrict_enum(ReserveType, ReserveType.Resources), ident));
+    mb.with(new RWMix("ResourceCost", "resource_cost", ident, ident));
+    mb.with(new RWMix("ResourceNote", "resource_note", ident, ident));
+    mb.with(new RWMix("ResourceName", "resource_name", ident, ident));
+    mb.with(new RWMix("Used", "used", ident, ident));
     ////////////////////
-    mb.with(new RWMix("Complicated", "complicated", false, ident, ident));
-    mb.with(new RWMix("CanFinish", "can_finish", false, ident, ident));
-    mb.with(new RWMix("Finished", "finished", false, ident, ident));
-    mb.with(new RWMix("Progress", "progress", 0, ident, ident));
-    mb.with(new RWMix("Requirements", "requirements", [], ident, ident));
+    mb.with(new RWMix("Complicated", "complicated", ident, ident));
+    mb.with(new RWMix("CanFinish", "can_finish", ident, ident));
+    mb.with(new RWMix("Finished", "finished", ident, ident));
+    mb.with(new RWMix("Progress", "progress", ident, ident));
+    mb.with(new RWMix("Requirements", "requirements", ident, ident));
     return mb.finalize(data);
 
 }

@@ -1,4 +1,4 @@
-import { CompendiumItem } from "../CompendiumItem";
+import { CompendiumItem } from "../registry;
 
 export interface ISitrepData {
     id: string;

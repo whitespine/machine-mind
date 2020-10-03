@@ -16,7 +16,7 @@
     "build": "ttsc && tscpaths -p ./tsconfig.json -s ./src -o ./dist",
     "build:watch": "ttsc -w --noEmit",
     "link": "npm run build && npm link",
-    "test": "echo No tests",
+    "test": "jest --colors test",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run format"
   },
@@ -25,12 +25,13 @@
     "jszip": "^3.5.0",
     "lodash": "^4.17.11",
     "parsemath": "^0.5.1",
+    "reflect-metadata": "^0.1.13",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
-    "@types/jest": "^24.0.13",
+    "@types/jest": "^26.0.14",
     "@types/jszip": "^3.1.6",
     "@types/lodash": "^4.14.123",
     "@types/node": "12",
@@ -38,7 +39,6 @@
     "@typescript-eslint/parser": "^2.17.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.0.6",
-    "commitizen": "^4.0.3",
     "core-js": "3",
     "cz-customizable": "^6.2.0",
     "deepmerge": "^4.2.2",
@@ -47,7 +47,7 @@
     "eslint-loader": "^3.0.3",
     "fibers": "^4.0.2",
     "file-loader": "^5.0.2",
-    "jest": "^25.1.0",
+    "jest": "^26.4.2",
     "jest-mock-random": "^1.0.2",
     "lancer-data": "^2.0.35",
     "prettier": "^1.18.2",
@@ -55,20 +55,12 @@
     "raw-loader": "^4.0.0",
     "source-map-support": "^0.5.10",
     "standard-changelog": "^2.0.21",
-    "ts-jest": "^25.0.0",
+    "ts-jest": "^26.4.1",
     "ts-loader": "^6.2.1",
     "ts-transformer-keys": "^0.4.2",
     "tscpaths": "0.0.9",
     "ttypescript": "^1.5.12",
-    "typescript": "^3.7.5",
+    "typescript": "^4.0.3",
     "typescript-json-schema": "^0.42.0"
-  },
-  "resolutions": {
-    "prosemirror-model": "1.8.2"
-  },
-  "config": {
-    "commitizen": {
-      "path": "node_modules/cz-customizable"
-    }
   }
 }

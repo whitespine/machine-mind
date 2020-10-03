@@ -1,6 +1,6 @@
 import { WeaponType, WeaponSize, MountType, SystemType } from "@/class";
 import { ITagData, IDamageData, IActionData, IRangeData, IBonusData, ISynergyData, IDeployableData, ICounterData, } from '@/interface';
-import { IIntegrated, IModifies } from '../CompendiumItem';
+import { IIntegrated, IModifies } from '../registry;
 
 export interface IWeaponModData extends IIntegrated, IDeploys, ICounted, IModifies {
   id: string,

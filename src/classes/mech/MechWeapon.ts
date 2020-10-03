@@ -65,29 +65,29 @@ export interface MechWeapon extends MixLinks<IMechWeaponData> {
 
 export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
     let mb = new MixBuilder<MechWeapon, IMechWeaponData>({});
-    mb.with(new RWMix("ID", "id", uuid(), ident, ident ));
-    mb.with(new RWMix("Name", "name", "New Weapon", ident, ident));
-    mb.with(new RWMix("Source", "source", "MANUFACTURER", ident, ident));
-    mb.with(new RWMix("License", "license", "LICENSE", ident, ident));
-    mb.with(new RWMix("LicenseLevel", "license_level", 0, ident, ident));
-    mb.with(new RWMix("Size", "mount", WeaponSize.Main, getWeaponSize, ident));
-    mb.with(new RWMix("Type", "type", WeaponType.Rifle, ident, ident));
-    mb.with(new RWMix("BaseDamage", "damage", [], DamagesMixReader, DamagesMixWriter));
-    mb.with(new RWMix("BaseRange", "range", [], RangesMixReader, RangesMixWriter));
-    mb.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter));
-    mb.with(new RWMix("SP", "sp", 0, ident, ident));
-    mb.with(new RWMix("Description", "description", "", ident, ident));
-    mb.with(new RWMix("Effect", "effect", "", ident, ident));
-    mb.with(new RWMix("OnAttack", "on_attack", "", ident, ident));
-    mb.with(new RWMix("OnHit", "on_hit", "", ident, ident));
-    mb.with(new RWMix("OnCrit", "on_crit", "", ident, ident));
+    mb.with(new RWMix("ID", "id", ident, ident ));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Source", "source", ident, ident));
+    mb.with(new RWMix("License", "license", ident, ident));
+    mb.with(new RWMix("LicenseLevel", "license_level", ident, ident));
+    mb.with(new RWMix("Size", "mount", getWeaponSize, ident));
+    mb.with(new RWMix("Type", "type", ident, ident));
+    mb.with(new RWMix("BaseDamage", "damage", DamagesMixReader, DamagesMixWriter));
+    mb.with(new RWMix("BaseRange", "range", RangesMixReader, RangesMixWriter));
+    mb.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    mb.with(new RWMix("SP", "sp", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Effect", "effect", ident, ident));
+    mb.with(new RWMix("OnAttack", "on_attack", ident, ident));
+    mb.with(new RWMix("OnHit", "on_hit", ident, ident));
+    mb.with(new RWMix("OnCrit", "on_crit", ident, ident));
 
-    mb.with(new RWMix("Actions", "actions", [], ActionsMixReader, ActionsMixWriter));
-    mb.with(new RWMix("Bonuses", "bonuses", [], BonusesMixReader, BonusesMixWriter));
-    mb.with(new RWMix("Synergies", "synergies", [], SynergyMixReader, SynergyMixWriter));
-    mb.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
-    mb.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter));
-    mb.with(new RWMix("Integrated", "integrated", [], ident, ident ));
+    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
+    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", ident, ident ));
 
     return mb.finalize(data);
 }

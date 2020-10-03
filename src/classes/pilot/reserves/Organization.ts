@@ -22,14 +22,14 @@ export interface Organization extends MixLinks<IOrganizationData>{
 
 export function CreateOrganization(data: IOrganizationData | null): Organization {
     let mb = new MixBuilder<Organization, IOrganizationData>({});
-    mb.with(new RWMix("Name", "name", "New Organization", ident, ident));
-    mb.with(new RWMix("Purpose", "purpose", OrgType.Academic, ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Actions", "actions", "No actions", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Purpose", "purpose", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Actions", "actions", ident, ident));
 
     // Bound these
-    mb.with(new RWMix("Efficiency", "efficiency", 0, ident, ident)).add_pre_set_hook(x => bound_int(x, 0, 6));
-    mb.with(new RWMix("Influence", "influence", 0, ident, ident)).add_pre_set_hook(x => bound_int(x, 0, 6));
+    mb.with(new RWMix("Efficiency", "efficiency", ident, ident)).add_pre_set_hook(x => bound_int(x, 0, 6));
+    mb.with(new RWMix("Influence", "influence", ident, ident)).add_pre_set_hook(x => bound_int(x, 0, 6));
 
     return mb.finalize(data);
 }

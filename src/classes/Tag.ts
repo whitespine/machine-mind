@@ -1,4 +1,4 @@
-import { ItemType } from "@/class";
+import { EntryType } from "@/class";
 
 import { VCompendiumItem } from "@/interface";
 import { store } from "@/hooks";
@@ -22,7 +22,7 @@ export interface TagTemplate extends MixLinks<ITagTemplateData>, VCompendiumItem
     Description: string;
     FilterIgnore: boolean;
     Hidden: boolean;
-    ItemType: ItemType.Tag;
+    EntryType: EntryType.Tag;
 }
 
 export interface TagInstance extends MixLinks<ITagInstanceData> {
@@ -32,22 +32,22 @@ export interface TagInstance extends MixLinks<ITagInstanceData> {
 
 export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
     let b = new MixBuilder<TagTemplate, ITagTemplateData>({
-        ItemType: ItemType.Tag,
+        EntryType: EntryType.Tag,
         Brew: DEFAULT_BREW_ID
     });
-    b.with(new RWMix("ID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Name", "name", "New Tag", ident, ident));
-    b.with(new RWMix("Description", "description", "", ident, ident));
-    b.with(new RWMix("FilterIgnore", "filter_ignore", false, ident, ident));
-    b.with(new RWMix("Hidden", "hidden", false, ident, ident));
+    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("Name", "name", ident, ident));
+    b.with(new RWMix("Description", "description", ident, ident));
+    b.with(new RWMix("FilterIgnore", "filter_ignore", ident, ident));
+    b.with(new RWMix("Hidden", "hidden", ident, ident));
     let r = b.finalize(data);
     return r;
 }
 
 export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
     let b = new MixBuilder<TagInstance, ITagInstanceData>({});
-    b.with(new RWMix("TemplateID", "id", uuid(), ident, ident));
-    b.with(new RWMix("Val", "val", "", ident, ident));
+    b.with(new RWMix("TemplateID", "id", ident, ident));
+    b.with(new RWMix("Val", "val", ident, ident));
     let r = b.finalize(data);
     return r;
 }
@@ -105,7 +105,7 @@ export const TagInstanceMixWriter = (x: TagInstance[]) => x.map(i => i.Serialize
         }
     }
 
-    public get ItemType(): ItemType {
+    public get EntryType(): EntryType {
         return this._item_type;
     }
 

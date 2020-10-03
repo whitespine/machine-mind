@@ -1,4 +1,4 @@
-import { MechEquipment, SystemType, ItemType } from "@/class";
+import { MechEquipment, SystemType, EntryType } from "@/class";
 import { IMechEquipmentData, IEquipmentData } from "@/interface";
 import { store } from "@/hooks";
 
@@ -12,7 +12,7 @@ export class MechSystem extends MechEquipment {
     public constructor(systemData: IMechSystemData) {
         super(systemData);
         this._system_type = systemData.type;
-        this._item_type = ItemType.MechSystem;
+        this._item_type = EntryType.MechSystem;
     }
 
     public get SP(): number {

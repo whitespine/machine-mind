@@ -1,7 +1,7 @@
-import { ItemType } from '@/class';
+import { EntryType } from '@/class';
 import { imageManagement, ImageTag } from "@/hooks";
 import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
-import { VRegistryItem } from './CompendiumItem';
+import { VRegistryItem } from './registry;
 
 export interface IManufacturerData {
     id: string;
@@ -16,7 +16,7 @@ export interface IManufacturerData {
 
 export interface Manufacturer extends MixLinks<IManufacturerData>, VRegistryItem {
     ID: string;
-    Type: ItemType.MANUFACTURER;
+    Type: EntryType.MANUFACTURER;
     Name: string;
     Description: string;
     Logo: string;
@@ -28,14 +28,14 @@ export interface Manufacturer extends MixLinks<IManufacturerData>, VRegistryItem
 
 export function CreateManufacturer(data: IManufacturerData | null): Manufacturer {
     let mb = new MixBuilder<Manufacturer, IManufacturerData>({});
-    mb.with(new RWMix("ID", "name", uuid(), ident, ident));
-    mb.with(new RWMix("Name", "name", "New Manufacturer", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Logo", "logo", "", ident, ident));
-    mb.with(new RWMix("LogoURL", "logo_url", "", ident, ident));
-    mb.with(new RWMix("Light", "light", "", ident, ident));
-    mb.with(new RWMix("Dark", "dark",  "", ident, ident));
-    mb.with(new RWMix("Quote", "quote",  "", ident, ident));
+    mb.with(new RWMix("ID", "name", ident, ident));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Logo", "logo", ident, ident));
+    mb.with(new RWMix("LogoURL", "logo_url", ident, ident));
+    mb.with(new RWMix("Light", "light", ident, ident));
+    mb.with(new RWMix("Dark", "dark", ident, ident));
+    mb.with(new RWMix("Quote", "quote", ident, ident));
 
     return mb.finalize(data);
 }

@@ -142,7 +142,7 @@ export abstract class NpcFeature {
     }
 
     // Used for cc-item-card subcomponent selection
-    public get ItemType(): string {
+    public get EntryType(): string {
         return `Npc${this.type}`;
     }
 

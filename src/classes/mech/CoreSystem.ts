@@ -62,26 +62,26 @@ export function CreateCoreSystem(data: ICoreSystemData | null): CoreSystem {
     let mb = new MixBuilder<CoreSystem, ICoreSystemData>({
         has_passive
     });
-    mb.with(new RWMix("Name", "name", "New Core System", ident, ident));
-    mb.with(new RWMix("Description", "description", "No description", ident, ident));
-    mb.with(new RWMix("Use", "use", null, ident, ident_drop_null));
+    mb.with(new RWMix("Name", "name", ident, ident));
+    mb.with(new RWMix("Description", "description", ident, ident));
+    mb.with(new RWMix("Use", "use", ident, ident_drop_null));
 
-    mb.with(new RWMix("PassiveName", "passive_name", null, ident, ident_drop_null));
-    mb.with(new RWMix("PassiveEffect", "passive_effect", null, ident, ident_drop_null));
-    mb.with(new RWMix("PassiveActions", "passive_actions", null, ActionsMixReader, nundefmaparr(ActionsMixWriter)));
-    mb.with(new RWMix("PassiveBonuses", "passive_bonuses", null, BonusesMixReader, nundefmaparr(BonusesMixWriter)));
-    mb.with(new RWMix("PassiveSynergies", "passive_synergies", null, SynergyMixReader, nundefmaparr(SynergyMixWriter)));
+    mb.with(new RWMix("PassiveName", "passive_name", ident, ident_drop_null));
+    mb.with(new RWMix("PassiveEffect", "passive_effect", ident, ident_drop_null));
+    mb.with(new RWMix("PassiveActions", "passive_actions", ActionsMixReader, nundefmaparr(ActionsMixWriter)));
+    mb.with(new RWMix("PassiveBonuses", "passive_bonuses", BonusesMixReader, nundefmaparr(BonusesMixWriter)));
+    mb.with(new RWMix("PassiveSynergies", "passive_synergies", SynergyMixReader, nundefmaparr(SynergyMixWriter)));
 
-    mb.with(new RWMix("ActiveName", "active_name", "Core Active", ident, ident));
-    mb.with(new RWMix("ActiveEffect", "active_effect", "No effect", ident, ident));
-    mb.with(new RWMix("ActiveActions", "active_actions", [], ActionsMixReader, ActionsMixWriter));
-    mb.with(new RWMix("ActiveBonuses", "active_bonuses", [], BonusesMixReader, BonusesMixWriter));
-    mb.with(new RWMix("ActiveSynergies", "active_synergies", [], SynergyMixReader, SynergyMixWriter));
+    mb.with(new RWMix("ActiveName", "active_name", ident, ident));
+    mb.with(new RWMix("ActiveEffect", "active_effect", ident, ident));
+    mb.with(new RWMix("ActiveActions", "active_actions", ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("ActiveBonuses", "active_bonuses", BonusesMixReader, BonusesMixWriter));
+    mb.with(new RWMix("ActiveSynergies", "active_synergies", SynergyMixReader, SynergyMixWriter));
 
-    mb.with(new RWMix("Deployables", "deployables", [], DeployableMixReader, DeployableMixWriter));
-    mb.with(new RWMix("Counters", "counters", [], CountersMixReader, CountersMixWriter));
-    mb.with(new RWMix("Integrated", "integrated", [], ident, ident ));
-    mb.with(new RWMix("Tags", "tags", [], TagInstanceMixReader, TagInstanceMixWriter ));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", ident, ident ));
+    mb.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter ));
 
     return mb.finalize(data);
 }

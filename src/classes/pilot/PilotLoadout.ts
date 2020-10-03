@@ -4,7 +4,7 @@ import {
     PilotWeapon,
     PilotGear,
     Loadout,
-    ItemType,
+    EntryType,
     PilotEquipment
 } from "@/class";
 import { IPilotArmorData, IPilotGearData, IPilotWeaponData } from '@/interface';
@@ -48,11 +48,11 @@ export function CreatePilotLoadout(data: IPilotLoadoutData) {
         CanAddGear,
         CanAddWeapons
     });
-    mb.with(new RWMix("ID","id", uuid(), ident, ident));
-    mb.with(new RWMix("Name","name", "New Loadout", ident, ident));
-    mb.with(new RWMix("Armor","armor", [], (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new RWMix("Weapons","weapons", [], (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new RWMix("Gear","gear", [], (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("ID","id", ident, ident));
+    mb.with(new RWMix("Name","name", ident, ident));
+    mb.with(new RWMix("Armor","armor", (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("Weapons","weapons", (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
+    mb.with(new RWMix("Gear","gear", (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
 
 
     return mb.finalize(data);
@@ -78,15 +78,15 @@ function CanAddGear(this: PilotLoadout) {
 
 function Add(this: PilotLoadout, item: PilotEquipment) { //, slot: number, extended?: boolean | null): void {
     switch (item.Type) {
-        case ItemType.PilotArmor:
+        case EntryType.PilotArmor:
             this.Armor.push(item as PilotArmor);
             break;
-        case ItemType.PilotWeapon:
+        case EntryType.PilotWeapon:
             // if (extended) this._extendedWeapons.splice(slot, 1, item as PilotWeapon);
             // else this._weapons.splice(slot, 1, item as PilotWeapon);
             this.Weapons.push(item as PilotWeapon);
             break;
-        case ItemType.PilotGear:
+        case EntryType.PilotGear:
             // if (extended) this._extendedGear[slot] = item as PilotGear;
             // else this._gear.splice(slot, 1, item as PilotGear);
             this.Gear.push(item as PilotGear);
@@ -99,15 +99,15 @@ function Add(this: PilotLoadout, item: PilotEquipment) { //, slot: number, exten
 
 /*
     public Remove(item: PilotEquipment, slot: number, extended?: boolean | null): void {
-        switch (item.ItemType) {
-            case ItemType.PilotArmor:
+        switch (item.EntryType) {
+            case EntryType.PilotArmor:
                 if (this._armor[slot]) this._armor[slot] = null;
                 break;
-            case ItemType.PilotWeapon:
+            case EntryType.PilotWeapon:
                 if (extended) this._extendedWeapons[slot] = null;
                 if (this._weapons[slot]) this._weapons[slot] = null;
                 break;
-            case ItemType.PilotGear:
+            case EntryType.PilotGear:
                 if (extended) this._extendedGear[slot] = null;
                 if (this._gear[slot]) this._gear[slot] = null;
                 break;

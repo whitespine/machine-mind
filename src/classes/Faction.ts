@@ -1,4 +1,5 @@
-import { imageManagement, ImageTag } from "@/hooks";
+import { def, defs, def_lazy, ident, ident_drop_null, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
+import { VRegistryItem } from '@/classes/registry';
 
 export interface IFactionData {
     id: string;
@@ -9,47 +10,23 @@ export interface IFactionData {
     logo_url?: string;
 }
 
-export class Faction {
-    private _id: string;
-    private _name: string;
-    private _description: string;
-    private _logo: string;
-    private _color: string;
-    private _logo_url: string | null;
-
-    public constructor(data: IFactionData) {
-        this._id = data.id;
-        this._name = data.name;
-        this._description = data.description;
-        this._logo = data.logo;
-        this._color = data.color;
-        this._logo_url = data.logo_url || null;
-    }
-
-    public get ID(): string {
-        return this._id;
-    }
-
-    public get Name(): string {
-        return this._name;
-    }
-
-    public get Description(): string {
-        return this._description;
-    }
-
-    public get Color(): string {
-        return this._color;
-    }
-
-    public get LogoIsExternal(): boolean {
-        return !!this._logo_url;
-    }
-
-    public get Logo(): string {
-        if (this._logo_url) return this._logo_url;
-        else if (this._logo)
-            return imageManagement.getImagePath(ImageTag.Logo, `${this._logo}.svg`, true);
-        else return ""; // TODO: placeholder logo?
-    }
+export interface Faction extends MixLinks<IFactionData>, VRegistryItem{
+    ID: string;
+    Name: string;
+    Description: string;
+    Logo: string;
+    LogoURL: string | null;
+    Color: string;
 }
+export function CreateFaction(data: IFactionData | null): Faction {
+    let mb = new MixBuilder<Faction, IFactionData>({});
+    mb.with(new RWMix("ID", "name", def_lazy(uuid), ident));
+    mb.with(new RWMix("Name", "name", defs("New Faction"), ident));
+    mb.with(new RWMix("Description", "description", defs("No description"), ident));
+    mb.with(new RWMix("Logo", "logo", defs(""), ident));
+    mb.with(new RWMix("LogoURL", "logo_url", defs(""), ident_drop_null));
+    mb.with(new RWMix("Color", "color", defs("grey"), ident));
+
+    return mb.finalize(data);
+}
+

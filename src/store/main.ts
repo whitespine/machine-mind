@@ -1,4 +1,4 @@
-import { CompendiumStore, FILEKEY_CONTENT_PACKS } from "./compendium";
+import { CompendiumStore, FILEKEY_CONTENT_PACKS } from "../classes/registry";
 import { PilotManagementStore, FILEKEY_PILOTS, FILEKEY_PILOT_GROUPS } from "./pilot";
 import { NpcStore, FILEKEY_NPCS } from "./npc";
 import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
