@@ -1,5 +1,5 @@
 import { keys } from 'ts-transformer-keys';
-import {Registry } from './classes/registry';
+import {ID_ANONYMOUS, Registry, VRegistryItem } from './classes/registry';
 
 // Handles a single property in a single item, specifically one that saves/stores from a single
 export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName extends keyof Src> {
@@ -23,10 +23,10 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     private post_setters: Array<() => any> = []; // Called post set. Should be careful about setting mixlets from here so as to not cause errors
 
     // Writes data to compendium/saves etc like so
-    public writer: (x: Host[HostKey]) => Src[SrcName];
+    public writer: (x: Host[HostKey]) => Promise<Src[SrcName]>;
 
     // Reads data from compendium pack/saves like so. Uses default if value not present/null
-    public reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Host[HostKey];
+    public reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Promise<Host[HostKey]>;
 
     // Here for overriding purposes
     public get_val(v: Host[HostKey]) {
@@ -52,7 +52,7 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     }
 
     // Constructor is straightforward enough
-    public constructor(prop_key: HostKey, src_key: SrcName, reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Host[HostKey], writer: (x: Host[HostKey]) => Src[SrcName]) {
+    public constructor(prop_key: HostKey, src_key: SrcName, reader: (x: Src[SrcName] | undefined, reg_ctx: Registry) => Promise<Host[HostKey]>, writer: (x: Host[HostKey]) => Promise<Src[SrcName]>) {
         this.prop_key = prop_key;
         this.src_key = src_key;
         // this.val = default_val;
@@ -62,18 +62,18 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     }
 
     // Loads this mixlet from the specified raw data
-    public load(from: Src, ctx: Registry) {
+    public async load(from: Src, ctx: Registry) {
         let raw: Src[SrcName] | undefined = from[this.src_key];
-        this.val = this.reader(raw, ctx);
+        this.val = await this.reader(raw, ctx);
 
         // Was it defined? We only write back out if it was. Maybe change this behavior later to get better "default" performance
         this.defined = raw !== undefined;
     }
 
     // Writes this mixlet to the specified raw data
-    public save(to: Src) {
+    public async save(to: Src) {
         if(this.defined) {
-            to[this.src_key] = this.writer(this.val);
+            to[this.src_key] = await this.writer(this.val);
         }
     }
 
@@ -278,8 +278,8 @@ function validate_props<T extends object>(v: T) {
 export function ident<T>(t: T): T { return t; }
 
 // Write what you read, substitute if undefined
-export function def<T>(default_val: T): (x: T | undefined) => T { 
-    return (x: T | undefined) => {
+export function def<T>(default_val: T): (x: T | undefined) => Promise<T> { 
+    return async (x: T | undefined) => {
         if(x === undefined) {
             return default_val;
         } else {
@@ -288,10 +288,21 @@ export function def<T>(default_val: T): (x: T | undefined) => T {
     }
 }
 // Some helpers to handle specific types
-type def_typed<T> =(default_val: T) => ((x: T | undefined) => T);
+type def_typed<T> =(default_val: T) => ((x: T | undefined) => Promise<T>);
 export const defs: def_typed<string> = def;
 export const defn: def_typed<number> = def;
 export const defb: def_typed<boolean> = def;
+
+// Use this to handle ID defaults
+export function def_anon(v: string | undefined): string | typeof ID_ANONYMOUS {
+    return v || ID_ANONYMOUS    
+}
+export function ident_drop_anon(v: string | typeof ID_ANONYMOUS): string | undefined {
+    if(v == ID_ANONYMOUS) {
+        return undefined;
+    }
+    return v;
+}
 
 // Write what you read, lazy sub on default. Callback doesn't need to use registry
 export type RegFetcher<T> = (reg: Registry) => T;
@@ -309,37 +320,52 @@ export function def_lazy<T>(default_val: RegFetcher<T>): (x: T | undefined, reg_
 
 
 // Return input, except map null to undefined
-export function ident_drop_null<T>(t: T): NonNullable<T> | undefined { 
+export async function ident_drop_null<T>(t: T): Promise<NonNullable<T> | undefined> { 
     return t ?? undefined;
 }
 
 // Serialize the provided item using its own serialization function
-export function ser_one<T extends {Serialize(): G}, G>(t: T): G {
+export async function ser_one<T extends {Serialize(): G}, G>(t: T): Promise<G> {
     return t.Serialize();
 }
 
 // Serialize an array
-export function ser_many<T extends {Serialize(): G}, G>(t: T[]): G[] {
+export async function ser_many<T extends {Serialize(): G}, G>(t: T[]): Promise<G[]> {
     return t.map(v => v.Serialize());
 }
 
 // Wraps a function such that it defaults its param to an empty array. Does not assume that our output will be an array, but definitely supports that
-export function def_empty<I, O>(func: (vals: Array<I>) => O): (vals: Array<I> | undefined) => O {
-    return (v: Array<I> | undefined) => func(v || []);
+export function def_empty<I, O>(func: (vals: Array<I>) => O): (vals: Array<I> | undefined) => Promise<O> {
+    return async (v: Array<I> | undefined) => func(v || []);
 }
 
 // Wraps a function such that it maps over an array, defaulting to an empty array if none is given
-export function def_empty_map<I, O>(func: (val: I) => O): (vals: Array<I> | undefined) => O[] {
-    return (v: Array<I> | undefined) => [].map(func);
+export function def_empty_map<I, O>(func: (val: I) => O): (vals: Array<I> | undefined) => Promise<O[]> {
+    return async (v: Array<I> | undefined) => [].map(func);
 }
 
 // Easily lock into enums using restrict_enum
-export function restrict_choices<T extends string>(choices: T[], default_choice: T): (x: string | undefined) => T {
-    return (x: string | undefined) => choices.includes((x || "") as T) ? (x as T) : default_choice;
+export function restrict_choices<T extends string>(choices: T[], default_choice: T): (x: string | undefined) => Promise<T> {
+    return async (x: string | undefined) => choices.includes((x || "") as T) ? (x as T) : default_choice;
 }
-export function restrict_enum<T extends string>(enum_: {[key: string]: T}, default_choice: T): (x: string | undefined) => T {
+export function restrict_enum<T extends string>(enum_: {[key: string]: T}, default_choice: T): (x: string | undefined) => Promise<T> {
     let choices = Object.keys(enum_).map(k => enum_[k]);
     return restrict_choices(choices, default_choice);
+}
+
+// Pull stuff from the register
+export async function IntegratedMixReader(integrated_keys: string[] | undefined, ctx: Registry): Promise<VRegistryItem[]> {
+    integrated_keys ||= [];
+    let found: VRegistryItem[] = [];
+    for(let k of integrated_keys) {
+        let v = await ctx.get_from_anywhere(k);
+        if(v) {
+            found.push(v);
+        } else {
+            console.warn(`Unable to find integrated item ${k}`);
+        }
+    }
+    return found;
 }
 
 // Re-export stuff

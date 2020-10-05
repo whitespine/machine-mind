@@ -13,34 +13,48 @@ import {
     WeaponType,
 } from "@/class";
 import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, RangesMixReader, DamagesMixReader, DamagesMixWriter, RangesMixWriter, CountersMixReader, CountersMixWriter, DeployableMixReader, BonusesMixReader, BonusesMixWriter } from '@/mixmeta';
-import { DamageType, getMountType, getWeaponSize, RangeType } from '../enums';
+import { ActionsMixReader, ActionsMixWriter, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, RangesMixReader, DamagesMixReader, DamagesMixWriter, RangesMixWriter, CountersMixReader, CountersMixWriter, DeployableMixReader, BonusesMixReader, BonusesMixWriter, def_anon, defs, restrict_enum } from '@/mixmeta';
+import { getMountType, getWeaponSize, MountType, RangeType } from '../enums';
+import { EntryType, Registry, VRegistryItem } from '../registry';
 
 // TODO:
 // class WeaponAmmo {}
 
 export interface IMechWeaponData extends IMechEquipmentData {
-  // Ss
+    id?: string,
+  "name": string,
+  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  "license": string, // reference to the Frame name of the associated license
+  "license_level": number, // set to zero for this item to be available to a LL0 character
   "mount": WeaponSize,
   "type": WeaponType,
+  "damage"?: IDamageData[],
+  "range"?: IRangeData[],
+  "tags"?: ITagInstanceData[],
+  "sp"?: number,
+  "description": string, // v-html
+  "effect"?: string // v-html
   "on_attack"?: string // v-html
   "on_hit"?: string // v-html
   "on_crit"?: string // v-html
-  "damage"?: IDamageData[],
-  "range"?: IRangeData[],
-  "profiles"?: Partial<IMechWeaponData>[], // Current profile overrides
-  "selected_profile"?: number;
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[],
+  "deployables"?: IDeployableData[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
 }
 
-export interface MechWeapon extends MixLinks<IMechWeaponData> {
+export interface MechWeapon extends MixLinks<IMechWeaponData>, VRegistryItem {
     // Fields. There are a lot - mech equips do be like that
+    Type: EntryType.MECH_WEAPON;
     ID: string;
     Name: string;
     Source: string; // MANUFACTURER NAME
     License: string; // FRAME NAME
     LicenseLevel: number;
     Size: WeaponSize;
-    Type: WeaponType;
+    WepType: WeaponType;
     BaseDamage: Damage[];
     BaseRange: Range[];
     Tags: TagInstance[];
@@ -58,19 +72,19 @@ export interface MechWeapon extends MixLinks<IMechWeaponData> {
     Integrated: string[];
 
     // This comes not from our data, but from our loadout stuff
-    Mod: WeaponMod;
+    // Mod: WeaponMod;
 
     // Methods
 }
 
-export function CreateMechWeapon(data: IMechWeaponData): MechWeapon {
+export function CreateMechWeapon(data: IMechWeaponData | null, ctx: Registry): MechWeapon {
     let mb = new MixBuilder<MechWeapon, IMechWeaponData>({});
-    mb.with(new RWMix("ID", "id", ident, ident ));
-    mb.with(new RWMix("Name", "name", ident, ident));
-    mb.with(new RWMix("Source", "source", ident, ident));
-    mb.with(new RWMix("License", "license", ident, ident));
-    mb.with(new RWMix("LicenseLevel", "license_level", ident, ident));
-    mb.with(new RWMix("Size", "mount", getWeaponSize, ident));
+    mb.with(new RWMix("ID", "id", def_anon, ident ));
+    mb.with(new RWMix("Name", "name", defs("New Mech Weapon"), ident));
+    mb.with(new RWMix("Source", "source", defs("GMS"), ident));
+    mb.with(new RWMix("License", "license", defs("EVEREST"), ident));
+    mb.with(new RWMix("LicenseLevel", "license_level", defn(0), ident));
+    mb.with(new RWMix("Size", "mount", restrict_enum(WeaponSize, WeaponSize.Main), ident));
     mb.with(new RWMix("Type", "type", ident, ident));
     mb.with(new RWMix("BaseDamage", "damage", DamagesMixReader, DamagesMixWriter));
     mb.with(new RWMix("BaseRange", "range", RangesMixReader, RangesMixWriter));

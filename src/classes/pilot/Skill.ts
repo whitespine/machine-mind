@@ -10,7 +10,7 @@ export enum SkillFamily {
     custom = "custom"
 }
 export interface ISkillData extends IRegistryItemData {
-    id: string,
+    id?: string
     name: string,
     description: string, // terse, prefer fewest chars
     detail: string; // v-html

@@ -1,4 +1,4 @@
-import { MechEquipment, Pilot, MechWeapon, MechSystem, Frame, Registry } from "@/class";
+import { MechEquipment, Pilot, MechWeapon, MechSystem, Frame, Registry, EntryType } from "@/class";
 import { def, defs, def_empty, ident, ident_drop_null, MixBuilder, MixLinks, RWMix, ser_many } from '@/mixmeta';
 import { WeaponType, WeaponSize, SystemType } from './enums';
 
@@ -41,11 +41,20 @@ function allows_weapon(this: Synergy, weapon: MechWeapon): boolean {
     if(this.WeaponTypes?.includes(weapon.Type) === false) {
         return false;
     }
-    return this.WeaponSizes.includes(weapon.Size) &&
+    return true;
 }
+
+function allows_system(this: Synergy, system: MechSystem): boolean {
+    if(this.SystemTypes?.includes(system.Type) === false) {
+        return false;
+    }
+    return true
+}
+
 
     // Filters a list of synergies to the given piece of equipment/location
     function MatchSynergies(
+        this: Synergy,
         item: MechEquipment,
         active_synergies: Synergy[],
         location: SynergyLocation
@@ -53,20 +62,20 @@ function allows_weapon(this: Synergy, weapon: MechWeapon): boolean {
         // Get type and size of the equip
         let item_type: WeaponType | SystemType;
         let item_size: WeaponSize | null = null;
-        if(item.EntryType === EntryType.MechSystem) {
+        if(item.Type === EntryType.MechSystem) {
             let sys = item as MechSystem;
             item_type = sys.Type;
-        } else if(item.EntryType === EntryType.MechWeapon) {
+        } else if(item.Type === EntryType.MECH_WEAPON) {
             let wep = item as MechWeapon;
             item_type = wep.Type;
             item_size = wep.Size;
         }
 
-        active_synergies = active_synergies.filter(x => x.locations === "any" || x.locations.includes(location));
+        active_synergies = active_synergies.filter(x => x.Locations === "any" || x.locations.includes(location));
         if(item_size) {
-            active_synergies = active_synergies.filter(x => x.sizes === "any" || x.sizes.includes(item_size!));
+            active_synergies = active_synergies.filter(x => x.Sizes === "any" || x.sizes.includes(item_size!));
         }
-        active_synergies = active_synergies.filter(x => x.types === "any" || x.types.includes(item_type));
+        active_synergies = active_synergies.filter(x => x.Types === "any" || x.Types.includes(item_type));
         return active_synergies
     }
     

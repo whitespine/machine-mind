@@ -1,12 +1,28 @@
 import { MechEquipment, SystemType, EntryType } from "@/class";
-import { IMechEquipmentData, IEquipmentData } from "@/interface";
+import { IMechEquipmentData, IEquipmentData, IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ITagInstanceData } from "@/interface";
 import { store } from "@/hooks";
 
 export interface IMechSystemData extends IMechEquipmentData {
-    type: SystemType;
-}
+    id?: string,
+    "name": string,
+    "source": string, // must be the same as the Manufacturer ID to sort correctly
+    "license": string, // reference to the Frame name of the associated license
+    "license_level": number, // set to zero for this item to be available to a LL0 character
+    "type"?: SystemType
+    "sp": number,
+    "description": string, // v-html
+    "tags"?: ITagInstanceData[],
+    "effect": string, // v-html
+    "actions"?: IActionData[],
+    "bonuses"?: IBonusData[]
+    "synergies"?: ISynergyData[],
+    "deployables"?: IDeployableData[],
+    "counters"?: ICounterData[],
+    "integrated"?: string[]
+  },
 
-export class MechSystem extends MechEquipment {
+export interface MechSystem {
+    
     private _system_type: SystemType;
 
     public constructor(systemData: IMechSystemData) {

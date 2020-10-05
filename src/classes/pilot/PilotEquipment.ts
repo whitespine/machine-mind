@@ -1,7 +1,7 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
-import { VRegistryItem } from '../registry;
+import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, BonusesMixReader, BonusesMixWriter, def, defs } from '@/mixmeta';
+import { EntryType, ID_ANONYMOUS, Registry, VRegistryItem } from '../registry';
 
 
 ///////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@ import { VRegistryItem } from '../registry;
 export type IPilotEquipmentData = IPilotWeaponData | IPilotArmorData | IPilotGearData;
 export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
 export interface IPilotWeaponData {
-  id: string,
+  id?: string
   name: string, // v-html
   type: "Weapon",
   description: string,
@@ -24,7 +24,7 @@ export interface IPilotWeaponData {
 }
 
 export interface IPilotArmorData  {
-  "id": string,
+  id?: string,
   "name": string, // v-html
   "type": "Armor",
   "description": string,
@@ -36,7 +36,7 @@ export interface IPilotArmorData  {
 }
 
 export interface IPilotGearData {
-  id: string,
+  id?: string
   name: string, // v-html
   type: "Gear",
   description: string,
@@ -57,27 +57,27 @@ export interface PilotArmor extends MixLinks<IPilotArmorData>, VRegistryItem {
   Bonuses: Bonus[],
   Synergies: Synergy[],
   Deployables: Deployable[],
-  Type: EntryType.PilotArmor
+  Type: EntryType.PILOT_ARMOR
 }
 
 export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
     // Init with deduced cc props
     let b = new MixBuilder<PilotArmor, IPilotArmorData>({
-        Type: EntryType.PilotArmor
+        Type: EntryType.PILOT_ARMOR
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", ident, ident));
-    b.with(new RWMix("Name", "name", ident, ident));
+    b.with(new RWMix("ID", "id", def(U, ident));
+    b.with(new RWMix("Name", "name", defs("New Armor"), ident));
 
     // Don't need type
     b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
     b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
     b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
     b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
-    let r = b.finalize(data);
+    let r = b.finalize(data, ctx);
     return r;
 }
 
@@ -87,13 +87,13 @@ export interface PilotGear extends MixLinks<IPilotGearData>, VRegistryItem {
     Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies: Synergy[];
     Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
-    Type: EntryType.PilotGear;
+    Type: EntryType.PILOT_GEAR;
 }
 
-export function CreatePilotGear(data: IPilotGearData | null): PilotGear {
+export async function CreatePilotGear(data: IPilotGearData | null, ctx: Registry): Promise<PilotGear> {
     // Init with deduced cc props
     let b = new MixBuilder<PilotGear, IPilotGearData>({
-        Type: EntryType.PilotGear
+        Type: EntryType.PILOT_GEAR
     });
 
     // Mixin the rest
@@ -102,11 +102,11 @@ export function CreatePilotGear(data: IPilotGearData | null): PilotGear {
 
     b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
     b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
     b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
     b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
-    let r = b.finalize(data);
+    let r = b.finalize(data, ctx);
     return r;
 }
 
@@ -119,13 +119,13 @@ export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VRegistryItem {
     Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies: Synergy[];
     Deployables: Deployable[]; // these are only available to UNMOUNTED pilots
-    Type: EntryType.PilotWeapon;
+    Type: EntryType.PILOT_WEAPON;
 }
 
 export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
     // Init with deduced cc props
     let b = new MixBuilder<PilotWeapon, IPilotWeaponData>({
-        Type: EntryType.PilotWeapon
+        Type: EntryType.PILOT_WEAPON
     });
 
     // Mostly the same as the others
@@ -134,7 +134,7 @@ export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
 
     b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
     b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
+    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
     b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
     b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
 
@@ -174,3 +174,10 @@ export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
 
 }
 */
+
+export function CreatePilotEquipment(data: IPilotEquipmentData, ctx: Registry): PilotEquipment {
+    switch(data.type) {
+        case "Armor": 
+            return CreatePilotEquipment(
+    }
+}

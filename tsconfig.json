@@ -12,6 +12,7 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
     "sourceMap": true,
     "noEmit": false,
     "declaration": true,

@@ -1,5 +1,5 @@
 import { ActivationType } from "@/class";
-import { RWMix, MixBuilder, MixLinks, uuid, ident  } from '@/mixmeta';
+import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs  } from '@/mixmeta';
 
 export interface IActionData {
   name: string,
@@ -39,7 +39,7 @@ export function CreateAction(data: IActionData | null): Action {
       Uses: 0 // tmp value to not make validation angery
     });
 
-    b.with(new RWMix("Name", "name", "", ident));
+    b.with(new RWMix("Name", "name", defs("New Action"), ident));
     b.with(new RWMix("Activation", "activation", ActivationType.None, ident ));
     b.with(new RWMix("Terse", "terse",  ident, ident));
     b.with(new RWMix("Detail", "detail",  ident, ident));
@@ -56,7 +56,7 @@ export function CreateAction(data: IActionData | null): Action {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const ActionsMixReader = (x: IActionData[]  | undefined) => (x || []).map(CreateAction);
+export const ActionsMixReader = def_empty_map(CreateAction);
 export const ActionsMixWriter = (x: Action[]) => x.map(i => i.Serialize());
 
 

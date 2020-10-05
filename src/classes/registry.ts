@@ -22,14 +22,22 @@ import {
     License,
     Status,
     Environment,
-    Sitrep, PilotEquipment, Deployable, Quirk, Pilot
+    Sitrep, PilotEquipment, Deployable, Quirk, Pilot, CreateCoreBonus
 } from "@/class";
 import { logger } from "@/hooks";
 import { IContentPack } from "@/classes/ContentPack";
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "../store/store_module";
 import { PersistentStore } from "@/io/persistence";
 import { CORE_BREW_ID } from '@/classes/enums';
-import { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IRegistryItemData, IStatusData, IDeployableData, IQuirkData, IPilotData } from '@/interface';
+import { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
+import { CreateFaction } from './Faction';
+import { CreateFrame } from './mech/Frame';
+import { CreateManufacturer } from './Manufacturer';
+import { CreateTagTemplate } from './Tag';
+import { CreateQuirk } from './pilot/Quirk';
+import { CreatePilot } from './pilot/Pilot';
+import { CreateDeployable } from './Deployable';
+import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './pilot/PilotEquipment';
 
 /*
 Contains logic for looking up item templates by ID, or for examining lists of options
@@ -68,18 +76,21 @@ export enum EntryType {
     PILOT = "Pilot"
 }
 
-// This entity lives in our registry, and is accessible by its id
+// Use this constant for if we do not yet know what to populate the ID field with.
+export const REGID_UNSET = Symbol("unset");
+export const ID_ANONYMOUS = Symbol("anon");
 export interface VRegistryItem {
-    readonly ID: string;
+    readonly ID: string | typeof ID_ANONYMOUS; // Null if not from a content pack. Note that this is _NOT_ the id in the registry, at least not always
     readonly Name: string;
     readonly Type: EntryType;
     readonly Brew: string;
+    readonly RegistryID: string | typeof REGID_UNSET;
 }
 
 export const FILEKEY_CONTENT_PACKS = "extra_content.json";
 
 // We use this mapping to map Entry items to raw data types
-type RawSuper = {[key in EntryType]: IRegistryItemData};
+type RawSuper = {[key in EntryType]: any};
 interface RawTypeMapping extends RawSuper{
     [EntryType.CORE_BONUS]: ICoreBonusData;
     [EntryType.FACTION]: IFactionData;
@@ -140,16 +151,52 @@ interface LiveTypeMapping extends LiveSuper {
     [EntryType.PILOT]: Pilot ;
 }
 
-// This is basically just the same as entrykey
-// export type RegistryCategory = (keyof RawTypeMapping) &  (keyof LiveTypeMapping);
-
 // This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
+export type CreationFunc<T extends EntryType> = (r: RawTypeMapping[T], c: Registry) => Promise<LiveTypeMapping[T]>;
+type CreateMapper = {[key in EntryType]: CreationFunc<key>};
+const Creators: CreateMapper = {
+    [EntryType.CORE_BONUS]: CreateCoreBonus,
+    [EntryType.FACTION]: CreateFaction,
+    [EntryType.FRAME]: CreateFrame,
+    [EntryType.MANUFACTURER]: CreateManufacturer,
+    [EntryType.NPC_CLASS]: CreateNpcClass,
+    [EntryType.NPC_TEMPLATE]: CreateNpcTemplate,
+    [EntryType.NPC_FEATURE]: CreateNpcFeature,
+    [EntryType.WEAPON_MOD]: CreateWeaponMod,
+    [EntryType.MECH_WEAPON]: MechWeapon,
+    [EntryType.MECH_SYSTEM]: MechSystem,
+    [EntryType.TALENT]: CreateTalent,
+    [EntryType.SKILL]: CreateSkill,
+    [EntryType.RESERVE]: CreateReserve,
+    [EntryType.ENVIRONMENT]: CreateEnvironment,
+    [EntryType.SITREP]: CreateSitrep,
+    [EntryType.TAG]: CreateTagTemplate,
+    // [EntryType.LICENSE]: License ;
+    [EntryType.PILOT_GEAR]: CreatePilotGear ,
+    [EntryType.PILOT_ARMOR]: CreatePilotArmor ,
+    [EntryType.PILOT_WEAPON]: CreatePilotWeapon ,
+    [EntryType.PILOT_EQUIPMENT]: CreatePilotEquipment ,
+    [EntryType.STATUS]: Status ,
+    [EntryType.CONDITION]: CreateStatus ,
+    [EntryType.DEPLOYABLE]: CreateDeployable ,
+    [EntryType.QUIRK]: CreateQuirk ,
+    [EntryType.PILOT]: CreatePilot 
+
+}
 export abstract class RegCat<T extends EntryType> {
     // Need this to key them because we can't really identify otherwise
     cat: T;
 
-    constructor(cat: T) {
+    // Creation func needed to create live entries
+    creation_func: CreationFunc<T>;
+
+    // Need this for like, basically everything
+    parent: Registry;
+
+    constructor(parent: Registry, cat: T, creator: CreationFunc<T>) {
+        this.parent = parent;
         this.cat = cat;
+        this.creation_func = creator;
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -169,7 +216,8 @@ export abstract class RegCat<T extends EntryType> {
     abstract async update(...vals: Array<LiveTypeMapping[T]>): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
-    abstract async delete_id(id: string): Promise<RawTypeMapping[T] | null>;
+    // reason for returning live is for if you want to do any post-mortem actions, such as display a helpful message, and don't want to parse
+    abstract async delete_id(id: string): Promise<LiveTypeMapping[T] | null>;
 
     // Delete the given item. Returns success (failure indicates it was unable to find itself for deletion)
     async delete_live(v: LiveTypeMapping[T]): Promise<boolean> {
@@ -178,28 +226,38 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Call this only if the registry categories aren't polling from some external source
-    // must be a live type so we can properly derive an id
-    abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<void>;
+    // Returns the list of added ids
+    abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<string[]>;
 }
 
 export class Registry {
-    handlers: Map<EntryType, any>; // We cannot definitively type this here, unfortunately
+    handlers: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately
+
+    // Puts a single value. Gives back the put item's ID
+    async create(val: VRegistryItem): Promise<string>  {
+        let cat = this.get_cat(val.Type);
+        return (await cat.create(val))[0];
+    }
 
     // Call this only if the registry categories aren't polling from some external source
-    put(...vals: VRegistryItem[])  {
+    async create_many(...vals: VRegistryItem[]): Promise<void>  {
         // As a courtesy / optimization measure, we categorize these first, then send in batches
         let groupings = new Map<EntryType, Array<VRegistryItem>>();
         for(let v of vals) {
-            if(groupings.has(v.
-            let existing = groupings.get(
-            let cat = v.Type;
-
-            for(
-
+            if(groupings.has(v.Type)) {
+                groupings.get(v.Type)!.push(v);
+            } else {
+                groupings.set(v.Type, [v]);
             }
+        }
+
+        // Dispatch groups
+        for(let [k,v] of groupings.entries()) {
+            this.get_cat(k).create(...v);
         }
     }
 
+    // Trivial, but can be overridden to have more advanced behaviors
     constructor(){
         this.handlers = new Map();
     }
@@ -209,12 +267,25 @@ export class Registry {
         this.handlers.set(cat.cat, cat);
     }
 
+    // Fetch the specified category or error if it doesn't exist
     get_cat<T extends EntryType>(cat: T):  RegCat<T> {
         let v = this.handlers.get(cat);
         if(!v) {
             throw new Error(`Error: Category "${cat}" not setup`);
         }
         return v;
+    }
+
+    // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
+    // You should be able to figure out the type from the `Type` of the VRegistryItem
+    async get_from_anywhere(id: string): Promise<VRegistryItem | null> {
+        for(let [k, c] of this.handlers) {
+            let v = await c.get_live(k);
+            if(v) {
+               return v;
+            }
+        }
+        return null;
     }
 }
 
@@ -223,13 +294,13 @@ export class Registry {
 // Contains all lookupable items
 export class StaticRegistryCat<T extends EntryType> extends RegCat<T> {
     // Just store our data as a k/v lookup
-    data: Map<string, RawTypeMapping[T]> = new Map()
+    data: Map<string, RawTypeMapping[T]> = new Map();
 
-    get_raw(id: string): Promise<RawTypeMapping[T] | null> {
-        throw new Error('Method not implemented.');
+    async get_raw(id: string): Promise<RawTypeMapping[T] | null> {
+        return this.data.get(id) || null;
     }
-    list_raw(): Promise<RawTypeMapping[T][]> {
-        throw new Error('Method not implemented.');
+    async list_raw(): Promise<RawTypeMapping[T][]> {
+        return Array.from(this.data.values());
     }
     get_live(id: string): Promise<LiveTypeMapping[T] | null> {
         throw new Error('Method not implemented.');
@@ -240,57 +311,41 @@ export class StaticRegistryCat<T extends EntryType> extends RegCat<T> {
     update(...vals: LiveTypeMapping[T][]): Promise<void> {
         throw new Error('Method not implemented.');
     }
-    delete_id(id: string): Promise<RawTypeMapping[T] | null> {
-        throw new Error('Method not implemented.');
+
+    // Pretty simple
+    async delete_id(id: string): Promise<RawTypeMapping[T] | null> {
+        let r = this.data.get(id);
+        this.data.delete(id);
+        return r || null;
     }
-    create(...vals: LiveTypeMapping[T][]): Promise<void> {
-        throw new Error('Method not implemented.');
+
+    // Create new entries in our data map
+    async create(...vals: LiveTypeMapping[T][]): Promise<string[]> {
+        let new_keys: string[] = [];
+        for(let v of vals) {
+            let vt = v as VRegistryItem;
+            if(vt.Type !== this.cat) {
+                throw new Error(`Attempted to put ${vt.Type} into the ${this.cat} category of the store`);
+            }
+
+            // We just use their compendium IDs, doing a really dumb collision avoidance routine
+            let base_id = vt.ID;
+            if(base_id == ID_ANONYMOUS) {
+                base_id = "anonymous_item";
+            }
+            let reg_id = base_id;
+            let ctr = 1;
+            while(this.data.has(reg_id)) {
+                reg_id = `${base_id}_${ctr}`;
+            }
+
+            this.data.set(reg_id, vt.Serialize());
+            new_keys.push(reg_id);
+        }
+        return new_keys;
     }
 
 }
-export class StaticRegistry {
-    [EntryType.CORE_BONUS]: CoreBonus[] = [];
-    [EntryType.FACTION]: Faction[] = [];
-    [EntryType.FRAME]: Frame[] = [];
-    [EntryType.MANUFACTURER]: Manufacturer[] = [];
-    [EntryType.NPC_CLASS]: NpcClass[] = [];
-    [EntryType.NPC_TEMPLATE]: NpcTemplate[] = [];
-    [EntryType.NPC_FEATURE]: NpcFeature[] = [];
-    [EntryType.WEAPON_MOD]: WeaponMod[] = [];
-    [EntryType.MECH_WEAPON]: MechWeapon[] = [];
-    [EntryType.MECH_SYSTEM]: MechSystem[] = [];
-    [EntryType.TALENT]: Talent[] = [];
-    [EntryType.SKILL]: Skill[] = [];
-    [EntryType.RESERVE]: Reserve[] = [];
-    [EntryType.ENVIRONMENT]: Environment[] = [];
-    [EntryType.SITREP]: Sitrep[] = [];
-    [EntryType.TAG]: TagTemplate[] = [];
-    [EntryType.LICENSE]: License[] = []; // Come from frames
-    [EntryType.PILOT_GEAR]: PilotGear[] = [];
-    [EntryType.PILOT_ARMOR]: PilotArmor[] = []; // Come from pilot gear
-    [EntryType.PILOT_WEAPON]: PilotWeapon[] = []; // Come from pilot gear
-    [EntryType.PILOT_EQUIPMENT]: PilotEquipment[] = []; // Come from pilot gear
-    [EntryType.STATUS]: Status[] = []; // Come from statuses
-    [EntryType.CONDITION]: Status[] = []; // Come from statuses
-    [EntryType.DEPLOYABLE]: Deployable[] = []; // Comes from anything with a DEPLOYABLES sub-item, usually systems (but also some weapons like the ghast nexus)
-    [EntryType.QUIRK]: string[] = []; // These are not ID'd natively. However, we've added the ability for this to provide bonuses, actions, and deployables, just for fun
-
-    get_cat<T extends CompendiumCategory>(cat: T): ICompendium[T] & Array<VCompendiumItem> {
-        return this[cat];
-    }
-}
-
-export interface ICompendium extends Compendium {}
-
-// Shorthand for valid compendium types
-export type CompendiumCategory = keyof ICompendium;
-
-// All the keys specifically in content packs. Note that some of these items are missing/ not yet able to be homebrewed
-export const PackKeys = Object.keys(EntryType).map(k => EntryType[k]) as Array<keyof Compendium>;
-
-// This is all compendium keys, IE items that  you can lookup by collection (and sometimes ID)
-export const CompendiumKeys: CompendiumCategory[] = Object.keys(new Compendium()) as any;
-
 // So we don't have to treat it separately
 export function getBaseContentPack(): ContentPack {
     // lancerData.
@@ -328,6 +383,7 @@ export function getBaseContentPack(): ContentPack {
     });
 }
 
+/*
 export class CompendiumStore extends AbsStoreModule {
     // Pack management - note that we break here from the compcon way of doing it, and do not automatically save content after changes, to be more consistent with other platforms
     public _content_packs: ContentPack[] = []; // Currently loaded custom content packs.
@@ -506,3 +562,5 @@ export class CompendiumStore extends AbsStoreModule {
         await this.persistence.set_item(FILEKEY_CONTENT_PACKS, data_packs);
     }
 }
+
+*/

@@ -42,7 +42,7 @@ const DEFAULT_STATS: IFrameStats = {
 
 
 export interface IFrameData  {
-  id: string,
+  id?: string
   license_level: number, // set to zero for this item to be available to a LL0 character
   source: string, // must be the same as the Manufacturer ID to sort correctly
   name: string,

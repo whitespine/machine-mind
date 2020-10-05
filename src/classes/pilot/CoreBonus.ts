@@ -1,12 +1,10 @@
-import { CompendiumItem, EntryType, Manufacturer, EquippableMount } from "@/class";
-import { store } from "@/hooks";
+import { EntryType, Manufacturer, EquippableMount, Synergy, Bonus, Action, Registry, Counter, Deployable } from "@/class";
 
-import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICompendiumItemData } from "@/interface";
-import { MixLinks } from '@/mixmeta';
-import { IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated, MixActions, MixBonuses, MixSynergies, MixDeployables, MixCounters, MixIntegrated, VRegistryItem } from '../registry;
+import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, VRegistryItem } from "@/interface";
+import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, def, defs, def_anon, DeployableMixReader, DeployableMixWriter, CountersMixReader, CountersMixWriter, ident, ident_drop_anon, ident_drop_null, MixBuilder, MixLinks, RWMix, SynergyMixReader, SynergyMixWriter } from '@/mixmeta';
 
-export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBonuses, IHasSynergies, IHasDeployables, IHasCounters, IHasIntegrated {
-  "id": string,
+export interface ICoreBonusData {
+  id?: string,
   "name": string,
   "source": string, // must be the same as the Manufacturer ID to sort correctly
   "effect": string, // v-html
@@ -22,48 +20,40 @@ export interface ICoreBonusData extends ICompendiumItemData, IHasActions, IHasBo
 
 export interface CoreBonus extends MixLinks<ICoreBonusData>, VRegistryItem {
   Type: EntryType.CORE_BONUS
-  ID: string;
   Name: string;
-  Description: string;
   Source: string;
-  
+  Description: string;
+  Effect: string;
+  MountedEffect: string | null;
 
-
+  Actions: Action[];
+  Bonuses: Bonus[];
+  Synergies: Synergy[];
+  Deployables: Deployable[];
+  Counters: Counter[];
+  Integrated: VRegistryItem[]; 
 }
 
-export class CoreBonusold extends CompendiumItem<ICoreBonusData> {
+export function CreateCoreBonus(data: ICoreBonusData | null, ctx: Registry) {
     // Mixins
-    public readonly Actions = new MixActions();
-    public readonly Bonuses = new MixBonuses();
-    public readonly Synergies = new MixSynergies();
-    public readonly Deployables = new MixDeployables();
-    public readonly Counters = new MixCounters();
-    public readonly Integrated = new MixIntegrated();
+    let mb = new MixBuilder<CoreBonus, ICoreBonusData>({
+      Type: EntryType.CORE_BONUS
+    });
+    mb.with(new RWMix("ID", "id", def_anon, ident_drop_anon));
+    mb.with(new RWMix("Name", "name", defs("New Core Bonus"), ident));
+    mb.with(new RWMix("Source", "source", defs("GMS"), ident));
+    mb.with(new RWMix("Effect", "effect", defs("Unknown effect"), ident));
+    mb.with(new RWMix("MountedEffect", "mounted_effect", defs("Unknown effect (terse)"), ident_drop_null));
 
-    private _source: string; 
-    public get Source(): string { return this._source ;}
-    public set Source(nv: string) { this._source = nv ;}
+    // Don't need type
+    // b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
+    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
+    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Integrated", "integrated", IntegratedMixReader, IntegratedMixWriter));
 
-    private _effect: string; 
-    public get Effect(): string { return this._effect ;}
-    public set Effect(nv: string) { this._effect = nv ;}
-
-
-    private _mounted_effect: string | null;
-    public get MountedEffect(): string | null { return this._mounted_effect; }
-    public set MountedEffect(nv: string | null) { this._mounted_effect = nv; }
-
-    public constructor(cbData: ICoreBonusData) {
-        super(cbData);
-
-        // Handle mixins
-        let mixins = [this.Actions, this.Bonuses, this.Synergies, this.Deployables, this.Counters, this.Integrated];
-        this.register_mixins(mixins);
-        this.load(cbData);
-
-        // Handle specific data
-        this._source = cbData.source;
-        this._effect = cbData.effect;
-        this._mounted_effect = cbData.mounted_effect || null;
-    }
+    return mb.finalize(data, ctx);
+  }
 }

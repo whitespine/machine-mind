@@ -12,7 +12,7 @@ export { ICounterData } from "./classes/Counter";
 export { ICoreBonusData } from "./classes/pilot/CoreBonus";
 
 export { ISynergyData } from "@/classes/Synergy";
-export { VRegistryItem, IRegistryItemData } from "@/classes/registry;
+export {VRegistryItem} from "@/classes/registry";
 export { ILicensedItemData } from "./classes/LicensedItem";
 export { ICoreSystemData } from "./classes/mech/CoreSystem";
 export { IDeployableData } from "./classes/Deployable";
