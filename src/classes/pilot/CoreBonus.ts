@@ -1,7 +1,7 @@
 import { EntryType, Manufacturer, EquippableMount, Synergy, Bonus, Action, Registry, Counter, Deployable } from "@/class";
 
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, VRegistryItem } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, def, defs, def_anon, DeployableMixReader, DeployableMixWriter, CountersMixReader, CountersMixWriter, ident, ident_drop_anon, ident_drop_null, MixBuilder, MixLinks, RWMix, SynergyMixReader, SynergyMixWriter } from '@/mixmeta';
+import { ActionsMixReader, BonusesMixReader, def, defs, def_anon, DeployableMixReader, CountersMixReader, ident, ident_drop_anon, ident_drop_null, MixBuilder, MixLinks, RWMix, SynergyMixReader, IntegratedMixReader, ser_many, IntegratedMixWriter } from '@/mixmeta';
 
 export interface ICoreBonusData {
   id?: string,
@@ -47,13 +47,12 @@ export function CreateCoreBonus(data: ICoreBonusData | null, ctx: Registry) {
 
     // Don't need type
     // b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
-    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
-    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
-    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
-    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ser_many));
+    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, ser_many));
+    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, ser_many));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, ser_many));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, ser_many));
     mb.with(new RWMix("Integrated", "integrated", IntegratedMixReader, IntegratedMixWriter));
 
     return mb.finalize(data, ctx);
-  }
 }

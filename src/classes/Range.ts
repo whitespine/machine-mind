@@ -1,6 +1,6 @@
-import { RangeType } from "@/class";
-import { ident, MixBuilder, RWMix, MixLinks, def, defb, defn, defs, ser_many, def_empty_map } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks, def, defb, defn, defs, ser_many, def_empty_map, restrict_enum } from "@/mixmeta";
 import { Registry } from '@/classes/registry';
+import { RangeType } from './enums';
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -23,15 +23,14 @@ export interface Range extends MixLinks<IRangeData> {
     Text(): string;
 }
 
-export function CreateRange(data: IRangeData | null, ctx: Registry): Range {
+export  async function CreateRange(data: IRangeData | null, ctx: Registry): Promise<Range> {
     let mb = new MixBuilder<Range, IRangeData>({});
-    mb.with(new RWMix("Type", "type", getRangeType, ident));
+    mb.with(new RWMix("Type", "type", restrict_enum(RangeType, RangeType.Range), ident));
     mb.with(new RWMix("Value", "val", defn(5), ident));
     mb.with(new RWMix("Override", "override", defb(false), ident));
     // mb.with(new Mixlet("Bonus", "bonus", null, ident, ident));
 
-    let rv = mb.finalize(data, ctx);
-    return rv;
+    return mb.finalize(data, ctx);
 }
 
 // Error correction
@@ -113,4 +112,3 @@ function    AddBonuses(this: Range,
 // export const RangesMixReader = (x: IRangeData[] | undefined) => (x || []).map(CreateRange);
 // export const RangesMixWriter = (x: Range[]) => x.map(i => i.Serialize());
 export const RangesMixReader = def_empty_map(CreateRange);
-export const RangesMixWriter = ser_many;

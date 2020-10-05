@@ -1,10 +1,12 @@
-import { Rules, LicensedItem, MountType, EntryType, MechType, CoreSystem } from "@/class";
+import { Rules, LicensedItem, EntryType, CoreSystem } from "@/class";
 import { ILicensedItemData, IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ICoreSystemData, IFrameTraitData } from "@/interface";
 import { imageManagement, ImageTag } from "@/hooks";
 import { IArtLocation } from '../Art';
 import { CreateFrameTrait, FrameTrait } from './FrameTrait';
-import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, ser_many, ser_one, uuid } from '@/mixmeta';
+import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, ser_many, ser_one, uuid, ident_drop_anon, def_anon, defn, defs, def, def_empty, def_empty_map, def_lazy, defn_null, defs_null, ident_strict, ident_drop_anon_strict } from '@/mixmeta';
 import { CreateCoreSystem } from './CoreSystem';
+import { Registry, VRegistryItem } from '../registry';
+import { MountType } from '../enums';
 
 // Handles the base numberage
 export interface IFrameStats {
@@ -42,7 +44,7 @@ const DEFAULT_STATS: IFrameStats = {
 
 
 export interface IFrameData  {
-  id?: string
+  id: string, // E.x. DRAKE
   license_level: number, // set to zero for this item to be available to a LL0 character
   source: string, // must be the same as the Manufacturer ID to sort correctly
   name: string,
@@ -57,8 +59,7 @@ export interface IFrameData  {
   other_art?: IArtLocation[]
 }
 
-export interface Frame extends MixLinks<IFrameData>{
-    ID: string;
+export interface Frame extends MixLinks<IFrameData>, VRegistryItem {
     LicenseLevel: number;
     Source: string;
     Name: string;
@@ -76,26 +77,26 @@ export interface Frame extends MixLinks<IFrameData>{
     default_image(): string;
 }
 
-export function CreateFrame(data: IFrameData | null): Frame {
+export async function CreateFrame(data: IFrameData | null, ctx: Registry): Promise<Frame> {
     let mb = new MixBuilder<Frame, IFrameData>({default_image});
-    mb.with(new RWMix("ID", "id", ident, ident));
-    mb.with(new RWMix("LicenseLevel", "license_level", ident, ident));
-    mb.with(new RWMix("Source", "source", ident, ident));
-    mb.with(new RWMix("Name", "name", ident, ident));
-    mb.with(new RWMix("Mechtype", "mechtype", ident, ident));
-    mb.with(new RWMix("YPosition", "y_pos", ident, ident));
-    mb.with(new RWMix("Description", "description", ident, ident));
-    mb.with(new RWMix("Mounts", "mounts", ident, ident));
-    mb.with(new RWMix("BaseStats", "stats", ident, ident));
-    mb.with(new RWMix("Traits", "traits", (x) => x.map(CreateFrameTrait), ser_many));
+    mb.with(new RWMix("ID", "id", ident_strict, ident_drop_anon_strict));
+    mb.with(new RWMix("LicenseLevel", "license_level", defn(2), ident));
+    mb.with(new RWMix("Source", "source", defs("GMS"), ident));
+    mb.with(new RWMix("Name", "name", defs("New Frame"), ident));
+    mb.with(new RWMix("Mechtype", "mechtype", def<string[]>(["Balanced"]), ident));
+    mb.with(new RWMix("YPosition", "y_pos", defn(0), ident));
+    mb.with(new RWMix("Description", "description", defs("No description"), ident));
+    mb.with(new RWMix("Mounts", "mounts", def<MountType[]>([]), ident));
+    mb.with(new RWMix("BaseStats", "stats", def_lazy<IFrameStats>(async () => _.cloneDeep(DEFAULT_STATS)), ident));
+    mb.with(new RWMix("Traits", "traits", def_empty_map(CreateFrameTrait), ser_many));
     mb.with(new RWMix("Core", "core_system", CreateCoreSystem, ser_one));
-    mb.with(new RWMix("ImageURL", "image_url", ident, ident_drop_null));
-    mb.with(new RWMix("OtherArt", "other_art", ident, ident));
+    mb.with(new RWMix("ImageURL", "image_url", defs_null(null), ident_drop_null));
+    mb.with(new RWMix("OtherArt", "other_art", def<IArtLocation[]>([]), ident));
 
-    return mb.finalize(data);
+    return mb.finalize(data, ctx);
 }
 
 function default_image(this: Frame): string {
     if (this.ImageURL) return this.ImageURL;
-    return imageManagement.getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
+    return imageManagement.getImagePath(ImageTag.Frame, `${this.FrameID}.png`, true);
 }

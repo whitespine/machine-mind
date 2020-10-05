@@ -7,7 +7,6 @@
 export * from "@/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
 export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
-export * from "./classes/enums";
 export { Action, CreateAction } from "./classes/Action";
 export { Bonus, CreateBonus } from "./classes/Bonus";
 export { Deployable, CreateDeployable, Deployed, CreateDeployed } from "./classes/Deployable";
@@ -25,7 +24,7 @@ import { MechSystem, CreateMechSystem } from "./classes/mech/MechSystem";
 export { WeaponMod } from "./classes/mech/WeaponMod";
 import { MechWeapon, CreateMechWeapon } from "./classes/mech/MechWeapon";
 export type MechEquipment = MechSystem | MechWeapon;
-export { MechWeapon, MechSystem, MechEquipment, CreateMechWeapon, CreateMechSystem };
+export { MechWeapon, MechSystem, CreateMechWeapon, CreateMechSystem };
 
 export { Loadout } from "./classes/Loadout";
 export { Talent, TalentRankUtil } from "./classes/pilot/Talent";

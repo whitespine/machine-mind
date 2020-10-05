@@ -18,7 +18,6 @@ export { ICoreSystemData } from "./classes/mech/CoreSystem";
 export { IDeployableData } from "./classes/Deployable";
 export { IFrameData, IFrameStats } from "./classes/mech/Frame";
 export { IFrameTraitData } from "./classes/mech/FrameTrait";
-export { IMechEquipmentData } from "./classes/mech/MechEquipment";
 export { IDamageData } from "./classes/Damage";
 export { IRangeData } from "./classes/Range";
 export { IMechData } from "./classes/mech/Mech";

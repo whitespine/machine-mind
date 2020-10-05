@@ -2,7 +2,8 @@ import { DamageType, Pilot, RangeType, WeaponSize, WeaponType } from '@/class';
 import * as pmath from "parsemath";
 // Bonuses - we'll need to elaborate on these later... currently they don't work
 
-import { ident, MixBuilder, RWMix, MixLinks } from '@/mixmeta';
+import { ident, MixBuilder, RWMix, MixLinks, def_empty_map, restrict_enum } from '@/mixmeta';
+import { Registry } from './registry';
 
 // export type IBonusData = BonusSkillPoint , BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
 
@@ -99,17 +100,14 @@ export interface Bonus extends MixLinks<IBonusData> {
 }
 
 
-export function CreateBonus(data: IBonusData): Bonus {
+export async function CreateBonus(data: IBonusData, ctx: Registry): Promise<Bonus> {
     let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new RWMix("ID", "id", (x) => BonusTypeIDList.includes(x) ? x : BonusType.Unrecognized as any, ident)); 
+    b.with(new RWMix("ID", "id", restrict_enum(BonusType, BonusType.Unrecognized), ident));
     b.with(new RWMix("Value", "value", ident, ident));
 
 
     // Finalize and check. We don't fail
-    let r = b.finalize(data);
-    if(!BonusTypeIDList.includes(r.ID)) {
-      console.error(`Unrecognized bonus type ${r.ID}`);
-    }
+    let r = b.finalize(data, ctx);
     return r;
 }
 
@@ -134,5 +132,4 @@ export function Evaluate(bonus: Bonus, pilot: Pilot): number{
 
 
 // Use these for mixin shorthand elsewhere
-export const BonusesMixReader = (x: IBonusData[]  | undefined) => (x || []).map(CreateBonus);
-export const BonusesMixWriter = (x: Bonus[]) => x.map(i => i.Serialize());
+export const BonusesMixReader = def_empty_map(CreateBonus);

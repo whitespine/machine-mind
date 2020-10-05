@@ -1,12 +1,10 @@
 import { EntryType } from "@/class";
 
-import { VCompendiumItem } from "@/interface";
-import { store } from "@/hooks";
-import { MixLinks, MixBuilder, RWMix, uuid, ident } from '@/mixmeta';
-import { DEFAULT_BREW_ID } from './enums';
+import { MixLinks, MixBuilder, RWMix, uuid, ident, ser_many, ident_drop_anon, def_anon, defs, defb, ident_strict, def_empty_map, def_empty } from '@/mixmeta';
+import { Registry, VRegistryItem } from './registry';
 
 export interface ITagTemplateData {
-    id: string;
+    id?: string;
     name: string;
     description: string;
     filter_ignore?: boolean;
@@ -18,11 +16,11 @@ export interface ITagInstanceData {
     val?: string | number;
 }
 
-export interface TagTemplate extends MixLinks<ITagTemplateData>, VCompendiumItem {
+export interface TagTemplate extends MixLinks<ITagTemplateData>, VRegistryItem {
     Description: string;
     FilterIgnore: boolean;
     Hidden: boolean;
-    EntryType: EntryType.Tag;
+    EntryType: EntryType.TAG;
 }
 
 export interface TagInstance extends MixLinks<ITagInstanceData> {
@@ -30,33 +28,28 @@ export interface TagInstance extends MixLinks<ITagInstanceData> {
     Val: number | string;
 }
 
-export function CreateTagTemplate(data: ITagTemplateData | null): TagTemplate {
+export async function CreateTagTemplate(data: ITagTemplateData | null, ctx: Registry): Promise<TagTemplate> {
     let b = new MixBuilder<TagTemplate, ITagTemplateData>({
-        EntryType: EntryType.Tag,
-        Brew: DEFAULT_BREW_ID
+        EntryType: EntryType.TAG
     });
-    b.with(new RWMix("ID", "id", ident, ident));
-    b.with(new RWMix("Name", "name", ident, ident));
-    b.with(new RWMix("Description", "description", ident, ident));
-    b.with(new RWMix("FilterIgnore", "filter_ignore", ident, ident));
-    b.with(new RWMix("Hidden", "hidden", ident, ident));
-    let r = b.finalize(data);
-    return r;
+    b.with(new RWMix("ID", "id", def_anon, ident_drop_anon));
+    b.with(new RWMix("Name", "name", defs("New Tag"), ident));
+    b.with(new RWMix("Description", "description", defs("Tag description"), ident));
+    b.with(new RWMix("FilterIgnore", "filter_ignore", defb(false), ident));
+    b.with(new RWMix("Hidden", "hidden", defb(false), ident));
+    return b.finalize(data, ctx);
 }
 
-export function CreateTagInstance(data: ITagInstanceData | null): TagInstance {
+export async function CreateTagInstance(data: ITagInstanceData | null, ctx: Registry): Promise<TagInstance> {
     let b = new MixBuilder<TagInstance, ITagInstanceData>({});
-    b.with(new RWMix("TemplateID", "id", ident, ident));
-    b.with(new RWMix("Val", "val", ident, ident));
-    let r = b.finalize(data);
-    return r;
+    b.with(new RWMix("TemplateID", "id", ident_strict, ident));
+    b.with(new RWMix("Val", "val", ident_strict, ident));
+    return b.finalize(data, ctx);
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const TagTemplateMixReader = (x: ITagTemplateData[] | undefined) => (x || []).map(CreateTagTemplate);
-export const TagTemplateMixWriter = (x: TagTemplate[]) => x.map(i => i.Serialize());
-export const TagInstanceMixReader = (x: ITagInstanceData[] | undefined) => (x || []).map(CreateTagInstance);
-export const TagInstanceMixWriter = (x: TagInstance[]) => x.map(i => i.Serialize());
+export const TagTemplateMixReader = def_empty_map(CreateTagTemplate);
+export const TagInstanceMixReader = def_empty_map(CreateTagInstance);
 
 /*
     public GetDescription(addBonus?: number | null): string {

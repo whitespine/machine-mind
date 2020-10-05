@@ -104,7 +104,7 @@ export interface MixLinks<SrcType extends object> {
     Serialize(): SrcType;
 
     // Just have each mixlet read in. Return self
-    Deserialize(x: SrcType, reg_ctx: Registry): this;
+    Deserialize(x: SrcType, reg_ctx: Registry): Promise<this>;
 }
 
 // We add this into our item prior to proxying it
@@ -158,9 +158,9 @@ function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends object
     }
 
     // Just have each mixlet read in
-    target.Deserialize = (x: SrcType, reg_ctx: Registry) => {
+    target.Deserialize = async (x: SrcType, reg_ctx: Registry) => {
         for(let m of target._mix_list) {
-            m.load(x, reg_ctx);
+            await m.load(x, reg_ctx);
         }
         return target;
     }
@@ -225,7 +225,7 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
     }
 
     // Finish it off. Deserialize if data provided
-    finalize(data: SrcType | null, reg_ctx: Registry): HostType {
+    async finalize(data: SrcType | null, reg_ctx: Registry): Promise<HostType> {
         // Copy the array just to remove any potential lingering "this" connotations. Hopefully js garbage collection is smart enough to ignore it, but proxies are weird
         let mix_list = [...this.mix_list];
 
@@ -240,7 +240,7 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
 
         // Deserialize
         if(data) {
-            rv.Deserialize(data, reg_ctx);
+            await rv.Deserialize(data, reg_ctx);
         }
 
         // And we done
@@ -275,7 +275,15 @@ function validate_props<T extends object>(v: T) {
 
 // Helper functions
 // Just write what you read
-export function ident<T>(t: T): T { return t; }
+export async function ident<T>(t: T): Promise<T> { return t; }
+
+// Write what you read, but if its undefined then get ANGY
+export async function ident_strict<T>(t: T | undefined): Promise<T> { 
+    if(t === undefined) {
+        throw new Error("Error: undefined mandatory field");
+    }
+    return t; 
+}
 
 // Write what you read, substitute if undefined
 export function def<T>(default_val: T): (x: T | undefined) => Promise<T> { 
@@ -292,22 +300,30 @@ type def_typed<T> =(default_val: T) => ((x: T | undefined) => Promise<T>);
 export const defs: def_typed<string> = def;
 export const defn: def_typed<number> = def;
 export const defb: def_typed<boolean> = def;
+export const defn_null: def_typed<number | null> = def;
+export const defs_null: def_typed<string | null> = def;
 
 // Use this to handle ID defaults
-export function def_anon(v: string | undefined): string | typeof ID_ANONYMOUS {
+export async function def_anon(v: string | undefined): Promise<string | typeof ID_ANONYMOUS> {
     return v || ID_ANONYMOUS    
 }
-export function ident_drop_anon(v: string | typeof ID_ANONYMOUS): string | undefined {
+export async function ident_drop_anon(v: string | typeof ID_ANONYMOUS): Promise<string | undefined> {
     if(v == ID_ANONYMOUS) {
         return undefined;
     }
     return v;
 }
+export async function ident_drop_anon_strict(v: string | typeof ID_ANONYMOUS): Promise<string> {
+    if(typeof v != "string") {
+        throw new Error("Error: Tried to commit when ID was left anonymous");
+    }
+    return v;
+}
 
 // Write what you read, lazy sub on default. Callback doesn't need to use registry
-export type RegFetcher<T> = (reg: Registry) => T;
-export function def_lazy<T>(default_val: RegFetcher<T>): (x: T | undefined, reg_ctx: Registry) => T {
-    return (x: T | undefined, reg_ctx: Registry) => {
+export type RegFetcher<T> = (reg: Registry) => Promise<T>;
+export function def_lazy<T>(default_val: RegFetcher<T>): (x: T | undefined, reg_ctx: Registry) => Promise<T> {
+    return async (x: T | undefined, reg_ctx: Registry) => {
         if(x === undefined) {
             return default_val(reg_ctx);
         } else {
@@ -316,7 +332,7 @@ export function def_lazy<T>(default_val: RegFetcher<T>): (x: T | undefined, reg_
     }
 }
 
-// ident, and get VERY angry if undefined >:(((. Use this if undef really just isn't a case we want to handle
+// Some shorthands
 
 
 // Return input, except map null to undefined
@@ -335,13 +351,13 @@ export async function ser_many<T extends {Serialize(): G}, G>(t: T[]): Promise<G
 }
 
 // Wraps a function such that it defaults its param to an empty array. Does not assume that our output will be an array, but definitely supports that
-export function def_empty<I, O>(func: (vals: Array<I>) => O): (vals: Array<I> | undefined) => Promise<O> {
-    return async (v: Array<I> | undefined) => func(v || []);
+export function def_empty<I, O>(func: (vals: Array<I>, ctx: Registry) => O): (vals: Array<I> | undefined, ctx: Registry) => Promise<O> {
+    return async (v: Array<I> | undefined, ctx: Registry) => func(v || [], ctx);
 }
 
 // Wraps a function such that it maps over an array, defaulting to an empty array if none is given
-export function def_empty_map<I, O>(func: (val: I) => O): (vals: Array<I> | undefined) => Promise<O[]> {
-    return async (v: Array<I> | undefined) => [].map(func);
+export function def_empty_map<I, O>(func: (val: I, ctx: Registry) => Promise<O>): (vals: Array<I> | undefined, ctx: Registry) => Promise<O[]> {
+    return (v: Array<I> | undefined, ctx: Registry) => Promise.all((v || []).map(v => func(v, ctx)));
 }
 
 // Easily lock into enums using restrict_enum
@@ -367,15 +383,26 @@ export async function IntegratedMixReader(integrated_keys: string[] | undefined,
     }
     return found;
 }
+export async function IntegratedMixWriter(items: VRegistryItem[]): Promise<string[]> {
+    let result: string[] = [];
+    for(let i of items) {
+        let k = i.RegistryID;
+        if(typeof k != "string") {
+            throw new Error("Oof - somehow an integrated item couldn't be found in the registry, in spite of being stored to the item. weird");
+        }
+        result.push(k);
+    }
+    return result;
+}
 
 // Re-export stuff
-export {ActionsMixReader, ActionsMixWriter, FrequencyMixReader, FrequencyMixWriter} from "@/classes/Action";
-export {BonusesMixReader, BonusesMixWriter} from "@/classes/Bonus";
-export {SynergyMixReader, SynergyMixWriter} from "@/classes/Synergy";
-export {TagInstanceMixWriter, TagTemplateMixWriter, TagTemplateMixReader, TagInstanceMixReader} from "@/classes/Tag";
-export {DeployableMixReader, DeployableMixWriter} from "@/classes/Deployable";
-export {DamagesMixReader,DamagesMixWriter } from "@/classes/Damage";
-export {RangesMixReader,RangesMixWriter } from "@/classes/Range";
-export {CountersMixReader,CountersMixWriter } from "@/classes/Counter";
+export {ActionsMixReader, FrequencyMixReader, FrequencyMixWriter} from "@/classes/Action";
+export {BonusesMixReader, } from "@/classes/Bonus";
+export {SynergyMixReader, } from "@/classes/Synergy";
+export {TagTemplateMixReader, TagInstanceMixReader} from "@/classes/Tag";
+export {DeployableMixReader, } from "@/classes/Deployable";
+export {DamagesMixReader, } from "@/classes/Damage";
+export {RangesMixReader, } from "@/classes/Range";
+export {CountersMixReader, } from "@/classes/Counter";
 
 

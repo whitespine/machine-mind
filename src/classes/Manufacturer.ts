@@ -1,10 +1,10 @@
 import { EntryType } from '@/class';
 import { imageManagement, ImageTag } from "@/hooks";
-import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
-import { VRegistryItem } from './registry;
+import { VRegistryItem } from '@/interface';
+import { defs, def_anon, ident, ident_drop_anon, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
 
 export interface IManufacturerData {
-    id: string;
+    id?: string;
     name: string;
     logo: string;
     logo_url?: string;
@@ -15,7 +15,6 @@ export interface IManufacturerData {
 }
 
 export interface Manufacturer extends MixLinks<IManufacturerData>, VRegistryItem {
-    ID: string;
     Type: EntryType.MANUFACTURER;
     Name: string;
     Description: string;
@@ -28,14 +27,14 @@ export interface Manufacturer extends MixLinks<IManufacturerData>, VRegistryItem
 
 export function CreateManufacturer(data: IManufacturerData | null): Manufacturer {
     let mb = new MixBuilder<Manufacturer, IManufacturerData>({});
-    mb.with(new RWMix("ID", "name", ident, ident));
-    mb.with(new RWMix("Name", "name", ident, ident));
-    mb.with(new RWMix("Description", "description", ident, ident));
-    mb.with(new RWMix("Logo", "logo", ident, ident));
-    mb.with(new RWMix("LogoURL", "logo_url", ident, ident));
-    mb.with(new RWMix("Light", "light", ident, ident));
-    mb.with(new RWMix("Dark", "dark", ident, ident));
-    mb.with(new RWMix("Quote", "quote", ident, ident));
+    mb.with(new RWMix("ID", "name", def_anon, ident_drop_anon));
+    mb.with(new RWMix("Name", "name", defs("New Manufacturer"), ident));
+    mb.with(new RWMix("Description", "description", defs("Manufacturer description"), ident));
+    mb.with(new RWMix("Logo", "logo", defs(""), ident));
+    mb.with(new RWMix("LogoURL", "logo_url", defs(""), ident));
+    mb.with(new RWMix("Light", "light", defs("black"), ident));
+    mb.with(new RWMix("Dark", "dark", defs("white"), ident));
+    mb.with(new RWMix("Quote", "quote", defs("you could go to 5 or 6 manufacturers, or just one"), ident));
 
     return mb.finalize(data);
 }

@@ -1,5 +1,6 @@
 import { ICounterSaveData } from "@/interface";
-import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, uuid } from "@/mixmeta";
+import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, uuid, def_empty_map, ident_strict, def, defn, defs } from "@/mixmeta";
+import { Registry } from './registry';
 
 /* eslint-disable @typescript-eslint/camelcase */
 export interface ICounterData {
@@ -30,18 +31,18 @@ export interface Counter extends MixLinks<ICounterData> {
     LoadData(data: ICounterSaveData): void;
 }
 
-export function CreateCounter(data: ICounterData) {
+export async function CreateCounter(data: ICounterData, ctx: Registry): Promise<Counter>{
     let mb = new MixBuilder<Counter, ICounterData>({
         Validate,
         Set, Reset, Increment, Decrement, SaveData, LoadData
     });
-    mb.with(new RWMix("ID", "id", ident, ident));
-    mb.with(new RWMix("Name", "name", ident, ident));
-    mb.with(new RWMix("Min", "min", ident, ident));
-    mb.with(new RWMix("Max", "max", ident, ident_drop_null));
-    mb.with(new RWMix("Default", "default_value", ident, ident));
+    mb.with(new RWMix("ID", "id", ident_strict, ident));
+    mb.with(new RWMix("Name", "name", defs("New counter"), ident));
+    mb.with(new RWMix("Min", "min", defn(0), ident));
+    mb.with(new RWMix("Max", "max", def<number | null>(null), ident_drop_null));
+    mb.with(new RWMix("Default", "default_value", defn(0), ident));
 
-    let rv = mb.finalize(data);
+    let rv = await mb.finalize(data, ctx);
 
     // Check our data. Currently errors - we should make it a bit more tolerant
     rv.Validate();
@@ -97,6 +98,4 @@ function LoadData(this: Counter, data: ICounterSaveData): void {
 
 // Mixin stuff
 
-export const CountersMixReader = (x: ICounterData[]  | undefined) =>
-    (x || []).map(CreateCounter);
-export const CountersMixWriter = (x: Counter[]) => x.map(i => i.Serialize());
+export const CountersMixReader = def_empty_map(CreateCounter);

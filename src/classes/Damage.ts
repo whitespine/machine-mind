@@ -1,6 +1,7 @@
-import { DamageType } from "@/class";
-import { ident, MixBuilder, RWMix, MixLinks, def, defb } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks,defb, def_empty_map, restrict_choices, restrict_enum } from "@/mixmeta";
 import * as pmath from "parsemath";
+import { DamageType } from './enums';
+import { Registry } from './registry';
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -11,7 +12,7 @@ export interface IDamageData {
 }
 
 export interface Damage extends MixLinks<IDamageData> {
-    Type: DamageType;
+    DType: DamageType;
     Value: string;
     // RawValue: string | number; -- we don't really case. We're just going to parse them all into a string. if someone gives us trash then they can frig off
     Override: boolean;
@@ -27,7 +28,7 @@ export interface Damage extends MixLinks<IDamageData> {
     Color(): string;
 }
 
-export function CreateDamage(data: IDamageData): Damage {
+export async function CreateDamage(data: IDamageData, ctx: Registry): Promise<Damage> {
     let mb = new MixBuilder<Damage, IDamageData>({
         Icon,
         Text,
@@ -36,12 +37,11 @@ export function CreateDamage(data: IDamageData): Damage {
         Max,
     });
     // Add our props
-    mb.with(new RWMix("Type", "type", getDamageType, ident));
-    mb.with(new RWMix("Value", "val", x => "" + x, ident)); // Coerce to strings on way in
+    mb.with(new RWMix("DType", "type", restrict_enum(DamageType, DamageType.Variable), ident));
+    mb.with(new RWMix("Value", "val", async x => "" + x, ident)); // Coerce to strings on way in
     mb.with(new RWMix("Override", "override", defb(false), ident)); // We assume not overridden
 
-    let rv = mb.finalize(data);
-    return rv;
+    return mb.finalize(data, ctx);
 }
 
 function getDamageType(str?: string ): DamageType {
@@ -74,21 +74,20 @@ function Max(this: Damage): number {
 }
 
 function Icon(this: Damage): string {
-    return `cci-${this.Type.toLowerCase()}`;
+    return `cci-${this.DType.toLowerCase()}`;
 }
 
 function DiscordEmoji(this: Damage): string {
-    return `:cc_damage_${this.Type.toLowerCase()}:`;
+    return `:cc_damage_${this.DType.toLowerCase()}:`;
 }
 
 function Color(this: Damage): string {
-    return `damage--${this.Type.toLowerCase()}`;
+    return `damage--${this.DType.toLowerCase()}`;
 }
 
 function Text(this: Damage): string {
     if (this.Override) return this.Value;
-    return `${this.Value} ${this.Type} Damage`;
+    return `${this.Value} ${this.DType} Damage`;
 }
 
-export const DamagesMixReader = (x: IDamageData[]  | undefined) => (x || []).map(CreateDamage);
-export const DamagesMixWriter = (x: Damage[]) => x.map(i => i.Serialize());
+export const DamagesMixReader = def_empty_map(CreateDamage);

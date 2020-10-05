@@ -1,6 +1,5 @@
-import lodash from "lodash";
 import * as lancerData from "@/classes/utility/typed_lancerdata";
-import {
+import type {
     Skill,
     Reserve,
     ContentPack,
@@ -18,26 +17,14 @@ import {
     PilotWeapon,
     PilotArmor,
     PilotGear,
-    TagInstance, TagTemplate,
-    License,
+    TagTemplate,
     Status,
     Environment,
-    Sitrep, PilotEquipment, Deployable, Quirk, Pilot, CreateCoreBonus
+    Sitrep, PilotEquipment, Deployable, Quirk, Pilot
 } from "@/class";
-import { logger } from "@/hooks";
-import { IContentPack } from "@/classes/ContentPack";
-import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "../store/store_module";
-import { PersistentStore } from "@/io/persistence";
 import { CORE_BREW_ID } from '@/classes/enums';
-import { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
-import { CreateFaction } from './Faction';
-import { CreateFrame } from './mech/Frame';
-import { CreateManufacturer } from './Manufacturer';
-import { CreateTagTemplate } from './Tag';
-import { CreateQuirk } from './pilot/Quirk';
-import { CreatePilot } from './pilot/Pilot';
-import { CreateDeployable } from './Deployable';
-import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './pilot/PilotEquipment';
+import type { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
+
 
 /*
 Contains logic for looking up item templates by ID, or for examining lists of options
@@ -153,6 +140,7 @@ interface LiveTypeMapping extends LiveSuper {
 
 // This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
 export type CreationFunc<T extends EntryType> = (r: RawTypeMapping[T], c: Registry) => Promise<LiveTypeMapping[T]>;
+/*
 type CreateMapper = {[key in EntryType]: CreationFunc<key>};
 const Creators: CreateMapper = {
     [EntryType.CORE_BONUS]: CreateCoreBonus,
@@ -183,6 +171,7 @@ const Creators: CreateMapper = {
     [EntryType.PILOT]: CreatePilot 
 
 }
+*/
 export abstract class RegCat<T extends EntryType> {
     // Need this to key them because we can't really identify otherwise
     cat: T;

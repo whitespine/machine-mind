@@ -1,6 +1,7 @@
-import { Rules, HASE } from "@/class";
-import { store } from "@/hooks";
-import { ident, MixBuilder, RWMix, MixLinks } from '@/mixmeta';
+import { Rules } from "@/class";
+import { ident, MixBuilder, RWMix, MixLinks, defn } from '@/mixmeta';
+import { HASE } from '../enums';
+import { Registry } from '../registry';
 
 // It's HASE, baby!
 
@@ -23,15 +24,15 @@ export interface MechSkills  extends MixLinks<IMechSkills>{
     Sum(): number;
 }
 
-export function CreateMechSkills(data: IMechSkills) {
+export function CreateMechSkills(data: IMechSkills | null, ctx: Registry) {
     let mb = new MixBuilder<MechSkills, IMechSkills>({
         Increment, Decrement, Reset, Sum
     });
-    mb.with(new RWMix("Hull", 0, ident, ident));
-    mb.with(new RWMix("Agi", 1, ident, ident));
-    mb.with(new RWMix("Sys", 2, ident, ident));
-    mb.with(new RWMix("Eng", 3, ident, ident));
-    return mb.finalize(data);
+    mb.with(new RWMix("Hull", 0, defn(0), ident));
+    mb.with(new RWMix("Agi", 1, defn(0), ident));
+    mb.with(new RWMix("Sys", 2, defn(0), ident));
+    mb.with(new RWMix("Eng", 3, defn(0), ident));
+    return mb.finalize(data, ctx);
 }
 
 

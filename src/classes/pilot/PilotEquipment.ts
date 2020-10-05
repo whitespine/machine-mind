@@ -1,6 +1,6 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, BonusesMixReader, BonusesMixWriter, def, defs } from '@/mixmeta';
+import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, BonusesMixReader, BonusesMixWriter, def, defs, def_anon, ident_drop_anon } from '@/mixmeta';
 import { EntryType, ID_ANONYMOUS, Registry, VRegistryItem } from '../registry';
 
 
@@ -67,7 +67,7 @@ export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", def(U, ident));
+    b.with(new RWMix("ID", "id", def_anon, ident_drop_anon));
     b.with(new RWMix("Name", "name", defs("New Armor"), ident));
 
     // Don't need type

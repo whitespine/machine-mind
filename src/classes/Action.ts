@@ -1,5 +1,6 @@
-import { ActivationType } from "@/class";
-import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs  } from '@/mixmeta';
+import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta';
+import { ActivationType } from './enums';
+import { Registry } from './registry';
 
 export interface IActionData {
   name: string,
@@ -34,31 +35,29 @@ export interface Action extends MixLinks<IActionData> {
   Uses: number
 }
 
-export function CreateAction(data: IActionData | null): Action {
+export async function CreateAction(data: IActionData | null, ctx: Registry): Promise<Action> {
     let b = new MixBuilder<Action, IActionData>({
       Uses: 0 // tmp value to not make validation angery
     });
 
     b.with(new RWMix("Name", "name", defs("New Action"), ident));
-    b.with(new RWMix("Activation", "activation", ActivationType.None, ident ));
-    b.with(new RWMix("Terse", "terse",  ident, ident));
-    b.with(new RWMix("Detail", "detail",  ident, ident));
-    b.with(new RWMix("Cost", "cost",  ident, ident));
+    b.with(new RWMix("Activation", "activation", restrict_enum(ActivationType, ActivationType.None), ident ));
+    b.with(new RWMix("Terse", "terse",  defs("Terse description"), ident));
+    b.with(new RWMix("Detail", "detail",  defs("Detailed description"), ident));
+    b.with(new RWMix("Cost", "cost",  defn(1), ident));
     b.with(new RWMix("Frequency", "frequency",  FrequencyMixReader, FrequencyMixWriter));
-    b.with(new RWMix("Init", "init",  ident, ident));
-    b.with(new RWMix("Trigger", "trigger",  ident, ident));
-    b.with(new RWMix("IsPilotAction", "pilot",  ident, ident));
+    b.with(new RWMix("Init", "init",  defs("Init, idk what this means lol pls halp"), ident));
+    b.with(new RWMix("Trigger", "trigger", defs("Trigger"), ident));
+    b.with(new RWMix("IsPilotAction", "pilot",  defb(false), ident));
 
     // Fix uses to match frequency (basically, refill uses to max);
-    let r = b.finalize(data);
+    let r = await b.finalize(data, ctx);
     r.Uses = r.Frequency.Uses;
     return r;
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
 export const ActionsMixReader = def_empty_map(CreateAction);
-export const ActionsMixWriter = (x: Action[]) => x.map(i => i.Serialize());
-
 
 // Represents how often / how long an action takes effect
 
@@ -112,5 +111,5 @@ export class Frequency {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const FrequencyMixReader = (x: string  | undefined) => new Frequency(x || "");
-export const FrequencyMixWriter = (x: Frequency) => x.Serialize();
+export const FrequencyMixReader = async (x: string  | undefined) => new Frequency(x || "");
+export const FrequencyMixWriter = async (x: Frequency) => x.Serialize();

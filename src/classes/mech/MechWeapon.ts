@@ -1,5 +1,5 @@
 import _ from "lodash";
-import {
+import type {
     Action,
     Bonus,
     Counter,
@@ -12,15 +12,15 @@ import {
     WeaponSize,
     WeaponType,
 } from "@/class";
-import { IDamageData, IMechEquipmentData, IRangeData, IMechWeaponSaveData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, RangesMixReader, DamagesMixReader, DamagesMixWriter, RangesMixWriter, CountersMixReader, CountersMixWriter, DeployableMixReader, BonusesMixReader, BonusesMixWriter, def_anon, defs, restrict_enum } from '@/mixmeta';
-import { getMountType, getWeaponSize, MountType, RangeType } from '../enums';
-import { EntryType, Registry, VRegistryItem } from '../registry';
+import type { IDamageData, IRangeData, IActionData, IBonusData, ICounterData, IDeployableData, ISynergyData, ITagInstanceData } from "@/interface";
+import { ActionsMixReader,ident, MixBuilder, RWMix, MixLinks, SynergyMixReader, TagInstanceMixReader, uuid, DamagesMixReader, CountersMixReader, DeployableMixReader, BonusesMixReader, def_anon, defs, restrict_enum, ser_many, ident_drop_anon, defn } from '@/mixmeta';
+import { MountType, RangeType } from '../enums';
+import type { EntryType, Registry, VRegistryItem } from '../registry';
 
 // TODO:
 // class WeaponAmmo {}
 
-export interface IMechWeaponData extends IMechEquipmentData {
+export interface IMechWeaponData {
     id?: string,
   "name": string,
   "source": string, // must be the same as the Manufacturer ID to sort correctly
@@ -48,7 +48,6 @@ export interface IMechWeaponData extends IMechEquipmentData {
 export interface MechWeapon extends MixLinks<IMechWeaponData>, VRegistryItem {
     // Fields. There are a lot - mech equips do be like that
     Type: EntryType.MECH_WEAPON;
-    ID: string;
     Name: string;
     Source: string; // MANUFACTURER NAME
     License: string; // FRAME NAME
@@ -77,18 +76,18 @@ export interface MechWeapon extends MixLinks<IMechWeaponData>, VRegistryItem {
     // Methods
 }
 
-export function CreateMechWeapon(data: IMechWeaponData | null, ctx: Registry): MechWeapon {
+export async function CreateMechWeapon(data: IMechWeaponData | null, ctx: Registry): Promise<MechWeapon> {
     let mb = new MixBuilder<MechWeapon, IMechWeaponData>({});
-    mb.with(new RWMix("ID", "id", def_anon, ident ));
+    mb.with(new RWMix("ID", "id", def_anon, ident_drop_anon ));
     mb.with(new RWMix("Name", "name", defs("New Mech Weapon"), ident));
     mb.with(new RWMix("Source", "source", defs("GMS"), ident));
     mb.with(new RWMix("License", "license", defs("EVEREST"), ident));
     mb.with(new RWMix("LicenseLevel", "license_level", defn(0), ident));
     mb.with(new RWMix("Size", "mount", restrict_enum(WeaponSize, WeaponSize.Main), ident));
     mb.with(new RWMix("Type", "type", ident, ident));
-    mb.with(new RWMix("BaseDamage", "damage", DamagesMixReader, DamagesMixWriter));
-    mb.with(new RWMix("BaseRange", "range", RangesMixReader, RangesMixWriter));
-    mb.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
+    mb.with(new RWMix("BaseDamage", "damage", DamagesMixReader, ser_many));
+    mb.with(new RWMix("BaseRange", "range", RangesMixReader, ser_many));
+    mb.with(new RWMix("Tags", "tags", TagInstanceMixReader, ser_many));
     mb.with(new RWMix("SP", "sp", ident, ident));
     mb.with(new RWMix("Description", "description", ident, ident));
     mb.with(new RWMix("Effect", "effect", ident, ident));
@@ -96,14 +95,14 @@ export function CreateMechWeapon(data: IMechWeaponData | null, ctx: Registry): M
     mb.with(new RWMix("OnHit", "on_hit", ident, ident));
     mb.with(new RWMix("OnCrit", "on_crit", ident, ident));
 
-    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
-    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
-    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
-    mb.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter));
+    mb.with(new RWMix("Actions", "actions", ActionsMixReader, ser_many));
+    mb.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, ser_many));
+    mb.with(new RWMix("Synergies", "synergies", SynergyMixReader, ser_many));
+    mb.with(new RWMix("Deployables", "deployables", DeployableMixReader, ser_many));
+    mb.with(new RWMix("Counters", "counters", CountersMixReader, ser_many));
     mb.with(new RWMix("Integrated", "integrated", ident, ident ));
 
-    return mb.finalize(data);
+    return mb.finalize(data, ctx);
 }
 
      function TotalSP(this: MechWeapon): number {

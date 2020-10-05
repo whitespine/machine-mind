@@ -1,10 +1,11 @@
 import { ActivationType, Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
-import { MixBuilder, RWMix, MixLinks, ident, CountersMixReader, CountersMixWriter, ident_drop_null, uuid } from '@/mixmeta';
-import { Action, ActionsMixReader, ActionsMixWriter } from './Action';
-import { Bonus, BonusesMixReader, BonusesMixWriter } from './Bonus';
-import { Synergy, SynergyMixReader, SynergyMixWriter } from './Synergy';
-import { ITagInstanceData, TagInstance, TagInstanceMixReader, TagInstanceMixWriter } from './Tag';
+import { MixBuilder, RWMix, MixLinks, ident, CountersMixReader, , ident_drop_null, uuid, defs, restrict_enum, restrict_choices, defn, defn_null, ser_many, ident_strict, def_empty_map } from '@/mixmeta';
+import { Action, ActionsMixReader,  } from './Action';
+import { Bonus, BonusesMixReader,  } from './Bonus';
+import { EntryType, Registry, VRegistryItem } from './registry';
+import { Synergy, SynergyMixReader,  } from './Synergy';
+import { ITagInstanceData, TagInstance, TagInstanceMixReader,  } from './Tag';
 
 export interface IDeployableData {
     name: string,
@@ -33,9 +34,10 @@ export interface IDeployableData {
     tags?: ITagInstanceData[],
 }
 
-export interface Deployable extends MixLinks<IDeployableData> {
+export interface Deployable extends MixLinks<IDeployableData>, VRegistryItem {
     Name: string,
-    Type: string, // this is for UI furnishing only,
+    Type: EntryType.DEPLOYABLE,
+    DeployableType: string, // this is for UI furnishing only. Drone, etc
     Detail: string,
     Activation: ActivationType,
     Deactivation: ActivationType,
@@ -62,36 +64,36 @@ export interface Deployable extends MixLinks<IDeployableData> {
 
 // function ident<T>(v: T): T {return v;}
 
-export function CreateDeployable(data: IDeployableData | null): Deployable {
-    let b = new MixBuilder<Deployable, IDeployableData>({});
-    b.with(new RWMix("Name", "name", ident, ident));
-    b.with(new RWMix("Type", "type", ident, ident));
-    b.with(new RWMix("Detail", "detail", ident, ident));
-    b.with(new RWMix("Activation", "activation", ident, ident));
-    b.with(new RWMix("Deactivation", "deactivation", ident, ident));
-    b.with(new RWMix("Recall", "recall", ident, ident));
-    b.with(new RWMix("Redeploy", "redeploy", ident, ident));
-    b.with(new RWMix("Size", "size", ident, ident)); // deployables tend to be smaller
-    b.with(new RWMix("Cost", "cost", ident, ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
-    b.with(new RWMix("Armor", "armor", ident, ident)); 
-    b.with(new RWMix("HP", "hp", ident, ident_drop_null)); 
-    b.with(new RWMix("Evasion", "hp", ident, ident_drop_null)); 
-    b.with(new RWMix("EDef", "edef", ident, ident_drop_null)); 
-    b.with(new RWMix("HeatCap", "heatcap", ident, ident_drop_null)); 
-    b.with(new RWMix("RepairCap", "repcap", ident, ident_drop_null)); 
-    b.with(new RWMix("SensorRange", "sensor_range", ident, ident_drop_null)); 
-    b.with(new RWMix("TechAttack", "tech_attack", ident, ident_drop_null)); 
-    b.with(new RWMix("Save", "save", ident, ident_drop_null)); 
-    b.with(new RWMix("Speed", "speed", ident, ident_drop_null)); 
-    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter)); 
-    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter)); 
-    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter)); 
-    b.with(new RWMix("Counters", "counters", CountersMixReader, CountersMixWriter)); 
-    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter)); 
+export async function CreateDeployable(data: IDeployableData | null, ctx: Registry): Promise<Deployable> {
+    let b = new MixBuilder<Deployable, IDeployableData>({
+        Type: EntryType.DEPLOYABLE
+    });
+    b.with(new RWMix("Name", "name", defs("New Deployable"), ident));
+    b.with(new RWMix("DeployableType", "type", defs("Drone"), ident));
+    b.with(new RWMix("Detail", "detail", defs("Detailed description"), ident));
+    b.with(new RWMix("Activation", "activation", restrict_enum(ActivationType, ActivationType.Quick), ident));
+    b.with(new RWMix("Deactivation", "deactivation", restrict_enum(ActivationType, ActivationType.Quick), ident));
+    b.with(new RWMix("Recall", "recall", restrict_enum(ActivationType, ActivationType.Quick), ident));
+    b.with(new RWMix("Redeploy", "redeploy", restrict_enum(ActivationType, ActivationType.Quick), ident));
+    b.with(new RWMix("Size", "size", defn(.5), ident)); // deployables tend to be smaller
+    b.with(new RWMix("Cost", "cost", defn(1), ident)); // No idea what this is - maybe charge usage (like for walking armory type systems)
+    b.with(new RWMix("Armor", "armor", defn(0), ident)); 
+    b.with(new RWMix("HP", "hp", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("Evasion", "hp", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("EDef", "edef", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("HeatCap", "heatcap", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("RepairCap", "repcap", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("SensorRange", "sensor_range", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("TechAttack", "tech_attack", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("Save", "save", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("Speed", "speed", defn_null(null), ident_drop_null)); 
+    b.with(new RWMix("Actions", "actions", ActionsMixReader, ser_many)); 
+    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, ser_many)); 
+    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, ser_many)); 
+    b.with(new RWMix("Counters", "counters", CountersMixReader, ser_many)); 
+    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, ser_many)); 
     
-
-    let r = b.finalize(data);
-    return r;
+    return b.finalize(data, ctx);
 }
 
 // function Deploy(this: Deployable, owner?: string, index?: string) {
@@ -127,16 +129,17 @@ export interface Deployed extends MixLinks<IDeployedData> {
 }
 
 // Create our deployable. Note that this doesn't object does not have any self-concept/knowledge of where it came from. It must be tracked properly with/by its corresponding deploybable
-export function CreateDeployed(data: IDeployedData | null): Deployed {
+// TODO: Rethink this in context of registries
+export async function CreateDeployed(data: IDeployedData | null, ctx: Registry): Promise<Deployed> {
     let mb = new MixBuilder<Deployed, IDeployedData>({InflictDamage});
-    mb.with(new RWMix("ID", "id", ident, ident));
-    mb.with(new RWMix("InstanceName", "assigned_name", ident, ident));
-    mb.with(new RWMix("CurrentHP", "current_hp", ident, ident));
-    mb.with(new RWMix("CurrentDuration", "current_duration", ident, ident_drop_null));
-    mb.with(new RWMix("Overshield", "overshield", ident, ident));
-    mb.with(new RWMix("Destroyed", "isDestroyed", ident, ident));
+    mb.with(new RWMix("ID", "id", ident_strict, ident));
+    mb.with(new RWMix("InstanceName", "assigned_name",ident_strict, ident));
+    mb.with(new RWMix("CurrentHP", "current_hp", ident_strict, ident));
+    mb.with(new RWMix("CurrentDuration", "current_duration", ident_strict, ident_drop_null));
+    mb.with(new RWMix("Overshield", "overshield", ident_strict, ident));
+    mb.with(new RWMix("Destroyed", "isDestroyed", ident_strict, ident));
 
-    return mb.finalize(data);
+    return mb.finalize(data, ctx);
 }
 
 function InflictDamage(this: Deployed, amt: number) {
@@ -152,5 +155,5 @@ function InflictDamage(this: Deployed, amt: number) {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const DeployableMixReader = (x: IDeployableData[] | undefined) => (x || []).map(CreateDeployable);
-export const DeployableMixWriter = (x: Deployable[]) => x.map(i => i.Serialize());
+export const DeployableMixReader = def_empty_map(CreateDeployable);
+export const DeployedMixReader = def_empty_map(CreateDeployed);
