@@ -62,7 +62,7 @@ export class RWMix<Host, HostKey extends keyof Host, Src extends object, SrcName
     }
 
     // Loads this mixlet from the specified raw data
-    public async load(from: Src, ctx: Registry) {
+    public async load(from: Partial<Src>, ctx: Registry) {
         let raw: Src[SrcName] | undefined = from[this.src_key];
         this.val = await this.reader(raw, ctx);
 
@@ -104,7 +104,7 @@ export interface MixLinks<SrcType extends object> {
     Serialize(): SrcType;
 
     // Just have each mixlet read in. Return self
-    Deserialize(x: SrcType, reg_ctx: Registry): Promise<this>;
+    Deserialize(x: Partial<SrcType>, reg_ctx: Registry): Promise<this>;
 }
 
 // We add this into our item prior to proxying it
@@ -158,7 +158,7 @@ function pour_mixlets<HostType extends MixLinks<SrcType>, SrcType extends object
     }
 
     // Just have each mixlet read in
-    target.Deserialize = async (x: SrcType, reg_ctx: Registry) => {
+    target.Deserialize = async (x: Partial<SrcType>, reg_ctx: Registry) => {
         for(let m of target._mix_list) {
             await m.load(x, reg_ctx);
         }
@@ -235,13 +235,15 @@ export class MixBuilder<HostType extends MixLinks<SrcType>, SrcType extends obje
         // Create our proxy
         let rv = new Proxy(this.host as HostType, proxy_handler);
 
+        // Deserialize. This also handles defaults
+        await rv.Deserialize(data || {}, reg_ctx); 
+
+        // Set the registry info. Registry will override as necessary on retreival
+        data.
+
+            
         // Validate
         validate_props<HostType>(rv);
-
-        // Deserialize
-        if(data) {
-            await rv.Deserialize(data, reg_ctx);
-        }
 
         // And we done
         return rv;
@@ -304,6 +306,7 @@ export const defn_null: def_typed<number | null> = def;
 export const defs_null: def_typed<string | null> = def;
 
 // Use this to handle ID defaults
+/*
 export async function def_anon(v: string | undefined): Promise<string | typeof ID_ANONYMOUS> {
     return v || ID_ANONYMOUS    
 }
@@ -319,6 +322,7 @@ export async function ident_drop_anon_strict(v: string | typeof ID_ANONYMOUS): P
     }
     return v;
 }
+*/
 
 // Write what you read, lazy sub on default. Callback doesn't need to use registry
 export type RegFetcher<T> = (reg: Registry) => Promise<T>;

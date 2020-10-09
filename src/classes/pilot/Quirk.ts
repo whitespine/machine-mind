@@ -8,7 +8,7 @@ import { DEFAULT_BREW_ID } from '../enums';
 // Data
 ///////////////////////////////////////////////////////////
 export interface IQuirkData extends ICompendiumItemData {
-  id?: string
+  id: string
   name: string, // v-html
   type: "Quirk",
   description: string,

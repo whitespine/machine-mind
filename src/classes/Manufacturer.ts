@@ -4,7 +4,7 @@ import { VRegistryItem } from '@/interface';
 import { defs, def_anon, ident, ident_drop_anon, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
 
 export interface IManufacturerData {
-    id?: string;
+    id: string;
     name: string;
     logo: string;
     logo_url?: string;

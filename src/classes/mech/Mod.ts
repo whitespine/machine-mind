@@ -3,7 +3,7 @@ import { ITagData, IDamageData, IActionData, IRangeData, IBonusData, ISynergyDat
 import { IIntegrated, IModifies } from '../registry;
 
 export interface IWeaponModData extends IIntegrated, IDeploys, ICounted, IModifies {
-  id?: string
+  id: string
   name: string,
   sp: number,
   allowed_types?: WeaponType[], // weapon types the mod CAN be applied to
@@ -25,7 +25,7 @@ export interface IWeaponModData extends IIntegrated, IDeploys, ICounted, IModifi
 
 
 export interface ISystemModData {
-  id?: string
+  id: string
   name: string,
   sp: number,
   allowed_types?: SystemType[], // system types the mod CAN be applied to

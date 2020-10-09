@@ -1,8 +1,9 @@
-import { ActivationType, Counter } from '@/class';
+import { Counter } from '@/class';
 import { IActionData, IBonusData, ISynergyData, ICounterData } from '@/interface';
-import { MixBuilder, RWMix, MixLinks, ident, CountersMixReader, , ident_drop_null, uuid, defs, restrict_enum, restrict_choices, defn, defn_null, ser_many, ident_strict, def_empty_map } from '@/mixmeta';
+import { MixBuilder, RWMix, MixLinks, ident, CountersMixReader, ident_drop_null, uuid, defs, restrict_enum, restrict_choices, defn, defn_null, ser_many, ident_strict, def_empty_map } from '@/mixmeta';
 import { Action, ActionsMixReader,  } from './Action';
 import { Bonus, BonusesMixReader,  } from './Bonus';
+import { ActivationType } from './enums';
 import { EntryType, Registry, VRegistryItem } from './registry';
 import { Synergy, SynergyMixReader,  } from './Synergy';
 import { ITagInstanceData, TagInstance, TagInstanceMixReader,  } from './Tag';
@@ -34,7 +35,7 @@ export interface IDeployableData {
     tags?: ITagInstanceData[],
 }
 
-export interface Deployable extends MixLinks<IDeployableData>, VRegistryItem {
+export interface Deployable extends VRegistryItem<IDeployableData>{
     Name: string,
     Type: EntryType.DEPLOYABLE,
     DeployableType: string, // this is for UI furnishing only. Drone, etc
@@ -155,5 +156,5 @@ function InflictDamage(this: Deployed, amt: number) {
 }
 
 // Use these for mixin shorthand elsewhere in items that have many actions
-export const DeployableMixReader = def_empty_map(CreateDeployable);
-export const DeployedMixReader = def_empty_map(CreateDeployed);
+// export const DeployableMixReader = def_empty_map(CreateDeployable);
+// export const DeployedMixReader = def_empty_map(CreateDeployed);

@@ -1,5 +1,5 @@
 import { def, defs, def_lazy, ident, ident_drop_null, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
-import { VRegistryItem } from '@/classes/registry';
+import { Registry, VRegistryItem } from '@/classes/registry';
 
 export interface IFactionData {
     id: string;
@@ -18,7 +18,7 @@ export interface Faction extends MixLinks<IFactionData>, VRegistryItem{
     LogoURL: string | null;
     Color: string;
 }
-export function CreateFaction(data: IFactionData | null): Faction {
+export async function CreateFaction(data: IFactionData | null, ctx: Registry): Promise<Faction> {
     let mb = new MixBuilder<Faction, IFactionData>({});
     mb.with(new RWMix("ID", "name", def_lazy(uuid), ident));
     mb.with(new RWMix("Name", "name", defs("New Faction"), ident));
@@ -27,6 +27,6 @@ export function CreateFaction(data: IFactionData | null): Faction {
     mb.with(new RWMix("LogoURL", "logo_url", defs(""), ident_drop_null));
     mb.with(new RWMix("Color", "color", defs("grey"), ident));
 
-    return mb.finalize(data);
+    return await mb.finalize(data, ctx);
 }
 

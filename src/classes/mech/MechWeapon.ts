@@ -21,7 +21,7 @@ import type { EntryType, Registry, VRegistryItem } from '../registry';
 // class WeaponAmmo {}
 
 export interface IMechWeaponData {
-    id?: string,
+    id: string,
   "name": string,
   "source": string, // must be the same as the Manufacturer ID to sort correctly
   "license": string, // reference to the Frame name of the associated license

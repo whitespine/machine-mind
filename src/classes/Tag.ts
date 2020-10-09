@@ -4,7 +4,7 @@ import { MixLinks, MixBuilder, RWMix, uuid, ident, ser_many, ident_drop_anon, de
 import { Registry, VRegistryItem } from './registry';
 
 export interface ITagTemplateData {
-    id?: string;
+    id: string;
     name: string;
     description: string;
     filter_ignore?: boolean;

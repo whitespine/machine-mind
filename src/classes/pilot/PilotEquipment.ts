@@ -1,16 +1,17 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, , DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid, BonusesMixReader, BonusesMixWriter, def, defs, def_anon, ident_drop_anon } from '@/mixmeta';
-import { EntryType, ID_ANONYMOUS, Registry, VRegistryItem } from '../registry';
+import { ActionsMixReader, DeployableMixReader, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, SynergyMixReader, TagInstanceMixReader, uuid, BonusesMixReader, defs, def_anon, ident_drop_anon, def, ident_drop_anon_strict, DamagesMixReader, ser_many } from '@/mixmeta';
+import { EntryType, ID_ANONYMOUS, Registry, RegistryReference, VRegistryItem } from '../registry';
 
 
 ///////////////////////////////////////////////////////////
 // Data
 ///////////////////////////////////////////////////////////
 export type IPilotEquipmentData = IPilotWeaponData | IPilotArmorData | IPilotGearData;
+export type PackedPilotEquipmentData = PackedPilotWeaponData | PackedPilotArmorData | PackedPilotGearData;
 export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
-export interface IPilotWeaponData {
-  id?: string
+export interface RegistryPilotWeaponData {
+  id: string
   name: string, // v-html
   type: "Weapon",
   description: string,
@@ -20,11 +21,13 @@ export interface IPilotWeaponData {
   actions?: IActionData[], // these are only available to UNMOUNTED pilots
   bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   synergies?: ISynergyData[];
-  deployables?: IDeployableData[];
+  deployables?: RegistryReference<EntryType.DEPLOYABLE>[];
 }
+// Packed bundles items
+export type PackedPilotWeaponData = Omit<RegistryPilotWeaponData, "deployables"> & {deployables: IDeployableData[]};
 
-export interface IPilotArmorData  {
-  id?: string,
+export interface RegistryPilotArmorData  {
+  id: string,
   "name": string, // v-html
   "type": "Armor",
   "description": string,
@@ -32,11 +35,12 @@ export interface IPilotArmorData  {
   "actions"?: IActionData[], // these are only available to UNMOUNTED pilots
   "bonuses"?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   "synergies"?: ISynergyData[],
-  "deployables"?: IDeployableData[], // these are only available to UNMOUNTED pilots
+  deployables?: RegistryReference<EntryType.DEPLOYABLE>[];// these are only available to UNMOUNTED pilots
 }
+export type PackedPilotArmorData = Omit<RegistryPilotArmorData, "deployables"> & {deployables: IDeployableData[]};
 
-export interface IPilotGearData {
-  id?: string
+export interface RegistryPilotGearData {
+  id: string
   name: string, // v-html
   type: "Gear",
   description: string,
@@ -44,14 +48,17 @@ export interface IPilotGearData {
   actions?: IActionData[], // these are only available to UNMOUNTED pilots
   bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   synergies?: ISynergyData[],
-  deployables?: IDeployableData[], // these are only available to UNMOUNTED pilots
+  deployables?: RegistryReference<EntryType.DEPLOYABLE>[];// these are only available to UNMOUNTED pilots
 }
+export type PackedPilotGearData = Omit<RegistryPilotArmorData, "deployables"> & {deployables: IDeployableData[]};
 
 /////////////////////////////////////////////////////////
 // Classes
 /////////////////////////////////////////////////////////
 
-export interface PilotArmor extends MixLinks<IPilotArmorData>, VRegistryItem {
+export interface PilotArmor extends VRegistryItem<RegistryPilotArmorData> {
+    Name: string;
+    MMID: string;
   Tags: TagInstance[],
   Actions: Action[],
   Bonuses: Bonus[],
@@ -60,28 +67,30 @@ export interface PilotArmor extends MixLinks<IPilotArmorData>, VRegistryItem {
   Type: EntryType.PILOT_ARMOR
 }
 
-export function CreatePilotArmor(data: IPilotArmorData | null): PilotArmor {
+export function CreatePilotArmor(data: RegistryPilotArmorData | null): PilotArmor {
     // Init with deduced cc props
-    let b = new MixBuilder<PilotArmor, IPilotArmorData>({
+    let b = new MixBuilder<PilotArmor, RegistryPilotArmorData>({
         Type: EntryType.PILOT_ARMOR
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", def_anon, ident_drop_anon));
+    b.with(new RWMix("MMID", "id", def_anon, ident_drop_anon));
     b.with(new RWMix("Name", "name", defs("New Armor"), ident));
 
     // Don't need type
-    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
-    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, ser_many));
+    b.with(new RWMix("Actions", "actions", ActionsMixReader, ser_many));
+    b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, ser_many));
+    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, ser_many));
+    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, ser_many));
 
     let r = b.finalize(data, ctx);
     return r;
 }
 
-export interface PilotGear extends MixLinks<IPilotGearData>, VRegistryItem {
+export interface PilotGear extends VRegistryItem<IPilotGearData> {
+    Name: string;
+    MMID: string;
     Tags: TagInstance[];
     Actions: Action[]; // these are only available to UNMOUNTED pilots
     Bonuses: Bonus[]; // these bonuses are applied to the pilot, not parent system
@@ -97,7 +106,7 @@ export async function CreatePilotGear(data: IPilotGearData | null, ctx: Registry
     });
 
     // Mixin the rest
-    b.with(new RWMix("ID", "id", ident, ident));
+    b.with(new RWMix("MMID", "id", ident, ident));
     b.with(new RWMix("Name", "name", ident, ident));
 
     b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
@@ -110,8 +119,10 @@ export async function CreatePilotGear(data: IPilotGearData | null, ctx: Registry
     return r;
 }
 
-export interface PilotWeapon extends MixLinks<IPilotWeaponData>, VRegistryItem {
-    Effect: string
+export interface PilotWeapon extends VRegistryItem<IPilotWeaponData>  {
+Name: string;
+    MMID: string;
+    Effect: string;
     Tags: TagInstance[];
     Range: Range[];
     Damage: Damage[];
@@ -129,18 +140,18 @@ export function CreatePilotWeapon(data: IPilotWeaponData | null): PilotWeapon {
     });
 
     // Mostly the same as the others
-    b.with(new RWMix("ID", "id", ident, ident));
-    b.with(new RWMix("Name", "name", ident, ident));
+    b.with(new RWMix("MMID", "id", def_anon, ident_drop_anon));
+    b.with(new RWMix("Name", "name", defs("New Pilot Weapon"), ident));
 
     b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
     b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
     b.with(new RWMix("Bonuses", "bonuses", BonusesMixReader, BonusesMixWriter));
     b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
+    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, ser_many));
 
     // Mixin Range and damage
-    b.with(new RWMix("Damage", "damage", DamagesMixReader, DamagesMixWriter));
-    b.with(new RWMix("Range", "range", RangesMixReader, RangesMixWriter));
+    b.with(new RWMix("Damage", "damage", DamagesMixReader, ser_many));
+    b.with(new RWMix("Range", "range", RangesMixReader, ser_many));
 
     let r = b.finalize(data);
     return r;

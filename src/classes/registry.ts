@@ -24,6 +24,7 @@ import type {
 } from "@/class";
 import { CORE_BREW_ID } from '@/classes/enums';
 import type { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
+import { def_empty_map, MixLinks } from '@/mixmeta';
 
 
 /*
@@ -64,17 +65,69 @@ export enum EntryType {
 }
 
 // Use this constant for if we do not yet know what to populate the ID field with.
-export const REGID_UNSET = Symbol("unset");
 export const ID_ANONYMOUS = Symbol("anon");
-export interface VRegistryItem {
-    readonly ID: string | typeof ID_ANONYMOUS; // Null if not from a content pack. Note that this is _NOT_ the id in the registry, at least not always
-    readonly Name: string;
+
+// Takes mixlinks ever so slightly further by requiring a type and a machine-mind ID
+// If something is going to be stored in the registry AND require serialization/deserialization from there, use this
+export interface VRegistryItem<I extends object> extends MixLinks<I>{
     readonly Type: EntryType;
-    readonly Brew: string;
-    readonly RegistryID: string | typeof REGID_UNSET;
+    // MMID: string | typeof ID_ANONYMOUS; // Anonymous if not from a content pack and hasn't been explicitly named. Note that this is _NOT_ the id in the registry
 }
 
-export const FILEKEY_CONTENT_PACKS = "extra_content.json";
+// A reference to another entry in the registry.
+export interface RegistryReference<T extends EntryType> { // We don't care super much about anything else
+    type: T;
+    registry_id: string;
+}
+
+// Holds a live version of an item, wrapping it in metadata so we know where it came from
+export class RegistryHandle<T extends EntryType> { // We don't care super much about anything else
+    readonly registry_id: string; // This is the actual ID used for lookup
+    // readonly Brew: string; // todo
+    readonly registry: Registry;
+    item: LiveTypeMapping[T];
+
+    // Construct our handle. No side effects
+    constructor(id: string, registry: Registry, item: LiveTypeMapping[T]) {
+        this.registry_id = id;
+        this.registry = registry;
+        this.item = item;
+    }
+
+    // Asks our registry to delete us. Return our wrapped item
+    async delete(): Promise<LiveTypeMapping[T]> {
+        await this.registry.get_cat(this.item.Type).delete_id(this.registry_id);
+        return this.item;
+    }
+}
+
+
+// Use these for fetching registry references in other registry items
+export async function RegistryFetcher<T extends EntryType>(refs: RegistryReference<T>[], reg: Registry): Promise<RegistryHandle<T>[]> {
+    let fetched: RegistryHandle<T>[] = [];
+    for(let r of refs) {
+        let f = await reg.get_cat(r.type).get_live(r.registry_id);
+        if(f === null) {
+            console.error(`Failed to recover registry ref id ${r.type}[${r.registry_id}]`);
+        } else {
+            fetched.push(f);
+        }
+    }
+    return fetched;
+}
+
+export async function RegistrySaver<T extends EntryType>(refs: RegistryHandle<T>[], reg: Registry): Promise<RegistryHandle<T>[]> {
+    let fetched: RegistryHandle<T>[] = [];
+    for(let r of refs) {
+        let f = await reg.get_cat(r.type).get_live(r.registry_id);
+        if(f === null) {
+            console.error(`Failed to recover registry ref id ${r.type}[${r.registry_id}]`);
+        } else {
+            fetched.push(f);
+        }
+    }
+    return fetched;
+}
 
 // We use this mapping to map Entry items to raw data types
 type RawSuper = {[key in EntryType]: any};
@@ -108,7 +161,7 @@ interface RawTypeMapping extends RawSuper{
 }
 
 // We use this mapping to map Entry items to raw data types
-type LiveSuper = {[key in EntryType]: VRegistryItem};
+type LiveSuper = {[key in EntryType]: VRegistryItem<any>};
 interface LiveTypeMapping extends LiveSuper {
     [EntryType.CORE_BONUS]: CoreBonus;
     [EntryType.FACTION]: Faction;
@@ -140,38 +193,7 @@ interface LiveTypeMapping extends LiveSuper {
 
 // This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
 export type CreationFunc<T extends EntryType> = (r: RawTypeMapping[T], c: Registry) => Promise<LiveTypeMapping[T]>;
-/*
-type CreateMapper = {[key in EntryType]: CreationFunc<key>};
-const Creators: CreateMapper = {
-    [EntryType.CORE_BONUS]: CreateCoreBonus,
-    [EntryType.FACTION]: CreateFaction,
-    [EntryType.FRAME]: CreateFrame,
-    [EntryType.MANUFACTURER]: CreateManufacturer,
-    [EntryType.NPC_CLASS]: CreateNpcClass,
-    [EntryType.NPC_TEMPLATE]: CreateNpcTemplate,
-    [EntryType.NPC_FEATURE]: CreateNpcFeature,
-    [EntryType.WEAPON_MOD]: CreateWeaponMod,
-    [EntryType.MECH_WEAPON]: MechWeapon,
-    [EntryType.MECH_SYSTEM]: MechSystem,
-    [EntryType.TALENT]: CreateTalent,
-    [EntryType.SKILL]: CreateSkill,
-    [EntryType.RESERVE]: CreateReserve,
-    [EntryType.ENVIRONMENT]: CreateEnvironment,
-    [EntryType.SITREP]: CreateSitrep,
-    [EntryType.TAG]: CreateTagTemplate,
-    // [EntryType.LICENSE]: License ;
-    [EntryType.PILOT_GEAR]: CreatePilotGear ,
-    [EntryType.PILOT_ARMOR]: CreatePilotArmor ,
-    [EntryType.PILOT_WEAPON]: CreatePilotWeapon ,
-    [EntryType.PILOT_EQUIPMENT]: CreatePilotEquipment ,
-    [EntryType.STATUS]: Status ,
-    [EntryType.CONDITION]: CreateStatus ,
-    [EntryType.DEPLOYABLE]: CreateDeployable ,
-    [EntryType.QUIRK]: CreateQuirk ,
-    [EntryType.PILOT]: CreatePilot 
 
-}
-*/
 export abstract class RegCat<T extends EntryType> {
     // Need this to key them because we can't really identify otherwise
     cat: T;
@@ -195,43 +217,37 @@ export abstract class RegCat<T extends EntryType> {
     abstract async list_raw(): Promise<Array<RawTypeMapping[T]>>;
 
     // Instantiates a live interface of the specific raw item. 
-    abstract async get_live(id: string): Promise<LiveTypeMapping[T] | null>;
+    abstract async get_live(id: string): Promise<RegistryHandle<T> | null>;
 
     // Instantiates live interfaces of the specified category. Slightly expensive
-    abstract async list_live(): Promise<Array<LiveTypeMapping[T]>>;
+    abstract async list_live(): Promise<Array<RegistryHandle<T>>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
     // Should NOT accept new items, as we don't know that they will play nice with 
-    abstract async update(...vals: Array<LiveTypeMapping[T]>): Promise<void>;
+    abstract async update(...vals: Array<RegistryHandle<T>>): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
     // reason for returning live is for if you want to do any post-mortem actions, such as display a helpful message, and don't want to parse
-    abstract async delete_id(id: string): Promise<LiveTypeMapping[T] | null>;
-
-    // Delete the given item. Returns success (failure indicates it was unable to find itself for deletion)
-    async delete_live(v: LiveTypeMapping[T]): Promise<boolean> {
-        let typed_v: VRegistryItem = v;
-        return !!this.delete_id(typed_v.ID);
-    }
+    abstract async delete_id(id: string): Promise<RegistryHandle<T> | null>;
 
     // Call this only if the registry categories aren't polling from some external source
-    // Returns the list of added ids
-    abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<string[]>;
+    // Returns them with handles
+    abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<RegistryHandle<T>[]>;
 }
 
 export class Registry {
     handlers: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately
 
     // Puts a single value. Gives back the put item's ID
-    async create(val: VRegistryItem): Promise<string>  {
+    async create(val: VRegistryItem<any>): Promise<string>  {
         let cat = this.get_cat(val.Type);
         return (await cat.create(val))[0];
     }
 
     // Call this only if the registry categories aren't polling from some external source
-    async create_many(...vals: VRegistryItem[]): Promise<void>  {
+    async create_many(...vals: VRegistryItem<any>[]): Promise<void>  {
         // As a courtesy / optimization measure, we categorize these first, then send in batches
-        let groupings = new Map<EntryType, Array<VRegistryItem>>();
+        let groupings = new Map<EntryType, Array<VRegistryItem<any>>>();
         for(let v of vals) {
             if(groupings.has(v.Type)) {
                 groupings.get(v.Type)!.push(v);
@@ -244,6 +260,11 @@ export class Registry {
         for(let [k,v] of groupings.entries()) {
             this.get_cat(k).create(...v);
         }
+    }
+
+    // Delete an item, by cat + id
+    async delete(cat: EntryType, id: string) {
+        this.get_cat(cat).delete_id(id);
     }
 
     // Trivial, but can be overridden to have more advanced behaviors
@@ -267,7 +288,7 @@ export class Registry {
 
     // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
     // You should be able to figure out the type from the `Type` of the VRegistryItem
-    async get_from_anywhere(id: string): Promise<VRegistryItem | null> {
+    async get_from_anywhere(id: string): Promise<VRegistryItem<any> | null> {
         for(let [k, c] of this.handlers) {
             let v = await c.get_live(k);
             if(v) {

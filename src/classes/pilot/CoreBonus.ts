@@ -2,9 +2,11 @@ import { EntryType, Manufacturer, EquippableMount, Synergy, Bonus, Action, Regis
 
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, VRegistryItem } from "@/interface";
 import { ActionsMixReader, BonusesMixReader, def, defs, def_anon, DeployableMixReader, CountersMixReader, ident, ident_drop_anon, ident_drop_null, MixBuilder, MixLinks, RWMix, SynergyMixReader, IntegratedMixReader, ser_many, IntegratedMixWriter } from '@/mixmeta';
+import { RegistryHandle } from '../registry';
 
-export interface ICoreBonusData {
-  id?: string,
+// This is what compcon gives us. It is not what we store
+export interface PackedCoreBonusData {
+  id: string,
   "name": string,
   "source": string, // must be the same as the Manufacturer ID to sort correctly
   "effect": string, // v-html
@@ -18,7 +20,24 @@ export interface ICoreBonusData {
   "integrated"?: string[]
 }
 
-export interface CoreBonus extends MixLinks<ICoreBonusData>, VRegistryItem {
+export interface RegistryCoreBonusData {
+  id: string,
+  "name": string,
+  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  "effect": string, // v-html
+  "description": string, // v-html
+  "mounted_effect"?: string
+  "actions"?: IActionData[],
+  "bonuses"?: IBonusData[]
+  "synergies"?: ISynergyData[]
+  "deployables"?: RegistryHandle[],
+  "counters"?: ICounterData[],
+  "integrated"?: string[]
+
+
+}
+
+export interface CoreBonus extends VRegistryItem<ICoreBonusData> {
   Type: EntryType.CORE_BONUS
   Name: string;
   Source: string;
@@ -29,9 +48,9 @@ export interface CoreBonus extends MixLinks<ICoreBonusData>, VRegistryItem {
   Actions: Action[];
   Bonuses: Bonus[];
   Synergies: Synergy[];
-  Deployables: Deployable[];
+  Deployables: RegistryHandle<Deployable>[];
   Counters: Counter[];
-  Integrated: VRegistryItem[]; 
+  Integrated: RegistryHandle<any>[]; 
 }
 
 export function CreateCoreBonus(data: ICoreBonusData | null, ctx: Registry) {
@@ -39,7 +58,7 @@ export function CreateCoreBonus(data: ICoreBonusData | null, ctx: Registry) {
     let mb = new MixBuilder<CoreBonus, ICoreBonusData>({
       Type: EntryType.CORE_BONUS
     });
-    mb.with(new RWMix("ID", "id", def_anon, ident_drop_anon));
+    mb.with(new RWMix("MMID", "id", def_anon, ident_drop_anon));
     mb.with(new RWMix("Name", "name", defs("New Core Bonus"), ident));
     mb.with(new RWMix("Source", "source", defs("GMS"), ident));
     mb.with(new RWMix("Effect", "effect", defs("Unknown effect"), ident));

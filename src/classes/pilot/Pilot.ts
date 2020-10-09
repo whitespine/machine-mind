@@ -12,7 +12,6 @@ import {
     Talent,
     CoreBonus,
     Mech,
-    CustomSkill,
     Organization,
     ContentPack,
     Faction, 
@@ -23,8 +22,10 @@ import { ICounterData, IActionData, IMechData, IMechState, IOrganizationData, IR
 import { store } from "@/hooks";
 import { ActiveState } from "../mech/ActiveState";
 import { MixLinks, MixBuilder, RWMix, ident, ser_many } from '@/mixmeta';
-import { VCompendiumItem } from '../registry;
 import { CreateMechSkills } from './MechSkills';
+import { VRegistryItem } from '../registry';
+
+// Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
 export interface IPilotData {
     id: string;
@@ -64,19 +65,19 @@ export interface IPilotData {
     brews: string[];
     state?: IMechState;
 }
-export interface Pilot extends MixLinks<IPilotData> {
-    ID: string;
-
-    Callsign: string;
+export interface Pilot extends MixLinks<IPilotData>, VRegistryItem {
+    // Identity
     Name: string;
+    Callsign: string;
     PlayerName: string;
-
     Background: string;
     Notes: string;
     History: string;
     Portrait: string;
     TextAppearance: string;
-    Quirk: string;
+
+    // Quirk: string; -- we remove this, as we now store quirks as items
+    Quirk: 
 
     Group: string;
     SortIndex: number;

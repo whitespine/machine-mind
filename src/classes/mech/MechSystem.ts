@@ -5,7 +5,7 @@ import { Counter } from '../Counter';
 import { MixBuilder, MixLinks } from '@/mixmeta';
 
 export interface IMechSystemData  {
-    id?: string,
+    id: string,
     "name": string,
     "source": string, // must be the same as the Manufacturer ID to sort correctly
     "license": string, // reference to the Frame name of the associated license
