@@ -27,7 +27,7 @@ import { VRegistryItem } from '../registry';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
-export interface IPilotData {
+export interface PackedPilotData {
     id: string;
     campaign: string;
     group: string;

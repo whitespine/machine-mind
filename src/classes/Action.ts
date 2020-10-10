@@ -1,4 +1,5 @@
 import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta';
+import { SimSer } from '@/new_meta';
 import { ActivationType } from './enums';
 import { Registry } from './registry';
 
@@ -22,7 +23,7 @@ export enum ActivePeriod {
   Unlimited = 'Unlimited',
 }
 
-export interface Action extends MixLinks<IActionData> {
+export class Action extends SimSer<IActionData> {
   Name: string;
   Activation: ActivationType;
   Terse: string;
