@@ -1,18 +1,19 @@
 import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta';
-import { SimSer } from '@/new_meta';
+import { SerUtil, SimSer } from '@/new_meta';
 import { ActivationType } from './enums';
-import { Registry } from './registry';
 
-export interface IActionData {
-  name: string,
-  activation: ActivationType,
-  cost?: number,
-  frequency?: string ,
-  init?: string ,
-  trigger?: string,
-  terse?: string , // terse text used in the action menu. The fewer characters the better.
-  detail: string, // v-html
-  pilot?: boolean  // Only available while unmounted
+interface IActionData {
+  id?: string // For synergies and stuff like that
+  name: string
+  activation: ActivationType
+  cost?: number
+  frequency?: string
+  init?: string
+  trigger?: string
+  terse?: string
+  detail: string
+  pilot?: boolean
+  sub_actions?: IActionData[]
 }
 
 export enum ActivePeriod {
@@ -24,61 +25,68 @@ export enum ActivePeriod {
 }
 
 export class Action extends SimSer<IActionData> {
-  Name: string;
-  Activation: ActivationType;
-  Terse: string;
-  Detail: string;
-  Cost: number;
-  Frequency: Frequency;
-  Init: string;
-  Trigger: string;
-  IsPilotAction: boolean;
-  Uses: number
+  ID!: string | null;
+  Name!: string;
+  Activation!: ActivationType;
+  Terse!: string | null;
+  Detail!: string;
+  Cost!: number | null;
+  Frequency!: Frequency;
+  Init!: string | null; // This describes the conditions under which this action becomes available (e.g. activate mimic mesh to get battlefield awareness
+  Trigger!: string | null; // What sets this reaction off, if anything
+  SubActions!: Action[];
+
+  protected load(data: IActionData): void {
+    this.ID 
+    this.Name = data.name;
+    this.Activation = SerUtil.restrict_enum(ActivationType, ActivationType.None, data.activation);
+    this.Terse = data.terse ||null; 
+    this.Detail = data.detail;
+    this.Cost = data.cost || null;
+    this.Frequency = new Frequency(data.frequency || "");  
+    this.Init = data.init || null; 
+    this.Trigger = data.trigger || null; 
+    this.SubActions = (data.sub_actions || []).map(x => new Action(x));
+  }
+
+  public save(): IActionData {
+    return {
+      id: this.ID || undefined,
+      name: this.Name,
+      activation: this.Activation,
+      terse: this.Terse || undefined,
+      detail: this.Detail ,
+      cost: this.Cost || undefined,
+      frequency: this.Frequency.ToString(),
+      init: this.Init || undefined,
+      trigger: this.Trigger || undefined,
+      sub_actions: this.SubActions.map(x => x.save())
+    }
+  }
 }
 
-export async function CreateAction(data: IActionData | null, ctx: Registry): Promise<Action> {
-    let b = new MixBuilder<Action, IActionData>({
-      Uses: 0 // tmp value to not make validation angery
-    });
-
-    b.with(new RWMix("Name", "name", defs("New Action"), ident));
-    b.with(new RWMix("Activation", "activation", restrict_enum(ActivationType, ActivationType.None), ident ));
-    b.with(new RWMix("Terse", "terse",  defs("Terse description"), ident));
-    b.with(new RWMix("Detail", "detail",  defs("Detailed description"), ident));
-    b.with(new RWMix("Cost", "cost",  defn(1), ident));
-    b.with(new RWMix("Frequency", "frequency",  FrequencyMixReader, FrequencyMixWriter));
-    b.with(new RWMix("Init", "init",  defs("Init, idk what this means lol pls halp"), ident));
-    b.with(new RWMix("Trigger", "trigger", defs("Trigger"), ident));
-    b.with(new RWMix("IsPilotAction", "pilot",  defb(false), ident));
-
-    // Fix uses to match frequency (basically, refill uses to max);
-    let r = await b.finalize(data, ctx);
-    r.Uses = r.Frequency.Uses;
-    return r;
-}
-
-// Use these for mixin shorthand elsewhere in items that have many actions
-export const ActionsMixReader = def_empty_map(CreateAction);
-
-// Represents how often / how long an action takes effect
-
-const InfiniteUses: number = Number.MAX_SAFE_INTEGER;
-export class Frequency {
-  //  Default integer
-  public Uses: number = InfiniteUses;
-  public Duration: ActivePeriod = ActivePeriod.Unlimited;
+class Frequency {
+  public readonly Uses: number
+  public readonly Duration: ActivePeriod
+  private _unlimited: boolean = false;
 
   public constructor(frq: string) {
-    if (frq && !frq.includes('/')) {
+    if (!frq || !frq.includes('/')) {
+      this.Uses = Number.MAX_SAFE_INTEGER
+      this.Duration = ActivePeriod.Unlimited
+      this._unlimited = true
+    } else {
       const fArr = frq.split('/')
       const num = parseInt(fArr[0])
 
-      // If valid number, set uses, else return
       if (!Number.isNaN && Number.isInteger(num)) {
         this.Uses = num
-      } else return;
+      } else {
+        this.Uses = Number.MAX_SAFE_INTEGER
+        this.Duration = ActivePeriod.Unlimited
+        this._unlimited = true
+      }
 
-      // Parse the / {freq}
       switch (fArr[1].toLowerCase()) {
         case 'turn':
           this.Duration = ActivePeriod.Turn
@@ -94,23 +102,16 @@ export class Frequency {
           this.Duration = ActivePeriod.Mission
           break
         default:
-          // Failed to parse. leave duration as is, and reset uses to invinite
-          this.Uses = InfiniteUses;
+          this.Uses = Number.MAX_SAFE_INTEGER
+          this.Duration = ActivePeriod.Unlimited
+          this._unlimited = true
           break
       }
     }
   }
 
-  public Serialize(): string | undefined {
-    if(this.Duration != ActivePeriod.Unlimited) {
-      return `${this.Uses} / ${this.Duration}`
-    } else {
-      return undefined
-    }
-
+  public ToString(): string {
+    if (this._unlimited) return this.Duration
+    return `${this.Uses}/${this.Duration}`
   }
 }
-
-// Use these for mixin shorthand elsewhere in items that have many actions
-export const FrequencyMixReader = async (x: string  | undefined) => new Frequency(x || "");
-export const FrequencyMixWriter = async (x: Frequency) => x.Serialize();

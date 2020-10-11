@@ -1,7 +1,7 @@
-import { ident, MixBuilder, RWMix, MixLinks,defb, def_empty_map, restrict_choices, restrict_enum } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks,defb, def_empty_map  } from "@/mixmeta";
+import { SimSer } from '@/new_meta';
 import * as pmath from "parsemath";
 import { DamageType } from './enums';
-import { Registry } from './registry';
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -11,21 +11,31 @@ export interface IDamageData {
     override?: boolean; // If player can set the damage of this, I guess????
 }
 
-export interface Damage extends MixLinks<IDamageData> {
-    DType: DamageType;
-    Value: string;
+export class Damage extends SimSer<IDamageData> {
+    DamageType!: DamageType;
+    Value!: string;
     // RawValue: string | number; -- we don't really case. We're just going to parse them all into a string. if someone gives us trash then they can frig off
-    Override: boolean;
+    // Override: boolean; - this is encapsulated by the fact
 
     // Methods / getters
     // Computes the maximum damage of this weapon (e.g. for brutal)
-    Max(): number;
 
     // Vaarious formatting options
-    Icon(): string;
-    Text(): string;
-    DiscordEmoji(): string;
-    Color(): string;
+    get Icon(): string {
+        return `cci-${this.DamageType.toLowerCase()}`;
+    }
+get Text(): string {
+    return `${this.Value} ${this.DamageType} Damage`;
+}
+
+    
+    protected load(data: IDamageData): void {
+        this.DamageType = restrict_enum(DamageType, DamageType.Kinetic, data.type);
+        throw new Error('Method not implemented.');
+    }
+    public save(): IDamageData {
+        throw new Error('Method not implemented.');
+    }
 }
 
 export async function CreateDamage(data: IDamageData, ctx: Registry): Promise<Damage> {
@@ -44,21 +54,6 @@ export async function CreateDamage(data: IDamageData, ctx: Registry): Promise<Da
     return mb.finalize(data, ctx);
 }
 
-function getDamageType(str?: string ): DamageType {
-    switch (str?.toLowerCase()) {
-        case "kinetic":
-            return DamageType.Kinetic;
-        case "energy":
-            return DamageType.Energy;
-        case "explosive":
-            return DamageType.Explosive;
-        case "heat":
-            return DamageType.Heat;
-        case "burn":
-            return DamageType.Burn;
-    }
-    return DamageType.Variable;
-}
 
 //TODO: replace with dicemath (PS: This is a beef todo. I dunno what it means
 function Max(this: Damage): number {
@@ -73,21 +68,14 @@ function Max(this: Damage): number {
     }
 }
 
-function Icon(this: Damage): string {
-    return `cci-${this.DType.toLowerCase()}`;
-}
 
 function DiscordEmoji(this: Damage): string {
     return `:cc_damage_${this.DType.toLowerCase()}:`;
 }
 
-function Color(this: Damage): string {
-    return `damage--${this.DType.toLowerCase()}`;
-}
+// function Color(this: Damage): string {
+    // return `damage--${this.DType.toLowerCase()}`;
+// }
 
-function Text(this: Damage): string {
-    if (this.Override) return this.Value;
-    return `${this.Value} ${this.DType} Damage`;
-}
 
 export const DamagesMixReader = def_empty_map(CreateDamage);

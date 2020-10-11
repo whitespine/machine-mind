@@ -1,101 +1,89 @@
-import { ICounterSaveData } from "@/interface";
-import { ident, ident_drop_null, MixBuilder, RWMix, MixLinks, uuid, def_empty_map, ident_strict, def, defn, defs } from "@/mixmeta";
-import { Registry } from './registry';
+import { bound_int } from "@/funcs";
+import { SimSer } from "@/new_meta";
 
 /* eslint-disable @typescript-eslint/camelcase */
-export interface ICounterData {
+export interface PackedCounterData {
     id: string;
     name: string;
-    min?: number ;
+    level?: number;
+    min?: number;
     max?: number;
     default_value?: number;
+    custom?: boolean;
 }
 
-export interface Counter extends MixLinks<ICounterData> {
-    ID: string;
-    Name: string;
-    Min: number;
-    Max: number | null;
-    Default: number;
-
-    // This changes over time
-    CurrentValue: number;
-
-    // Methods
-    Validate(): void;
-    Set(inputValue: number): void;
-    Reset(): void;
-    Increment(): void;
-    Decrement(): void;
-    SaveData(data: ICounterSaveData): ICounterSaveData;
-    LoadData(data: ICounterSaveData): void;
+export interface PackedCounterSaveData {
+    id: string;
+    val: number;
 }
 
-export async function CreateCounter(data: ICounterData, ctx: Registry): Promise<Counter>{
-    let mb = new MixBuilder<Counter, ICounterData>({
-        Validate,
-        Set, Reset, Increment, Decrement, SaveData, LoadData
-    });
-    mb.with(new RWMix("ID", "id", ident_strict, ident));
-    mb.with(new RWMix("Name", "name", defs("New counter"), ident));
-    mb.with(new RWMix("Min", "min", defn(0), ident));
-    mb.with(new RWMix("Max", "max", def<number | null>(null), ident_drop_null));
-    mb.with(new RWMix("Default", "default_value", defn(0), ident));
-
-    let rv = await mb.finalize(data, ctx);
-
-    // Check our data. Currently errors - we should make it a bit more tolerant
-    rv.Validate();
-    return rv;
+export interface RegCounterData extends PackedCounterData {
+    val: number;
 }
-function Validate(this: Counter) {
-    if (this.Max && this.CurrentValue > this.Max) {
-        console.error(
-            `Error in Counter: Value of ${this.CurrentValue} is greater than max value of ${this.Max}`
-        );
-        this.CurrentValue = this.Max;
+
+// This is kinda weird because I think the compcon storage strategy is kinda dumb. So, when we load, we take both the ICounterData as well as an array off ICounterSaveData
+export function unpack_counter_data(
+    packed_counters: PackedCounterData[],
+    counter_saves: PackedCounterSaveData[]
+) {
+    // Init
+    let out: RegCounterData[] = packed_counters.map(x => ({
+        ...x,
+        val: x.default_value || x.min || 0,
+    }));
+
+    // Load saves
+    for (let cnt of out) {
+        let save = counter_saves.find(y => y.id == cnt.id);
+        if (save) {
+            cnt.val = save.val;
+        }
     }
 
-    if (this.CurrentValue < this.Min) {
-        console.error(
-            `Error in Counter: Value of ${this.CurrentValue} is lesser than min value of ${this.Min}`
-        );
-        this.CurrentValue = this.Min;
+    return out;
+}
+
+export class Counter extends SimSer<RegCounterData> {
+    public ID!: string;
+    public Name!: string;
+    public Level!: number | null;
+    public Min!: number;
+    public Max!: number | null;
+    public Default!: number;
+    private _value!: number;
+
+    protected load(data: RegCounterData) {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Level = data.level || null;
+        this.Min = data.min || 0;
+        this.Max = data.max || null;
+        this._value = data.val;
+    }
+
+    public save(): RegCounterData {
+        throw new Error('Method not implemented.');
+    }
+
+
+    // Bound on set
+    public get Value(): number {
+        return this._value;
+    }
+
+    public set Value(new_val: number) {
+        this._value = bound_int(new_val, this.Min, this.Max || Number.MAX_SAFE_INTEGER);
+    }
+
+    // Easy bois
+    public Increment(): void {
+        this.Value += 1;
+    }
+    public Decrement(): void {
+        this.Value -= 1;
+    }
+
+    public Reset(): void {
+        this._value = this.Default;
     }
 }
-
-function Increment(this: Counter): void {
-    this.CurrentValue++;
-    this.Validate();
-}
-
-function Decrement(this: Counter): void {
-    this.CurrentValue--;
-    this.Validate();
-}
-
-function Set(this: Counter, inputValue: number): void {
-    if (typeof inputValue !== "number" || isNaN(inputValue)) return; // Can't hurt - leftover beef code
-    let value = inputValue;
-    this.CurrentValue = value;
-    this.Validate();
-}
-
-function Reset(this: Counter): void {
-    this.CurrentValue = this.Default;
-}
-
-function SaveData(this: Counter, data: ICounterSaveData): ICounterSaveData {
-    return {
-        id: this.ID,
-        val: this.CurrentValue,
-    };
-}
-
-function LoadData(this: Counter, data: ICounterSaveData): void {
-    this.Set(data.val);
-}
-
-// Mixin stuff
-
-export const CountersMixReader = def_empty_map(CreateCounter);

@@ -1,53 +1,185 @@
-//
-import { EntryType, ReserveType } from "@/class";
-import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta';
-import { VRegistryItem } from '@/interface';
+import { store } from '@/store'
+import { ReserveType, Synergy, MechEquipment, MechWeapon, MechSystem } from '@/class'
+import { reserves } from 'lancer-data'
+import { IActionData, Action } from '@/classes/Action'
+import { IBonusData, Bonus } from '@/classes/Bonus'
+import { ISynergyData, ICounterData } from '@/interface'
+import { IDeployableData } from '@/classes/Deployable'
+import { SimSer } from '@/new_meta'
 
-export interface IReserveData {
-    id: string;
-    type?: string ;
-    name?: string ;
-    label?: string ;
-    description?: string ;
-    resource_name?: string ;
-    resource_note?: string ;
-    resource_cost?: string ;
-    used: boolean;
+interface AllReserveData {
+  id: string
+  type?: string
+  name?: string
+  label?: string
+  description?: string
+  resource_name: string
+  resource_note: string
+  resource_cost: string
+  used: boolean
+  consumable: boolean
+  actions?: IActionData[]
+  bonuses?: IBonusData[]
+  synergies?: ISynergyData[]
+  integrated?: string[]
+}
+export interface PackedReserveData extends AllReserveData{
+  deployables?: IDeployableData[]
+  counters?: ICounterData[]
 }
 
-// Exists in the registry. However, pilots typically keep their own copies
-// We might wish to find a way to disentangle these concepts, but for the time being that feels difficult
-export interface Reserve extends MixLinks<IReserveData>, VRegistryItem {
-    ID: string;
-    Type: EntryType.RESERVE;
-    Name: string;
-    Label: string;
-    Description: string;
-    ReserveType: ReserveType;
-    ResourceName: string;
-    ResourceNote: string;
-    ResourceCost: string;
-    Used: boolean; // Only relevant on "owned" instances
+export class Reserve extends SimSer<IReserveData> {
+  public ID: string
+  public ResourceLabel: string
+  public Consumable: boolean
+  public Type: ReserveType
+  public Actions: Action[]
+  public Bonuses: Bonus[]
+  public Synergies: Synergy[]
+  public Deployables: IDeployableData[]
+  public Counters: ICounterData[]
+  private _name: string
+  private _resource_name: string
+  private _resource_note: string
+  private _resource_cost: string
+  private _description: string
+  private _integrated: string[]
+  private _used: boolean
+
+  public constructor(data: IReserveData) {
+    this.ID = data.id
+    this.ResourceLabel = data.label || ''
+    this.Consumable = data.consumable
+    this.Type = (data.type as ReserveType) || ReserveType.Resources
+    this._name = data.name || ''
+    this._resource_name = data.resource_name || ''
+    this._resource_note = data.resource_note || ''
+    this._resource_cost = data.resource_cost || ''
+    this._description = data.description || ''
+    this.Actions = data.actions ? data.actions.map(x => new Action(x)) : []
+    this.Bonuses = data.bonuses ? data.bonuses.map(x => new Bonus(x)) : []
+    this.Synergies = data.synergies
+      ? data.synergies.map(x => new Synergy(x, `Reserve: ${data.name}`))
+      : []
+    this.Deployables = data.deployables ? data.deployables : []
+    this.Counters = data.counters ? data.counters : []
+    this._integrated = data.integrated ? data.integrated : []
+    this._used = false
+  }
+
+  public get Icon(): string {
+    if (this.Type === ReserveType.Organization) return 'mdi-account-group'
+    if (this.Type === ReserveType.Project) return 'cci-orbital'
+    return `cci-reserve-${this.Type.toString().toLowerCase()}`
+  }
+
+  public get IntegratedEquipment(): MechEquipment[] {
+    if (!this._integrated) return []
+    return this._integrated.map(x => {
+      const w = store.getters.referenceByID('MechWeapons', x)
+      if (w) return w
+      return store.getters.referenceByID('MechSystems', x)
+    })
+  }
+
+  public get IntegratedWeapons(): MechWeapon[] {
+    return this._integrated.map(x => store.getters.referenceByID('MechWeapons', x))
+  }
+
+  public get IntegratedSystems(): MechSystem[] {
+    return this._integrated.map(x => store.getters.referenceByID('MechSystems', x))
+  }
+
+  public get Color(): string {
+    return this._used ? 'grey darken-1' : `reserve--${this.Type.toLowerCase()}`
+  }
+
+  public get Name(): string {
+    return this._name
+  }
+
+  public set Name(n: string) {
+    this._name = n
+  }
+
+  public get ResourceName(): string {
+    return this._resource_name
+  }
+
+  public set ResourceName(name: string) {
+    this._resource_name = name
+    this.save()
+  }
+
+  public get ResourceCost(): string {
+    return this._resource_cost
+  }
+
+  public set ResourceCost(cost: string) {
+    this._resource_cost = cost
+    this.save()
+  }
+
+  public get Description(): string {
+    return this._description
+  }
+
+  public get Note(): string {
+    return this._resource_note
+  }
+
+  public set Note(note: string) {
+    this._resource_note = note
+    this.save()
+  }
+
+  public get Used(): boolean {
+    return this._used
+  }
+
+  public set Used(b: boolean) {
+    this._used = b
+  }
+
+  public static Serialize(reserve: Reserve): IReserveData {
+    return {
+      id: reserve.ID,
+      type: reserve.Type,
+      name: reserve.Name,
+      label: reserve.ResourceLabel,
+      description: reserve.Description,
+      resource_name: reserve.ResourceName,
+      resource_note: reserve.Note,
+      resource_cost: reserve.ResourceCost,
+      consumable: reserve.Consumable,
+      used: reserve.Used,
+    }
+  }
+
+  public static Deserialize(rData: IReserveData): Reserve {
+  }
+
+  protected load(data: IReserveData): void {
+      throw new Error('Method not implemented.')
+  }
+
+  public save(): IReserveData {
+    let data = reserves.find(x => x.id === rData.id)
+    if (!data)
+      data = {
+        id: rData.id,
+        type: rData.type,
+        name: rData.name,
+        label: rData.label,
+        description: rData.description,
+      }
+    const r = new Reserve(data)
+    r._resource_name = rData.resource_name
+    r._resource_note = rData.resource_note
+    r._resource_cost = rData.resource_cost
+    r._used = rData.used
+    return r
+  }
 }
 
-export function CreateReserve(data: IReserveData | null): Reserve {
-    let mb = new MixBuilder<Reserve, IReserveData>({});
-    mb.with(new RWMix("ID", "name", ident, ident));
-    mb.with(new RWMix("Name", "name", ident, ident));
-    mb.with(new RWMix("Description", "description", ident, ident));
-    mb.with(new RWMix("ReserveType", "type", restrict_enum(ReserveType, ReserveType.Resources), ident));
-    mb.with(new RWMix("ResourceCost", "resource_cost", ident, ident));
-    mb.with(new RWMix("ResourceNote", "resource_note", ident, ident));
-    mb.with(new RWMix("ResourceName", "resource_name", ident, ident));
-    mb.with(new RWMix("Used", "used", ident, ident));
-    return mb.finalize(data);
-}
-
-
-
-// public get Color(): string {
-    // return this._used ? "grey darken-1" : `reserve--${this.type.toLowerCase()}`;
-// }
-
-
-
+export { Reserve, IReserveData }

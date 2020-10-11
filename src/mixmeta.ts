@@ -365,13 +365,6 @@ export function def_empty_map<I, O>(func: (val: I, ctx: Registry) => Promise<O>)
 }
 
 // Easily lock into enums using restrict_enum
-export function restrict_choices<T extends string>(choices: T[], default_choice: T): (x: string | undefined) => Promise<T> {
-    return async (x: string | undefined) => choices.includes((x || "") as T) ? (x as T) : default_choice;
-}
-export function restrict_enum<T extends string>(enum_: {[key: string]: T}, default_choice: T): (x: string | undefined) => Promise<T> {
-    let choices = Object.keys(enum_).map(k => enum_[k]);
-    return restrict_choices(choices, default_choice);
-}
 
 // Pull stuff from the register
 export async function IntegratedMixReader(integrated_keys: string[] | undefined, ctx: Registry): Promise<VRegistryItem[]> {

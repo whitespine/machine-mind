@@ -1,13 +1,195 @@
-import { DamageType, Pilot, RangeType, WeaponSize, WeaponType } from '@/class';
-import * as pmath from "parsemath";
-// Bonuses - we'll need to elaborate on these later... currently they don't work
+import { Mech, Pilot } from '@/class'
+import dict from '@/assets/bonus_dictionary.json'
+import { DamageType, RangeType, WeaponSize, WeaponType } from './enums'
 
-import { ident, MixBuilder, RWMix, MixLinks, def_empty_map, restrict_enum } from '@/mixmeta';
-import { Registry } from './registry';
+interface IBonusData {
+  id: string
+  val: string | number
+  damage_types?: DamageType[]
+  range_types?: RangeType[]
+  weapon_types?: WeaponType[]
+  weapon_sizes?: WeaponSize[]
+}
 
-// export type IBonusData = BonusSkillPoint , BonusMechSkillPoint | BonusTalentPoint | BonusLicensePoint | BonusCBPoint | BonusPilotGear | BonusThreat | BonusThreatKinetic | BonusThreatExplosive | BonusThreatEnergy | BonusThreatBurn | BonusRange | BonusRangeKinetic | BonusRangeExplosive | BonusRangeEnergy | BonusRangeBurn | BonusHP | BonusArmor | BonusStructure | BonusStress | BonusHeatcap | BonusCheapStress | BonusCheapStruct | BonusAICap | BonusRepcap | BonusCorePower | BonusEvasion | BonusEDef
+class Bonus {
+  public readonly ID: string
+  public readonly Value: string | number
+  public readonly Title: string | number
+  public readonly Detail: string | number
+  public readonly DamageTypes: DamageType[]
+  public readonly RangeTypes: RangeType[]
+  public readonly WeaponTypes: WeaponType[]
+  public readonly WeaponSizes: WeaponSize[]
 
-// This is gonna be tedious...
+  public constructor(data: IBonusData) {
+    const entry = dict.find(x => x.id === data.id)
+    this.ID = data.id
+    this.Value = data.val
+    this.DamageTypes = data.damage_types || []
+    this.RangeTypes = data.range_types || []
+    this.WeaponTypes = data.weapon_types || []
+    this.WeaponSizes = data.weapon_sizes || []
+    this.Title = entry ? entry.title : 'UNKNOWN BONUS'
+    this.Detail = entry ? this.parseDetail(entry.detail) : 'UNKNOWN BONUS'
+  }
+
+  private parseDetail(detail): string {
+    let str = detail.slice()
+    str = str.replace(/{VAL}/g, this.Value)
+    str = str.replace(/{INC_DEC}/g, this.Value > -1 ? 'Increases' : 'Decreases')
+    str = str.replace(
+      /{RANGE_TYPES}/g,
+      ` ${this.RangeTypes.length ? this.RangeTypes.join('/').toUpperCase() : ''}`
+    )
+    str = str.replace(
+      /{DAMAGE_TYPES}/g,
+      ` ${this.DamageTypes.length ? this.DamageTypes.join('/').toUpperCase() : ''}`
+    )
+    str = str.replace(
+      /{WEAPON_TYPES}/g,
+      ` ${this.WeaponTypes.length ? this.WeaponTypes.join('/').toUpperCase() : ''}`
+    )
+    str = str.replace(
+      /{WEAPON_SIZES}/g,
+      ` ${this.WeaponSizes.length ? this.WeaponSizes.join('/').toUpperCase() : ''}`
+    )
+
+    return str
+  }
+
+  public static Evaluate(bonus: Bonus, pilot: Pilot): number {
+    if (typeof bonus.Value === 'number') return Math.ceil(bonus.Value)
+    let valStr = bonus.Value
+    valStr = valStr.replaceAll(`{ll}`, pilot.Level.toString())
+    valStr = valStr.replaceAll(`{grit}`, pilot.Grit.toString())
+    valStr = valStr.replace(/[^-()\d/*+.]/g, '')
+    return Math.ceil(eval(valStr))
+  }
+
+  public static get(id: string, mech: Mech): number {
+    return mech.Bonuses.filter(x => x.ID === id).reduce(
+      (sum, bonus) => sum + this.Evaluate(bonus, mech.Pilot),
+      0
+    )
+  }
+
+  public static getPilot(id: string, pilot: Pilot): number {
+    return pilot.Bonuses.filter(x => x.ID === id).reduce(
+      (sum, bonus) => sum + this.Evaluate(bonus, pilot),
+      0
+    )
+  }
+
+  private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {
+    const output = []
+    if (m.ActiveLoadout && m.ActiveLoadout.Equipment) {
+      m.ActiveLoadout.Equipment.filter(x => x && !x.Destroyed && !x.IsCascading).forEach(e => {
+        e.Bonuses.forEach(b => {
+          if (b.ID === id)
+            output.push({
+              name: `${e.Source} ${e.Name} (${m.ActiveLoadout.Name} Loadout)`,
+              val: Bonus.Evaluate(b, m.Pilot),
+            })
+        })
+      })
+    }
+
+    m.Frame.Traits.forEach(t => {
+      t.Bonuses.forEach(b => {
+        if (b.ID === id)
+          output.push({
+            name: `${t.Name} (${m.Frame.Source} ${m.Frame.Name} Trait)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    })
+
+    m.Frame.CoreSystem.PassiveBonuses.forEach(b => {
+      if (b.ID === id)
+        output.push({
+          name: `${m.Frame.CoreSystem.PassiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Passive)`,
+          val: Bonus.Evaluate(b, m.Pilot),
+        })
+    })
+
+    if (m.CoreActive) {
+      m.Frame.CoreSystem.ActiveBonuses.forEach(b => {
+        if (b.ID === id)
+          output.push({
+            name: `${m.Frame.CoreSystem.ActiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Active)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    }
+    return output
+  }
+
+  public static Contributors(id: string, m: Mech): { name: string; val: number }[] {
+    const output = Bonus.MechContributors(m, id)
+    m.Pilot.Loadout.Items.forEach(i => {
+      i.Bonuses.forEach(b => {
+        if (b.ID === id)
+          output.push({
+            name: `${i.Name} (Pilot Equipment)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    })
+
+    m.Pilot.CoreBonuses.forEach(cb => {
+      cb.Bonuses.forEach(b => {
+        if (b.ID === id)
+          output.push({
+            name: `${cb.Name} (${cb.Source} CORE Bonus)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    })
+
+    m.Pilot.Reserves.forEach(r => {
+      r.Bonuses.forEach(b => {
+        if (b.ID === id && !r.Used)
+          output.push({
+            name: `${r.Name} (Reserve)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    })
+
+    m.Pilot.Talents.flatMap(x => x.UnlockedRanks).forEach(t => {
+      t.Bonuses.forEach(b => {
+        if (b.ID === id)
+          output.push({
+            name: `${t.Name} (Pilot Talent)`,
+            val: Bonus.Evaluate(b, m.Pilot),
+          })
+      })
+    })
+    return output
+  }
+}
+
+export { Bonus, IBonusData }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export enum BonusType {
           SkillPoint = "skill_point",   // integer
           MechSkillPoint = "mech_skill_point"  , // integer
@@ -69,50 +251,8 @@ export enum BonusType {
           DeployableSpeed = "deployable_speed", //
           Placeholder = "placeholder",
           Unrecognized = "unrecognized",
-}  // integer
-
-// Lists all of the keys/values, for validation purposes
-export const BonusTypeIDList: string[] = Object.keys(BonusType).map(k => BonusType[k as any])
-
-export interface IBonusData {
-  id: string;
-  value: any
-  damage_types?: DamageType[] 
-  range_types?: RangeType[] 
-  weapon_types?: WeaponType[] 
-  weapon_sizes?: WeaponSize[] 
 }
 
-
-// Todo - uh... more??? It's a bit barebones for now...
-export interface Bonus extends MixLinks<IBonusData> {
-  // Data
-  ID: BonusType,
-  Value: any;
-
-  DamageTypes: DamageType[] | null;
-  RangeTypes: RangeType[] | null;
-  WeaponTypes: WeaponType[] | null;
-  WeaponSizes: WeaponSize[] | null;
-
-  // Methods
-  //...
-}
-
-
-export async function CreateBonus(data: IBonusData, ctx: Registry): Promise<Bonus> {
-    let b = new MixBuilder<Bonus, IBonusData>({});
-    b.with(new RWMix("ID", "id", restrict_enum(BonusType, BonusType.Unrecognized), ident));
-    b.with(new RWMix("Value", "value", ident, ident));
-
-
-    // Finalize and check. We don't fail
-    let r = b.finalize(data, ctx);
-    return r;
-}
-
-// Get the numeric value of a bonus expression, for a given pilot
-// Note: Currently very much a WIP
 export function Evaluate(bonus: Bonus, pilot: Pilot): number{
     if (typeof bonus.Value === 'number') return Math.ceil(bonus.Value)
     let valStr = bonus.Value
@@ -120,16 +260,4 @@ export function Evaluate(bonus: Bonus, pilot: Pilot): number{
     valStr = valStr.replaceAll(`{grit}`, pilot.Grit.toString())
 
     return Math.ceil(pmath.parse(valStr));
-}
-
-
- export function get(id: BonusType, pilot: Pilot): number {
-    return pilot.Bonuses.filter(x => x.ID === id).reduce(
-      (sum, bonus) => sum + this.Evaluate(bonus, pilot),
-      0
-    )
-  }
-
-
-// Use these for mixin shorthand elsewhere
-export const BonusesMixReader = def_empty_map(CreateBonus);
+}  // integer

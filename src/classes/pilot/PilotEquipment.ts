@@ -1,7 +1,6 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
 import { ActionsMixReader, DeployableMixReader, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, SynergyMixReader, TagInstanceMixReader, uuid, BonusesMixReader, defs, def_anon, ident_drop_anon, def, ident_drop_anon_strict, DamagesMixReader, ser_many } from '@/mixmeta';
-import { EntryType, ID_ANONYMOUS, Registry, RegistryReference, VRegistryItem } from '../registry';
 
 
 ///////////////////////////////////////////////////////////
@@ -26,7 +25,7 @@ export interface RegistryPilotWeaponData {
 // Packed bundles items
 export type PackedPilotWeaponData = Omit<RegistryPilotWeaponData, "deployables"> & {deployables: IDeployableData[]};
 
-export interface RegistryPilotArmorData  {
+interface AllPilotArmorData  {
   id: string,
   "name": string, // v-html
   "type": "Armor",
@@ -35,11 +34,16 @@ export interface RegistryPilotArmorData  {
   "actions"?: IActionData[], // these are only available to UNMOUNTED pilots
   "bonuses"?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   "synergies"?: ISynergyData[],
-  deployables?: RegistryReference<EntryType.DEPLOYABLE>[];// these are only available to UNMOUNTED pilots
 }
-export type PackedPilotArmorData = Omit<RegistryPilotArmorData, "deployables"> & {deployables: IDeployableData[]};
 
-export interface RegistryPilotGearData {
+export interface RegPilotArmorData extends AllPilotArmorData {
+  deployables?: RegReference<EntryType.DEPLOYABLE>[];// these are only available to UNMOUNTED pilots
+}
+export interface PackedPilotArmorData extends AllPilotArmorData {
+    deployables: IDeployableData[]
+}
+
+export interface RegPilotGearData {
   id: string
   name: string, // v-html
   type: "Gear",

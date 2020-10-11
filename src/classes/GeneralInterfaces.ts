@@ -75,12 +75,6 @@ export interface IMechWeaponSaveData extends IEquipmentSaveData {
     maxUseOverride?: number ;
 }
 
-export interface ICounterSaveData {
-    id: string;
-    val: number;
-}
-
-
 
 
 export interface IHistoryItem {

@@ -24,7 +24,7 @@ import type {
 } from "@/class";
 import { CORE_BREW_ID } from '@/classes/enums';
 import type { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
-import { def_empty_map, MixLinks } from '@/mixmeta';
+import { RegSer } from '@/new_meta';
 
 
 /*
@@ -32,71 +32,10 @@ Contains logic for looking up item templates by ID, or for examining lists of op
 Everything herein implements VCompendiumItem
 */
 
-// items that are stored as compendium data, refernced by ID and contain
-// at minimum a name, EntryType, and brew
-export enum EntryType {
-    None = "",
-    CORE_BONUS = "CoreBonuses",
-    DEPLOYABLE = "Deployables",
-    FACTION = "Factions",
-    FRAME = "Frames",
-    // LICENSE = "Licenses",
-    MANUFACTURER = "Manufacturers",
-    NPC_CLASS = "NpcClasses",
-    NPC_TEMPLATE = "NpcTemplates",
-    NPC_FEATURE = "NpcFeatures",
-    WEAPON_MOD = "WeaponMods",
-    MECH_WEAPON = "MechWeapons",
-    MECH_SYSTEM = "MechSystems",
-    PILOT_GEAR = "PilotGear",
-    PILOT_ARMOR = "PilotArmor",
-    PILOT_WEAPON = "PilotWeapons",
-    PILOT_EQUIPMENT = "PilotEquipment",
-    TALENT = "Talents",
-    SKILL = "Skills",
-    STATUS = "Statuses", 
-    CONDITION = "Conditions",
-    QUIRK = "Quirks",
-    RESERVE = "Reserves",
-    ENVIRONMENT = "Environments",
-    SITREP = "Sitreps",
-    TAG = "Tags",
-    PILOT = "Pilot"
-}
 
 
 // We use this mapping to map Entry items to raw data types
-type RawSuper = {[key in EntryType]: any};
-interface RawTypeMapping extends RawSuper{
-    [EntryType.CORE_BONUS]: ICoreBonusData;
-    [EntryType.FACTION]: IFactionData;
-    [EntryType.FRAME]: IFrameData;
-    [EntryType.MANUFACTURER]: IManufacturerData;
-    [EntryType.NPC_CLASS]: INpcClassData;
-    [EntryType.NPC_TEMPLATE]: INpcTemplateData;
-    [EntryType.NPC_FEATURE]: INpcFeatureData;
-    [EntryType.WEAPON_MOD]: IWeaponModData;
-    [EntryType.MECH_WEAPON]: IMechWeaponData;
-    [EntryType.MECH_SYSTEM]: IMechSystemData;
-    [EntryType.TALENT]: ITalentData;
-    [EntryType.SKILL]: ISkillData ;
-    [EntryType.RESERVE]: IReserveData ;
-    [EntryType.ENVIRONMENT]: IEnvironmentData ;
-    [EntryType.SITREP]: ISitrepData ;
-    [EntryType.TAG]: ITagTemplateData ;
-    // [EntryType.LICENSES]: ILicenseData ;  // As it turns out there's no reason for licenses to persistently exist, really...
-    [EntryType.PILOT_GEAR]: IPilotGearData ;
-    [EntryType.PILOT_ARMOR]: IPilotArmorData ;
-    [EntryType.PILOT_WEAPON]: IPilotWeaponData ;
-    [EntryType.PILOT_EQUIPMENT]: IPilotEquipmentData ;
-    [EntryType.STATUS]: IStatusData ;
-    [EntryType.CONDITION]: IStatusData ;
-    [EntryType.DEPLOYABLE]: IDeployableData ;
-    [EntryType.QUIRK]: IQuirkData;
-    [EntryType.PILOT]: IPilotData;
-}
-
-// We use this mapping to map Entry items to raw data types
+/*
 type LiveSuper = {[key in EntryType]: VRegistryItem<any>};
 interface LiveTypeMapping extends LiveSuper {
     [EntryType.CORE_BONUS]: CoreBonus;
@@ -126,112 +65,11 @@ interface LiveTypeMapping extends LiveSuper {
     [EntryType.QUIRK]: Quirk ;
     [EntryType.PILOT]: Pilot ;
 }
+*/
 
 // This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
-export type CreationFunc<T extends EntryType> = (r: RawTypeMapping[T], c: Registry) => Promise<LiveTypeMapping[T]>;
 
-export abstract class RegCat<T extends EntryType> {
-    // Need this to key them because we can't really identify otherwise
-    cat: T;
 
-    // Creation func needed to create live entries
-    creation_func: CreationFunc<T>;
-
-    // Need this for like, basically everything
-    parent: Registry;
-
-    constructor(parent: Registry, cat: T, creator: CreationFunc<T>) {
-        this.parent = parent;
-        this.cat = cat;
-        this.creation_func = creator;
-    }
-
-    // Fetches the specific raw item of a category by its ID
-    abstract async get_raw(id: string): Promise<RawTypeMapping[T] | null>;
-
-    // Fetches all raw items of a category
-    abstract async list_raw(): Promise<Array<RawTypeMapping[T]>>;
-
-    // Instantiates a live interface of the specific raw item. 
-    // abstract async get_live(id: string): Promise<RegistryHandle<T> | null>;
-
-    // Instantiates live interfaces of the specified category. Slightly expensive
-    // abstract async list_live(): Promise<Array<RegistryHandle<T>>>;
-
-    // Save the given live item, propagating any changes made to it to the backend data source
-    // Should NOT accept new items, as we don't know that they will play nice with 
-    // abstract async update(...vals: Array<RegistryHandle<T>>): Promise<void>;
-
-    // Delete the given id in the given category. Return deleted item, or null if not found
-    // reason for returning live is for if you want to do any post-mortem actions, such as display a helpful message, and don't want to parse
-    abstract async delete_id(id: string): Promise<RegistryHandle<T> | null>;
-
-    // Call this only if the registry categories aren't polling from some external source
-    // Returns them with handles
-    // abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<RegistryHandle<T>[]>;
-    // abstract async create(...vals: Array<LiveTypeMapping[T]>): Promise<RegistryHandle<T>[]>;
-}
-
-export class Registry {
-    handlers: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately
-
-    // Puts a single value. Gives back the put item's ID
-    async create(val: VRegistryItem<any>): Promise<string>  {
-
-    // Call this only if the registry categories aren't polling from some external source
-    async create_many(...vals: VRegistryItem<any>[]): Promise<void>  {
-        // As a courtesy / optimization measure, we categorize these first, then send in batches
-        let groupings = new Map<EntryType, Array<VRegistryItem<any>>>();
-        for(let v of vals) {
-            if(groupings.has(v.Type)) {
-                groupings.get(v.Type)!.push(v);
-            } else {
-                groupings.set(v.Type, [v]);
-            }
-        }
-
-        // Dispatch groups
-        for(let [k,v] of groupings.entries()) {
-            this.get_cat(k).create(...v);
-        }
-    }
-
-    // Delete an item, by cat + id
-    async delete(cat: EntryType, id: string) {
-        this.get_cat(cat).delete_id(id);
-    }
-
-    // Trivial, but can be overridden to have more advanced behaviors
-    constructor(){
-        this.handlers = new Map();
-    }
-
-    // Adds a category. Do this before performing other operations. Make sure you get them all! ;)
-    add_cat<T extends EntryType>(cat: RegCat<T>) {
-        this.handlers.set(cat.cat, cat);
-    }
-
-    // Fetch the specified category or error if it doesn't exist
-    get_cat<T extends EntryType>(cat: T):  RegCat<T> {
-        let v = this.handlers.get(cat);
-        if(!v) {
-            throw new Error(`Error: Category "${cat}" not setup`);
-        }
-        return v;
-    }
-
-    // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
-    // You should be able to figure out the type from the `Type` of the VRegistryItem
-    async get_from_anywhere(id: string): Promise<VRegistryItem<any> | null> {
-        for(let [k, c] of this.handlers) {
-            let v = await c.get_live(k);
-            if(v) {
-               return v;
-            }
-        }
-        return null;
-    }
-}
 
 
 // Ref implementation

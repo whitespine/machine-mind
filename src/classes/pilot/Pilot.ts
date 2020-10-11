@@ -24,10 +24,12 @@ import { ActiveState } from "../mech/ActiveState";
 import { MixLinks, MixBuilder, RWMix, ident, ser_many } from '@/mixmeta';
 import { CreateMechSkills } from './MechSkills';
 import { VRegistryItem } from '../registry';
+import { RegSer } from '@/new_meta';
+import { Quirk } from './Quirk';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
-export interface PackedPilotData {
+interface BothPilotData {
     id: string;
     campaign: string;
     group: string;
@@ -50,22 +52,36 @@ export interface PackedPilotData {
     current_hp: number;
     background: string;
     mechSkills: [number, number, number, number],
+    core_bonuses: string[];
+    active_mech: string;
+    cc_ver: string;
+    brews: string[];
+}
+
+// The compcon export format. This stuff just gets converted into owned items.
+export interface PackedPilotData extends BothPilotData {
     licenses: IRankedData[];
     skills: IRankedData[];
     talents: IRankedData[];
-    core_bonuses: string[];
     reserves: IReserveData[];
     orgs: IOrganizationData[];
-    loadout: IPilotLoadoutData;
     mechs: IMechData[];
-    active_mech: string;
-    cc_ver: string;
-    counter_data: ICounterSaveData[];
-    custom_counters: object[];
-    brews: string[];
     state?: IMechState;
+    counter_data: ICounterSaveData[];
+    custom_counters: ICounterData[];
+    loadout: IPilotLoadoutData;
 }
-export interface Pilot extends MixLinks<IPilotData>, VRegistryItem {
+
+
+// This just gets converted into owned items
+export interface RegPilotData extends BothPilotData {
+    active_mech: string | null;
+
+    // Since pilots are actors we don't need to cascade item ownership - just actor ownership
+    mechs: Referenc[]
+}
+
+export interface Pilot extends RegSer<RegPilotData> {
     // Identity
     Name: string;
     Callsign: string;
@@ -77,7 +93,7 @@ export interface Pilot extends MixLinks<IPilotData>, VRegistryItem {
     TextAppearance: string;
 
     // Quirk: string; -- we remove this, as we now store quirks as items
-    Quirk: 
+    Quirk: Quirk; 
 
     Group: string;
     SortIndex: number;
@@ -239,15 +255,15 @@ function SetBrewData(this: Pilot): void {
         this.save();
     }
 
-     function getPower(this: Pilot): number {
+     get Power(this: Pilot): number {
         return (this.Level + 1) * 100;
     }
 
-     function getHasIdent(this: Pilot): boolean {
+     get HasIdent(this: Pilot): boolean {
         return !!(this.Name && this.Callsign);
     }
 
-     function getIsUserOwned(this: Pilot): boolean {
+     get IsUserOwned(this: Pilot): boolean {
         return this.CloudOwnerID === store.user.ID;
     }
 
@@ -289,11 +305,11 @@ function SetBrewData(this: Pilot): void {
     }
 
     // -- Stats -------------------------------------------------------------------------------------
-     function getGrit(this: Pilot): number {
+     get Grit(this: Pilot): number {
         return Math.ceil(this._level / 2);
     }
 
-     function getMaxHP(this: Pilot): number {
+     get MaxHP(this: Pilot): number {
         let health = Rules.BasePilotHP + this.Grit;
         this.Loadout.Armor.forEach(x => {
             if (x) health += x.HPBonus;
@@ -301,7 +317,7 @@ function SetBrewData(this: Pilot): void {
         return health;
     }
 
-     function getCurrentHP(this: Pilot): number {
+     get CurrentHP(this: Pilot): number {
         return this._current_hp;
     }
 
@@ -321,7 +337,7 @@ function SetBrewData(this: Pilot): void {
         this.CurrentHP = this.MaxHP;
     }
 
-     function getArmor(this: Pilot): number {
+     get Armor(this: Pilot): number {
         let armor = 0;
         this.Loadout.Armor.forEach(x => {
             if (x) armor += x.Armor;
@@ -329,7 +345,7 @@ function SetBrewData(this: Pilot): void {
         return armor;
     }
 
-     function getSpeed(this: Pilot): number {
+     get Speed(this: Pilot): number {
         let speed = Rules.BasePilotSpeed;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -339,7 +355,7 @@ function SetBrewData(this: Pilot): void {
         return speed;
     }
 
-     function getEvasion(this: Pilot): number {
+     get Evasion(this: Pilot): number {
         let evasion = Rules.BasePilotEvasion;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -349,7 +365,7 @@ function SetBrewData(this: Pilot): void {
         return evasion;
     }
 
-     function getEDefense(this: Pilot): number {
+     get EDefense(this: Pilot): number {
         let edef = Rules.BasePilotEdef;
         this.Loadout.Armor.forEach(x => {
             if (!x) return;
@@ -360,7 +376,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     //TODO: collect passives, eg:
-     function getLimitedBonus(this: Pilot): number {
+     get LimitedBonus(this: Pilot): number {
         let bonus = Math.floor(this.MechSkills.Eng / 2);
         if (this._core_bonuses.find(x => x.ID === "cb_integrated_ammo_feeds")) {
             bonus += 2;
@@ -368,13 +384,13 @@ function SetBrewData(this: Pilot): void {
         return bonus;
     }
 
-     function getAICapacity(this: Pilot): number {
+     get AICapacity(this: Pilot): number {
         let tlos = store.compendium.getReferenceByID("CoreBonuses", "cb_the_lesson_of_shaping");
         return this.has(tlos) ? 2 : 1;
     }
 
     // -- Skills ------------------------------------------------------------------------------------
-     function getSkills(this: Pilot): PilotSkill[] {
+     get Skills(this: Pilot): PilotSkill[] {
         return this._skills;
     }
 
@@ -383,24 +399,24 @@ function SetBrewData(this: Pilot): void {
         this.save();
     }
 
-     function getCurrentSkillPoints(this: Pilot): number {
+     get CurrentSkillPoints(this: Pilot): number {
         return this._skills.reduce((sum, skill) => sum + skill.Rank, 0);
     }
 
-     function getMaxSkillPoints(this: Pilot): number {
+     get MaxSkillPoints(this: Pilot): number {
         const bonus = this.Reserves.filter(x => x.ID === "reserve_skill").length;
         return Rules.MinimumPilotSkills + this._level + bonus;
     }
 
-     function getIsMissingSkills(this: Pilot): boolean {
+     get IsMissingSkills(this: Pilot): boolean {
         return this.CurrentSkillPoints < this.MaxSkillPoints;
     }
 
-     function getTooManySkills(this: Pilot): boolean {
+     get TooManySkills(this: Pilot): boolean {
         return this.CurrentSkillPoints > this.MaxSkillPoints;
     }
 
-     function getHasFullSkills(this: Pilot): boolean {
+     get HasFullSkills(this: Pilot): boolean {
         return this.CurrentSkillPoints === this.MaxSkillPoints;
     }
 
@@ -461,7 +477,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     // -- Talents -----------------------------------------------------------------------------------
-     function getTalents(this: Pilot): PilotTalent[] {
+     get Talents(this: Pilot): PilotTalent[] {
         return this._talents;
     }
 
@@ -470,27 +486,27 @@ function SetBrewData(this: Pilot): void {
         this.save();
     }
 
-     function getCurrentTalentPoints(this: Pilot): number {
+     get CurrentTalentPoints(this: Pilot): number {
         return this._talents.reduce((sum, talent) => sum + talent.Rank, 0);
     }
 
-     function getMaxTalentPoints(this: Pilot): number {
+     get MaxTalentPoints(this: Pilot): number {
         return Rules.MinimumPilotTalents + this._level;
     }
 
-     function getIsMissingTalents(this: Pilot): boolean {
+     get IsMissingTalents(this: Pilot): boolean {
         return this.CurrentTalentPoints < this.MaxTalentPoints;
     }
 
-     function getTooManyTalents(this: Pilot): boolean {
+     get TooManyTalents(this: Pilot): boolean {
         return this.CurrentTalentPoints > this.MaxTalentPoints;
     }
 
-     function getHasFullTalents(this: Pilot): boolean {
+     get HasFullTalents(this: Pilot): boolean {
         return this.CurrentTalentPoints === this.MaxTalentPoints;
     }
 
-     function getTalentRank(id: string): number {
+     get TalentRank(id: string): number {
         const index = this._talents.findIndex(x => x.Talent.ID === id);
         return index > -1 ? this._talents[index].Rank : 0;
     }
@@ -543,7 +559,7 @@ function SetBrewData(this: Pilot): void {
         });
     }
 
-     function getTalentActions(this: Pilot): IAction[] {
+     get TalentActions(this: Pilot): IAction[] {
         let talent_actions: IAction[] = [];
         for (let talent of this._talents) {
             for (let rank of talent.UnlockedRanks) {
@@ -555,7 +571,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     // -- Core Bonuses ------------------------------------------------------------------------------
-     function getCoreBonuses(this: Pilot): CoreBonus[] {
+     get CoreBonuses(this: Pilot): CoreBonus[] {
         return this._core_bonuses;
     }
 
@@ -564,23 +580,23 @@ function SetBrewData(this: Pilot): void {
         this.save();
     }
 
-     function getCurrentCBPoints(this: Pilot): number {
+     get CurrentCBPoints(this: Pilot): number {
         return this._core_bonuses.length;
     }
 
-     function getMaxCBPoints(this: Pilot): number {
+     get MaxCBPoints(this: Pilot): number {
         return Math.floor(this._level / 3);
     }
 
-     function getIsMissingCBs(this: Pilot): boolean {
+     get IsMissingCBs(this: Pilot): boolean {
         return this.CurrentCBPoints < this.MaxCBPoints;
     }
 
-     function getTooManyCBs(this: Pilot): boolean {
+     get TooManyCBs(this: Pilot): boolean {
         return this.CurrentCBPoints > this.MaxCBPoints;
     }
 
-     function getHasCBs(this: Pilot): boolean {
+     get HasCBs(this: Pilot): boolean {
         return this.CurrentCBPoints === this.MaxCBPoints;
     }
 
@@ -622,7 +638,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     // -- Licenses ----------------------------------------------------------------------------------
-     function getLicenses(this: Pilot): PilotLicense[] {
+     get Licenses(this: Pilot): PilotLicense[] {
         return this._licenses;
     }
 
@@ -637,27 +653,27 @@ function SetBrewData(this: Pilot): void {
         ).reduce((a, b) => +a + +b.Rank, 0);
     }
 
-     function getCurrentLicensePoints(this: Pilot): number {
+     get CurrentLicensePoints(this: Pilot): number {
         return this._licenses.reduce((sum, license) => sum + license.Rank, 0);
     }
 
-     function getMaxLicensePoints(this: Pilot): number {
+     get MaxLicensePoints(this: Pilot): number {
         return this._level;
     }
 
-     function getIsMissingLicenses(this: Pilot): boolean {
+     get IsMissingLicenses(this: Pilot): boolean {
         return this.CurrentLicensePoints < this.MaxLicensePoints;
     }
 
-     function getTooManyLicenses(this: Pilot): boolean {
+     get TooManyLicenses(this: Pilot): boolean {
         return this.CurrentLicensePoints > this.MaxLicensePoints;
     }
 
-     function getHasLicenses(this: Pilot): boolean {
+     get HasLicenses(this: Pilot): boolean {
         return this.CurrentLicensePoints === this.MaxLicensePoints;
     }
 
-     function getLicenseRank(_name: string): number {
+     get LicenseRank(_name: string): number {
         const index = this._licenses.findIndex(x => x.License.Name === _name);
         return index > -1 ? this._licenses[index].Rank : 0;
     }
@@ -697,7 +713,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     // -- Mech Skills -------------------------------------------------------------------------------
-     function getMechSkills(this: Pilot): MechSkills {
+     get MechSkills(this: Pilot): MechSkills {
         return this._mechSkills;
     }
 
@@ -712,7 +728,7 @@ function SetBrewData(this: Pilot): void {
 
     // -- COUNTERS ----------------------------------------------------------------------------------
 
-     function getCounterSaveData(this: Pilot): ICounterSaveData[] {
+     get CounterSaveData(this: Pilot): ICounterSaveData[] {
         return this._counterSaveData;
     }
      function saveCounter(inputData: ICounterSaveData): void {
@@ -727,7 +743,7 @@ function SetBrewData(this: Pilot): void {
     }
 
     private _customCounters: ICounterData[] = [];
-     function getCustomCounterData(this: Pilot): ICounterData[] {
+     get CustomCounterData(this: Pilot): ICounterData[] {
         return this._customCounters || [];
     }
 
@@ -750,7 +766,7 @@ function SetBrewData(this: Pilot): void {
         this.save();
     }
 
-     function getCounterData(this: Pilot): ICounterData[] {
+     get CounterData(this: Pilot): ICounterData[] {
         return [
             this.Talents?.flatMap(pilotTalent =>
                 pilotTalent.Talent.Counters.filter(x => !x.level || x.level <= pilotTalent.Rank)
