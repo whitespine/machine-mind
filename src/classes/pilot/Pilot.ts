@@ -21,7 +21,7 @@ import * as gistApi from "@/io/apis/gist";
 import { ICounterData, IActionData, IMechData, IMechState, IOrganizationData, IReserveData, IRankedData, ICounterSaveData, IPilotLoadoutData } from "@/interface";
 import { store } from "@/hooks";
 import { ActiveState } from "../mech/ActiveState";
-import { MixLinks, MixBuilder, RWMix, ident, ser_many } from '@/mixmeta';
+import { MixLinks, MixBuilder, RWMix, ident, ser_many } from '@/mixmeta.typs';
 import { CreateMechSkills } from './MechSkills';
 import { VRegistryItem } from '../registry';
 import { RegSer } from '@/new_meta';

@@ -1,6 +1,7 @@
-import { ident, MixBuilder, RWMix, MixLinks, def, defb, defn, defs, ser_many, def_empty_map, restrict_enum } from "@/mixmeta";
+import { ident, MixBuilder, RWMix, MixLinks, def, defb, defn, defs, ser_many, def_empty_map, restrict_enum } from "@/mixmeta.typs";
 import { Registry } from '@/classes/registry';
 import { RangeType } from './enums';
+import { SimSer } from '@/new_meta';
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -8,107 +9,76 @@ export interface IRangeData {
     type: RangeType;
     val: number;
     override?: boolean;
-    // bonus?: number | null;
+    bonus?: number;
 }
 
-export interface Range extends MixLinks<IRangeData> {
-    Type: RangeType;
-    Value: number;
-    Override: boolean;
-    // Bonus: number | null
+export class Range extends SimSer<IRangeData> {
+    Type!: RangeType;
+    Value!: number;
+    Override!: boolean;
+    Bonus!: number;
 
-    // Methods
-    Icon(): string;
-    DiscordEmoji(): string;
-    Text(): string;
-}
-
-export  async function CreateRange(data: IRangeData | null, ctx: Registry): Promise<Range> {
-    let mb = new MixBuilder<Range, IRangeData>({});
-    mb.with(new RWMix("Type", "type", restrict_enum(RangeType, RangeType.Range), ident));
-    mb.with(new RWMix("Value", "val", defn(5), ident));
-    mb.with(new RWMix("Override", "override", defb(false), ident));
-    // mb.with(new Mixlet("Bonus", "bonus", null, ident, ident));
-
-    return mb.finalize(data, ctx);
-}
-
-// Error correction
-function getRangeType(str?: string): RangeType {
-    switch (str?.toLowerCase()) {
-        case "blast":
-            return RangeType.Blast;
-        case "burst":
-            return RangeType.Burst;
-        case "cone":
-            return RangeType.Cone;
-        case "line":
-            return RangeType.Line;
-        case "threat":
-            return RangeType.Threat;
-        case "thrown":
-            return RangeType.Thrown;
-        default:
-        case "range":
-            return RangeType.Range;
+    protected load(data: IRangeData): void {
+        this.Type = data.type;
+        this.Value = data.val;
+        this.Override = data.override || false;
+        this.Bonus = data.bonus || 0;
     }
-}
 
-//   public get Value(): string {
-//     if (this._bonus) return (this._value + this._bonus).toString();
-//      return this._value.toString();
-//   }
-
-//  public get Max(): number {
-//    return this._value + this._bonus;
-//  }
-
-function Icon(this: Range): string {
-    return `cci-${this.Type.toLowerCase()}`;
-}
-
-function DiscordEmoji(this: Range): string {
-    switch (this.Type) {
-        case RangeType.Range:
-        case RangeType.Threat:
-        case RangeType.Thrown:
-            return `:cc_${this.Type.toLowerCase()}:`;
+    public save(): IRangeData {
+        return {
+            type: this.Type,
+            val: this.Value,
+            override: this.Override || undefined,
+            bonus: this.Bonus || undefined
+        }
     }
-    return `:cc_aoe_${this.Type.toLowerCase()}:`;
-}
+      public get Icon(): string {
+    return `cci-${this._range_type.toLowerCase()}`
+  }
 
-function Text(this: Range): string {
-    if (this.Override) return this.Value.toString();
-    // if (this.Bonus) return `${this.Type} ${this.Value} (+${this.Bonus})`;
-    return `${this.Type} ${this.Value}`;
-}
-
-// Compute range bonuses.
-// Not yet functional....
-/*
-function    AddBonuses(this: Range,
-        ranges: Range[],
-        bonuses: { type: RangeType; val: number }[]
-    ): Range[] {
-        let output = [] as Range[];
-        ranges.forEach(range => {
-            let bonus = bonuses
-                .filter(x => x.type === range.Type)
-                .map(x => x.val)
-                .reduce((sum, bonus) => sum + bonus, 0);
-            output.push(
-                new Range({
-                    type: range.Type,
-                    val: range._value,
-                    override: range._override,
-                    bonus: bonus,
-                })
-            );
-        });
-        return output;
+  public get DiscordEmoji(): string {
+    switch (this._range_type) {
+      case RangeType.Range:
+      case RangeType.Threat:
+      case RangeType.Thrown:
+        return `:cc_${this._range_type.toLowerCase()}:`
     }
+    return `:cc_aoe_${this._range_type.toLowerCase()}:`
+  }
+
+  public get Text(): string {
+    if (this._override) return this.Value.toString()
+    if (this._bonus) return `${this._range_type} ${this.Value} (+${this._bonus})`
+    return `${this._range_type} ${this.Value}`
+  }
+
+  public static CalculateRange(item: MechWeapon, mech: Mech): Range[] {
+    if (!item || !mech) return []
+    if (!Bonus.get('range', mech)) return item.Range
+    const bonuses = mech.Bonuses.filter(x => x.ID === 'range')
+    const output = []
+    item.Range.forEach(r => {
+      if (r.Override) return
+      let bonus = 0
+      bonuses.forEach(b => {
+        if (b.WeaponTypes.length && !b.WeaponTypes.some(wt => item.WeaponType === wt)) return
+        if (b.WeaponSizes.length && !b.WeaponSizes.some(ws => item.Size === ws)) return
+        if (b.DamageTypes.length && !b.DamageTypes.some(dt => item.DamageType.some(x => x === dt)))
+          return
+        if (!b.RangeTypes.length || b.RangeTypes.some(rt => r.Type === rt)) {
+          bonus += Bonus.Evaluate(b, mech.Pilot)
+        }
+      })
+      output.push(
+        new Range({
+          type: r.Type,
+          val: r._value,
+          override: r._override,
+          bonus: bonus,
+        })
+      )
+    })
+    return output
+  }
 }
-*/
-// export const RangesMixReader = (x: IRangeData[] | undefined) => (x || []).map(CreateRange);
-// export const RangesMixWriter = (x: Range[]) => x.map(i => i.Serialize());
-export const RangesMixReader = def_empty_map(CreateRange);

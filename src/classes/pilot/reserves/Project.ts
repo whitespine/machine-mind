@@ -1,5 +1,5 @@
 import { EntryType, Reserve, ReserveType } from "@/class";
-import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta';
+import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta.typs';
 import { IReserveData } from './Reserve';
 
 

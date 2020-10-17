@@ -1,8 +1,8 @@
-import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta';
+import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta.typs';
 import { SerUtil, SimSer } from '@/new_meta';
 import { ActivationType } from './enums';
 
-interface IActionData {
+export interface IActionData {
   id?: string // For synergies and stuff like that
   name: string
   activation: ActivationType

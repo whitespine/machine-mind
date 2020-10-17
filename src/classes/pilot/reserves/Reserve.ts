@@ -1,185 +1,117 @@
-import { store } from '@/store'
-import { ReserveType, Synergy, MechEquipment, MechWeapon, MechSystem } from '@/class'
-import { reserves } from 'lancer-data'
-import { IActionData, Action } from '@/classes/Action'
-import { IBonusData, Bonus } from '@/classes/Bonus'
-import { ISynergyData, ICounterData } from '@/interface'
-import { IDeployableData } from '@/classes/Deployable'
-import { SimSer } from '@/new_meta'
+import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@/class";
+import { reserves } from "lancer-data";
+import { IActionData, Action } from "@/classes/Action";
+import { IBonusData, Bonus } from "@/classes/Bonus";
+import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@/interface";
+import { EntryType, RegEntry, RegRef, SerUtil, SimSer } from "@/new_meta";
+import { ReserveType } from '@/classes/enums';
 
 interface AllReserveData {
-  id: string
-  type?: string
-  name?: string
-  label?: string
-  description?: string
-  resource_name: string
-  resource_note: string
-  resource_cost: string
-  used: boolean
-  consumable: boolean
-  actions?: IActionData[]
-  bonuses?: IBonusData[]
-  synergies?: ISynergyData[]
-  integrated?: string[]
+    id: string;
+    type?: string;
+    name?: string;
+    label?: string;
+    description?: string;
+    resource_name: string;
+    resource_note: string;
+    resource_cost: string;
+    used: boolean;
+    consumable: boolean;
+    actions?: IActionData[];
+    bonuses?: IBonusData[];
+    synergies?: ISynergyData[];
 }
-export interface PackedReserveData extends AllReserveData{
-  deployables?: IDeployableData[]
-  counters?: ICounterData[]
+export interface PackedReserveData extends AllReserveData {
+    deployables?: PackedDeployableData[];
+    counters?: PackedCounterData[];
+    integrated?: string[];
 }
 
-export class Reserve extends SimSer<IReserveData> {
-  public ID: string
-  public ResourceLabel: string
-  public Consumable: boolean
-  public Type: ReserveType
-  public Actions: Action[]
-  public Bonuses: Bonus[]
-  public Synergies: Synergy[]
-  public Deployables: IDeployableData[]
-  public Counters: ICounterData[]
-  private _name: string
-  private _resource_name: string
-  private _resource_note: string
-  private _resource_cost: string
-  private _description: string
-  private _integrated: string[]
-  private _used: boolean
+export interface RegReserveData extends AllReserveData {
+    deployables: RegRef<EntryType.DEPLOYABLE>[];
+    counters: RegCounterData[];
+    integrated: RegRef<any>[];
+}
 
-  public constructor(data: IReserveData) {
-    this.ID = data.id
-    this.ResourceLabel = data.label || ''
-    this.Consumable = data.consumable
-    this.Type = (data.type as ReserveType) || ReserveType.Resources
-    this._name = data.name || ''
-    this._resource_name = data.resource_name || ''
-    this._resource_note = data.resource_note || ''
-    this._resource_cost = data.resource_cost || ''
-    this._description = data.description || ''
-    this.Actions = data.actions ? data.actions.map(x => new Action(x)) : []
-    this.Bonuses = data.bonuses ? data.bonuses.map(x => new Bonus(x)) : []
-    this.Synergies = data.synergies
-      ? data.synergies.map(x => new Synergy(x, `Reserve: ${data.name}`))
-      : []
-    this.Deployables = data.deployables ? data.deployables : []
-    this.Counters = data.counters ? data.counters : []
-    this._integrated = data.integrated ? data.integrated : []
-    this._used = false
-  }
+export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
+    ID!: string;
+    ResourceLabel!: string;
+    Consumable!: boolean;
+    ReserveType!: ReserveType;
+    Actions!: Action[];
+    Bonuses!: Bonus[];
+    Synergies!: Synergy[];
+    Deployables!: Deployable[];
+    Counters!: Counter[];
+    Name!: string;
+    ResourceName!: string ;
+    ResourceNote!: string ;
+    ResourceCost!: string ;
+    Description!: string;
+    Integrated!: RegEntry<any, any>[];
+    Used!: boolean;
 
-  public get Icon(): string {
-    if (this.Type === ReserveType.Organization) return 'mdi-account-group'
-    if (this.Type === ReserveType.Project) return 'cci-orbital'
-    return `cci-reserve-${this.Type.toString().toLowerCase()}`
-  }
-
-  public get IntegratedEquipment(): MechEquipment[] {
-    if (!this._integrated) return []
-    return this._integrated.map(x => {
-      const w = store.getters.referenceByID('MechWeapons', x)
-      if (w) return w
-      return store.getters.referenceByID('MechSystems', x)
-    })
-  }
-
-  public get IntegratedWeapons(): MechWeapon[] {
-    return this._integrated.map(x => store.getters.referenceByID('MechWeapons', x))
-  }
-
-  public get IntegratedSystems(): MechSystem[] {
-    return this._integrated.map(x => store.getters.referenceByID('MechSystems', x))
-  }
-
-  public get Color(): string {
-    return this._used ? 'grey darken-1' : `reserve--${this.Type.toLowerCase()}`
-  }
-
-  public get Name(): string {
-    return this._name
-  }
-
-  public set Name(n: string) {
-    this._name = n
-  }
-
-  public get ResourceName(): string {
-    return this._resource_name
-  }
-
-  public set ResourceName(name: string) {
-    this._resource_name = name
-    this.save()
-  }
-
-  public get ResourceCost(): string {
-    return this._resource_cost
-  }
-
-  public set ResourceCost(cost: string) {
-    this._resource_cost = cost
-    this.save()
-  }
-
-  public get Description(): string {
-    return this._description
-  }
-
-  public get Note(): string {
-    return this._resource_note
-  }
-
-  public set Note(note: string) {
-    this._resource_note = note
-    this.save()
-  }
-
-  public get Used(): boolean {
-    return this._used
-  }
-
-  public set Used(b: boolean) {
-    this._used = b
-  }
-
-  public static Serialize(reserve: Reserve): IReserveData {
-    return {
-      id: reserve.ID,
-      type: reserve.Type,
-      name: reserve.Name,
-      label: reserve.ResourceLabel,
-      description: reserve.Description,
-      resource_name: reserve.ResourceName,
-      resource_note: reserve.Note,
-      resource_cost: reserve.ResourceCost,
-      consumable: reserve.Consumable,
-      used: reserve.Used,
+    protected async load(data: RegReserveData) {
+        this.ID = data.id;
+        this.ResourceLabel = data.label || "";
+        this.Consumable = data.consumable;
+        this.ReserveType = (data.type as ReserveType) || ReserveType.Resources;
+        this.Name = data.name || "";
+        this.ResourceName = data.resource_name ;
+        this.ResourceNote = data.resource_note ;
+        this.ResourceCost = data.resource_cost ;
+        this.Description = data.description || "";
+        this.Actions = data.actions?.map(x => new Action(x)) ?? [];
+        this.Bonuses = data.bonuses?.map(x => new Bonus(x)) ?? [];
+        this.Synergies = data.synergies?.map(x => new Synergy(x)) ?? [];
+        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        this.Counters = data.counters?.map(c => new Counter(c));
+        this.Integrated = await this.Registry.resolve_many(data.integrated);
+        this.Used = data.used ?? false;
     }
-  }
 
-  public static Deserialize(rData: IReserveData): Reserve {
-  }
+    public get Icon(): string {
+        if (this.ReserveType === ReserveType.Organization) return "mdi-account-group";
+        if (this.ReserveType === ReserveType.Project) return "cci-orbital";
+        return `cci-reserve-${this.ReserveType.toString().toLowerCase()}`;
+    }
 
-  protected load(data: IReserveData): void {
-      throw new Error('Method not implemented.')
-  }
+    public get IntegratedEquipment(): MechEquipment[] {
+      return this.Integrated.filter(x => [EntryType.MECH_SYSTEM, EntryType.MECH_WEAPON].includes(x.Type)) as Array<MechWeapon | MechSystem>;
+    }
 
-  public save(): IReserveData {
-    let data = reserves.find(x => x.id === rData.id)
-    if (!data)
-      data = {
-        id: rData.id,
-        type: rData.type,
-        name: rData.name,
-        label: rData.label,
-        description: rData.description,
-      }
-    const r = new Reserve(data)
-    r._resource_name = rData.resource_name
-    r._resource_note = rData.resource_note
-    r._resource_cost = rData.resource_cost
-    r._used = rData.used
-    return r
-  }
+    public get IntegratedWeapons(): MechWeapon[] {
+      return this.Integrated.filter(x => EntryType.MECH_WEAPON == x.Type) as Array<MechWeapon>;
+    }
+
+    public get IntegratedSystems(): MechSystem[] {
+      return this.Integrated.filter(x => EntryType.MECH_SYSTEM == x.Type) as Array<MechSystem>;
+    }
+
+    public get Color(): string {
+        return this.Used ? "grey darken-1" : `reserve--${this.Type.toLowerCase()}`;
+    }
+
+
+    public async save(): Promise<RegReserveData> {
+        return {
+            id: this.ID,
+            type: this.Type,
+            name: this.Name,
+            label: this.ResourceLabel,
+            description: this.Description,
+            resource_name: this.ResourceName ,
+            resource_note: this.ResourceNote ,
+            resource_cost: this.ResourceCost ,
+            consumable: this.Consumable,
+            used: this.Used,
+            counters: this.Counters.map(c => c.save()),
+            deployables: this.Deployables.map(d => d.as_ref()),
+            integrated: this.Integrated.map(i => i.as_ref()),
+            actions: this.Actions.map(a => a.save()),
+            bonuses: this.Bonuses.map(b => b.save()),
+            synergies: this.Synergies.map(s => s.save())
+        };
+    }
 }
 
-export { Reserve, IReserveData }

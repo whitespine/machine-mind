@@ -1,19 +1,4 @@
-import { EntryType } from "@/class";
-
-import {
-    MixLinks,
-    MixBuilder,
-    RWMix,
-    uuid,
-    ident,
-    ser_many,
-    defs,
-    defb,
-    ident_strict,
-    def_empty_map,
-    def_empty,
-} from "@/mixmeta";
-import { SimSer } from "@/new_meta";
+import { EntryType, RegEntry, RegRef, RegSer, SimSer } from "@/new_meta";
 
 export interface ITagTemplateData {
     id: string;
@@ -23,20 +8,24 @@ export interface ITagTemplateData {
     hidden?: boolean;
 }
 
-export interface ITagInstanceData {
+export interface PackedTagInstanceData {
     id: string;
     val?: string | number;
 }
 
-export class TagTemplate extends SimSer<ITagTemplateData> {
+export interface RegTagInstanceData {
+    tag: RegRef<EntryType.TAG>;
+    val?: string | number;
+}
+
+export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
     ID!: string;
     Name!: string;
     Description!: string;
     _filter_ignore!: boolean | null; // Whether to ignore this tags data when filtering
     _hidden!: boolean | null;
-    EntryType: EntryType.TAG;
 
-    protected load(data: ITagTemplateData): void {
+    protected async load(data: ITagTemplateData): Promise<void> {
         this.ID = data.id;
         this.Name = data.id;
         this.Description = data.description;
@@ -44,7 +33,7 @@ export class TagTemplate extends SimSer<ITagTemplateData> {
         this._hidden = data.hidden || null; // Whether to show this tag
     }
 
-    public save(): ITagTemplateData {
+    public async save(): Promise<ITagTemplateData> {
         return {
             id: this.ID,
             name: this.Name,
@@ -54,6 +43,7 @@ export class TagTemplate extends SimSer<ITagTemplateData> {
         };
     }
 
+    // Helpers for quickly checking common tags
     get IsHidden(): boolean {
         return this._hidden || false;
     }
@@ -81,10 +71,34 @@ export class TagTemplate extends SimSer<ITagTemplateData> {
     get IsSmart(): boolean {
         return this.ID === "tg_smart";
     }
-
-    // Helpers
 }
 
-export class TagInstance extends Reg {
-    template: TagTemplate
+
+export class TagInstance extends RegSer<RegTagInstanceData> {
+    Tag!: TagTemplate;
+    Value!: string | number | null;
+
+    protected async load(data: RegTagInstanceData): Promise<void> {
+        this.Value = data.val ?? null;
+        let Tag = await this.Registry.resolve(data.tag);
+        if(!Tag) {
+            console.error(`Tag ${} not found - defaulting to an anonymous tag.`);
+            Tag = new TagTemplate(EntryType.TAG, this.Registry, "error", {
+                description: "INVALID",
+                id: "INVALID",
+                name: "INVALID",
+                filter_ignore: true,
+                hidden: false // Want it to be seen so it can be fixed
+            });
+            await Tag.ready();
+        }
+        this.Tag = Tag;
+    }
+
+    public async save(): Promise<RegTagInstanceData> {
+        return {
+            val: this.Value ?? undefined,
+            tag: this.Tag.as_ref()
+        }
+    }
 }

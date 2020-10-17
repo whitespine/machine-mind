@@ -1,6 +1,6 @@
 import { Action, Bonus, Damage, Deployable, EntryType, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem, ICompendiumItemData, IQuirkData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta';
+import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta.typs';
 import { RegSer } from '@/new_meta';
 import { DEFAULT_BREW_ID } from '../enums';
 

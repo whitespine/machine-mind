@@ -22,26 +22,6 @@ export interface RegCounterData extends PackedCounterData {
 }
 
 // This is kinda weird because I think the compcon storage strategy is kinda dumb. So, when we load, we take both the ICounterData as well as an array off ICounterSaveData
-export function unpack_counter_data(
-    packed_counters: PackedCounterData[],
-    counter_saves: PackedCounterSaveData[]
-) {
-    // Init
-    let out: RegCounterData[] = packed_counters.map(x => ({
-        ...x,
-        val: x.default_value || x.min || 0,
-    }));
-
-    // Load saves
-    for (let cnt of out) {
-        let save = counter_saves.find(y => y.id == cnt.id);
-        if (save) {
-            cnt.val = save.val;
-        }
-    }
-
-    return out;
-}
 
 export class Counter extends SimSer<RegCounterData> {
     public ID!: string;
@@ -86,4 +66,23 @@ export class Counter extends SimSer<RegCounterData> {
     public Reset(): void {
         this._value = this.Default;
     }
+
+static  unpack(
+    packed_counter: PackedCounterData,
+    counter_saves?: PackedCounterSaveData[]
+): RegCounterData {
+    // Init
+    let out: RegCounterData = {
+        ...packed_counter,
+        val: packed_counter.default_value || packed_counter.min || 0,
+    };
+
+    // Load saves
+    let save = counter_saves?.find(y => y.id == out.id);
+    if (save) {
+        out.val = save.val;
+    }
+
+    return out;
+}
 }

@@ -8,7 +8,7 @@ import {
     PilotEquipment
 } from "@/class";
 import { IPilotArmorData, IPilotGearData, IPilotWeaponData } from '@/interface';
-import { ident, MixBuilder, RWMix, MixLinks, uuid } from '@/mixmeta';
+import { ident, MixBuilder, RWMix, MixLinks, uuid } from '@/mixmeta.typs';
 import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './PilotEquipment';
 
 export interface IPilotLoadoutData {

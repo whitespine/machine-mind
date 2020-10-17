@@ -1,4 +1,4 @@
-import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
+import { ident, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta.typs';
 import { IRegistryItemData, VRegistryItem } from '../registry;
 
 export enum SkillFamily {

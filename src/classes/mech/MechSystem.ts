@@ -2,7 +2,7 @@ import { MechEquipment, SystemType, EntryType, Deployable, Synergy, Bonus, Actio
 import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ITagInstanceData } from "@/interface";
 import { VRegistryItem } from '../registry';
 import { Counter } from '../Counter';
-import { MixBuilder, MixLinks } from '@/mixmeta';
+import { MixBuilder, MixLinks } from '@/mixmeta.typs';
 
 export interface IMechSystemData  {
     id: string,

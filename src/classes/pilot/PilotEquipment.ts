@@ -1,6 +1,6 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
 import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData } from "@/interface";
-import { ActionsMixReader, DeployableMixReader, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, SynergyMixReader, TagInstanceMixReader, uuid, BonusesMixReader, defs, def_anon, ident_drop_anon, def, ident_drop_anon_strict, DamagesMixReader, ser_many } from '@/mixmeta';
+import { ActionsMixReader, DeployableMixReader, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, SynergyMixReader, TagInstanceMixReader, uuid, BonusesMixReader, defs, def_anon, ident_drop_anon, def, ident_drop_anon_strict, DamagesMixReader, ser_many } from '@/mixmeta.typs';
 
 
 ///////////////////////////////////////////////////////////

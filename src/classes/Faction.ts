@@ -1,5 +1,4 @@
-import { def, defs, def_lazy, ident, ident_drop_null, MixBuilder, MixLinks, RWMix, uuid } from '@/mixmeta';
-import { Registry, VRegistryItem } from '@/classes/registry';
+import { EntryType, RegEntry, SimSer } from '@/new_meta';
 
 export interface IFactionData {
     id: string;
@@ -10,23 +9,32 @@ export interface IFactionData {
     logo_url?: string;
 }
 
-export interface Faction extends MixLinks<IFactionData>, VRegistryItem{
-    ID: string;
-    Name: string;
-    Description: string;
-    Logo: string;
-    LogoURL: string | null;
-    Color: string;
-}
-export async function CreateFaction(data: IFactionData | null, ctx: Registry): Promise<Faction> {
-    let mb = new MixBuilder<Faction, IFactionData>({});
-    mb.with(new RWMix("ID", "name", def_lazy(uuid), ident));
-    mb.with(new RWMix("Name", "name", defs("New Faction"), ident));
-    mb.with(new RWMix("Description", "description", defs("No description"), ident));
-    mb.with(new RWMix("Logo", "logo", defs(""), ident));
-    mb.with(new RWMix("LogoURL", "logo_url", defs(""), ident_drop_null));
-    mb.with(new RWMix("Color", "color", defs("grey"), ident));
+export class Faction extends RegEntry<EntryType.FACTION, IFactionData>{
+    ID!: string;
+    Name!: string;
+    Description!: string;
+    Logo!: string;
+    LogoURL!: string | null;
+    Color!: string;
 
-    return await mb.finalize(data, ctx);
+    protected async load(data: IFactionData): Promise<void> {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Description = data.description;
+        this.Logo = data.logo;
+        this.LogoURL = data.logo_url || null;
+        this.Color = data.color;
+    }
+
+    public async save(): Promise<IFactionData> {
+        return {
+            id: this.ID,
+            name: this.Name,
+            description: this.Description,
+            logo: this.Logo,
+            color: this.Color,
+            logo_url: undefined
+        }
+    }
 }
 

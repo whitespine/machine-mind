@@ -43,11 +43,11 @@ export { IntegratedMount } from "./classes/mech/IntegratedMount";
 export { EquippableMount } from "./classes/mech/EquippableMount";
 export { WeaponSlot } from "./classes/mech/WeaponSlot";
 export { Mech } from "./classes/mech/Mech";
-export { Reserve, CreateReserve } from "./classes/pilot/reserves/Reserve";
-export { Project, CreateProject} from "./classes/pilot/reserves/Project";
-export { Organization, CreateOrganization } from "./classes/pilot/reserves/Organization";
-export { Manufacturer, CreateManufacturer } from "./classes/Manufacturer";
-export { Faction, CreateFaction } from "./classes/Faction";
+export { Reserve } from "./classes/pilot/reserves/Reserve";
+export { Project} from "./classes/pilot/reserves/Project";
+export { Organization } from "./classes/pilot/reserves/Organization";
+export { Manufacturer } from "./classes/Manufacturer";
+export { Faction } from "./classes/Faction";
 export { Statblock } from "./classes/Statblock";
 /*
 export {

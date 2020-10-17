@@ -1,5 +1,5 @@
 import { Rules } from "@/class";
-import { ident, MixBuilder, RWMix, MixLinks, defn } from '@/mixmeta';
+import { ident, MixBuilder, RWMix, MixLinks, defn } from '@/mixmeta.typs';
 import { HASE } from '../enums';
 import { Registry } from '../registry';
 
