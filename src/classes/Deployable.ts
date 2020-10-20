@@ -8,8 +8,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry } from "@/new_meta";
-import { unpack_counter_data } from './Counter';
+import { EntryType, RegEntry, Registry } from "@/new_meta";
 import { ActivationType } from "./enums";
 
 interface AllDeployableData {
@@ -140,11 +139,16 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         };
     }
 
-    public static unpack(dep: PackedDeployableData): RegDeployableData {
-        return {
+    // Loads this item into the registry. Only use as needed (IE once)
+    public static async unpack(dep: PackedDeployableData, reg: Registry): Promise<Deployable> {
+        let tags = await Promise.all(dep.tags?.map(t => TagInstance.unpack(t, reg)) || []) ;
+        let reg_tags = await Promise.all(tags.map(t => t.save())); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
+        let counters = await Promise.all(dep.counters?.map(c => Counter.unpack(c, [])) || []);
+         let unpacked: RegDeployableData = {
             ...dep,
-            counters: dep.counters?.map(unpack_counter_data)
-        
+            counters,
+            tags: reg_tags
         };
+        return reg.get_cat(EntryType.DEPLOYABLE).create(unpacked);
     }
 }

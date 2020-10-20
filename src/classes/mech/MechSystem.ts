@@ -1,10 +1,9 @@
-import { MechEquipment, SystemType, EntryType, Deployable, Synergy, Bonus, Action, TagInstance } from "@/class";
-import { IActionData, IBonusData, ISynergyData, IDeployableData, ICounterData, ITagInstanceData } from "@/interface";
-import { VRegistryItem } from '../registry';
-import { Counter } from '../Counter';
-import { MixBuilder, MixLinks } from '@/mixmeta.typs';
+import { MechEquipment, Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@/class";
+import { IActionData, IBonusData, ISynergyData, PackedCounterData, PackedDeployableData, PackedTagInstanceData, RegCounterData, RegDeployableData, RegTagInstanceData, } from "@/interface";
+import { EntryType, RegEntry, RegRef } from '@/new_meta';
+import { SystemType } from '../enums';
 
-export interface IMechSystemData  {
+interface AllMechSystemData  {
     id: string,
     "name": string,
     "source": string, // must be the same as the Manufacturer ID to sort correctly
@@ -13,34 +12,45 @@ export interface IMechSystemData  {
     "type"?: SystemType
     "sp": number,
     "description": string, // v-html
-    "tags"?: ITagInstanceData[],
     "effect": string, // v-html
     "actions"?: IActionData[],
     "bonuses"?: IBonusData[]
     "synergies"?: ISynergyData[],
-    "deployables"?: IDeployableData[],
-    "counters"?: ICounterData[],
-    "integrated"?: string[]
   }
 
-export interface MechSystem extends MixLinks<IMechSystemData>, VRegistryItem {
-    Name: string;
-    Source: string;
-    SysType: SystemType;
-    License: string;
-    LicenseLevel: number;
-    Type: SystemType | null;
-    SP: number;
-    Description: string;
-    Effect: string;
+export interface RegMechSystemData extends AllMechSystemData {
+    "deployables": RegDeployableData[],
+    "integrated": RegRef<any>[]
+    "counters": RegCounterData[],
+    "tags": RegTagInstanceData[],
 
-    Tags: TagInstance[],
-    Actions: Action[],
-    Bonuses: Bonus[],
-    Counters: Counter[],
-    Synergies: Synergy[],
-    Deployables: Deployable[],
-    Integrated: VRegistryItem[]
+}
+
+export interface PackedMechSystemData extends AllMechSystemData {
+    "deployables"?: PackedDeployableData[],
+    "integrated"?: string[]
+    "counters"?: PackedCounterData[],
+    "tags"?: PackedTagInstanceData[],
+
+}
+
+export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemData> {
+    Name!: string;
+    Source!: string;
+    SysType!: SystemType;
+    License!: string;
+    LicenseLevel!: number;
+    SP!: number;
+    Description!: string;
+    Effect!: string;
+
+    Tags!: TagInstance[];
+    Actions!: Action[];
+    Bonuses!: Bonus[];
+    Counters!: Counter[];
+    Synergies!: Synergy[];
+    Deployables!: Deployable[];
+    Integrated!: RegEntry<any, any>[];
 }
 
 export function CreateMechSystem {

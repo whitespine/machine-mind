@@ -42,9 +42,8 @@ export class Counter extends SimSer<RegCounterData> {
     }
 
     public save(): RegCounterData {
-        throw new Error('Method not implemented.');
+        throw new Error("Method not implemented.");
     }
-
 
     // Bound on set
     public get Value(): number {
@@ -67,22 +66,23 @@ export class Counter extends SimSer<RegCounterData> {
         this._value = this.Default;
     }
 
-static  unpack(
-    packed_counter: PackedCounterData,
-    counter_saves?: PackedCounterSaveData[]
-): RegCounterData {
-    // Init
-    let out: RegCounterData = {
-        ...packed_counter,
-        val: packed_counter.default_value || packed_counter.min || 0,
-    };
+    // Doesn't need registers
+    static unpack(
+        packed_counter: PackedCounterData,
+        counter_saves?: PackedCounterSaveData[]
+    ): RegCounterData {
+        // Init
+        let out: RegCounterData = {
+            ...packed_counter,
+            val: packed_counter.default_value || packed_counter.min || 0,
+        };
 
-    // Load saves
-    let save = counter_saves?.find(y => y.id == out.id);
-    if (save) {
-        out.val = save.val;
+        // Load saves
+        let save = counter_saves?.find(y => y.id == out.id);
+        if (save) {
+            out.val = save.val;
+        }
+
+        return out;
     }
-
-    return out;
-}
 }

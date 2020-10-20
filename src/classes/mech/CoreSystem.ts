@@ -100,7 +100,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             counters: this.Counters.map(c => c.save()),
             deployables: this.Deployables.map(d => d.as_ref()),
             integrated: this.Integrated.map(r => r.as_ref()),
-            tags: this.Tags.map(t => t.save())
+            tags: await Promise.all(this.Tags.map(t => t.save()))
         };
     }
 

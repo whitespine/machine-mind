@@ -32,7 +32,6 @@ export interface RegQuirkData extends AllQuirkData {
 export class Quirk extends RegSer<EntryType.QUIRK, RegQuirkData> {
   ID: string;
   Name: string;
-  Type: EntryType.QUIRK;
   Tags: TagInstance[];
   Actions: Action[];
   Bonuses: Bonus[];

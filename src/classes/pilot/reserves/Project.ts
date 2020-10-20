@@ -14,7 +14,6 @@ export interface IProjectData extends IReserveData {
 export interface Project extends MixLinks<IProjectData> {
     // Dup of reserve.
     ID: string;
-    Type: EntryType.RESERVE;
     Name: string;
     Label: string;
     Description: string;

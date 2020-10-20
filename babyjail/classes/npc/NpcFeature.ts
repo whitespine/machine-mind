@@ -1,5 +1,4 @@
-import { Tag } from "@/class";
-import { ITagInstanceData } from "@/interface";
+import { PackedTagInstanceData } from '@/interface';
 
 export enum NpcFeatureType {
     Trait = "Trait",
@@ -15,7 +14,7 @@ export interface IOriginData {
     base: boolean;
 }
 
-export interface INpcFeatureData {
+interface AllNpcFeatureData {
     id: string;
     name: string;
     origin: IOriginData;
@@ -23,10 +22,16 @@ export interface INpcFeatureData {
     effect?: string;
     bonus?: object;
     override?: object;
-    tags: ITagInstanceData[];
-    brew: string;
     hide_active: boolean;
     type: NpcFeatureType;
+}
+
+export interface PackedNpcFeatureData extends AllNpcFeatureData {
+    tags: PackedTagInstanceData[];
+}
+
+export interface RegNpcFeatureData extends AllNpcFeatureData {
+    tags: RegTagInstanceData[];
 }
 
 export abstract class NpcFeature {
@@ -38,7 +43,6 @@ export abstract class NpcFeature {
     private _override: object;
     private _locked: boolean;
     private _tags: ITagInstanceData[];
-    private _brew: string;
     private _hide_active: boolean;
     protected type: NpcFeatureType;
 

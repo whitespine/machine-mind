@@ -2,10 +2,6 @@ import * as lancerData from "@/classes/utility/typed_lancerdata";
 import type {
     Skill,
     Reserve,
-    ContentPack,
-    NpcClass,
-    NpcTemplate,
-    NpcFeature,
     Talent,
     CoreBonus,
     Frame,
@@ -22,9 +18,10 @@ import type {
     Environment,
     Sitrep, PilotEquipment, Deployable, Quirk, Pilot
 } from "@/class";
+import { ContentPack } from "@/class";
+import * as nanoid from "nanoid";
 import { CORE_BREW_ID } from '@/classes/enums';
-import type { ICoreBonusData, IEnvironmentData, IFactionData, IFrameData, IManufacturerData, IMechSystemData, IMechWeaponData, INpcClassData, INpcFeatureData, INpcTemplateData, IPilotArmorData, IPilotEquipmentData, IPilotGearData, IPilotWeaponData, ISitrepData, ISkillData, ITagTemplateData, ITalentData, IWeaponModData, IStatusData, IDeployableData, IQuirkData, IPilotData, IReserveData } from '@/interface';
-import { RegSer } from '@/new_meta';
+import { EntryType, LiveEntryTypes, RegCat, RegEntryTypes, RegSer } from '@/new_meta';
 
 
 /*
@@ -33,39 +30,6 @@ Everything herein implements VCompendiumItem
 */
 
 
-
-// We use this mapping to map Entry items to raw data types
-/*
-type LiveSuper = {[key in EntryType]: VRegistryItem<any>};
-interface LiveTypeMapping extends LiveSuper {
-    [EntryType.CORE_BONUS]: CoreBonus;
-    [EntryType.FACTION]: Faction;
-    [EntryType.FRAME]: Frame;
-    [EntryType.MANUFACTURER]: Manufacturer;
-    [EntryType.NPC_CLASS]: NpcClass;
-    [EntryType.NPC_TEMPLATE]: NpcTemplate;
-    [EntryType.NPC_FEATURE]: NpcFeature;
-    [EntryType.WEAPON_MOD]: WeaponMod;
-    [EntryType.MECH_WEAPON]: MechWeapon;
-    [EntryType.MECH_SYSTEM]: MechSystem;
-    [EntryType.TALENT]: Talent;
-    [EntryType.SKILL]: Skill ;
-    [EntryType.RESERVE]: Reserve ;
-    [EntryType.ENVIRONMENT]: Environment ;
-    [EntryType.SITREP]: Sitrep ;
-    [EntryType.TAG]: TagTemplate ;
-    // [EntryType.LICENSE]: License ;
-    [EntryType.PILOT_GEAR]: PilotGear ;
-    [EntryType.PILOT_ARMOR]: PilotArmor ;
-    [EntryType.PILOT_WEAPON]: PilotWeapon ;
-    [EntryType.PILOT_EQUIPMENT]: PilotEquipment ;
-    [EntryType.STATUS]: Status ;
-    [EntryType.CONDITION]: Status ;
-    [EntryType.DEPLOYABLE]: Deployable ;
-    [EntryType.QUIRK]: Quirk ;
-    [EntryType.PILOT]: Pilot ;
-}
-*/
 
 // This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
 
@@ -76,55 +40,54 @@ interface LiveTypeMapping extends LiveSuper {
 // Contains all lookupable items
 export class StaticRegistryCat<T extends EntryType> extends RegCat<T> {
     // Just store our data as a k/v lookup
-    data: Map<string, RawTypeMapping[T]> = new Map();
+    data: Map<string, RegEntryTypes[T]> = new Map();
 
-    async get_raw(id: string): Promise<RawTypeMapping[T] | null> {
+    // Create a bunch o thangs
+    async create_many(...vals: RegEntryTypes[T][]): Promise<LiveEntryTypes[T][]> {
+        let new_items: LiveEntryTypes[T][] = [];
+        for(let v of vals) {
+            // Make a random id
+            let id =nanoid.nanoid(); 
+
+            // Assign it
+            this.data.set(id, v);
+
+            // Yield as a live copy
+            let created = this.creation_func(this.parent, v);
+        }
+        return new_keys;
+    }
+
+    create_default(): Promise<LiveEntryTypes[T]> {
+        throw new Error('Method not implemented.');
+    }
+
+
+    async get_raw(id: string): Promise<RegEntryTypes[T] | null> {
         return this.data.get(id) || null;
     }
-    async list_raw(): Promise<RawTypeMapping[T][]> {
+    async list_raw(): Promise<RegEntryTypes[T][]> {
         return Array.from(this.data.values());
     }
-    get_live(id: string): Promise<LiveTypeMapping[T] | null> {
+    get_live(id: string): Promise<LiveEntryTypes[T] | null> {
         throw new Error('Method not implemented.');
     }
-    list_live(): Promise<LiveTypeMapping[T][]> {
+    list_live(): Promise<LiveEntryTypes[T][]> {
         throw new Error('Method not implemented.');
     }
-    update(...vals: LiveTypeMapping[T][]): Promise<void> {
+    update(...vals: LiveEntryTypes[T][]): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
     // Pretty simple
-    async delete_id(id: string): Promise<RawTypeMapping[T] | null> {
+    async delete_id(id: string): Promise<RegEntryTypes[T] | null> {
         let r = this.data.get(id);
         this.data.delete(id);
         return r || null;
     }
 
     // Create new entries in our data map
-    async create(...vals: LiveTypeMapping[T][]): Promise<string[]> {
-        let new_keys: string[] = [];
-        for(let v of vals) {
-            let vt = v as VRegistryItem;
-            if(vt.Type !== this.cat) {
-                throw new Error(`Attempted to put ${vt.Type} into the ${this.cat} category of the store`);
-            }
-
-            // We just use their compendium IDs, doing a really dumb collision avoidance routine
-            let base_id = vt.ID;
-            if(base_id == ID_ANONYMOUS) {
-                base_id = "anonymous_item";
-            }
-            let reg_id = base_id;
-            let ctr = 1;
-            while(this.data.has(reg_id)) {
-                reg_id = `${base_id}_${ctr}`;
-            }
-
-            this.data.set(reg_id, vt.Serialize());
-            new_keys.push(reg_id);
-        }
-        return new_keys;
+    async create(...vals: LiveEntryTypes[T][]): Promise<string[]> {
     }
 
 }

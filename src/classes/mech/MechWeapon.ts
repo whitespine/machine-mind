@@ -13,6 +13,7 @@ import type {
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@/interface";
 import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
 import { EntryType, RegEntry, Registry, RegRef, RegSer } from '@/new_meta';
+import { RegMechData } from './Mech';
 // TODO:
 // class WeaponAmmo {}
 
@@ -74,25 +75,6 @@ export interface RegMechWeaponProfile   {
   "counters"?: RegCounterData[],
 }
 
-// Unpack this item into the given registry, adding any necessary items
-export function unpack_weapon(wep: PackedMechWeaponData, reg: Registry ): RegMechWeaponData {
-  let {id, sp, source, profiles, name, mount, license_level, license, synergies, integrated, deployables, counters, bonuses, actions, description, tags, type, damage, effect, on_attack, on_crit, on_hit, range  } = wep;
-  
-  // Make a default profiles
-  let default_profile: RegMechWeaponProfile = {
-    description,
-    type, 
-    actions, 
-    bonuses,range, counters, damage?.map(d => Damage.unpack(d, reg)), deployables: deployables?.map(d => Deployable.unpack(d, reg)), effect, on_attack, on_crit, on_hit, synergies, tags
-
-  }
-
-  // Pack in the deployables
-  let result: RegMechWeaponData = { id, integrated: reg., license, license_level, mount, name, profiles, selected_profile: 0, source, sp
-
-  }
-
-}
 
 export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponData>{
    ID!: string
@@ -132,6 +114,33 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     let sel = this.Profiles[this.SelectedProfileIndex] ?? this.Profiles[0];
     return sel;
   }
+
+  static async unpack(dat: PackedMechWeaponData, reg: Registry) {
+    // Get the basics
+    let integrated: RegEntry<any, any> = reg.();
+
+    let unpacked: RegMechWeaponData = {
+      id: dat.id,
+
+    };
+
+    // Get profiles - depends on if array is provided, but we tend towards the default 
+    let default_profile: RegMechWeaponProfile = {};
+
+    let profiles: RegMechWeaponProfile[];
+    if(dat.profiles && dat.profiles.length) {
+      profiles = [];
+    } else {
+      profiles = [default_profile];
+    }
+
+    unpacked.profiles = profiles;
+    return reg.get_cat(EntryType.MECH_WEAPON).create(this);
+  }
+
+
+  // Checks whether the given bonus can apply to this weapon
+  can_bonus_apply()
 }
 
 export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
@@ -156,6 +165,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
     protected async load(data: RegMechWeaponProfile): Promise<void> {
       throw new Error('Method not implemented.');
     }
+
     public async save(): Promise<RegMechWeaponProfile> {
       return {
 

@@ -78,12 +78,11 @@ export class Bonus extends SimSer<IBonusData> {
         return (pmath.parse(val));
     }
 
-    public static get(id: string, mech: Mech): number {
-        return mech.Bonuses.filter(x => x.ID === id).reduce(
+    public static sum(id: string, mech: Mech): number {
+        return mech.GetBonuses(id).reduce(
             (sum, bonus) => sum + this.Evaluate(bonus, mech.Pilot),
             0
         );
-    }
 
     public static getPilot(id: string, pilot: Pilot): number {
         return pilot.Bonuses.filter(x => x.ID === id).reduce(

@@ -14,7 +14,7 @@ import {
     PackedDeployableData,
     PackedCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef, RegSer } from '@/new_meta';
+import { EntryType, RegEntry, Registry, RegRef, RegSer } from '@/new_meta';
 import { RegCounterData } from "../Counter";
 
 // This is what compcon gives us. It is not what we store
@@ -85,6 +85,16 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         integrated: this.Integrated.map(i => i.as_ref()),
         mounted_effect: this.MountedEffect ?? undefined,
         synergies: this.Synergies.map(s => s.save())
+      }
+    }
+
+    // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
+    static async unpack(cor: PackedCoreBonusData, reg: Registry): Promise<CoreBonus>{
+      let deployables = (cor.deployables || []).map(d => Deployable.unpack(d, reg));
+      let integrated = 
+      return {
+        ...cor,
+
       }
     }
 }

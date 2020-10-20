@@ -1,47 +1,30 @@
-import { Action, Frame, MechWeapon, Pilot } from "@/class";
-import { Deployable } from "./classes/Deployable";
-import { Environment } from "./classes/encounter/Environment";
-import { Sitrep } from "./classes/encounter/Sitrep";
-import { Faction } from "./classes/Faction";
-import { Manufacturer } from "./classes/Manufacturer";
-import { FrameTrait } from './classes/mech/FrameTrait';
-import { MechSystem } from "./classes/mech/MechSystem";
-import { WeaponMod } from "./classes/mech/WeaponMod";
-import { NpcClass } from "./classes/npc/NpcClass";
-import { NpcFeature } from "./classes/npc/NpcFeature";
-import { NpcTemplate } from "./classes/npc/NpcTemplate";
-import { CoreBonus } from "./classes/pilot/CoreBonus";
-import { PilotArmor, PilotGear, PilotWeapon } from "./classes/pilot/PilotEquipment";
-import { Quirk, RegQuirkData } from "./classes/pilot/Quirk";
-import { Reserve } from "./classes/pilot/reserves/Reserve";
-import { Skill } from "./classes/pilot/Skill";
-import { Talent } from "./classes/pilot/Talent";
-import { Status } from "./classes/Statuses";
-import { ITagTemplateData, TagTemplate } from "./classes/Tag";
+import { Action, CoreBonus, Deployable, Environment, Faction, Frame, FrameTrait, Manufacturer, MechSystem, MechWeapon, NpcClass, NpcFeature, NpcTemplate, Pilot, PilotArmor, PilotGear, PilotWeapon, Quirk, Reserve, Sitrep, Skill, Status, TagTemplate, Talent, WeaponMod } from "@/class";
 import {
     IActionData,
-    ICoreBonusData,
-    IDeployableData,
     IEnvironmentData,
     IFactionData,
     IFrameData,
     IManufacturerData,
-    IMechSystemData,
-    IMechWeaponData,
-    INpcClassData,
-    INpcFeatureData,
-    INpcTemplateData,
-    IPilotArmorData,
-    IPilotData,
-    IPilotEquipmentData,
-    IPilotGearData,
-    IPilotWeaponData,
-    IReserveData,
-    ISitrepData,
+    // INpcClassData,
+    // INpcFeatureData,
+    // INpcTemplateData,
+   ISitrepData,
     ISkillData,
     IStatusData,
+    ITagTemplateData,
     ITalentData,
     IWeaponModData,
+    RegCoreBonusData,
+    RegDeployableData,
+    RegFrameTraitData,
+    RegMechSystemData,
+    RegMechWeaponData,
+    RegPilotArmorData,
+    RegPilotData,
+    RegPilotGearData,
+    RegPilotWeaponData,
+    RegQuirkData,
+    RegReserveData,
 } from "./interface";
 
 ///// TYPE MAAPPINGS /////
@@ -81,22 +64,23 @@ export enum EntryType {
 type _RegTypeMap = { [key in EntryType]: object };
 export interface RegEntryTypes extends _RegTypeMap {
     [EntryType.CONDITION]: IStatusData;
-    [EntryType.CORE_BONUS]: ICoreBonusData;
-    [EntryType.DEPLOYABLE]: IDeployableData;
+    [EntryType.CORE_BONUS]: RegCoreBonusData;
+    [EntryType.DEPLOYABLE]: RegDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
     [EntryType.FRAME]: IFrameData;
+    [EntryType.FRAME_TRAIT]: RegFrameTraitData;
     [EntryType.MANUFACTURER]: IManufacturerData;
-    [EntryType.MECH_SYSTEM]: IMechSystemData;
-    [EntryType.MECH_WEAPON]: IMechWeaponData;
-    [EntryType.NPC_CLASS]: INpcClassData;
-    [EntryType.NPC_FEATURE]: INpcFeatureData;
-    [EntryType.NPC_TEMPLATE]: INpcTemplateData;
-    [EntryType.PILOT_ARMOR]: IPilotArmorData;
-    [EntryType.PILOT_GEAR]: IPilotGearData;
-    [EntryType.PILOT_WEAPON]: IPilotWeaponData;
-    [EntryType.RESERVE]: IReserveData;
-    [EntryType.PILOT]: IPilotData;
+    [EntryType.MECH_SYSTEM]: RegMechSystemData;
+    [EntryType.MECH_WEAPON]: RegMechWeaponData;
+    // [EntryType.NPC_CLASS]: INpcClassData;
+    // [EntryType.NPC_FEATURE]: INpcFeatureData;
+    // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.PILOT_ARMOR]: RegPilotArmorData;
+    [EntryType.PILOT_GEAR]: RegPilotGearData;
+    [EntryType.PILOT_WEAPON]: RegPilotWeaponData;
+    [EntryType.RESERVE]: RegReserveData;
+    [EntryType.PILOT]: RegPilotData;
     [EntryType.SITREP]: ISitrepData;
     [EntryType.SKILL]: ISkillData;
     [EntryType.STATUS]: IStatusData;
@@ -118,9 +102,9 @@ export interface LiveEntryTypes extends _LiveTypeMap {
     [EntryType.MANUFACTURER]: Manufacturer;
     [EntryType.MECH_SYSTEM]: MechSystem;
     [EntryType.MECH_WEAPON]: MechWeapon;
-    [EntryType.NPC_CLASS]: NpcClass;
-    [EntryType.NPC_FEATURE]: NpcFeature;
-    [EntryType.NPC_TEMPLATE]: NpcTemplate;
+    // [EntryType.NPC_CLASS]: NpcClass;
+    // [EntryType.NPC_FEATURE]: NpcFeature;
+    // [EntryType.NPC_TEMPLATE]: NpcTemplate;
     [EntryType.PILOT_ARMOR]: PilotArmor;
     [EntryType.PILOT_GEAR]: PilotGear;
     [EntryType.PILOT_WEAPON]: PilotWeapon;
@@ -226,6 +210,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
         return {
             id: this.RegistryID,
             type: this.Type,
+            is_unresolved_mmid: false // We're in a reg! we're gooood!
         };
     }
 
@@ -234,6 +219,11 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Export this item for registry saving back to registry
     public abstract async save(): Promise<SourceType>;
+
+    // Convenience function to update self in registry. Note that this doesn't read!
+    public async update(): Promise<void> {
+        this.Registry.get_cat(this.Type).update(this as LiveEntryTypes[T]); // please don't make me regret this
+    }
 }
 
 //////// REGISTRY //////
@@ -260,6 +250,9 @@ export abstract class RegCat<T extends EntryType> {
         this.creation_func = creator;
     }
 
+    // Find a value by mmid
+    abstract async lookup_mmid(mmid: string): Promise<LiveEntryTypes[T] | null>;
+
     // Fetches the specific raw item of a category by its ID
     abstract async get_raw(id: string): Promise<RegEntryTypes[T] | null>;
 
@@ -267,7 +260,10 @@ export abstract class RegCat<T extends EntryType> {
     abstract async list_raw(): Promise<Array<RegEntryTypes[T]>>;
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract async get_live(id: string): Promise<RegEntryTypes[T] | null>;
+    abstract async get_live(id: string): Promise<LiveEntryTypes[T] | null>;
+
+    // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
+    abstract async list_live(): Promise<Array<LiveEntryTypes[T]>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
     // Should NOT accept new items, as we don't know that they will play nice with
@@ -277,9 +273,16 @@ export abstract class RegCat<T extends EntryType> {
     abstract async delete_id(id: string): Promise<RegEntryTypes[T] | null>;
 
     // Create a new entry in the database with the specified data. Generally, you cannot control the output ID
-    abstract async create(
-        ...vals: Array<RegEntry<T, RegEntryTypes[T]>>
+    abstract async create_many(
+        ...vals: Array<RegEntryTypes[T]>
     ): Promise<LiveEntryTypes[T][]>;
+
+    async create(
+        val: RegEntryTypes[T]
+    ): Promise<LiveEntryTypes[T]> {
+        let vs = await this.create_many(val);
+        return vs[0];
+    }
 
     // Create a new entry in the database with the creation func's default data. Generally, you cannot control the output ID
     abstract async create_default(): Promise<LiveEntryTypes[T]>;
@@ -288,7 +291,7 @@ export abstract class RegCat<T extends EntryType> {
 export type CatBuilder<T extends EntryType> = (reg: Registry) => RegCat<T>;
 export type CatBuilders = { [key in EntryType]: CatBuilder<key> };
 
-export class Registry {
+export abstract class Registry {
     // This just maps to the other cats below
     private cat_map: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately. If you need definitives, use the below
 
@@ -323,7 +326,7 @@ export class Registry {
 
         // Dispatch groups
         for (let [k, v] of groupings.entries()) {
-            this.get_cat(k).create(...v);
+            this.get_cat(k).create_many(...v);
         }
     }
 
@@ -343,32 +346,59 @@ export class Registry {
 
     // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
     // You should be able to figure out the type from the `Type` of the VRegistryItem
-    async get_from_anywhere(id: string): Promise<RegEntry<any, any> | null> {
-        for (let [k, c] of this.cat_map) {
-            let v = await c.get_live(k);
-            if (v) {
-                return v;
+    // async get_from_anywhere(id: string): Promise<RegEntry<any, any> | null> {
+        // for (let [k, c] of this.cat_map) {
+            // let v = await c.get_live(k);
+            // if (v) {
+                // return v;
+            // }
+        // }
+        // return null;
+    // }
+
+    // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
+    // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
+    // As such its implementation is left up to the user.
+    async resolve_wildcard_mmid<T extends EntryType>(mmid: string): Promise<LiveEntryTypes[T] | null> { // The generic does nothing really
+        for(let cat of this.cat_map.values()) {
+            let attempt = await cat.lookup_mmid(mmid);
+            if(attempt) {
+                return attempt;
             }
         }
         return null;
     }
 
     async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes[T] | null> {
-        return this.get_cat(ref.type).get_live(ref.id);
+        if(ref.is_unresolved_mmid) {
+            if(ref.type) {
+                return this.get_cat(ref.type).lookup_mmid(ref.id);
+            } else {
+                return this.resolve_wildcard_mmid(ref.id);
+            }
+        } else {
+            return this.get_cat(ref.type!).get_live(ref.id);
+        }
     }
 
     // Filters null results
     async resolve_many<T extends EntryType>(refs: RegRef<T>[]): Promise<Array<LiveEntryTypes[T]>> {
-        let resolves = await Promise.all(refs.map(r => this.get_cat(r.type).get_live(r.id)));
+        let resolves = await Promise.all(refs.map(r => this.resolve(r)));
         return resolves.filter(d => d != null) as LiveEntryTypes[T][];
     }
 }
 
 // Handles cross referencing of data
-export interface RegRef<T extends EntryType> {
+// TODO: our current resolution will fail to create a proper link between integrated items if they haven't yet been initialized.
+// For the most part we avoid these by uploading frames first, but this is not a reliable solution.
+export type RegRef<T extends EntryType> = {
     // The item id
     id: string;
 
-    // The category we are referencing
-    type: T;
+    // The category we are referencing. If omitted, it is unknown (as in some unresolved mmid's)
+    type?: T;
+
+    // Is our ID like, the actual id, or just like "DRAKE" or some shit
+    is_unresolved_mmid: boolean;
 }
+

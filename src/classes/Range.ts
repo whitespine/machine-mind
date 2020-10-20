@@ -1,7 +1,7 @@
-import { ident, MixBuilder, RWMix, MixLinks, def, defb, defn, defs, ser_many, def_empty_map, restrict_enum } from "@/mixmeta.typs";
-import { Registry } from '@/classes/registry';
 import { RangeType } from './enums';
 import { SimSer } from '@/new_meta';
+import { MechWeapon } from './mech/MechWeapon';
+import { Bonus } from '@/class';
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -13,13 +13,13 @@ export interface IRangeData {
 }
 
 export class Range extends SimSer<IRangeData> {
-    Type!: RangeType;
+    RangeType!: RangeType;
     Value!: number;
     Override!: boolean;
     Bonus!: number;
 
     protected load(data: IRangeData): void {
-        this.Type = data.type;
+        this.RangeType = data.type;
         this.Value = data.val;
         this.Override = data.override || false;
         this.Bonus = data.bonus || 0;
@@ -27,35 +27,39 @@ export class Range extends SimSer<IRangeData> {
 
     public save(): IRangeData {
         return {
-            type: this.Type,
+            type: this.RangeType,
             val: this.Value,
             override: this.Override || undefined,
             bonus: this.Bonus || undefined
         }
     }
       public get Icon(): string {
-    return `cci-${this._range_type.toLowerCase()}`
+    return `cci-${this.RangeType.toLowerCase()}`
   }
 
   public get DiscordEmoji(): string {
-    switch (this._range_type) {
+    switch (this.RangeType) {
       case RangeType.Range:
       case RangeType.Threat:
       case RangeType.Thrown:
-        return `:cc_${this._range_type.toLowerCase()}:`
+        return `:cc_${this.RangeType.toLowerCase()}:`
     }
-    return `:cc_aoe_${this._range_type.toLowerCase()}:`
+    return `:cc_aoe_${this.RangeType.toLowerCase()}:`
   }
 
   public get Text(): string {
-    if (this._override) return this.Value.toString()
-    if (this._bonus) return `${this._range_type} ${this.Value} (+${this._bonus})`
-    return `${this._range_type} ${this.Value}`
+    if (this.Override) return this.Value.toString()
+    if (this.Bonus) return `${this.RangeType} ${this.Value} (+${this.Bonus})`
+    return `${this.RangeType} ${this.Value}`
+  }
+
+  // Checks if the given bonus can affect this range
+  public can_bonus_apply(b: Bonus) {
+    return b.RangeTypes.includes(this.RangeType);
+
   }
 
   public static CalculateRange(item: MechWeapon, mech: Mech): Range[] {
-    if (!item || !mech) return []
-    if (!Bonus.get('range', mech)) return item.Range
     const bonuses = mech.Bonuses.filter(x => x.ID === 'range')
     const output = []
     item.Range.forEach(r => {
@@ -74,7 +78,7 @@ export class Range extends SimSer<IRangeData> {
         new Range({
           type: r.Type,
           val: r._value,
-          override: r._override,
+          override: r.Override,
           bonus: bonus,
         })
       )
