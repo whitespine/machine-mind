@@ -73,18 +73,18 @@ export class Frame extends RegEntry<EntryType.FRAME, IFrameData> {
 
     public async save(): Promise<IFrameData> {
         return {
-        id: this.ID ,
-        license_level: this.LicenseLevel ,
-        source: this.Source ,
-        name: this.Name ,
-        mechtype: this.MechType ,
-        y_pos: this.YPosition ,
-        mounts: Mounts ,
-        stats: Stats ,
-        traits: this.Traits.map(x => x.save()),
-        core_system: this.CoreSystem.save() ,
-        image_url: this.ImageUrl  ?? undefined,
-        other_art: this.OtherArt ,
+            id: this.ID,
+            license_level: this.LicenseLevel ,
+            source: this.Source ,
+            name: this.Name ,
+            mechtype: this.MechType ,
+            y_pos: this.YPosition ,
+            mounts: Mounts ,
+            stats: Stats ,
+            traits: this.Traits.map(x => x.save()),
+            core_system: this.CoreSystem.save() ,
+            image_url: this.ImageUrl  ?? undefined,
+            other_art: this.OtherArt ,
         }
     }
 

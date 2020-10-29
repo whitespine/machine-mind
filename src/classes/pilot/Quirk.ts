@@ -1,66 +1,62 @@
-import { Action, Bonus, Damage, Deployable, EntryType, Synergy, TagInstance, Range } from "@/class";
-import { IActionData, IBonusData, IDamageData, IDeployableData, IRangeData, ISynergyData, ITagInstanceData, VCompendiumItem, ICompendiumItemData, IQuirkData } from "@/interface";
-import { ActionsMixReader, ActionsMixWriter, BonusesMixReader, BonusesMixWriter, DamagesMixReader, DamagesMixWriter, DeployableMixReader, DeployableMixWriter, ident, MixBuilder, RWMix, MixLinks, RangesMixReader, RangesMixWriter, SynergyMixReader, SynergyMixWriter, TagInstanceMixReader, TagInstanceMixWriter, uuid } from '@/mixmeta.typs';
-import { RegSer } from '@/new_meta';
-import { DEFAULT_BREW_ID } from '../enums';
+import { Action, Bonus, Deployable, Synergy, Counter } from "@/class";
+import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from '@/new_meta';
 
 
 ///////////////////////////////////////////////////////////
 // Data
 ///////////////////////////////////////////////////////////
-interface AllQuirkData {
-  id: string
+interface RegQuirkData {
   name: string, // v-html
-  type: "Quirk",
   description: string,
   actions?: IActionData[], // these are only available to UNMOUNTED pilots
   bonuses?: IBonusData[], // these bonuses are applied to the pilot, not parent system
   synergies?: ISynergyData[];
-}
 
-// We unpack these into actors
-export interface PackedQuirkData extends AllQuirkData {
-  deployables?: IDeployableData[];
-}
-
-
-export interface RegQuirkData extends AllQuirkData {
   // All associated content
-  deployables?: IDeployableData[];
+  deployables: RegRef<EntryType.DEPLOYABLE>[];
+  counters: RegCounterData[];
+  integrated: RegRef<any>[];
 }
 
-export class Quirk extends RegSer<EntryType.QUIRK, RegQuirkData> {
-  ID: string;
-  Name: string;
-  Tags: TagInstance[];
-  Actions: Action[];
-  Bonuses: Bonus[];
-  Synergies: Synergy[];
-  Deployables: Deployable[];
+export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
+  Name!: string;
+  Actions!: Action[];
+  Bonuses!: Bonus[];
+  Synergies!: Synergy[];
+  Counters!: Counter[];
+  Deployables!: Deployable[];
+  Integrated!: RegEntry<any, any>[];
 
-  protected load(data: RegQuirkData): Promise<void> {
+  protected async load(data: RegQuirkData): Promise<void> {
+       this.ID = data.id;
+
+       this.Name = data.name;
+
+
+      this.Actions = SerUtil.process_actions(data.actions);
+      this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+      this.Counters = SerUtil.process_counters(data.counters);
+      this.Synergies = SerUtil.process_synergies(data.synergies);
+      this.Deployables = await this.Registry.resolve_many(data.deployables);
+      this.Integrated = await this.Registry.resolve_many_rough(data.integrated);
+  }
+  public async save(): Promise<RegQuirkData> {
     throw new Error('Method not implemented.');
   }
-  public save(): Promise<RegQuirkData> {
-    throw new Error('Method not implemented.');
+
+  public static async unpack(raw_quirk: string, reg: Registry): Promise<Quirk> {
+    let qdata: RegQuirkData = {
+      name: "Quirk",
+      description: raw_quirk,
+      counters: [],
+      deployables: [],
+      integrated: [],
+      actions: [],
+      bonuses: [],
+      synergies: []
+    }
+
+    return reg.get_cat(EntryType.QUIRK).create(qdata);
   }
-}
-
-export function CreateQuirk(data: IQuirkData | string | null): Quirk {
-    // Init with deduced cc props
-    if:
-
-    // Mixin the rest
-    b.with(new RWMix("ID", "id", ident, ident));
-    b.with(new RWMix("Name", "name", ident, ident));
-
-    // Don't need type
-    b.with(new RWMix("Tags", "tags", TagInstanceMixReader, TagInstanceMixWriter));
-    b.with(new RWMix("Actions", "actions", ActionsMixReader, ActionsMixWriter));
-    b.with(new RWMix("Bonuses", "bonuses", BonusMixReader, BonusMixWriter));
-    b.with(new RWMix("Synergies", "synergies", SynergyMixReader, SynergyMixWriter));
-    b.with(new RWMix("Deployables", "deployables", DeployableMixReader, DeployableMixWriter));
-
-    let r = b.finalize(data);
-    return r;
 }

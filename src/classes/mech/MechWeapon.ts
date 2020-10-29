@@ -82,6 +82,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
   Source!: string // must be the same as the Manufacturer ID to sort correctly
   License!: string // reference to the Frame name of the associated license
   LicenseLevel!: number // set to zero for this item to be available to a LL0 character
+
   Size!:  WeaponSize
   SP!: number
   Profiles!: MechWeaponProfile[]; // For most weapons this will be a single item array

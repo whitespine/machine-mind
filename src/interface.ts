@@ -6,7 +6,7 @@
 // first in this file.
 export { IActionData } from "@/classes/Action";
 export { IBackground } from "@/classes/Background";
-export { IBonusData } from "@/classes/Bonus";
+export {IBonusData} from "@/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
@@ -22,7 +22,7 @@ export { IRangeData } from "./classes/Range";
 export { PackedMechData, RegMechData } from "./classes/mech/Mech";
 export { PackedMechSystemData, RegMechSystemData } from "./classes/mech/MechSystem";
 export { PackedMechWeaponData, RegMechWeaponData } from "./classes/mech/MechWeapon";
-export { IWeaponModData } from "./classes/mech/WeaponMod";
+export { RegWeaponModData, PackedWeaponModData } from "./classes/mech/WeaponMod";
 export { PackedPilotData, RegPilotData } from "./classes/pilot/Pilot";
 export {PackedPilotArmorData, PackedPilotEquipmentData, PackedPilotGearData, PackedPilotWeaponData, RegPilotArmorData, RegPilotGearData, RegPilotWeaponData, RegPilotEquipmentData} from "./classes/pilot/PilotEquipment";
 export { IPilotLoadoutData } from "./classes/pilot/PilotLoadout";
@@ -30,8 +30,8 @@ export { IFactionData } from "./classes/Faction";
 export { PackedReserveData, RegReserveData  } from "./classes/pilot/reserves/Reserve";
 export { IOrganizationData } from "./classes/pilot/reserves/Organization";
 export { IProjectData } from "./classes/pilot/reserves/Project";
-export { ITalentData, ITalentRank } from "./classes/pilot/Talent";
-export { ISkillData } from "./classes/pilot/Skill";
+export {PackedTalentData, PackedTalentRank, RegTalentRank, TalentRank, RegTalentData, ITalentItemData} from "./classes/pilot/Talent";
+export {PackedSkillData, RegSkillData} from "./classes/pilot/Skill";
 // export { INpcFeatureData } from "./classes/npc/NpcFeature";
 // export { INpcReactionData } from "./classes/npc/NpcReaction";
 // export { INpcSystemData } from "./classes/npc/NpcSystem";

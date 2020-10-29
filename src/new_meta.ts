@@ -1,20 +1,59 @@
-import { Action, CoreBonus, Deployable, Environment, Faction, Frame, FrameTrait, Manufacturer, MechSystem, MechWeapon, NpcClass, NpcFeature, NpcTemplate, Pilot, PilotArmor, PilotGear, PilotWeapon, Quirk, Reserve, Sitrep, Skill, Status, TagTemplate, Talent, WeaponMod } from "@/class";
+/**
+ * Best practices:
+ *
+ * All regentries should have an "unpack" function to turn from Compcon (Packed) to Registry (Reg) style
+ *
+ * Registry data should be all non-nullable. undefined -> 0, "", or [] as appropriate.
+ * If a more sensible default exists, then it should be assigned during unpack.
+ *
+ * When a field describes a list of allowed/forbidden fields, [] means NONE.
+ * undefined should either mean None or does not apply, contextually.
+ * It might be easier to just treat as null in those cases
+ *
+ * Resolving MMID's is recommended to be done via unpacking from a static IContentPack array.
+ * Though this might seem inefficient, note that this is only done on item/actor creation, where performance really isn't much of a concern
+ *
+ * RegEntries should define a heirarchy by which they can/should be deleted. Typically, only the "top" entry in any tree should allow normal deletion
+ * Otherwise, should prompt to delete entire heirarchy
+ * An exception to this is Frames, which are more likely to be customized to the point that they might want less/more integrated systems and traits
+ *
+ * Use SerUtil generic functions where possible, as this will make mass behavior changes much simpler later
+ */
+import { Action, Range, Bonus, CoreBonus, Deployable, Environment, Faction, Frame, FrameTrait, Manufacturer, MechSystem, MechWeapon, Pilot, PilotArmor, PilotGear, PilotWeapon, Quirk, Reserve, Sitrep, Skill, Status, TagTemplate, Talent, WeaponMod, Damage, Synergy, } from "@/class";
+import { Counter, PackedCounterData, RegCounterData } from "./classes/Counter";
+import { CoreSystem, PackedCoreSystemData, RegCoreSystemData } from './classes/mech/CoreSystem';
+import { RegTagInstanceData, TagInstance } from "./classes/Tag";
 import {
     IActionData,
+    IBonusData,
     IEnvironmentData,
     IFactionData,
     IFrameData,
     IManufacturerData,
+    IRangeData,
     // INpcClassData,
     // INpcFeatureData,
     // INpcTemplateData,
-   ISitrepData,
-    ISkillData,
+    ISitrepData,
     IStatusData,
+    ISynergyData,
     ITagTemplateData,
-    ITalentData,
-    IWeaponModData,
+    PackedCoreBonusData,
+    PackedDeployableData,
+    PackedFrameTraitData,
+    PackedMechSystemData,
+    PackedMechWeaponData,
+    PackedPilotArmorData,
+    PackedPilotData,
+    PackedPilotGearData,
+    PackedPilotWeaponData,
+    PackedQuirkData,
+    PackedReserveData,
+    PackedSkillData,
+    PackedTalentData,
+    PackedWeaponModData,
     RegCoreBonusData,
+    RegDamageData,
     RegDeployableData,
     RegFrameTraitData,
     RegMechSystemData,
@@ -25,6 +64,9 @@ import {
     RegPilotWeaponData,
     RegQuirkData,
     RegReserveData,
+    RegSkillData,
+    RegTalentData,
+    RegWeaponModData,
 } from "./interface";
 
 ///// TYPE MAAPPINGS /////
@@ -51,8 +93,8 @@ export enum EntryType {
     PILOT_WEAPON = "PilotWeapons",
     TALENT = "Talents",
     SKILL = "Skills",
-    STATUS = "Statuses",
-    CONDITION = "Conditions",
+    STATUS = "Statuses", 
+    // CONDITION = "Conditions", // Just use statuses
     QUIRK = "Quirks",
     RESERVE = "Reserves",
     ENVIRONMENT = "Environments",
@@ -62,9 +104,11 @@ export enum EntryType {
 }
 
 type _RegTypeMap = { [key in EntryType]: object };
+// What our registries hold
 export interface RegEntryTypes extends _RegTypeMap {
-    [EntryType.CONDITION]: IStatusData;
+    // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: RegCoreBonusData;
+    [EntryType.CORE_SYSTEM]: RegCoreSystemData;
     [EntryType.DEPLOYABLE]: RegDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
@@ -82,18 +126,51 @@ export interface RegEntryTypes extends _RegTypeMap {
     [EntryType.RESERVE]: RegReserveData;
     [EntryType.PILOT]: RegPilotData;
     [EntryType.SITREP]: ISitrepData;
-    [EntryType.SKILL]: ISkillData;
+    [EntryType.SKILL]: RegSkillData;
+    // [EntryType.STATUS]: IStatusData;
+    [EntryType.TAG]: ITagTemplateData;
+    [EntryType.TALENT]: RegTalentData;
+    [EntryType.QUIRK]: RegQuirkData;
+    [EntryType.WEAPON_MOD]: RegWeaponModData;
+}
+
+// What compcon holds
+export interface PackedEntryTypes extends _RegTypeMap {
+    // [EntryType.CONDITION]: IStatusData;
+    [EntryType.CORE_BONUS]: PackedCoreBonusData;
+    [EntryType.CORE_SYSTEM]: PackedCoreSystemData;
+    [EntryType.DEPLOYABLE]: PackedDeployableData;
+    [EntryType.ENVIRONMENT]: IEnvironmentData;
+    [EntryType.FACTION]: IFactionData;
+    [EntryType.FRAME]: IFrameData;
+    [EntryType.FRAME_TRAIT]: PackedFrameTraitData;
+    [EntryType.MANUFACTURER]: IManufacturerData;
+    [EntryType.MECH_SYSTEM]: PackedMechSystemData;
+    [EntryType.MECH_WEAPON]: PackedMechWeaponData;
+    // [EntryType.NPC_CLASS]: INpcClassData;
+    // [EntryType.NPC_FEATURE]: INpcFeatureData;
+    // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
+    [EntryType.PILOT_GEAR]: PackedPilotGearData;
+    [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
+    [EntryType.RESERVE]: PackedReserveData;
+    [EntryType.PILOT]: PackedPilotData;
+    [EntryType.SITREP]: ISitrepData;
+    [EntryType.SKILL]: PackedSkillData;
     [EntryType.STATUS]: IStatusData;
     [EntryType.TAG]: ITagTemplateData;
-    [EntryType.TALENT]: ITalentData;
-    [EntryType.QUIRK]: RegQuirkData;
-    [EntryType.WEAPON_MOD]: IWeaponModData;
+    [EntryType.TALENT]: PackedTalentData;
+    [EntryType.QUIRK]: PackedQuirkData;
+    [EntryType.WEAPON_MOD]: PackedWeaponModData;
 }
+
+
 
 type _LiveTypeMap = { [key in EntryType]: RegEntry<key, any> };
 export interface LiveEntryTypes extends _LiveTypeMap {
-    [EntryType.CONDITION]: Status;
+    // [EntryType.CONDITION]: Status;
     [EntryType.CORE_BONUS]: CoreBonus;
+    [EntryType.CORE_SYSTEM]: CoreSystem;
     [EntryType.DEPLOYABLE]: Deployable;
     [EntryType.ENVIRONMENT]: Environment;
     [EntryType.FACTION]: Faction;
@@ -121,10 +198,72 @@ export interface LiveEntryTypes extends _LiveTypeMap {
 
 ///// REGISTRY SAVE/LOADING /////
 export abstract class SerUtil {
-    public static deser_actions(actions: IActionData[] | undefined): Action[] {
-        return (actions || []).map(a => new Action(a));
+    // These functions are just generally pretty useful!
+
+    /*
+     * Handles the intake of integrated items.
+     * Note that this creates an UNRESOLVED REF, meaning that it may or not exist until we actually attempt to load this item.
+     * This reference will exist until the item is saved for the first time, which will override the ref to an actual item ref.
+     */
+    public static parse_integrated(integrated?: string[]): RoughRegRef[] {
+        return (integrated || []).map(i => ({
+            id: i,
+            type: null,
+            is_unresolved_mmid: true,
+        }));
     }
 
+    /**
+     * Unpacks many items using the provided unpacking function and adds them to the registry.
+     * The unpacking function is generically typed to fit the `unpack` function defined in most regentry classes.
+     * Usually it will take a piece raw reg entry data, but that 
+     */
+    public static async unpack_children<RawPackObj, Entry>(
+        unpacking_function: (s: RawPackObj, r: Registry) => Promise<Entry>,
+        reg: Registry,
+        items?: RawPackObj[]
+    ): Promise<Entry[]> {
+        return Promise.all((items ?? []).map(i => unpacking_function(i, reg)));
+    }
+
+    // Pack up references. This helper allows us to handle the awkward integrated = null cases
+    public static ref_all<T extends EntryType>(
+        items: Array<T extends EntryType ? LiveEntryTypes[T] : RegEntry<any, any>>
+    ): RegRef<T>[] {
+        return items.map(i => ({
+            id: "",
+            is_unresolved_mmid: false, // It's from a live entry type
+            type: i.Type,
+        }));
+    }
+
+    // Makes our save code look more consistent
+    public static async save_all<S>(items: Array<RegEntry<any, S> | RegSer<S>>): Promise<S[]> {
+        return Promise.all(items.map(i => i.save()));
+    }
+
+    // Makes our save code look more consistent, and this one avoids async calls
+    public static sync_save_all<S, T extends { save(): S }>(items: T[]): S[] {
+        return items.map(i => i.save());
+    }
+
+    // Handle null -> undef convrsion
+    public static sync_save_all_opt<S, T extends { save(): S }>(
+        items: T[] | null
+    ): S[] | undefined {
+        return items?.map(i => i.save());
+    }
+
+    // Save an array, but drop on empty
+    public static drop_empty<V>(vals: V[]): V[] | undefined {
+        if (vals.length == 0) {
+            return undefined;
+        } else {
+            return vals;
+        }
+    }
+
+    // Isolates a value to ensure it is compliant with a list of values
     public static restrict_choices<T extends string>(
         choices: T[],
         default_choice: T,
@@ -133,13 +272,66 @@ export abstract class SerUtil {
         return choices.includes(provided as T) ? (provided as T) : default_choice;
     }
 
+    // List possible values of an enum
+    public static list_enum<T extends string>(enum_: { [key: string]: T }): T[] {
+        return Object.keys(enum_).map(k => enum_[k]);
+    }
+
+    // Isolates a value to ensure it is enum compliant
     public static restrict_enum<T extends string>(
         enum_: { [key: string]: T },
         default_choice: T,
         provided: string
     ): T {
-        let choices = Object.keys(enum_).map(k => enum_[k]);
+        let choices = this.list_enum(enum_);
         return this.restrict_choices(choices, default_choice, provided);
+    }
+
+    // Some simple helpers. Doing generic solutions on these ended up being too much of a pain to justify it
+    public static process_ranges(ranges?: IRangeData[]): Range[] {
+        return (ranges || []).map(r => new Range(r));
+    }
+
+    public static process_damages(damages?: RegDamageData[]): Damage[] {
+        return (damages || []).map(r => new Damage(r));
+    }
+
+    public static process_synergies(synergies?: ISynergyData[]): Synergy[] {
+        return (synergies || []).map(r => new Synergy(r));
+    }
+
+    public static process_actions(actions?: IActionData[]): Action[] {
+        return (actions || []).map(a => new Action(a));
+    }
+
+    public static process_bonuses(bonuses?: IBonusData[]): Bonus[] {
+        return (bonuses || []).map(b => new Bonus(b));
+    }
+
+    // Because this is so common, we abstract it to here. Shouldn't try to do this for all of them
+    public static process_counters(counters?: RegCounterData[]): Counter[] {
+        return counters?.map(c => new Counter(c)) || [];
+    }
+
+    // Tags are also an exception I'm willing to make. These should ___maybe___ be moved to their respective classes, but for convenience we keeping here.
+    // A typescript wiz could probably abstract it somehow
+    public static async process_tags(
+        reg: Registry,
+        tags?: RegTagInstanceData[]
+    ): Promise<TagInstance[]> {
+        let real_tags = tags?.map(c => new TagInstance(reg, c)) || [];
+        await this.all_ready(real_tags);
+        return real_tags;
+    }
+
+    // We almost never have synced data
+    public static unpack_counters_default(counters?: PackedCounterData[]): RegCounterData[] {
+        return counters?.map(c => Counter.unpack(c, [])) || [];
+    }
+
+    // Awaitable for all items to be ready
+    public static async all_ready(items: Array<RegSer<any> | RegEntry<any, any>>): Promise<void> {
+        await Promise.all(items.map(i => i.ready()));
     }
 }
 
@@ -210,7 +402,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
         return {
             id: this.RegistryID,
             type: this.Type,
-            is_unresolved_mmid: false // We're in a reg! we're gooood!
+            is_unresolved_mmid: false, // We're in a reg! we're gooood!
         };
     }
 
@@ -219,6 +411,9 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Export this item for registry saving back to registry
     public abstract async save(): Promise<SourceType>;
+
+    // Repack this item. Can oftentimes just be save() with a few minor tweaks. Used for ccio.
+    public async pack(): Promise<any> {/* todo */}
 
     // Convenience function to update self in registry. Note that this doesn't read!
     public async update(): Promise<void> {
@@ -266,20 +461,17 @@ export abstract class RegCat<T extends EntryType> {
     abstract async list_live(): Promise<Array<LiveEntryTypes[T]>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
-    // Should NOT accept new items, as we don't know that they will play nice with
+    // Do NOT attempt to feed this items foreign to this cat
     abstract async update(...items: LiveEntryTypes[T][]): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
     abstract async delete_id(id: string): Promise<RegEntryTypes[T] | null>;
 
-    // Create a new entry in the database with the specified data. Generally, you cannot control the output ID
-    abstract async create_many(
-        ...vals: Array<RegEntryTypes[T]>
-    ): Promise<LiveEntryTypes[T][]>;
+    // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
+    abstract async create_many(...vals: Array<RegEntryTypes[T]>): Promise<LiveEntryTypes[T][]>;
 
-    async create(
-        val: RegEntryTypes[T]
-    ): Promise<LiveEntryTypes[T]> {
+    // A simple singular form if you don't want to mess with arrays
+    async create(val: RegEntryTypes[T]): Promise<LiveEntryTypes[T]> {
         let vs = await this.create_many(val);
         return vs[0];
     }
@@ -292,6 +484,28 @@ export type CatBuilder<T extends EntryType> = (reg: Registry) => RegCat<T>;
 export type CatBuilders = { [key in EntryType]: CatBuilder<key> };
 
 export abstract class Registry {
+    /**
+     * A registry is fundamentally just a wrapper (or self contained) manager of RegEntry items. 
+     * It contains their raw data, indexed by IDs, and provides mechanisms for their creation, deletion, sorting, finding etc.
+     * 
+     * An important thing to note is that this was built with the foundry vtt paradigm in mind, wherein there are MANY possible 
+     * places that "contain" regentry items; compendiums can hold actors, actors can hold items, etc.
+     * A Registry object is just ONE of these. As such, most registries will in fact be nearly empty.
+     * 
+     * The natural question then is how do we safely transfer items?
+     * Though we might initially be tempted to simply copy the origin reg entry data and `create` it into the destination registry,
+     * this will completely fail when regrefs are in play. 
+     * Gonna be honest, I was planning on just packing then unpacking the data.
+     * 
+     * But a potentially viable solution is as follows:
+     * defun migrate(entry):
+     *  - `create` the new regentry via simple copy of entry.data
+     *  - for child in entry.refs:
+     *    + `migrate(child)` so that we have a copy in our "personal" registry as well.
+     *    + Override the contents of the live copy of entries refs
+     * 
+     * All reg_entries will need to implement this, basically, but it should have a trivial implementation as well.
+     */
     // This just maps to the other cats below
     private cat_map: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately. If you need definitives, use the below
 
@@ -304,16 +518,17 @@ export abstract class Registry {
         }
     }
 
-    // Puts a single value. Gives back the put item's ID
+    // Create a live item. Shorthand for get cat and create
     async create<T extends EntryType>(
-        val: RegEntry<T, LiveEntryTypes[T]>
+        type: T,
+        val: RegEntryTypes[T]
     ): Promise<LiveEntryTypes[T]> {
-        let t = val.Type;
-        return this.get_cat(t).create(val);
+        return this.get_cat(type).create(val);
     }
 
     // Call this only if the registry categories aren't polling from some external source
-    async create_many(...vals: RegEntry<any, any>[]): Promise<void> {
+    /*
+    async create_many<T extends EntryType>(...vals: RegEntry<any, any>[]): Promise<void> {
         // As a courtesy / optimization measure, we categorize these first, then send in batches
         let groupings = new Map<EntryType, Array<RegEntry<any, any>>>();
         for (let v of vals) {
@@ -329,17 +544,24 @@ export abstract class Registry {
             this.get_cat(k).create_many(...v);
         }
     }
+    */
 
     // Delete an item, by cat + id. Just delegates through get_cat
     async delete(cat: EntryType, id: string) {
         this.get_cat(cat).delete_id(id);
     }
 
-    // Fetch the specified category or error if it doesn't exist
+    // In theory should never fail because of type bounding
     get_cat<T extends EntryType>(cat: T): RegCat<T> {
-        let v = this.cat_map.get(cat);
+        return this.try_get_cat(cat) as RegCat<T>;
+    }
+
+    // Fetch the specified category or error if it doesn't exist
+    try_get_cat(cat: string): RegCat<any> | null {
+        let v = this.cat_map.get(cat as EntryType);
         if (!v) {
-            throw new Error(`Error: Category "${cat}" not setup`);
+            console.error(`Error: Category "${cat}" does not exist`);
+            return null;
         }
         return v;
     }
@@ -347,32 +569,38 @@ export abstract class Registry {
     // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
     // You should be able to figure out the type from the `Type` of the VRegistryItem
     // async get_from_anywhere(id: string): Promise<RegEntry<any, any> | null> {
-        // for (let [k, c] of this.cat_map) {
-            // let v = await c.get_live(k);
-            // if (v) {
-                // return v;
-            // }
-        // }
-        // return null;
+    // for (let [k, c] of this.cat_map) {
+    // let v = await c.get_live(k);
+    // if (v) {
+    // return v;
+    // }
+    // }
+    // return null;
     // }
 
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    async resolve_wildcard_mmid<T extends EntryType>(mmid: string): Promise<LiveEntryTypes[T] | null> { // The generic does nothing really
-        for(let cat of this.cat_map.values()) {
+    async resolve_wildcard_mmid(mmid: string): Promise<RegEntry<any, any> | null> {
+        // The generic does nothing really
+        for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_mmid(mmid);
-            if(attempt) {
+            if (attempt) {
                 return attempt;
             }
         }
         return null;
     }
 
+    // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
     async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes[T] | null> {
-        if(ref.is_unresolved_mmid) {
-            if(ref.type) {
-                return this.get_cat(ref.type).lookup_mmid(ref.id);
+        return this.resolve_rough(ref) as any; // Trust me bro
+    }
+
+    async resolve_rough(ref: RoughRegRef): Promise<RegEntry<any, any> | null> {
+        if (ref.is_unresolved_mmid) {
+            if (ref.type) {
+                return this.try_get_cat(ref.type)?.lookup_mmid(ref.id);
             } else {
                 return this.resolve_wildcard_mmid(ref.id);
             }
@@ -381,24 +609,44 @@ export abstract class Registry {
         }
     }
 
-    // Filters null results
-    async resolve_many<T extends EntryType>(refs: RegRef<T>[]): Promise<Array<LiveEntryTypes[T]>> {
-        let resolves = await Promise.all(refs.map(r => this.resolve(r)));
-        return resolves.filter(d => d != null) as LiveEntryTypes[T][];
+    // Similar to resolve above, this is just for type flavoring basically
+    async resolve_many<T extends EntryType>(refs: RegRef<T>[] | undefined): Promise<Array<LiveEntryTypes[T]>> {
+        return this.resolve_many_rough(refs) as any; // bro trust me
+    }
+
+    // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
+    async resolve_many_rough(refs: RoughRegRef[] | undefined): Promise<Array<RegEntry<any, any>>> {
+        if(!refs) {
+            return [];
+        }
+        let resolves = await Promise.all(refs.map(r => this.resolve_rough(r)));
+        resolves = resolves.filter(d => d != null);
+        return resolves as RegEntry<any, any>[]; // We filtered the nulls 
     }
 }
 
 // Handles cross referencing of data
-// TODO: our current resolution will fail to create a proper link between integrated items if they haven't yet been initialized.
-// For the most part we avoid these by uploading frames first, but this is not a reliable solution.
-export type RegRef<T extends EntryType> = {
+// Use rough basically only when you cannot be explicit about the type, IE for unresolved mmids
+// If mmid is resolved but you have a mixed content array, might still be / definitely is better to just use `any`
+export interface RoughRegRef {
     // The item id
     id: string;
 
-    // The category we are referencing. If omitted, it is unknown (as in some unresolved mmid's)
-    type?: T;
+    // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
+    type: string | null;
 
     // Is our ID like, the actual id, or just like "DRAKE" or some shit
     is_unresolved_mmid: boolean;
 }
 
+// Same thing basically, except with firm typing
+export interface RegRef<T extends EntryType> {
+    // The item id
+    id: string;
+
+    // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
+    type: T;
+
+    // Is our ID like, the actual id, or just like "DRAKE" or some shit
+    is_unresolved_mmid: boolean;
+}

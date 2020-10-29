@@ -8,7 +8,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry } from "@/new_meta";
+import { EntryType, RegEntry, Registry, SerUtil } from "@/new_meta";
 import { ActivationType } from "./enums";
 
 interface AllDeployableData {
@@ -59,7 +59,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
     Size!: number;
     Cost!: number;
     Armor!: number;
-    CurrentHP!: number | null;
+    CurrentHP!: number | null; // Note: I regret making these all nullable.
     MaxHP!: number | null;
     Overshield!: number | null;
     Evasion!: number | null;
@@ -98,10 +98,10 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         this.TechAttack = data.tech_attack ?? null;
         this.Save = data.save ?? null;
         this.Speed = data.speed ?? null;
-        this.Actions = data.actions?.map(x => new Action(x)) || [];
-        this.Bonuses = data.bonuses?.map(x => new Bonus(x)) || [];
-        this.Synergies = data.synergies?.map(x => new Synergy(x)) || [];
-        this.Tags = data.tags?.map(x => new TagInstance(this.Registry, x));
+        this.Actions = SerUtil.process_actions(data.actions);
+        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+        this.Synergies = SerUtil.process_synergies(data.synergies);
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
 
         // Make sure tags ready
@@ -131,19 +131,20 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
             tech_attack: this.TechAttack ?? undefined,
             save: this.Save ?? undefined,
             speed: this.Speed ?? undefined,
-            actions: this.Actions.map(a => a.save()),
-            bonuses: this.Bonuses.map(b => b.save()),
-            synergies: this.Synergies.map(s => s.save()),
-            tags: await Promise.all(this.Tags.map(t => t.save())),
+            actions: SerUtil.sync_save_all(this.Actions),
+            bonuses: SerUtil.sync_save_all(this.Bonuses),
+            synergies: SerUtil.sync_save_all(this.Synergies),
+            tags: await SerUtil.save_all(this.Tags),
             counters: this.Counters.map(c => c.save())
         };
     }
 
     // Loads this item into the registry. Only use as needed (IE once)
     public static async unpack(dep: PackedDeployableData, reg: Registry): Promise<Deployable> {
-        let tags = await Promise.all(dep.tags?.map(t => TagInstance.unpack(t, reg)) || []) ;
-        let reg_tags = await Promise.all(tags.map(t => t.save())); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
-        let counters = await Promise.all(dep.counters?.map(c => Counter.unpack(c, [])) || []);
+        SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
+        let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
+        let reg_tags = await SerUtil.save_all(tags); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
+        let counters = SerUtil.unpack_counters_default(dep.counters);
          let unpacked: RegDeployableData = {
             ...dep,
             counters,

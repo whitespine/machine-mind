@@ -2,22 +2,21 @@ import {
     Synergy,
     Bonus,
     Action,
-    Registry,
     Counter,
     Deployable,
 } from "@/class";
 
 import {
     IActionData,
-    IBonusData,
     ISynergyData,
     PackedDeployableData,
     PackedCounterData,
+    IBonusData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, RegSer } from '@/new_meta';
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@/new_meta';
 import { RegCounterData } from "../Counter";
 
-// This is what compcon gives us. It is not what we store
+// These attrs are shared 
 interface AllCoreBonusData {
     id: string;
     name: string;
@@ -28,7 +27,6 @@ interface AllCoreBonusData {
     actions?: IActionData[];
     bonuses?: IBonusData[];
     synergies?: ISynergyData[];
-
 }
 export interface PackedCoreBonusData extends AllCoreBonusData {
     deployables?: PackedDeployableData[];
@@ -43,13 +41,15 @@ export interface RegCoreBonusData extends AllCoreBonusData {
 }
 
 export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> {
-  ID!: string;
+    // Basic data
+    ID!: string;
     Name!: string;
-    Source!: string;
+    Source!: string; // No licensing info is needed other than manufacturer
     Description!: string;
     Effect!: string;
     MountedEffect!: string | null;
 
+    // Common subfields
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -64,12 +64,12 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
       this.Description = data.description;
       this.Effect = data.effect;
       this.MountedEffect = data.mounted_effect ?? null;
-      this.Actions = data.actions?.map(x => new Action(x)) || [];
-      this.Bonuses = data.bonuses?.map(b => new Bonus(b)) || [];
-      this.Synergies = data.synergies?.map(s => new Synergy(s)) || [];
-      this.Deployables = await this.Registry.resolve_many(data.deployables || []);
+      this.Actions = SerUtil.process_actions(data.actions);
+      this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+      this.Synergies = SerUtil.process_synergies(data.synergies);
+      this.Deployables = await this.Registry.resolve_many(data.deployables);
       this.Counters = data.counters?.map(c => new Counter(c)) || [];
-      this.Integrated = await this.Registry.resolve_many(data.integrated || []);
+      this.Integrated = await this.Registry.resolve_many(data.integrated);
     }
     public async save(): Promise<RegCoreBonusData> {
       return {
@@ -90,12 +90,22 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
 
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
     static async unpack(cor: PackedCoreBonusData, reg: Registry): Promise<CoreBonus>{
-      let deployables = (cor.deployables || []).map(d => Deployable.unpack(d, reg));
-      let integrated = 
-      return {
-        ...cor,
+      // Create deployable entries
+      let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, cor.deployables);
+      let deployables = SerUtil.ref_all(dep_entries);
 
-      }
+      // Get integrated refs
+      let integrated = SerUtil.parse_integrated(cor.integrated || []);
+
+      // Get the counters
+      let counters = SerUtil.unpack_counters_default(cor.counters);
+      let cbdata: RegCoreBonusData = {
+        ...cor,
+        integrated,
+        deployables,
+        counters 
+      };
+      return reg.create(EntryType.CORE_BONUS, cbdata);
     }
 }
 

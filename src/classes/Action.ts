@@ -1,4 +1,3 @@
-import { RWMix, MixBuilder, MixLinks, uuid, ident, def_empty_map, def, defs, restrict_enum, defn, ser_many, defb  } from '@/mixmeta.typs';
 import { SerUtil, SimSer } from '@/new_meta';
 import { ActivationType } from './enums';
 
@@ -39,7 +38,7 @@ export class Action extends SimSer<IActionData> {
   protected load(data: IActionData): void {
     this.ID 
     this.Name = data.name;
-    this.Activation = SerUtil.restrict_enum(ActivationType, ActivationType.None, data.activation);
+    this.Activation = this.restrict_enum(ActivationType, ActivationType.None, data.activation);
     this.Terse = data.terse ||null; 
     this.Detail = data.detail;
     this.Cost = data.cost || null;

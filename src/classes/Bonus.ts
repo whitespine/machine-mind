@@ -1,7 +1,7 @@
 import { Mech, Pilot } from "@/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "./enums";
-import { EntryType, SimSer } from "@/new_meta";
+import {  SerUtil, SimSer } from "@/new_meta";
 import * as pmath from "parsemath";
 
 export interface IBonusData {
@@ -27,10 +27,10 @@ export class Bonus extends SimSer<IBonusData> {
         const entry = BonusDict.get(data.id);
         this.ID = data.id;
         this.Value = data.val;
-        this.DamageTypes = data.damage_types || [];
-        this.RangeTypes = data.range_types || [];
-        this.WeaponTypes = data.weapon_types || [];
-        this.WeaponSizes = data.weapon_sizes || [];
+        this.DamageTypes = data.damage_types ?? []; // We much prefer these just be empty
+        this.RangeTypes = data.range_types ?? [];
+        this.WeaponTypes = data.weapon_types ?? [];
+        this.WeaponSizes = data.weapon_sizes ?? [];
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
     }
@@ -39,16 +39,16 @@ export class Bonus extends SimSer<IBonusData> {
         return {
             id: this.ID,
             val: this.Value,
-            damage_types: this.DamageTypes.length ? this.DamageTypes : undefined,
-            range_types: this.RangeTypes.length ? this.RangeTypes : undefined,
-            weapon_types: this.WeaponTypes.length ? this.WeaponTypes : undefined,
-            weapon_sizes: this.WeaponSizes.length ? this.WeaponSizes : undefined,
+            damage_types: SerUtil.drop_empty(this.DamageTypes),
+            range_types: SerUtil.drop_empty(this.RangeTypes),
+            weapon_types: SerUtil.drop_empty(this.WeaponTypes),
+            weapon_sizes: SerUtil.drop_empty(this.WeaponSizes),
         };
     }
 
     // Formats our detail string to properly show weapon types, damage types, value, etc
     private parse_detail(str: string): string {
-        str = str.replace(/{VAL}/g, ""+this.Value);
+        str = str.replace(/{VAL}/g, "" + this.Value);
         str = str.replace(/{INC_DEC}/g, this.Value > -1 ? "Increases" : "Decreases");
         str = str.replace(
             /{RANGE_TYPES}/g,
@@ -75,14 +75,16 @@ export class Bonus extends SimSer<IBonusData> {
         let val = this.Value;
         val = val.replaceAll(`{ll}`, pilot.Level.toString());
         val = val.replaceAll(`{grit}`, pilot.Grit.toString());
-        return (pmath.parse(val));
+        return pmath.parse(val);
     }
 
+    /*
     public static sum(id: string, mech: Mech): number {
         return mech.GetBonuses(id).reduce(
             (sum, bonus) => sum + this.Evaluate(bonus, mech.Pilot),
             0
         );
+        */
 
     public static getPilot(id: string, pilot: Pilot): number {
         return pilot.Bonuses.filter(x => x.ID === id).reduce(
@@ -101,7 +103,7 @@ export class Bonus extends SimSer<IBonusData> {
                         if (b.ID === id)
                             output.push({
                                 name: `${e.Source} ${e.Name} (${m.ActiveLoadout.Name} Loadout)`,
-                                val: b.evaluate( m.Pilot),
+                                val: b.evaluate(m.Pilot),
                             });
                     });
                 }
@@ -113,7 +115,7 @@ export class Bonus extends SimSer<IBonusData> {
                 if (b.ID === id)
                     output.push({
                         name: `${t.Name} (${m.Frame.Source} ${m.Frame.Name} Trait)`,
-                        val: b.evaluate( m.Pilot),
+                        val: b.evaluate(m.Pilot),
                     });
             });
         });
@@ -122,7 +124,7 @@ export class Bonus extends SimSer<IBonusData> {
             if (b.ID === id)
                 output.push({
                     name: `${m.Frame.CoreSystem.PassiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Passive)`,
-                    val: b.evaluate( m.Pilot),
+                    val: b.evaluate(m.Pilot),
                 });
         });
 
@@ -131,7 +133,7 @@ export class Bonus extends SimSer<IBonusData> {
                 if (b.ID === id)
                     output.push({
                         name: `${m.Frame.CoreSystem.ActiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Active)`,
-                        val: b.evaluate( m.Pilot),
+                        val: b.evaluate(m.Pilot),
                     });
             });
         }
@@ -184,6 +186,7 @@ export class Bonus extends SimSer<IBonusData> {
     }
 }
 
+/*
 export enum BonusType {
     SkillPoint = "skill_point", // integer
     MechSkillPoint = "mech_skill_point", // integer
@@ -244,6 +247,7 @@ export enum BonusType {
     Placeholder = "placeholder",
     Unrecognized = "unrecognized",
 }
+*/
 
 export function Evaluate(bonus: Bonus, pilot: Pilot): number {
     if (typeof bonus.Value === "number") return Math.ceil(bonus.Value);

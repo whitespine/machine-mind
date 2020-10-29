@@ -1,47 +1,27 @@
-import uuid from "uuid/v4";
-
-// This class is perhaps overkill, but it helps so we can do instanceofs and stuff
-
+import { EntryType, RegEntry } from '@/new_meta';
 export interface IEnvironmentData {
     id: string;
     name: string;
     description: string; // v-html
 }
 
-export class Environment {
-    private _id: string;
-    private _name: string;
-    private _description: string;
+// Seems overkill but whatever
+export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentData> {
+    ID!: string;
+    Name!: string;
+    Description!: string;
 
-    constructor() {
-        this._id = uuid();
-        this._name = "";
-        this._description = "";
-    }
-
-    public get Description(): string {
-        return this._description;
-    }
-    public get Name(): string {
-        return this._name;
-    }
-    public get ID(): string {
-        return this._id;
+    protected async load(data: IEnvironmentData): Promise<void> {
+        this.ID = data.id;
+        this.Description = data.description;
+        this.Name = data.name;
     }
 
-    public static Deserialize(data: IEnvironmentData): Environment {
-        let v = new Environment();
-        v._description = data.description;
-        v._id = data.id;
-        v._name = data.id;
-        return v;
-    }
-
-    public static Serialize(dat: Environment): IEnvironmentData {
+    public async save(): Promise<IEnvironmentData> {
         return {
-            id: dat._id,
-            name: dat._name,
-            description: dat._description,
-        };
+            description: this.Description,
+            id: this.ID,
+            name: this.Name    
+        }
     }
 }

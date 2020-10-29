@@ -15,9 +15,9 @@ export interface ISynergyData {
 export class Synergy extends SimSer<ISynergyData> {
     Locations!: SynergyLocation[];
     Detail!: string;
-    SystemTypes!: SystemType[] | null;
-    WeaponTypes!: WeaponType[] | null;
-    WeaponSizes!: WeaponSize[] | null;
+    SystemTypes!: SystemType[];
+    WeaponTypes!: WeaponType[];
+    WeaponSizes!: WeaponSize[];
 
 
     allows_weapon(this: Synergy, weapon: MechWeapon): boolean {

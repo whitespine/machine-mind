@@ -1,4 +1,4 @@
-import { CompendiumItem } from "../registry;
+import { EntryType, RegEntry, SimSer } from '@/new_meta';
 
 export interface ISitrepData {
     id: string;
@@ -13,56 +13,43 @@ export interface ISitrepData {
     extraction?: string;
 }
 
-export class Sitrep {
-    private _id: string;
-    private _name: string;
-    private _description: string;
-    private _pcVictory: string;
-    private _enemyVictory: string;
-    private _noVictory?: string | null;
-    private _deployment?: string | null;
-    private _objective?: string | null;
-    private _controlZone?: string | null;
-    private _extraction?: string | null;
+export class Sitrep extends RegEntry<EntryType.SITREP, ISitrepData> {
+    ID!: string;
+    Name!: string;
+    Description!: string;
+    PcVictory!: string;
+    EnemyVictory!: string;
+    NoVictory!: string;
+    Deployment!: string;
+    Objective!: string;
+    ControlZone!: string;
+    Extraction!: string;
 
-    constructor() {
-        this._id = "";
-        this._name = "";
-        this._description = "";
-        this._pcVictory = "";
-        this._enemyVictory = "";
-    }
-
-    public static Serialize(dat: Sitrep): ISitrepData {
+    public async save(): Promise<ISitrepData> {
         return {
-            id: dat._id,
-            name: dat._name,
-            description: dat._description,
-            pcVictory: dat._pcVictory,
-            enemyVictory: dat._enemyVictory,
-            noVictory: dat._noVictory,
-            deployment: dat._deployment,
-            objective: dat._objective,
-            controlZone: dat._controlZone,
-            extraction: dat._extraction,
+            id: this.ID,
+            name: this.Name,
+            description: this.Description,
+            pcVictory: this.PcVictory,
+            enemyVictory: this.EnemyVictory,
+            noVictory: this.NoVictory,
+            deployment: this.Deployment,
+            objective: this.Objective,
+            controlZone: this.ControlZone,
+            extraction: this.Extraction,
         };
     }
 
-    public static Deserialize(data: ISitrepData): Sitrep {
-        let result = new Sitrep();
-
-        // Simple populate
-        result._id = data.id;
-        result._name = data.name;
-        result._description = data.description;
-        result._pcVictory = data.pcVictory;
-        result._enemyVictory = data.enemyVictory;
-        result._noVictory = data.noVictory;
-        result._deployment = data.deployment;
-        result._objective = data.objective;
-        result._controlZone = data.controlZone;
-        result._extraction = data.extraction;
-
-        return result;
+    protected async load(data: ISitrepData) {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Description = data.description;
+        this.PcVictory = data.pcVictory;
+        this.EnemyVictory = data.enemyVictory;
+        this.NoVictory = data.noVictory || "";
+        this.Deployment = data.deployment || "";
+        this.Objective = data.objective || "";
+        this.ControlZone = data.controlZone || "";
+        this.Extraction = data.extraction || "";
     }
 }

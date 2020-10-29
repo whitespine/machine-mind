@@ -1,3 +1,5 @@
+import { EntryType, RegEntry } from '@/new_meta';
+
 export interface IStatusData {
     name: string;
     type: "Status" | "Condition";
@@ -5,57 +7,33 @@ export interface IStatusData {
     effects: string[];
 }
 
-export class Status {
-    private _name: string;
-    private _icon: string;
-    private _effects: string[];
-    private _type: "Status" | "Condition";
+export class Status extends RegEntry<EntryType.STATUS, IStatusData> {
+    public Name!: string;
+    public Icon!: string;
+    public Effects!: string[];
+    public Subtype!: "Status" | "Condition";
 
-    public get Name(): string {
-        return this._name;
+    async load(data: IStatusData) {
+        this.Subtype = data.type;
+        this.Name = data.name;
+        this.Icon = data.icon;
+        this.Effects = data.effects;
     }
 
-    public get Icon(): string {
-        return this._icon;
-    }
-
-    public get Effects(): string[] {
-        return this._effects;
-    }
-
-    public get Type(): "Status" | "Condition" {
-        return this._type;
-    }
-
-    constructor(type: "Status" | "Condition") {
-        this._type = type;
-        this._name = "";
-        this._icon = "";
-        this._effects = [];
-    }
-
-    public static Serialize(dat: Status): IStatusData {
+    async save() {
         return {
-            name: dat._name,
-            icon: dat._icon,
-            type: dat._type,
-            effects: dat._effects,
+            name: this.Name,
+            icon: this.Icon,
+            type: this.Subtype,
+            effects: this.Effects,
         };
     }
 
     public get is_status(): boolean {
-        return this._type == "Status";
+        return this.Subtype == "Status";
     }
 
     public get is_condition(): boolean {
-        return this._type == "Condition";
-    }
-
-    public static Deserialize(data: IStatusData): Status {
-        let tmp = new Status(data.type);
-        tmp._name = data.name;
-        tmp._icon = data.icon;
-        tmp._effects = data.effects;
-        return tmp;
+        return this.Subtype == "Condition";
     }
 }
