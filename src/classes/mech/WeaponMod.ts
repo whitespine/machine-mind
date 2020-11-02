@@ -1,7 +1,7 @@
 import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@/class";
 import { store } from "@/hooks";
 import { IActionData, IBonusData, IRangeData, ISynergyData, IWeaponModData, PackedCounterData, PackedDamageData, PackedDeployableData, PackedTagInstanceData, RegCounterData, RegDamageData, RegTagInstanceData } from '@/interface';
-import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/new_meta";
+import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/registry";
 import { SystemType, WeaponSize, WeaponType } from '../enums';
 import { TagInstance } from '../Tag';
 

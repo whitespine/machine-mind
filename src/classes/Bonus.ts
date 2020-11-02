@@ -1,7 +1,7 @@
 import { Mech, Pilot } from "@/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "./enums";
-import {  SerUtil, SimSer } from "@/new_meta";
+import {  SerUtil, SimSer } from "@/registry";
 import * as pmath from "parsemath";
 
 export interface IBonusData {
@@ -70,6 +70,7 @@ export class Bonus extends SimSer<IBonusData> {
         return str;
     }
 
+    // Returns this bonus as a numerical value
     public evaluate(pilot: Pilot): number {
         if (typeof this.Value === "number") return this.Value;
         let val = this.Value;
@@ -84,15 +85,14 @@ export class Bonus extends SimSer<IBonusData> {
             (sum, bonus) => sum + this.Evaluate(bonus, mech.Pilot),
             0
         );
-        */
+    */
 
-    public static getPilot(id: string, pilot: Pilot): number {
-        return pilot.Bonuses.filter(x => x.ID === id).reduce(
-            (sum, bonus) => sum + this.Evaluate(bonus, pilot),
-            0
-        );
+    // Sums all bonuses on the specific id, for the specified pilot
+    public static SumVal(pilot: Pilot, bonuses: Bonus[], bonus_type: string): number {
+        return bonuses.filter(x => x.ID === bonus_type).reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
     }
 
+    /*
     // Lists contributors for just the mech
     private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {
         const output = [];
@@ -184,6 +184,7 @@ export class Bonus extends SimSer<IBonusData> {
         });
         return output;
     }
+    */
 }
 
 /*

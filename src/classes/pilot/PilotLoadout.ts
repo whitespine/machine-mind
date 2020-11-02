@@ -4,148 +4,175 @@ import {
     PilotWeapon,
     PilotGear,
     Loadout,
-    EntryType,
-    PilotEquipment
+    PilotEquipment,
+    Counter,
+    Bonus,
+    Synergy
 } from "@/class";
-import { IPilotArmorData, IPilotGearData, IPilotWeaponData } from '@/interface';
-import { ident, MixBuilder, RWMix, MixLinks, uuid } from '@/mixmeta.typs';
-import { CreatePilotArmor, CreatePilotGear, CreatePilotWeapon } from './PilotEquipment';
+import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from '@/interface';
+import { EntryType, LiveEntryTypes, RegSer, SimSer } from '@/registry';
 
-export interface IPilotLoadoutData {
+// This is what is actually in the loadouts. The id's ref actual weapons
+export interface PackedPilotEquipmentState {
+    id: string;
+    destroyed: boolean;
+    uses: number;
+    cascading: false;
+    customDamageType: null;
+}
+
+export interface PackedPilotLoadoutData {
     id: string;
     name: string;
-    armor: (IPilotArmorData | null)[]; // Accounts for gaps in the inventory slots.... Were it my call this wouldn't be how it was, but it ain't my way
-    weapons: (IPilotWeaponData | null)[];
-    gear: (IPilotGearData | null)[];
-    extendedWeapons: (IPilotWeaponData | null)[];
-    extendedGear: (IPilotGearData | null)[];
+    armor: (PackedPilotEquipmentState | null)[]; // Accounts for gaps in the inventory slots.... Were it my call this wouldn't be how it was, but it ain't my way
+    weapons: (PackedPilotEquipmentState | null)[];
+    gear: (PackedPilotEquipmentState | null)[];
+    extendedWeapons: (PackedPilotEquipmentState | null)[];
+    extendedGear: (PackedPilotEquipmentState | null)[];
 }
 
-export interface PilotLoadout extends MixLinks<IPilotLoadoutData> {
-    ID: string;
-    Name: string;
-    Armor: PilotArmor[];
-    Gear: PilotGear[];
-    Weapons: PilotWeapon[];
-    // ExtendedWeapons: PilotWeapon[];
-    // ExtendedGear: PilotGear[];
+export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
+    ID!: string;
+    Name!: string;
+    Armor!: (PilotArmor | null)[];
+    Gear!: (PilotGear | null)[];
+    Weapons!: (PilotWeapon | null)[];
+    ExtendedWeapons!: (PilotWeapon | null)[];
+    ExtendedGear!: (PilotGear | null)[];
 
-    // Methods
-    Items(): PilotEquipment[];
-    Add(item: PilotEquipment): void;
-    // Remove();
-
-    CanAddArmor(): boolean;
-    CanAddWeapons(): boolean;
-    CanAddGear(): boolean;
-}
-
-export function CreatePilotLoadout(data: IPilotLoadoutData) {
-    let mb = new MixBuilder<PilotLoadout, IPilotLoadoutData>({
-        CanAddArmor,
-        Add,
-        Items, 
-        CanAddGear,
-        CanAddWeapons
-    });
-    mb.with(new RWMix("ID","id", ident, ident));
-    mb.with(new RWMix("Name","name", ident, ident));
-    mb.with(new RWMix("Armor","armor", (d) => (d || []).filter(x => x).map(x => CreatePilotArmor(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new RWMix("Weapons","weapons", (d) => (d || []).filter(x => x).map(x => CreatePilotWeapon(x)), (v) => v.map(x => x.Serialize())));
-    mb.with(new RWMix("Gear","gear", (d) => (d || []).filter(x => x).map(x => CreatePilotGear(x)), (v) => v.map(x => x.Serialize())));
-
-
-    return mb.finalize(data);
-}
-
-
-
-    function Items(this: PilotLoadout): PilotEquipment[] {
-        return (this.Armor as PilotEquipment[])
-            .concat(this.Weapons as PilotEquipment[])
-            .concat(this.Gear as PilotEquipment[]);
+    // This just gets it as a simple list
+    get EquippedArmor(): PilotArmor[] {
+        return this.Armor.filter(x => !!x) as PilotArmor[];
     }
 
-function CanAddArmor(this: PilotLoadout) {
-    return this.Armor.length < Rules.MaxPilotArmor;
-}
-function CanAddWeapons(this: PilotLoadout) {
-    return this.Weapons.length < Rules.MaxPilotWeapons;
-}
-function CanAddGear(this: PilotLoadout) {
-    return this.Gear.length < Rules.MaxPilotGear;
-}
+    get EquippedGear(): PilotGear[] {
+        return this.Gear.filter(x => !!x) as PilotGear[];
+    }
 
-function Add(this: PilotLoadout, item: PilotEquipment) { //, slot: number, extended?: boolean | null): void {
-    switch (item.Type) {
-        case EntryType.PilotArmor:
-            this.Armor.push(item as PilotArmor);
-            break;
-        case EntryType.PilotWeapon:
+    get EquippedWeapons(): PilotWeapon[] {
+        return this.Weapons.filter(x => !!x) as PilotWeapon[];
+    }
+
+
+    get Items(): PilotEquipment[] {
+        return [...this.EquippedArmor, ...this.EquippedGear, ...this.EquippedWeapons];
+    }
+
+    // Flattening methods
+    // public get Counters(): Counter[] {
+        // None of these things actually have items
+        // return this.EquippedGear.flatMap(x => x.Counters).concat(this.EquippedWeapons.flatMap(x => x.
+    // }
+
+    // These commented items aren't usually needed
+    // public get Integrated(): RegEntry<any, any>[] {
+        // return this.UnlockedRanks.flatMap(x => x.integrated);
+    // }
+
+    // public get Deployables(): Deployable[] {
+        // return this.UnlockedRanks.flatMap(x => x.deployables);
+    // }
+
+    // public get Actions(): Action[] {
+        // return this.UnlockedRanks.flatMap(x => x.actions);
+    // }
+
+    public get Bonuses(): Bonus[] {
+        return this.Items.flatMap(x => x.Bonuses);
+    }
+
+    public get Synergies(): Synergy[] {
+        return this.Items.flatMap(x => x.Synergies);
+    }
+
+    private async resolve_state_item<T extends EntryType>(item_state: PackedPilotEquipmentState | null, expect_type: T): Promise<LiveEntryTypes[T] | null> {
+        // Simple case
+        if(item_state == null) {
+            return null;
+        }
+        /*
+            id: string;
+    destroyed: boolean;
+    uses: number;
+    cascading: false;
+    customDamageType: null;
+    */
+        // Get the item
+        let item = await this.Registry.get_cat(expect_type).lookup_mmid(item_state.id);
+        if(!item) {
+            console.warn(`Could not resolve item ${item_state.id}`);
+
+            // TODO: this currently will basically only just move items around in the players inventory, which is obviously not ideal
+            return null;
+        }
+        else if(item.Type != expect_type) {
+            console.warn(`ID ${item_state.id} resolved to invalid slot-equippable type ${item.Type}`);
+            return null;
+        }
+
+        // TODO: apply the other details
+        return item;
+    }
+
+    private to_packed_ref(item: PilotEquipment | null): PackedPilotEquipmentState | null {
+        // Just saves us some time later
+        if(item == null) return null;
+
+        return {
+            // TODO: apply the other details
+            cascading: false,
+            customDamageType: null,
+            destroyed: false,
+            id: item.ID,
+            uses: 0
+        }
+    }
+
+    protected async load(data: PackedPilotLoadoutData): Promise<void> {
+        // Simple
+        this.ID = data.id;
+        this.Name = data.name;
+
+        // We're a little 
+        this.Armor = await Promise.all(data.armor.map(a => this.resolve_state_item(a, EntryType.PILOT_ARMOR)));
+        this.Gear = await Promise.all(data.gear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR)));
+        this.ExtendedGear = await Promise.all(data.extendedGear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR)));
+        this.Weapons = await Promise.all(data.weapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON)));
+        this.ExtendedWeapons = await Promise.all(data.extendedWeapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON)));
+    }
+
+    public async save(): Promise<PackedPilotLoadoutData> {
+        return {
+            id: this.ID,
+            name: this.Name,
+            armor: this.Armor.map(x => this.to_packed_ref(x)),
+            gear: this.Gear.map(x => this.to_packed_ref(x)),
+            weapons: this.Weapons.map(x => this.to_packed_ref(x)),
+            extendedGear: this.ExtendedGear.map(x => this.to_packed_ref(x)),
+            extendedWeapons: this.ExtendedWeapons.map(x => this.to_packed_ref(x)),
+        }
+    }
+
+
+    // Adds an item to the first free slot it can find
+    /*
+    Add(item: PilotArmor | PilotWeapon | PilotGear) { //, slot: number, extended?: boolean | null): void {
+        switch (item.Type) {
+            case EntryType.PILOT_ARMOR:
+                this.Armor.push(item );
+                break;
+        case EntryType.PILOT_WEAPON:
             // if (extended) this._extendedWeapons.splice(slot, 1, item as PilotWeapon);
             // else this._weapons.splice(slot, 1, item as PilotWeapon);
-            this.Weapons.push(item as PilotWeapon);
+            this.Weapons.push(item);
             break;
-        case EntryType.PilotGear:
+        case EntryType.PILOT_GEAR:
             // if (extended) this._extendedGear[slot] = item as PilotGear;
             // else this._gear.splice(slot, 1, item as PilotGear);
-            this.Gear.push(item as PilotGear);
+            this.Gear.push(item );
             break;
         default:
             break;
     }
+            */
 }
-
-
-/*
-    public Remove(item: PilotEquipment, slot: number, extended?: boolean | null): void {
-        switch (item.EntryType) {
-            case EntryType.PilotArmor:
-                if (this._armor[slot]) this._armor[slot] = null;
-                break;
-            case EntryType.PilotWeapon:
-                if (extended) this._extendedWeapons[slot] = null;
-                if (this._weapons[slot]) this._weapons[slot] = null;
-                break;
-            case EntryType.PilotGear:
-                if (extended) this._extendedGear[slot] = null;
-                if (this._gear[slot]) this._gear[slot] = null;
-                break;
-            default:
-                break;
-        }
-        this.save();
-    }
-
-    public static Serialize(pl: PilotLoadout): IPilotLoadoutData {
-        return {
-            id: pl.ID,
-            name: pl.Name,
-            armor: pl.Armor.map(x => PilotEquipment.Serialize(x)),
-            weapons: pl.Weapons.map(x => PilotEquipment.Serialize(x)),
-            gear: pl.Gear.map(x => PilotEquipment.Serialize(x)),
-            extendedWeapons: pl.ExtendedWeapons.map(x => PilotEquipment.Serialize(x)),
-            extendedGear: pl.ExtendedGear.map(x => PilotEquipment.Serialize(x)),
-        };
-    }
-
-    public static Deserialize(loadoutData: IPilotLoadoutData): PilotLoadout {
-        const loadout = new PilotLoadout(0, loadoutData.id);
-        loadout.ID = loadoutData.id;
-        loadout._name = loadoutData.name;
-        loadout._armor = loadoutData.armor.map(x => PilotEquipment.Deserialize(x) as PilotArmor);
-        loadout._weapons = loadoutData.weapons.map(
-            x => PilotEquipment.Deserialize(x) as PilotWeapon
-        );
-        loadout._gear = loadoutData.gear.map(x => PilotEquipment.Deserialize(x) as PilotGear);
-        loadout._extendedWeapons = loadoutData.extendedWeapons
-            ? loadoutData.extendedWeapons.map(x => PilotEquipment.Deserialize(x) as PilotWeapon)
-            : Array(1).fill(null);
-        loadout._extendedGear = loadoutData.extendedGear
-            ? loadoutData.extendedGear.map(x => PilotEquipment.Deserialize(x) as PilotGear)
-            : Array(2).fill(null);
-        return loadout;
-    }
-}
-
-*/

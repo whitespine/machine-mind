@@ -1,6 +1,6 @@
 import { Action, Bonus, Deployable, Synergy, Counter } from "@/class";
 import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from '@/new_meta';
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from '@/registry';
 
 
 ///////////////////////////////////////////////////////////

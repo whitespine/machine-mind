@@ -12,7 +12,7 @@ import type {
 } from "@/class";
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@/interface";
 import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
-import { EntryType, RegEntry, Registry, RegRef, RegSer } from '@/new_meta';
+import { EntryType, RegEntry, Registry, RegRef, RegSer } from '@/registry';
 import { RegMechData } from './Mech';
 // TODO:
 // class WeaponAmmo {}

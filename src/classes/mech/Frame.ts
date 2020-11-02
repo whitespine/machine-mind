@@ -1,7 +1,7 @@
 import { LicensedItem, CoreSystem } from "@/class";
 import { ImageTag } from "@/hooks";
 import { ILicensedItemData, ICoreSystemData } from "@/interface";
-import { EntryType, RegEntry } from '@/new_meta';
+import { EntryType, RegEntry } from '@/registry';
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
 import { FrameTrait, IFrameTraitData } from "./FrameTrait";

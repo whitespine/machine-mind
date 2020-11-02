@@ -1,4 +1,4 @@
-import { SerUtil, SimSer } from "@/new_meta";
+import { SerUtil, SimSer } from "@/registry";
 import * as pmath from "parsemath";
 import { DamageType } from "./enums";
 

@@ -3,7 +3,7 @@ import { reserves } from "lancer-data";
 import { IActionData, Action } from "@/classes/Action";
 import { IBonusData, Bonus } from "@/classes/Bonus";
 import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@/interface";
-import { EntryType, RegEntry, RegRef, SerUtil, SimSer } from "@/new_meta";
+import { EntryType, RegEntry, RegRef, SerUtil, SimSer } from "@/registry";
 import { ReserveType } from '@/classes/enums';
 
 interface AllReserveData {

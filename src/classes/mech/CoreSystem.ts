@@ -10,7 +10,7 @@ import {
     RegTagInstanceData,
     IBonusData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/new_meta";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 import { ActivationType, FrameEffectUse } from "../enums";
 
 export interface AllCoreSystemData {

@@ -13,7 +13,7 @@ import {
     PackedCounterData,
     IBonusData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@/new_meta';
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@/registry';
 import { RegCounterData } from "../Counter";
 
 // These attrs are shared 

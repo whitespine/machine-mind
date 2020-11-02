@@ -21,7 +21,7 @@ import type {
 import { ContentPack } from "@/class";
 import * as nanoid from "nanoid";
 import { CORE_BREW_ID } from '@/classes/enums';
-import { EntryType, LiveEntryTypes, RegCat, RegEntryTypes, RegSer } from '@/new_meta';
+import { EntryType, LiveEntryTypes, RegCat, RegEntryTypes, RegSer } from '@/registry';
 
 
 /*
@@ -53,7 +53,7 @@ export class StaticRegistryCat<T extends EntryType> extends RegCat<T> {
             this.data.set(id, v);
 
             // Yield as a live copy
-            let created = this.creation_func(this.parent, v);
+            let created = this.revive_func(this.parent, v);
         }
         return new_keys;
     }

@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SimSer } from "@/new_meta";
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SimSer } from "@/registry";
 
 export interface ITagTemplateData {
     id: string;

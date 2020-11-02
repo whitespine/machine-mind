@@ -1,5 +1,5 @@
 import { Rules } from "@/class";
-import { SimSer } from "@/new_meta";
+import { SimSer } from "@/registry";
 import { HASE } from "../enums";
 
 // It's HASE, baby!

@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, SimSer } from '@/new_meta';
+import { EntryType, RegEntry, SimSer } from '@/registry';
 
 export interface IFactionData {
     id: string;

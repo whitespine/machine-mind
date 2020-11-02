@@ -1,5 +1,5 @@
 import type { MechEquipment, MechWeapon, MechSystem, Registry, Frame } from "@/class";
-import { SimSer, EntryType } from '@/new_meta';
+import { SimSer, EntryType } from '@/registry';
 import { WeaponType, WeaponSize, SystemType } from './enums';
 
 export type SynergyLocation = "any" | "active_effects" | "rest" | "weapon" | "system" | "move" | "boost" | "other" | "ram" | "grapple" | "tech_attack" | "overcharge" | "skill_check" | "overwatch" | "improvised_attack" | "disengage" | "stabilize" | "tech" | "lock_on" | "hull" | "agility" | "systems" | "engineering";

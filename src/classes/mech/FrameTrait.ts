@@ -1,6 +1,6 @@
 import { Action, Bonus, Counter, Synergy } from '@/class';
 import { IActionData, IBonusData, ISynergyData, IDeployableData, PackedCounterData, RegCounterData} from '@/interface';
-import { EntryType, RegEntry, RegRef } from '@/new_meta';
+import { EntryType, RegEntry, RegRef } from '@/registry';
 import { Deployable } from '../Deployable';
 import { FrameEffectUse } from '../enums';
 

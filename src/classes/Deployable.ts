@@ -8,7 +8,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry, SerUtil } from "@/new_meta";
+import { EntryType, RegEntry, Registry, SerUtil } from "@/registry";
 import { ActivationType } from "./enums";
 
 interface AllDeployableData {

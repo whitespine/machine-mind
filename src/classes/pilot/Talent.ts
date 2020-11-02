@@ -7,7 +7,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/new_meta";
+import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/registry";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -61,12 +61,13 @@ export interface RegTalentData {
     terse: string; // terse text used in short descriptions. The fewer characters the better
     description: string; // v-html
     ranks: RegTalentRank[];
+    curr_rank: number; // 1, 2, or 3, typically
 }
 
 export interface TalentRank {
     name: string;
     description: string; // v-html
-    exclusive: boolean; // see below
+    exclusive: boolean; // see below -- basically, does the unlocks of this rank override prior ranks (replacing actions and so forth?)
     actions: Action[];
     bonuses: Bonus[];
     synergies: Synergy[];
@@ -84,6 +85,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
     Description!: string;
 
     Ranks!: Array<TalentRank>;
+    CurrentRank!: number;
 
     protected async load(data: RegTalentData): Promise<void> {
         this.ID = data.id;
@@ -106,6 +108,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                 synergies: SerUtil.process_synergies(r.synergies)
             })
         }
+        this.CurrentRank = data.curr_rank;
     }
 
     public async save(): Promise<RegTalentData> {
@@ -132,6 +135,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
             name: this.Name,
             terse: this.Terse,
             ranks,
+            curr_rank: this.CurrentRank
         };
     }
 
@@ -144,7 +148,37 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         return null;
     }
 
-    // List all items / ownerships granted by this talent, through all ranks
+    // The ranks granted by our current level
+    public get UnlockedRanks(): TalentRank[] {
+        return this.Ranks.slice(0, this.CurrentRank - 1);
+    }
+
+    // Flattening methods
+    public get Counters(): Counter[] {
+        return this.UnlockedRanks.flatMap(x => x.counters);
+    }
+
+    public get Integrated(): RegEntry<any, any>[] {
+        return this.UnlockedRanks.flatMap(x => x.integrated);
+    }
+
+    public get Deployables(): Deployable[] {
+        return this.UnlockedRanks.flatMap(x => x.deployables);
+    }
+
+    public get Actions(): Action[] {
+        return this.UnlockedRanks.flatMap(x => x.actions);
+    }
+
+    public get Bonuses(): Bonus[] {
+        return this.UnlockedRanks.flatMap(x => x.bonuses);
+    }
+
+    public get Synergies(): Synergy[] {
+        return this.UnlockedRanks.flatMap(x => x.synergies);
+    }
+
+    // TODO: Handle exclusive
 }
 
 /*

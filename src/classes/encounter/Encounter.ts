@@ -1,9 +1,9 @@
-import uuid from "uuid/v4";
 import { Npc, EncounterSide, MissionStepType, Sitrep } from "@/class";
 import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store, is_web } from "@/hooks";
 import { IMissionStep } from "@/interface";
 import { ISitrepData } from "./Sitrep";
+import { nanoid } from 'nanoid';
 
 export interface IEncounterData {
     id: string;
@@ -39,7 +39,7 @@ export class Encounter implements IMissionStep {
     private _local_map: string;
 
     public constructor() {
-        this._id = uuid();
+        this._id = nanoid();
         this._name = "New Encounter";
         this._location = "";
         this._labels = [];

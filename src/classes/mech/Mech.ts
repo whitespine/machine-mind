@@ -1,7 +1,7 @@
 import { Bonus, Damage, Frame, MechLoadout, Pilot, Rules } from "@/class";
 import { bound_int, contrib_helper } from "@/funcs";
 import { IMechLoadoutData } from "@/interface";
-import { EntryType, RegEntry, RegRef } from "@/new_meta";
+import { EntryType, RegEntry, RegRef } from "@/registry";
 import { DamageType } from "../enums";
 import { ILicenseRequirement } from "../LicensedItem";
 

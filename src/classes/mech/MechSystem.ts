@@ -1,6 +1,6 @@
 import { MechEquipment, Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@/class";
 import { IActionData, IBonusData, ISynergyData, PackedCounterData, PackedDeployableData, PackedTagInstanceData, RegCounterData, RegDeployableData, RegTagInstanceData, } from "@/interface";
-import { EntryType, RegEntry, RegRef } from '@/new_meta';
+import { EntryType, RegEntry, RegRef } from '@/registry';
 import { SystemType } from '../enums';
 
 interface AllMechSystemData  {

@@ -1,4 +1,3 @@
-import uuid from "uuid/v4";
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
 import { IMissionData, INpcData, IMissionStep } from "@/interface";
 import { EncounterSide } from "../enums";
@@ -31,7 +30,6 @@ export class ActiveMission {
     private _result: string;
 
     public constructor(m: Mission, pilots: Pilot[]) {
-        this._id = uuid();
         this._mission = m;
         this._pilotIDs = pilots.map(x => x.ID);
         this._activeNpcs = [];
@@ -54,7 +52,6 @@ export class ActiveMission {
     }
 
     public RenewID(): void {
-        this._id = uuid();
         this.save();
     }
 

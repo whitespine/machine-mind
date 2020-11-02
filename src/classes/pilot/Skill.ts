@@ -1,5 +1,5 @@
 import { Rules } from '@/class';
-import { EntryType, RegEntry, Registry, SimSer } from '@/new_meta';
+import { EntryType, RegEntry, Registry, SimSer } from '@/registry';
 import { IRankedData } from '../GeneralInterfaces';
 
 /*

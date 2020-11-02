@@ -9,7 +9,7 @@ import {
     PackedTagInstanceData,
     RegTagInstanceData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef } from "@/new_meta";
+import { EntryType, RegEntry, RegRef } from "@/registry";
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -88,7 +88,7 @@ export interface PackedPilotGearData extends AllPilotGearData {
 
 export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorData> {
     Name!: string;
-    MMID!: string;
+    ID!: string;
     Tags!: TagInstance[];
     Actions!: Action[];
     Bonuses!: Bonus[];
@@ -104,7 +104,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorDat
 
 export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> {
     Name!: string;
-    MMID!: string;
+    ID!: string;
     Tags!: TagInstance[];
     Actions!: Action[]; // these are only available to UNMOUNTED pilots
     Bonuses!: Bonus[]; // these bonuses are applied to the pilot, not parent system
@@ -121,7 +121,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> 
 
 export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeaponData> {
     Name!: string;
-    MMID!: string;
+    ID!: string;
     Effect!: string;
     Tags!: TagInstance[];
     Range!: Range[];

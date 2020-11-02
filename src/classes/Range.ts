@@ -1,5 +1,5 @@
 import { RangeType } from './enums';
-import { SimSer } from '@/new_meta';
+import { SimSer } from '@/registry';
 import { MechWeapon } from './mech/MechWeapon';
 import { Bonus } from '@/class';
 

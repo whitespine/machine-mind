@@ -1,6 +1,6 @@
 import { OrgType } from "@/classes/enums";
 import { bound_int } from "@/funcs";
-import { SimSer } from "@/new_meta";
+import { SimSer } from "@/registry";
 
 export interface IOrganizationData {
     name: string;

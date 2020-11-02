@@ -1,7 +1,6 @@
-import uuid from "uuid/v4";
-
 import { MechWeapon, WeaponSlot, MountType, FittingSize, WeaponSize } from "@/class";
 import { store } from "@/hooks";
+import { nanoid } from 'nanoid';
 
 export abstract class Mount {
     private _mount_type: MountType;
@@ -12,7 +11,7 @@ export abstract class Mount {
     private _name_override: string;
 
     public constructor(mountType: MountType) {
-        this._id = uuid();
+        this._id = nanoid();
         this._mount_type = mountType;
         this.lock = false;
         this.extra = [];
