@@ -1,7 +1,6 @@
 import { EntryType, Reserve, ReserveType } from "@/class";
-import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from '@/mixmeta.typs';
-import { IReserveData } from './Reserve';
-
+import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from "@/mixmeta.typs";
+import { IReserveData } from "./Reserve";
 
 export interface IProjectData extends IReserveData {
     complicated: boolean;
@@ -39,7 +38,9 @@ export function CreateProject(data: IProjectData | null): Project {
     mb.with(new RWMix("ID", "name", ident, ident));
     mb.with(new RWMix("Name", "name", ident, ident));
     mb.with(new RWMix("Description", "description", ident, ident));
-    mb.with(new RWMix("ReserveType", "type", restrict_enum(ReserveType, ReserveType.Resources), ident));
+    mb.with(
+        new RWMix("ReserveType", "type", restrict_enum(ReserveType, ReserveType.Resources), ident)
+    );
     mb.with(new RWMix("ResourceCost", "resource_cost", ident, ident));
     mb.with(new RWMix("ResourceNote", "resource_note", ident, ident));
     mb.with(new RWMix("ResourceName", "resource_name", ident, ident));
@@ -51,7 +52,4 @@ export function CreateProject(data: IProjectData | null): Project {
     mb.with(new RWMix("Progress", "progress", ident, ident));
     mb.with(new RWMix("Requirements", "requirements", ident, ident));
     return mb.finalize(data);
-
 }
-
-

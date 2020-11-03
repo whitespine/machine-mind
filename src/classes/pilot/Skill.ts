@@ -1,6 +1,6 @@
-import { Rules } from '@/class';
-import { EntryType, RegEntry, Registry, SimSer } from '@/registry';
-import { IRankedData } from '../GeneralInterfaces';
+import { Rules } from "@/class";
+import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
+import { IRankedData } from "../GeneralInterfaces";
 
 /*
 This is serialized and deserialized very simply.
@@ -17,12 +17,12 @@ export enum SkillFamily {
     con = "con",
     // custom = "custom"
 }
-export interface PackedSkillData  {
-    id: string
-    name: string,
-    description: string, // terse, prefer fewest chars
+export interface PackedSkillData {
+    id: string;
+    name: string;
+    description: string; // terse, prefer fewest chars
     detail: string; // v-html
-    family: SkillFamily; 
+    family: SkillFamily;
 }
 
 export interface RegSkillData extends PackedSkillData {
@@ -38,8 +38,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
     Rank!: number;
 
     protected async load(data: RegSkillData): Promise<void> {
-        this.ID = data.id,
-        this.Name = data.name;
+        (this.ID = data.id), (this.Name = data.name);
         this.Description = data.description;
         this.Detail = data.detail;
         this.Family = data.family;
@@ -53,10 +52,10 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
             family: this.Family,
             id: this.Family,
             name: this.Name,
-            rank: this.Rank
-        }
+            rank: this.Rank,
+        };
     }
-    
+
     // Number go up (or down)
     public Increment(): boolean {
         if (this.Rank >= Rules.MaxTriggerRank) return false;
@@ -70,10 +69,9 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         return false;
     }
 
-
     // Just adds a number. Fairly trivial. These should mostly just come from content packs
     public static unpack(packed_skill: PackedSkillData): RegSkillData {
-        return {...packed_skill, rank: 2};
+        return { ...packed_skill, rank: 2 };
     }
 
     // Handles the tricky process of fetching skills via IRankedDaata
@@ -83,7 +81,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         let found = await cat.lookup_mmid(rank.id);
 
         // If found, just make us a copy
-        if(found) {
+        if (found) {
             let cpy = await found.save();
             return cat.create(cpy);
         } else {

@@ -1,5 +1,5 @@
 import { imageManagement, ImageTag } from "@/hooks";
-import { EntryType, RegEntry, SimSer } from '@/registry';
+import { EntryType, RegEntry, SimSer } from "@/registry";
 
 export interface IManufacturerData {
     id: string;
@@ -18,8 +18,8 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
     Description!: string;
     private _logo!: string;
     LogoURL!: string | null;
-    Light!: string; 
-    Dark!: string ;
+    Light!: string;
+    Dark!: string;
     Quote!: string;
 
     protected async load(data: IManufacturerData): Promise<void> {
@@ -27,7 +27,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
         this.Name = data.name;
         this._logo = data.logo;
         this.LogoURL = data.logo_url || null;
-        this.Light = data.light
+        this.Light = data.light;
         this.Dark = data.dark;
         this.Quote = data.quote;
         this.Description = data.description;
@@ -41,14 +41,13 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
             light: this.Light,
             dark: this.Dark,
             quote: this.Quote,
-            description: this.Description
-        }
+            description: this.Description,
+        };
     }
 
     public GetColor(dark?: boolean): string {
         return dark ? this.Dark : this.Light;
     }
- 
 
     public get LogoIsExternal(): boolean {
         return !!this.LogoURL;

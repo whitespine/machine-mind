@@ -52,9 +52,9 @@ export interface IDamageRollResult {
 export interface IRankedData {
     id: string;
     rank: number;
-    custom?: boolean ;
-    custom_desc?: string ;
-    custom_detail?: string ;
+    custom?: boolean;
+    custom_desc?: string;
+    custom_detail?: string;
 }
 
 export interface IEquipmentSaveData {
@@ -62,20 +62,18 @@ export interface IEquipmentSaveData {
     destroyed: boolean;
     cascading: boolean;
     note: string;
-    uses?: number ;
-    flavorName?: string ;
-    flavorDescription?: string ;
-    customDamageType?: string ;
+    uses?: number;
+    flavorName?: string;
+    flavorDescription?: string;
+    customDamageType?: string;
 }
 
 export interface IMechWeaponSaveData extends IEquipmentSaveData {
     loaded: boolean;
-    mod?: IEquipmentSaveData ;
-    customDamageType?: string ;
-    maxUseOverride?: number ;
+    mod?: IEquipmentSaveData;
+    customDamageType?: string;
+    maxUseOverride?: number;
 }
-
-
 
 export interface IHistoryItem {
     field: string;
@@ -119,4 +117,3 @@ export interface IWeaponSlotData {
     size: string;
     weapon: IMechWeaponSaveData | null;
 }
-

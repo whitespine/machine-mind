@@ -4,7 +4,7 @@ import {
     IBonusData,
     ISynergyData,
     PackedTagInstanceData,
-     RegTagInstanceData,
+    RegTagInstanceData,
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
@@ -135,20 +135,19 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
             bonuses: SerUtil.sync_save_all(this.Bonuses),
             synergies: SerUtil.sync_save_all(this.Synergies),
             tags: await SerUtil.save_all(this.Tags),
-            counters: this.Counters.map(c => c.save())
+            counters: this.Counters.map(c => c.save()),
         };
     }
 
     // Loads this item into the registry. Only use as needed (IE once)
     public static async unpack(dep: PackedDeployableData, reg: Registry): Promise<Deployable> {
-        SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
         let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
         let reg_tags = await SerUtil.save_all(tags); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
         let counters = SerUtil.unpack_counters_default(dep.counters);
-         let unpacked: RegDeployableData = {
+        let unpacked: RegDeployableData = {
             ...dep,
             counters,
-            tags: reg_tags
+            tags: reg_tags,
         };
         return reg.get_cat(EntryType.DEPLOYABLE).create(unpacked);
     }

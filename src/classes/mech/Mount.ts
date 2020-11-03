@@ -1,6 +1,6 @@
 import { MechWeapon, WeaponSlot, MountType, FittingSize, WeaponSize } from "@/class";
 import { store } from "@/hooks";
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 export abstract class Mount {
     private _mount_type: MountType;

@@ -44,7 +44,7 @@ import {
     IStatusData,
     ISitrepData,
     IEnvironmentData,
-    IActionData
+    IActionData,
 } from "@/interface";
 import { Rules } from "@/class";
 

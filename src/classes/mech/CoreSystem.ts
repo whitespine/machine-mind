@@ -79,27 +79,26 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     protected async load(data: RegCoreSystemData): Promise<void> {
         this.Activation = data.activation;
         this.Description = data.description;
-             this.Name=data.name
-             this.Deactivation =data.deactivation ?? null
-             this.Use =data.use ?? null
+        this.Name = data.name;
+        this.Deactivation = data.deactivation ?? null;
+        this.Use = data.use ?? null;
 
-             this.ActiveActions = SerUtil.process_actions(data.active_actions);
-             this.ActiveBonuses = SerUtil.process_bonuses(data.active_bonuses);
-             this.ActiveSynergies = SerUtil.process_synergies(data.active_synergies);
-             this.ActiveEffect = data.active_effect ?? null;
-             this.ActiveName = data.active_name ?? null;
+        this.ActiveActions = SerUtil.process_actions(data.active_actions);
+        this.ActiveBonuses = SerUtil.process_bonuses(data.active_bonuses);
+        this.ActiveSynergies = SerUtil.process_synergies(data.active_synergies);
+        this.ActiveEffect = data.active_effect ?? null;
+        this.ActiveName = data.active_name ?? null;
 
-             this.PassiveActions = SerUtil.process_actions(data.passive_actions);
-             this.PassiveBonuses = SerUtil.process_bonuses(data.passive_bonuses);
-             this.PassiveSynergies = SerUtil.process_synergies(data.passive_synergies);
-             this.PassiveEffect = data.passive_effect ?? null;
-             this.PassiveName = data.passive_name ?? null;
+        this.PassiveActions = SerUtil.process_actions(data.passive_actions);
+        this.PassiveBonuses = SerUtil.process_bonuses(data.passive_bonuses);
+        this.PassiveSynergies = SerUtil.process_synergies(data.passive_synergies);
+        this.PassiveEffect = data.passive_effect ?? null;
+        this.PassiveName = data.passive_name ?? null;
 
-
-            this.Counters = SerUtil.process_counters(data.counters);
-            this.Deployables = await this.Registry.resolve_many(data.deployables);
-            this.Integrated = await this.Registry.resolve_many(data.integrated);
-            this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Counters = SerUtil.process_counters(data.counters);
+        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        this.Integrated = await this.Registry.resolve_many(data.integrated);
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
     }
 
     public async save(): Promise<RegCoreSystemData> {
@@ -125,7 +124,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             counters: SerUtil.sync_save_all(this.Counters),
             deployables: SerUtil.ref_all(this.Deployables),
             integrated: SerUtil.ref_all(this.Integrated),
-            tags: await SerUtil.save_all(this.Tags)
+            tags: await SerUtil.save_all(this.Tags),
         };
     }
 
@@ -146,12 +145,12 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         let integrated = SerUtil.parse_integrated(dep.integrated);
 
         // Get and ref the deployables
-         let unpacked: RegCoreSystemData = {
+        let unpacked: RegCoreSystemData = {
             ...dep,
             counters,
             tags: reg_tags,
             deployables,
-            integrated
+            integrated,
         };
         return reg.get_cat(EntryType.CORE_SYSTEM).create(unpacked);
     }

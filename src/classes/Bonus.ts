@@ -1,7 +1,7 @@
 import { Mech, Pilot } from "@/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "./enums";
-import {  SerUtil, SimSer } from "@/registry";
+import { SerUtil, SimSer } from "@/registry";
 import * as pmath from "parsemath";
 
 export interface IBonusData {
@@ -89,7 +89,9 @@ export class Bonus extends SimSer<IBonusData> {
 
     // Sums all bonuses on the specific id, for the specified pilot
     public static SumVal(pilot: Pilot, bonuses: Bonus[], bonus_type: string): number {
-        return bonuses.filter(x => x.ID === bonus_type).reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
+        return bonuses
+            .filter(x => x.ID === bonus_type)
+            .reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
     }
 
     /*

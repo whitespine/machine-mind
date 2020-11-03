@@ -73,7 +73,6 @@ export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
     }
 }
 
-
 export class TagInstance extends RegSer<RegTagInstanceData> {
     Tag!: TagTemplate;
     Value!: string | number | null;
@@ -81,14 +80,14 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     protected async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
         let Tag = await this.Registry.resolve(data.tag);
-        if(!Tag) {
+        if (!Tag) {
             console.error(`Tag ${data.tag.id} not found - defaulting to an anonymous tag.`);
             Tag = new TagTemplate(EntryType.TAG, this.Registry, "error", {
                 description: "INVALID",
                 id: "INVALID",
                 name: "INVALID",
                 filter_ignore: true,
-                hidden: false // Want it to be seen so it can be fixed
+                hidden: false, // Want it to be seen so it can be fixed
             });
             await Tag.ready();
         }
@@ -98,21 +97,21 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     public async save(): Promise<RegTagInstanceData> {
         return {
             val: this.Value ?? undefined,
-            tag: this.Tag.as_ref()
-        }
+            tag: this.Tag.as_ref(),
+        };
     }
 
     // Unpacks this tag instance, forming a proper reg ref instead of the old shoddy id lookup based thing
     public static async unpack(inst: PackedTagInstanceData, reg: Registry): Promise<TagInstance> {
         // Just create an unresolved ref
-        let dat: RegTagInstanceData =  {
+        let dat: RegTagInstanceData = {
             tag: {
                 id: inst.id,
                 type: EntryType.TAG,
-                is_unresolved_mmid: true
+                is_unresolved_mmid: true,
             },
-            val: inst.val
-        }
+            val: inst.val,
+        };
         let ti = new TagInstance(reg, dat);
         await ti.ready();
         return ti;

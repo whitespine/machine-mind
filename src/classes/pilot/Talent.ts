@@ -95,7 +95,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         this.Terse = data.terse;
         this.Description = data.description;
         this.Ranks = [];
-        for(let r of data.ranks) {
+        for (let r of data.ranks) {
             this.Ranks.push({
                 actions: SerUtil.process_actions(r.actions),
                 bonuses: SerUtil.process_bonuses(r.bonuses),
@@ -105,8 +105,8 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                 exclusive: r.exclusive,
                 integrated: await this.Registry.resolve_many_rough(r.integrated),
                 name: r.name,
-                synergies: SerUtil.process_synergies(r.synergies)
-            })
+                synergies: SerUtil.process_synergies(r.synergies),
+            });
         }
         this.CurrentRank = data.curr_rank;
     }
@@ -123,7 +123,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                 integrated: SerUtil.ref_all(r.integrated),
                 counters: SerUtil.sync_save_all(r.counters),
                 synergies: SerUtil.sync_save_all(r.synergies),
-                deployables: SerUtil.ref_all(r.deployables)
+                deployables: SerUtil.ref_all(r.deployables),
             });
         }
 
@@ -135,7 +135,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
             name: this.Name,
             terse: this.Terse,
             ranks,
-            curr_rank: this.CurrentRank
+            curr_rank: this.CurrentRank,
         };
     }
 

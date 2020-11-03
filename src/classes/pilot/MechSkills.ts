@@ -42,5 +42,4 @@ export class MechSkills extends SimSer<IMechSkills> {
     public save(): IMechSkills {
         return [this.Hull, this.Agi, this.Sys, this.Eng];
     }
-
 }

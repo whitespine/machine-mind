@@ -5,11 +5,11 @@
  *
  * Registry data should preferably be non-nullable. undefined -> 0, "", or [] as appropriate.
  * If a more sensible default exists, then it should be assigned during unpack.
- * 
+ *
  * A unique situation we encounter is that in some cases, it only makes sense for an entity to know about certain other entities
  * (and more importantly, it is more efficient/easily logically to ask "Where is MY <lmg>" vs "Where is <lmg>")
  * We handle this by having pilots, mechs, and deployables each have their own inventory (in the form of a Registry).
- * 
+ *
  * Relations can be cross-registry (i.e. between items with their own registries).
  * This brings us to an important mandate: ALL REGISTRY OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
  * Foundry does this for us by getActor methods. Anyone else will have to roll something themselves (check static_registry)
@@ -31,16 +31,43 @@
  *
  * Use SerUtil generic functions where possible, as this will make mass behavior changes much simpler later
  */
-import { Action, Range, Bonus, CoreBonus, Deployable, Environment, Faction, Frame, FrameTrait, Manufacturer, MechSystem, MechWeapon, Pilot, PilotArmor, PilotGear, PilotWeapon, Quirk, Reserve, Sitrep, Skill, Status, TagTemplate, Talent, WeaponMod, Damage, Synergy, } from "@/class";
-import { Counter, PackedCounterData, RegCounterData } from "./classes/Counter";
-import { CoreSystem, PackedCoreSystemData, RegCoreSystemData } from './classes/mech/CoreSystem';
-import { RegTagInstanceData, TagInstance } from "./classes/Tag";
+import {
+    Action,
+    Range,
+    Bonus,
+    CoreBonus,
+    Deployable,
+    Environment,
+    Faction,
+    Frame,
+    FrameTrait,
+    Manufacturer,
+    MechSystem,
+    MechWeapon,
+    Pilot,
+    PilotArmor,
+    PilotGear,
+    PilotWeapon,
+    Quirk,
+    Reserve,
+    Sitrep,
+    Skill,
+    Status,
+    TagTemplate,
+    Talent,
+    WeaponMod,
+    Damage,
+    Synergy,
+    CoreSystem,
+    Mech,
+    Counter,
+    TagInstance,
+} from "@/class";
 import {
     IActionData,
     IBonusData,
     IEnvironmentData,
     IFactionData,
-    IFrameData,
     IManufacturerData,
     IRangeData,
     // INpcClassData,
@@ -51,23 +78,30 @@ import {
     ISynergyData,
     ITagTemplateData,
     PackedCoreBonusData,
+    PackedCoreSystemData,
+    PackedCounterData,
     PackedDeployableData,
+    PackedFrameData,
     PackedFrameTraitData,
+    PackedMechData,
     PackedMechSystemData,
     PackedMechWeaponData,
     PackedPilotArmorData,
     PackedPilotData,
     PackedPilotGearData,
     PackedPilotWeaponData,
-    PackedQuirkData,
     PackedReserveData,
     PackedSkillData,
     PackedTalentData,
     PackedWeaponModData,
     RegCoreBonusData,
+    RegCoreSystemData,
+    RegCounterData,
     RegDamageData,
     RegDeployableData,
+    RegFrameData,
     RegFrameTraitData,
+    RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
     RegPilotArmorData,
@@ -77,6 +111,7 @@ import {
     RegQuirkData,
     RegReserveData,
     RegSkillData,
+    RegTagInstanceData,
     RegTalentData,
     RegWeaponModData,
 } from "./interface";
@@ -114,7 +149,7 @@ export enum EntryType {
     RESERVE = "Reserves",
     SITREP = "Sitreps",
     SKILL = "Skills",
-    STATUS = "Statuses", 
+    STATUS = "Statuses",
     TAG = "Tags",
     TALENT = "Talents",
     // CONDITION = "Conditions", // Just use statuses
@@ -123,16 +158,17 @@ export enum EntryType {
 
 type _RegTypeMap = { [key in EntryType]: object };
 // What our registries hold
-export interface RegEntryTypes extends _RegTypeMap {
+export interface FixedRegEntryTypes extends _RegTypeMap {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: RegCoreBonusData;
     [EntryType.CORE_SYSTEM]: RegCoreSystemData;
     [EntryType.DEPLOYABLE]: RegDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
-    [EntryType.FRAME]: IFrameData;
+    [EntryType.FRAME]: RegFrameData;
     [EntryType.FRAME_TRAIT]: RegFrameTraitData;
     [EntryType.MANUFACTURER]: IManufacturerData;
+    [EntryType.MECH]: RegMechData;
     [EntryType.MECH_SYSTEM]: RegMechSystemData;
     [EntryType.MECH_WEAPON]: RegMechWeaponData;
     // [EntryType.NPC_CLASS]: INpcClassData;
@@ -145,6 +181,7 @@ export interface RegEntryTypes extends _RegTypeMap {
     [EntryType.RESERVE]: RegReserveData;
     [EntryType.SITREP]: ISitrepData;
     [EntryType.SKILL]: RegSkillData;
+    [EntryType.STATUS]: IStatusData;
     // [EntryType.STATUS]: IStatusData;
     [EntryType.TAG]: ITagTemplateData;
     [EntryType.TALENT]: RegTalentData;
@@ -160,9 +197,10 @@ export interface PackedEntryTypes extends _RegTypeMap {
     [EntryType.DEPLOYABLE]: PackedDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
-    [EntryType.FRAME]: IFrameData;
+    [EntryType.FRAME]: PackedFrameData;
     [EntryType.FRAME_TRAIT]: PackedFrameTraitData;
     [EntryType.MANUFACTURER]: IManufacturerData;
+    [EntryType.MECH]: PackedMechData;
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
     [EntryType.MECH_WEAPON]: PackedMechWeaponData;
     // [EntryType.NPC_CLASS]: INpcClassData;
@@ -178,13 +216,16 @@ export interface PackedEntryTypes extends _RegTypeMap {
     [EntryType.STATUS]: IStatusData;
     [EntryType.TAG]: ITagTemplateData;
     [EntryType.TALENT]: PackedTalentData;
-    [EntryType.QUIRK]: PackedQuirkData;
+    [EntryType.QUIRK]: string; // womp womp
     [EntryType.WEAPON_MOD]: PackedWeaponModData;
 }
 
+export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTypes
+    ? FixedRegEntryTypes[T]
+    : object;
+
 // What our registries "revive" to, essentially wrapper types
-type _LiveTypeMap = { [key in EntryType]: RegEntry<key, any> };
-type FixedLiveEntryTypes {
+type FixedLiveEntryTypes = {
     // [EntryType.CONDITION]: Status;
     [EntryType.CORE_BONUS]: CoreBonus;
     [EntryType.CORE_SYSTEM]: CoreSystem;
@@ -195,6 +236,7 @@ type FixedLiveEntryTypes {
     [EntryType.FRAME_TRAIT]: FrameTrait;
     [EntryType.MANUFACTURER]: Manufacturer;
     [EntryType.WEAPON_MOD]: WeaponMod;
+    [EntryType.MECH]: Mech;
     [EntryType.MECH_SYSTEM]: MechSystem;
     [EntryType.MECH_WEAPON]: MechWeapon;
     // [EntryType.NPC_CLASS]: NpcClass;
@@ -211,18 +253,11 @@ type FixedLiveEntryTypes {
     [EntryType.TAG]: TagTemplate;
     [EntryType.TALENT]: Talent;
     [EntryType.QUIRK]: Quirk;
-}
+};
 
-export type LiveEntryTypes<T extends EntryType> = 
-    T extends keyof FixedLiveEntryTypes ? FixedLiveEntryTypes[T] :
-    RegEntry<T, any>;
-
-type Aleph = LiveEntryTypes<EntryType.WEAPON_MOD>;
-type Bet = LiveEntryTypes[EntryType.WEAPON_MOD];
-type Chet1 = EntryType.WEAPON_MOD;
-type Chet2 = LiveEntryTypes[Chet1];
-type Dalet = EntryType;
-type Gimel<T extends EntryType> = LiveEntryTypes[T];
+export type LiveEntryTypes<T extends EntryType> = T extends keyof FixedLiveEntryTypes
+    ? FixedLiveEntryTypes[T]
+    : RegEntry<T, any>;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -252,7 +287,7 @@ export abstract class SerUtil {
     /**
      * Unpacks many items using the provided unpacking function and adds them to the registry.
      * The unpacking function is generically typed to fit the `unpack` function defined in most regentry classes.
-     * Usually it will take a piece raw reg entry data, but that 
+     * Usually it will take a piece raw reg entry data, but that
      */
     public static async unpack_children<RawPackObj, Entry>(
         unpacking_function: (s: RawPackObj, r: Registry) => Promise<Entry>,
@@ -264,13 +299,16 @@ export abstract class SerUtil {
 
     // Pack up references. This helper allows us to handle the awkward integrated = null cases
     public static ref_all<T extends EntryType>(
-        items: Array<T extends EntryType ? LiveEntryTypes[T] : RegEntry<any, any>>
+        items: Array<T extends EntryType ? LiveEntryTypes<T> : RegEntry<any, any>>
     ): RegRef<T>[] {
-        return items.map(i => ({
-            id: "",
-            is_unresolved_mmid: false, // It's from a live entry type
-            type: i.Type,
-        }));
+        return items.map(
+            i =>
+                ({
+                    id: i.RegistryID,
+                    is_unresolved_mmid: false, // It's from a live entry type
+                    type: i.Type,
+                } as RegRef<T>)
+        ); // This type coercion is dumb but necessary in case they give us some really weird type
     }
 
     // Makes our save code look more consistent
@@ -367,7 +405,7 @@ export abstract class SerUtil {
 
     // Awaitable for all items to be ready
     public static async all_ready(items: Array<RegSer<any> | RegEntry<any, any>>): Promise<void> {
-        await Promise.all(items.map(i => i.ready()));
+        await Promise.all(items.map(i => i.ready() as Promise<any>)); // Since these promises self return we need to basically just ignore their type to avoid clashes.
     }
 }
 
@@ -427,8 +465,9 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
         this._load_promise = this.load(reg_data);
     }
     // Async ready check
-    public async ready(): Promise<void> {
+    public async ready(): Promise<this> {
         await this._load_promise;
+        return this;
     }
 
     // Make a reference to this item
@@ -448,7 +487,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Convenience function to update self in registry. Note that this doesn't read!
     public async update(): Promise<void> {
-        this.Registry.get_cat(this.Type).update(this as LiveEntryTypes[T]); // please don't make me regret this
+        this.Registry.get_cat(this.Type).update((this as unknown) as LiveEntryTypes<T>); // please don't make me regret this
     }
 
     // List all child items of this item
@@ -460,10 +499,10 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     public get_child_entries_recursive(): RegEntry<any, any>[] {
         let all: RegEntry<any, any>[] = [];
         let frontier: RegEntry<any, any>[] = [this];
-        while(frontier.length) {
+        while (frontier.length) {
             // Fetch and store next item
             let next = frontier.pop()!;
-            if(next !== this) {
+            if (next !== this) {
                 all.push(next);
             }
 
@@ -481,10 +520,15 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 
     // Repack this item. Can oftentimes just be save() with a few minor tweaks. Used for ccio.
-    public async pack(): Promise<any> {/* todo */}
+    public async pack(): Promise<any> {
+        /* todo */
+    }
 }
 
-export abstract class InventoriedRegEntry<T extends EntryType, SourceType> extends RegEntry<T, SourceType> {
+export abstract class InventoriedRegEntry<T extends EntryType, SourceType> extends RegEntry<
+    T,
+    SourceType
+> {
     // Pretty simple
     constructor(type: T, registry: Registry, id: string, reg_data: SourceType) {
         super(type, registry, id, reg_data);
@@ -501,10 +545,15 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-// Reg is for looking up other values. ID is the id that this item will/already has in the reg 
+
+// Reg is for looking up other values. ID is the id that this item will/already has in the reg
 // If raw is supplied as undefined, produce a desired default value (e.g. to create a new default value)
 // export type ReviveFunc<RawType, LiveType> = (reg: Registry, id: string, raw?: RawType) => Promise<LiveType>;
-export type ReviveFunc<T extends EntryType> = (reg: Registry, id: string, raw?: RegEntryTypes[T]) => Promise<LiveEntryTypes<T>>;
+export type ReviveFunc<T extends EntryType> = (
+    reg: Registry,
+    id: string,
+    raw?: RegEntryTypes<T>
+) => Promise<LiveEntryTypes<T>>;
 
 export abstract class RegCat<T extends EntryType> {
     // Need this to key them because we can't really identify otherwise
@@ -516,94 +565,89 @@ export abstract class RegCat<T extends EntryType> {
     // Need this for like, basically everything
     parent: Registry;
 
-    constructor(
-        parent: Registry,
-        cat: T,
-        creator: ReviveFunc<T>
-    ) {
+    constructor(parent: Registry, cat: T, creator: ReviveFunc<T>) {
         this.parent = parent;
         this.cat = cat;
         this.revive_func = creator;
     }
 
     // Find a value by mmid
-    abstract async lookup_mmid(mmid: string): Promise<LiveEntryTypes[T] | null>;
+    abstract async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches the specific raw item of a category by its ID
-    abstract async get_raw(id: string): Promise<RegEntryTypes[T] | null>;
+    abstract async get_raw(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Fetches all raw items of a category
-    abstract async list_raw(): Promise<Array<RegEntryTypes[T]>>;
+    abstract async list_raw(): Promise<Array<RegEntryTypes<T>>>;
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract async get_live(id: string): Promise<LiveEntryTypes[T] | null>;
+    abstract async get_live(id: string): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
-    abstract async list_live(): Promise<Array<LiveEntryTypes[T]>>;
+    abstract async list_live(): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
     // Do NOT attempt to feed this items foreign to this cat
-    abstract async update(...items: LiveEntryTypes[T][]): Promise<void>;
+    abstract async update(...items: LiveEntryTypes<T>[]): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
-    abstract async delete_id(id: string): Promise<RegEntryTypes[T] | null>;
+    abstract async delete_id(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
-    abstract async create_many(...vals: Array<RegEntryTypes[T]>): Promise<LiveEntryTypes[T][]>;
+    abstract async create_many(...vals: Array<RegEntryTypes<T>>): Promise<LiveEntryTypes<T>[]>;
 
     // A simple singular form if you don't want to mess with arrays
-    async create(val: RegEntryTypes[T]): Promise<LiveEntryTypes[T]> {
+    async create(val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         let vs = await this.create_many(val);
         return vs[0];
     }
 
     // Create a new entry in the database with the creation func's default data. Generally, you cannot control the output ID
-    abstract async create_default(): Promise<LiveEntryTypes[T]>;
+    abstract async create_default(): Promise<LiveEntryTypes<T>>;
 }
-
-export type CatBuilder<T extends EntryType> = (reg: Registry) => RegCat<T>;
-export type CatBuilders = { [key in EntryType]: CatBuilder<key> };
 
 export abstract class Registry {
     /**
-     * A registry is fundamentally just a wrapper (or self contained) manager of RegEntry items. 
+     * A registry is fundamentally just a wrapper (or self contained) manager of RegEntry items.
      * It contains their raw data, indexed by IDs, and provides mechanisms for their creation, deletion, sorting, finding etc.
-     * 
-     * An important thing to note is that this was built with the foundry vtt paradigm in mind, wherein there are MANY possible 
+     *
+     * An important thing to note is that this was built with the foundry vtt paradigm in mind, wherein there are MANY possible
      * places that "contain" regentry items; compendiums can hold actors, actors can hold items, etc.
      * A Registry object is just ONE of these. As such, most registries will in fact be nearly empty.
-     * 
+     *
      * The natural question then is how do we safely transfer items?
      * Though we might initially be tempted to simply copy the origin reg entry data and `create` it into the destination registry,
-     * this will completely fail when regrefs are in play. 
+     * this will completely fail when regrefs are in play.
      * Gonna be honest, I was planning on just packing then unpacking the data.
-     * 
+     *
      * But a potentially viable solution is as follows:
      * defun migrate(entry):
      *  - `create` the new regentry via simple copy of entry.data
      *  - for child in entry.refs:
      *    + `migrate(child)` so that we have a copy in our "personal" registry as well.
      *    + Override the contents of the live copy of entries refs
-     * 
+     *
      * All reg_entries will need to implement this, basically, but it should have a trivial implementation as well.
      */
     // This just maps to the other cats below
-    private cat_map: Map<EntryType, RegCat<any>>; // We cannot definitively type this here, unfortunately. If you need definitives, use the below
+    private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
 
-    constructor(builders: CatBuilders) {
-        // Setup mappings. Cumbersome, but it is what it is
-        this.cat_map = new Map();
-        for (let entry_type of Object.values(EntryType)) {
-            let cat = builders[entry_type](this);
-            this.cat_map.set(cat.cat, cat);
+    // Use at initialization. Sets the provided category to its appropriate place in the cat map
+    init_set_cat<T extends EntryType>(cat: RegCat<T>) {
+        this.cat_map.set(cat.cat, cat);
+    }
+
+    // Throws an error if not all entrytypes are properly represented
+    init_finalize() {
+        for (let t of SerUtil.list_enum(EntryType)) {
+            if (!this.cat_map.has(t)) {
+                throw Error(`Category ${t} not set`);
+            }
         }
     }
 
     // Create a live item. Shorthand for get cat and create
-    async create<T extends EntryType>(
-        type: T,
-        val: RegEntryTypes[T]
-    ): Promise<LiveEntryTypes[T]> {
+    async create<T extends EntryType>(type: T, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         return this.get_cat(type).create(val);
     }
 
@@ -632,7 +676,7 @@ export abstract class Registry {
         this.get_cat(cat).delete_id(id);
     }
 
-    // In theory should never fail because of type bounding
+    // In theory should never fail because of type bounding, so long as all cats were loaded that is
     get_cat<T extends EntryType>(cat: T): RegCat<T> {
         return this.try_get_cat(cat) as RegCat<T>;
     }
@@ -674,7 +718,7 @@ export abstract class Registry {
     }
 
     // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
-    async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes[T] | null> {
+    async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
         return this.resolve_rough(ref) as any; // Trust me bro
     }
 
@@ -691,18 +735,20 @@ export abstract class Registry {
     }
 
     // Similar to resolve above, this is just for type flavoring basically
-    async resolve_many<T extends EntryType>(refs: RegRef<T>[] | undefined): Promise<Array<LiveEntryTypes[T]>> {
+    async resolve_many<T extends EntryType>(
+        refs: RegRef<T>[] | undefined
+    ): Promise<Array<LiveEntryTypes<T>>> {
         return this.resolve_many_rough(refs) as any; // bro trust me
     }
 
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
     async resolve_many_rough(refs: RoughRegRef[] | undefined): Promise<Array<RegEntry<any, any>>> {
-        if(!refs) {
+        if (!refs) {
             return [];
         }
         let resolves = await Promise.all(refs.map(r => this.resolve_rough(r)));
         resolves = resolves.filter(d => d != null);
-        return resolves as RegEntry<any, any>[]; // We filtered the nulls 
+        return resolves as RegEntry<any, any>[]; // We filtered the nulls
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
@@ -717,7 +763,7 @@ export interface RoughRegRef {
     id: string;
 
     // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
-    type: string | null;
+    type: EntryType | null;
 
     // Is our ID like, the actual id, or just like "DRAKE" or some shit
     is_unresolved_mmid: boolean;

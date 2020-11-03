@@ -1,4 +1,4 @@
-import { EntryType, RegEntry } from '@/registry';
+import { EntryType, RegEntry } from "@/registry";
 export interface IEnvironmentData {
     id: string;
     name: string;
@@ -21,7 +21,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentDat
         return {
             description: this.Description,
             id: this.ID,
-            name: this.Name    
-        }
+            name: this.Name,
+        };
     }
 }

@@ -1,40 +1,54 @@
-import { MechEquipment, Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@/class";
-import { IActionData, IBonusData, ISynergyData, PackedCounterData, PackedDeployableData, PackedTagInstanceData, RegCounterData, RegDeployableData, RegTagInstanceData, } from "@/interface";
-import { EntryType, RegEntry, RegRef } from '@/registry';
-import { SystemType } from '../enums';
+import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@/class";
+import {
+    IActionData,
+    IBonusData,
+    ISynergyData,
+    PackedCounterData,
+    PackedDeployableData,
+    PackedTagInstanceData,
+    RegCounterData,
+    RegDeployableData,
+    RegTagInstanceData,
+} from "@/interface";
+import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
+import { SystemType } from "../enums";
 
-interface AllMechSystemData  {
-    id: string,
-    "name": string,
-    "source": string, // must be the same as the Manufacturer ID to sort correctly
-    "license": string, // reference to the Frame name of the associated license
-    "license_level": number, // set to zero for this item to be available to a LL0 character
-    "type"?: SystemType
-    "sp": number,
-    "description": string, // v-html
-    "effect": string, // v-html
-    "actions"?: IActionData[],
-    "bonuses"?: IBonusData[]
-    "synergies"?: ISynergyData[],
-  }
-
-export interface RegMechSystemData extends AllMechSystemData {
-    "deployables": RegDeployableData[],
-    "integrated": RegRef<any>[]
-    "counters": RegCounterData[],
-    "tags": RegTagInstanceData[],
-
+interface AllMechSystemData {
+    id: string;
+    name: string;
+    source: string; // must be the same as the Manufacturer ID to sort correctly
+    license: string; // reference to the Frame name of the associated license
+    license_level: number; // set to zero for this item to be available to a LL0 character
+    type?: SystemType;
+    sp: number;
+    description: string; // v-html
+    effect: string; // v-html
+    actions?: IActionData[];
+    bonuses?: IBonusData[];
+    synergies?: ISynergyData[];
 }
 
 export interface PackedMechSystemData extends AllMechSystemData {
-    "deployables"?: PackedDeployableData[],
-    "integrated"?: string[]
-    "counters"?: PackedCounterData[],
-    "tags"?: PackedTagInstanceData[],
+    deployables?: PackedDeployableData[];
+    integrated?: string[];
+    counters?: PackedCounterData[];
+    tags?: PackedTagInstanceData[];
+}
 
+export interface RegMechSystemData extends AllMechSystemData {
+    deployables: RegRef<EntryType.DEPLOYABLE>[];
+    integrated: RegRef<any>[];
+    counters: RegCounterData[];
+    tags: RegTagInstanceData[];
+
+    // We also save the active state
+    cascading: boolean;
+    destroyed: boolean;
 }
 
 export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemData> {
+    // System information
+    ID!: string;
     Name!: string;
     Source!: string;
     SysType!: SystemType;
@@ -44,6 +58,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
     Description!: string;
     Effect!: string;
 
+    // Commonalities
     Tags!: TagInstance[];
     Actions!: Action[];
     Bonuses!: Bonus[];
@@ -51,9 +66,57 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
     Synergies!: Synergy[];
     Deployables!: Deployable[];
     Integrated!: RegEntry<any, any>[];
-}
 
-export function CreateMechSystem {
-    let mb = new MixBuilder<MechSystem, IMechSystemData>({});
+    // More system specific stuff
+    Destroyed!: boolean;
+    Cascading!: boolean;
+    // Loaded!: boolean  // is this needed?
 
+    protected async load(data: RegMechSystemData): Promise<void> {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Source = data.source;
+        this.SysType = data.type || SystemType.System;
+        this.License = data.license;
+        this.LicenseLevel = data.license_level;
+        this.SP = data.sp;
+        this.Description = data.description;
+        this.Effect = data.effect;
+
+        this.Cascading = data.cascading;
+        this.Destroyed = data.destroyed;
+
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Actions = SerUtil.process_actions(data.actions);
+        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+        this.Synergies = SerUtil.process_synergies(data.synergies);
+        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        this.Counters = data.counters?.map(c => new Counter(c)) || [];
+        this.Integrated = await this.Registry.resolve_many(data.integrated);
+    }
+
+    public async save(): Promise<RegMechSystemData> {
+        return {
+            description: this.Description,
+            effect: this.Effect,
+            id: this.ID,
+            name: this.Name,
+            source: this.Source,
+            license: this.License,
+            license_level: this.LicenseLevel,
+            sp: this.SP,
+            type: this.SysType,
+
+            cascading: this.Cascading,
+            destroyed: this.Destroyed,
+
+            tags: await SerUtil.save_all(this.Tags),
+            actions: SerUtil.sync_save_all(this.Actions),
+            bonuses: SerUtil.sync_save_all(this.Bonuses),
+            counters: SerUtil.sync_save_all(this.Counters),
+            deployables: SerUtil.ref_all(this.Deployables),
+            integrated: SerUtil.ref_all(this.Integrated),
+            synergies: SerUtil.sync_save_all(this.Synergies),
+        };
+    }
 }

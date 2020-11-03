@@ -7,10 +7,10 @@ import {
     PilotEquipment,
     Counter,
     Bonus,
-    Synergy
+    Synergy,
 } from "@/class";
-import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from '@/interface';
-import { EntryType, LiveEntryTypes, RegSer, SimSer } from '@/registry';
+import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@/interface";
+import { EntryType, LiveEntryTypes, RegSer, SimSer } from "@/registry";
 
 // This is what is actually in the loadouts. The id's ref actual weapons
 export interface PackedPilotEquipmentState {
@@ -53,28 +53,27 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
         return this.Weapons.filter(x => !!x) as PilotWeapon[];
     }
 
-
     get Items(): PilotEquipment[] {
         return [...this.EquippedArmor, ...this.EquippedGear, ...this.EquippedWeapons];
     }
 
     // Flattening methods
     // public get Counters(): Counter[] {
-        // None of these things actually have items
-        // return this.EquippedGear.flatMap(x => x.Counters).concat(this.EquippedWeapons.flatMap(x => x.
+    // None of these things actually have items
+    // return this.EquippedGear.flatMap(x => x.Counters).concat(this.EquippedWeapons.flatMap(x => x.
     // }
 
     // These commented items aren't usually needed
     // public get Integrated(): RegEntry<any, any>[] {
-        // return this.UnlockedRanks.flatMap(x => x.integrated);
+    // return this.UnlockedRanks.flatMap(x => x.integrated);
     // }
 
     // public get Deployables(): Deployable[] {
-        // return this.UnlockedRanks.flatMap(x => x.deployables);
+    // return this.UnlockedRanks.flatMap(x => x.deployables);
     // }
 
     // public get Actions(): Action[] {
-        // return this.UnlockedRanks.flatMap(x => x.actions);
+    // return this.UnlockedRanks.flatMap(x => x.actions);
     // }
 
     public get Bonuses(): Bonus[] {
@@ -85,9 +84,12 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
         return this.Items.flatMap(x => x.Synergies);
     }
 
-    private async resolve_state_item<T extends EntryType>(item_state: PackedPilotEquipmentState | null, expect_type: T): Promise<LiveEntryTypes[T] | null> {
+    private async resolve_state_item<T extends EntryType>(
+        item_state: PackedPilotEquipmentState | null,
+        expect_type: T
+    ): Promise<LiveEntryTypes[T] | null> {
         // Simple case
-        if(item_state == null) {
+        if (item_state == null) {
             return null;
         }
         /*
@@ -99,14 +101,15 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
     */
         // Get the item
         let item = await this.Registry.get_cat(expect_type).lookup_mmid(item_state.id);
-        if(!item) {
+        if (!item) {
             console.warn(`Could not resolve item ${item_state.id}`);
 
             // TODO: this currently will basically only just move items around in the players inventory, which is obviously not ideal
             return null;
-        }
-        else if(item.Type != expect_type) {
-            console.warn(`ID ${item_state.id} resolved to invalid slot-equippable type ${item.Type}`);
+        } else if (item.Type != expect_type) {
+            console.warn(
+                `ID ${item_state.id} resolved to invalid slot-equippable type ${item.Type}`
+            );
             return null;
         }
 
@@ -116,7 +119,7 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
 
     private to_packed_ref(item: PilotEquipment | null): PackedPilotEquipmentState | null {
         // Just saves us some time later
-        if(item == null) return null;
+        if (item == null) return null;
 
         return {
             // TODO: apply the other details
@@ -124,8 +127,8 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
             customDamageType: null,
             destroyed: false,
             id: item.ID,
-            uses: 0
-        }
+            uses: 0,
+        };
     }
 
     protected async load(data: PackedPilotLoadoutData): Promise<void> {
@@ -133,12 +136,22 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
         this.ID = data.id;
         this.Name = data.name;
 
-        // We're a little 
-        this.Armor = await Promise.all(data.armor.map(a => this.resolve_state_item(a, EntryType.PILOT_ARMOR)));
-        this.Gear = await Promise.all(data.gear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR)));
-        this.ExtendedGear = await Promise.all(data.extendedGear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR)));
-        this.Weapons = await Promise.all(data.weapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON)));
-        this.ExtendedWeapons = await Promise.all(data.extendedWeapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON)));
+        // We're a little
+        this.Armor = await Promise.all(
+            data.armor.map(a => this.resolve_state_item(a, EntryType.PILOT_ARMOR))
+        );
+        this.Gear = await Promise.all(
+            data.gear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR))
+        );
+        this.ExtendedGear = await Promise.all(
+            data.extendedGear.map(a => this.resolve_state_item(a, EntryType.PILOT_GEAR))
+        );
+        this.Weapons = await Promise.all(
+            data.weapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON))
+        );
+        this.ExtendedWeapons = await Promise.all(
+            data.extendedWeapons.map(a => this.resolve_state_item(a, EntryType.PILOT_WEAPON))
+        );
     }
 
     public async save(): Promise<PackedPilotLoadoutData> {
@@ -150,9 +163,8 @@ export class PilotLoadout extends RegSer<PackedPilotLoadoutData> {
             weapons: this.Weapons.map(x => this.to_packed_ref(x)),
             extendedGear: this.ExtendedGear.map(x => this.to_packed_ref(x)),
             extendedWeapons: this.ExtendedWeapons.map(x => this.to_packed_ref(x)),
-        }
+        };
     }
-
 
     // Adds an item to the first free slot it can find
     /*

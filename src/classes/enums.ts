@@ -1,6 +1,5 @@
 // TODO: make raw coercers for all of these. For now, we just kinda trust (bad idea, bro!)
 
-
 // Holds enums that are as of yet seen nowhere else
 export enum MountType {
     Main = "Main",
@@ -14,22 +13,22 @@ export enum MountType {
 
 // Defaults to main
 export function getMountType(raw: string): MountType {
-    switch(raw.toLowerCase()) {
+    switch (raw.toLowerCase()) {
         default:
-    case "main":
-        return  MountType.Main;
-    case "heavy":
-        return MountType.Heavy;
-    case "auxaux":
-        return MountType.AuxAux;
-    case "aux":
-        return MountType.Aux;
-    case "mainaux":
-        return MountType.MainAux;
-    case "flex":
-        return MountType.Flex;
-    case "integrated":
-        return MountType.Integrated;
+        case "main":
+            return MountType.Main;
+        case "heavy":
+            return MountType.Heavy;
+        case "auxaux":
+            return MountType.AuxAux;
+        case "aux":
+            return MountType.Aux;
+        case "mainaux":
+            return MountType.MainAux;
+        case "flex":
+            return MountType.Flex;
+        case "integrated":
+            return MountType.Integrated;
     }
 }
 
@@ -46,18 +45,18 @@ export enum FittingSize {
 }
 
 export function getFittingSize(raw: string): FittingSize {
-    switch(raw.toLowerCase()) {
-            case "auxiliary":
-                return FittingSize.Auxiliary;
+    switch (raw.toLowerCase()) {
+        case "auxiliary":
+            return FittingSize.Auxiliary;
         default:
-            case "main":
-                return FittingSize.Main;
-            case "flex":
-                return FittingSize.Flex;
-            case "heavy":
-                return FittingSize.Heavy;
-            case "integrated":
-                return FittingSize.Integrated;
+        case "main":
+            return FittingSize.Main;
+        case "flex":
+            return FittingSize.Flex;
+        case "heavy":
+            return FittingSize.Heavy;
+        case "integrated":
+            return FittingSize.Integrated;
     }
 }
 
@@ -69,20 +68,18 @@ export enum WeaponSize {
 }
 
 export function getWeaponSize(raw: string): WeaponSize {
-    switch(raw.toLowerCase()) {
+    switch (raw.toLowerCase()) {
         default:
-            case "main":
-                return WeaponSize.Main;
-            case "auxiliary":
-                return WeaponSize.Aux;
-            case "heavy":
-                return WeaponSize.Heavy;
-            case "superheavyj":
-                return WeaponSize.Superheavy;
+        case "main":
+            return WeaponSize.Main;
+        case "auxiliary":
+            return WeaponSize.Aux;
+        case "heavy":
+            return WeaponSize.Heavy;
+        case "superheavyj":
+            return WeaponSize.Superheavy;
     }
 }
-
-
 
 export enum WeaponType {
     Rifle = "Rifle",
@@ -92,7 +89,6 @@ export enum WeaponType {
     Nexus = "Nexus",
     Melee = "Melee",
 }
-
 
 export enum SystemType {
     System = "System",
@@ -115,14 +111,14 @@ export enum Duration {
     Mission = "Mission",
 }
 
-export enum FrameEffectUse {// Handles cores and traits usage duration thingies
+export enum FrameEffectUse { // Handles cores and traits usage duration thingies
     Turn = "Turn",
-    NextTurn = 'Next Turn',
-    Round = 'Round',
-    NextRound = 'Next Round',
-    Scene = 'Scene' ,
-    Encounter = 'Encounter' ,
-    Mission= 'Mission',
+    NextTurn = "Next Turn",
+    Round = "Round",
+    NextRound = "Next Round",
+    Scene = "Scene",
+    Encounter = "Encounter",
+    Mission = "Mission",
 }
 
 export enum ActivationType {
@@ -133,7 +129,7 @@ export enum ActivationType {
     Other = "Other",
     Reaction = "Reaction",
     Protocol = "Protocol",
-    Free = "Free"
+    Free = "Free",
 }
 
 export enum RangeType {

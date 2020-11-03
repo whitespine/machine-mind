@@ -3,7 +3,7 @@ import { imageManagement, ImageTag, logger } from "@/hooks";
 import { store, is_web } from "@/hooks";
 import { IMissionStep } from "@/interface";
 import { ISitrepData } from "./Sitrep";
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 export interface IEncounterData {
     id: string;

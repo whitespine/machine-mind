@@ -21,7 +21,6 @@ export type PackedPilotEquipmentData =
     | PackedPilotGearData;
 export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
 
-
 interface AllPilotWeaponData {
     id: string;
     name: string; // v-html
@@ -41,7 +40,7 @@ export interface PackedPilotWeaponData extends AllPilotWeaponData {
     deployables: PackedDeployableData[];
     damage: PackedDamageData[];
     tags: PackedTagInstanceData[];
-};
+}
 
 interface AllPilotArmorData {
     id: string;
@@ -62,7 +61,7 @@ export interface PackedPilotArmorData extends AllPilotArmorData {
     deployables: PackedDeployableData[];
 }
 
- interface AllPilotGearData {
+interface AllPilotGearData {
     id: string;
     name: string; // v-html
     description: string;
@@ -71,7 +70,7 @@ export interface PackedPilotArmorData extends AllPilotArmorData {
     synergies?: ISynergyData[];
 }
 
-export interface RegPilotGearData  extends  AllPilotGearData {
+export interface RegPilotGearData extends AllPilotGearData {
     deployables: RegRef<EntryType.DEPLOYABLE>[]; // these are only available to UNMOUNTED pilots
     tags: RegTagInstanceData[];
 }
@@ -80,7 +79,7 @@ export interface PackedPilotGearData extends AllPilotGearData {
     type: "Gear";
     tags: PackedTagInstanceData[];
     deployables: PackedDeployableData[];
-};
+}
 
 /////////////////////////////////////////////////////////
 // Classes

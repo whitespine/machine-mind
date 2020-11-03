@@ -14,14 +14,14 @@ import {
     PilotGear,
     Talent,
     TagTemplate,
-    NpcClass,
-    NpcTemplate,
-    NpcFeature,
-    NpcWeapon,
-    NpcReaction,
-    NpcTrait,
-    NpcSystem,
-    NpcTech,
+    // NpcClass,
+    // NpcTemplate,
+    // NpcFeature,
+    // NpcWeapon,
+    // NpcReaction,
+    // NpcTrait,
+    // NpcSystem,
+    // NpcTech,
     Reserve,
     Skill,
     License,
@@ -32,27 +32,7 @@ import {
 import {
     IManufacturerData,
     IFactionData,
-    ICoreBonusData,
     IFrameData,
-    IMechWeaponData,
-    IMechSystemData,
-    IWeaponModData,
-    IPilotEquipmentData,
-    IPilotWeaponData,
-    IPilotArmorData,
-    IPilotGearData,
-    ITalentData,
-    INpcClassData,
-    INpcFeatureData,
-    INpcTemplateData,
-    INpcWeaponData,
-    INpcReactionData,
-    INpcSystemData,
-    INpcTechData,
-    ITagCompendiumData,
-    ISkillData,
-    IReserveData,
-    IStatusData,
     IEnvironmentData,
     ISitrepData,
 } from "@/interface";
@@ -63,14 +43,14 @@ export interface IContentPackManifest {
     item_prefix: string; // Note - this is applied only on initial load. Dynamic, at runtime packs do not care about this
     author: string;
     version: string;
-    description?: string ;
-    website?: string ;
-    image_url?: string ;
+    description?: string;
+    website?: string;
+    image_url?: string;
 }
 export interface IContentPackData {
     manufacturers: IManufacturerData[];
     factions: IFactionData[];
-    coreBonuses: ICoreBonusData[];
+    coreBonuses: PackedCoreBonusData[];
     frames: IFrameData[];
     weapons: IMechWeaponData[];
     systems: IMechSystemData[];
@@ -84,12 +64,12 @@ export interface IContentPackData {
     npcTemplates: INpcTemplateData[];
 
     // New additions courtesy of whitespine
-    skills?: ISkillData[] ;
-    statuses?: IStatusData[] ;
-    reserves?: IReserveData[] ;
-    environments?: IEnvironmentData[] ;
-    sitreps?: ISitrepData[] ;
-    quirks?: string[] ;
+    skills?: ISkillData[];
+    statuses?: IStatusData[];
+    reserves?: IReserveData[];
+    environments?: IEnvironmentData[];
+    sitreps?: ISitrepData[];
+    quirks?: string[];
 }
 
 export interface IContentPack {
@@ -115,8 +95,8 @@ export class ContentPack {
     public get Version(): string {
         return this._manifest.version;
     }
-    public get Description(): string  {
-        return this._manifest.description || null
+    public get Description(): string {
+        return this._manifest.description || null;
     }
     public get Website(): string {
         return this._manifest.website || null;

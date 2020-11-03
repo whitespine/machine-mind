@@ -1,14 +1,10 @@
 import "jest";
-import {  } from "./static_registry";
+import {} from "./static_registry";
 import { RegCat, Registry, InventoriedRegEntry } from "./registry";
-
 
 type DefSetup = Registry;
 
-function init_basic_setup(): DefSetup {
-
-
-}
+function init_basic_setup(): DefSetup {}
 
 describe("Counter", () => {
     it("starts at its default value", () => {

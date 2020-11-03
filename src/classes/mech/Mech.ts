@@ -154,17 +154,17 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get ArmorContributors(): string[] {
-        return [ `FRAME Base Armor: ${this.Frame.Armor}`, ...contrib_helper(this, "armor");
+        return [ `FRAME Base Armor: ${this.Frame.Armor}`, ...contrib_helper(this, "armor")];
     }
 
     public get SaveTarget(): number {
         const bonus = Bonus.get("save", this) + this.Pilot.Grit;
-        return this.Frame.SaveTarget + bonus;
+        return this.Frame.Stats.save + bonus;
     }
 
     public get SaveTargetContributors(): string[] {
         return [
-            `FRAME Base Save Target: ${this.Frame.SaveTarget}`,
+            `FRAME Base Save Target: ${this.Frame.Stats.save}`,
             `Pilot GRIT Bonus: +${this.Pilot.Grit}`,
             ...contrib_helper(this,  "save"),
         ];
@@ -173,13 +173,13 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     public get Evasion(): number {
         if (this.IsStunned) return 5;
         const bonus = Bonus.get("evasion", this) + this.Agi;
-        return this.Frame.Evasion + bonus;
+        return this.Frame.Stats.evasion + bonus;
     }
 
     public get EvasionContributors(): string[] {
         if (this.IsStunned) return ["STUNNED"];
         return [
-            `FRAME Base Evasion: ${this.Frame.Evasion}`,
+            `FRAME Base Evasion: ${this.Frame.Stats.evasion}`,
             `Pilot AGILITY Bonus: +${this.Agi}`,
             ...contrib_helper(this, "evasion")
         ];
@@ -192,12 +192,12 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
 
     public get Speed(): number {
         const bonus = Bonus.get("speed", this) + this.AgiSpeed;
-        return this.Frame.Speed + bonus;
+        return this.Frame.Stats.speed + bonus;
     }
 
     public get SpeedContributors(): string[] {
         return [
-            `FRAME Base Speed: ${this.Frame.Speed}`,
+            `FRAME Base Speed: ${this.Frame.Stats.speed}`,
             `Pilot AGILITY Bonus: +${this.AgiSpeed}`,
             ...contrib_helper(this, "speed")
         ];
@@ -205,21 +205,21 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
 
     public get SensorRange(): number {
         const bonus = Bonus.get("sensor", this);
-        return this.Frame.SensorRange + bonus;
+        return this.Frame.Stats.sensor_range + bonus;
     }
 
     public get SensorRangeContributors(): string[] {
-        return [`FRAME Base Sensor Range: ${this.Frame.SensorRange}`, ...contrib_helper(this, "sensor")];
+        return [`FRAME Base Sensor Range: ${this.Frame.Stats.sensor_range}`, ...contrib_helper(this, "sensor")];
     }
 
     public get EDefense(): number {
         const bonus = Bonus.get("edef", this) + this.Sys;
-        return this.Frame.EDefense + bonus;
+        return this.Frame.Stats.edef + bonus;
     }
 
     public get EDefenseContributors(): string[] {
         return [
-            `FRAME Base E-Defense: ${this.Frame.EDefense}`,
+            `FRAME Base E-Defense: ${this.Frame.Stats.edef}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
             ...contrib_helper(this, "edef")];
     }
@@ -244,12 +244,12 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
 
     public get TechAttack(): number {
         const bonus = Bonus.get("tech_attack", this) + this.Sys;
-        return this.Frame.TechAttack + bonus;
+        return this.Frame.Stats.tech_attack + bonus;
     }
 
     public get TechAttackContributors(): string[] {
         return [
-            `FRAME Base Tech Attack: ${this.Frame.TechAttack}`,
+            `FRAME Base Tech Attack: ${this.Frame.Stats.tech_attack}`,
             `Pilot SYSTEMS Bonus: +${this.Sys}`,
             ...contrib_helper(this, "tech_attack")
         ];
@@ -419,22 +419,22 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
 
     public get MaxStress(): number {
         const bonus = Bonus.get("stress", this);
-        return this.Frame.HeatStress + bonus;
+        return this.Frame.Stats.stress + bonus;
     }
 
     public get StressContributors(): string[] {
-        return [`FRAME Base Reactor Stress: ${this.Frame.HeatStress}`,
+        return [`FRAME Base Reactor Stress: ${this.Frame.Stats.stress}`,
     ...contrib_helper(this, "stress")];
     }
 
     public get RepairCapacity(): number {
         const bonus = Bonus.get("repcap", this) + Math.floor(this.Hull / 2);
-        return this.Frame.RepCap + bonus;
+        return this.Frame.Stats.repcap + bonus;
     }
 
     public get RepCapContributors(): string[] {
         return [
-            `FRAME Base Repair Capacity: ${this.Frame.RepCap}`,
+            `FRAME Base Repair Capacity: ${this.Frame.Stats.repcap}`,
             `Pilot HULL Bonus: +${Math.floor(this.Hull / 2)}`,
             ...contrib_helper(this, "repcap")
         ];
@@ -454,7 +454,7 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     public NewTurn(): void {
         this.Activations = 1;
         this.TurnActions = 2;
-        this.CurrentMove = this.Speed;
+        this.CurrentMove = this.Stats.speed;
     }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
@@ -464,10 +464,10 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
         if (this.Destroyed) out.push("destroyed");
         if (this.Ejected) out.push("ejected");
         if (this.MeltdownImminent) out.push("meltdown");
-        if (this.ActiveLoadout.Systems.filter(x => x.IsCascading).length) out.push("cascading");
+        if (this.Loadout.Systems.filter(x => x.IsCascading).length) out.push("cascading");
         if (this.FreeSP < 0) out.push("overSP");
         if (this.FreeSP > 0) out.push("underSP");
-        if (this.ActiveLoadout.HasEmptyMounts) out.push("unfinished");
+        if (this.Loadout.HasEmptyMounts) out.push("unfinished");
         if (this.RequiredLicenses.filter(x => x.missing).length) out.push("unlicensed");
         return out;
     }

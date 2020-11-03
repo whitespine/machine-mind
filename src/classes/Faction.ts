@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, SimSer } from '@/registry';
+import { EntryType, RegEntry, SimSer } from "@/registry";
 
 export interface IFactionData {
     id: string;
@@ -9,7 +9,7 @@ export interface IFactionData {
     logo_url?: string;
 }
 
-export class Faction extends RegEntry<EntryType.FACTION, IFactionData>{
+export class Faction extends RegEntry<EntryType.FACTION, IFactionData> {
     ID!: string;
     Name!: string;
     Description!: string;
@@ -33,8 +33,7 @@ export class Faction extends RegEntry<EntryType.FACTION, IFactionData>{
             description: this.Description,
             logo: this.Logo,
             color: this.Color,
-            logo_url: undefined
-        }
+            logo_url: undefined,
+        };
     }
 }
-

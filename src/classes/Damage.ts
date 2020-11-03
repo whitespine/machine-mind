@@ -50,6 +50,13 @@ export class Damage extends SimSer<RegDamageData> {
             val: this.Value,
         };
     }
+
+    public static unpack(dat: PackedDamageData): RegDamageData {
+        return {
+            type: dat.type,
+            val: "" + dat.val,
+        };
+    }
 }
 
 //TODO: replace with dicemath (PS: This is a beef todo. I dunno what it means

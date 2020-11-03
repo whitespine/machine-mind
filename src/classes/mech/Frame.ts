@@ -1,10 +1,8 @@
-import { LicensedItem, CoreSystem } from "@/class";
-import { ImageTag } from "@/hooks";
-import { ILicensedItemData, ICoreSystemData } from "@/interface";
-import { EntryType, RegEntry } from '@/registry';
+import { CoreSystem } from "@/class";
+import { PackedCoreSystemData, PackedFrameTraitData } from "@/interface";
+import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
-import { FrameTrait, IFrameTraitData } from "./FrameTrait";
 
 // The raw stat information
 export interface IFrameStats {
@@ -25,7 +23,7 @@ export interface IFrameStats {
 }
 
 // Entire frame
-export interface IFrameData {
+interface AllFrameData {
     id: string;
     license_level: number; // set to zero for this item to be available to a LL0 character
     source: string; // must be the same as the Manufacturer ID to sort correctly
@@ -35,28 +33,36 @@ export interface IFrameData {
     description: string; // v-html
     mounts: MountType[];
     stats: IFrameStats;
-    traits: IFrameTraitData[];
-    core_system: ICoreSystemData;
     image_url?: string;
     other_art?: IArtLocation[];
 }
 
-export class Frame extends RegEntry<EntryType.FRAME, IFrameData> {
+export interface PackedFrameData extends AllFrameData {
+    traits: PackedFrameTraitData[];
+    core_system: PackedCoreSystemData;
+}
+
+export interface RegFrameData extends AllFrameData {
+    traits: RegRef<EntryType.FRAME_TRAIT>[];
+    core_system?: RegRef<EntryType.CORE_SYSTEM>;
+}
+
+export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
     ID!: string;
     LicenseLevel!: number;
     Source!: string;
     Name!: string;
-     MechType!: Array<string | MechType>;  // Typically mostly MechType
-     YPosition!: number;
-     Description!: string;
-     Mounts!: MountType[];
-     Traits!: FrameTrait[];
-     CoreSystem!: CoreSystem;
-     Stats!: IFrameStats;
+    MechType!: Array<string | MechType>; // Typically mostly MechType
+    YPosition!: number;
+    Description!: string;
+    Mounts!: MountType[];
+    Traits!: FrameTrait[];
+    CoreSystem!: CoreSystem | null; // For the purposeses of people doing dumb homebrew stuff, we support this
+    Stats!: IFrameStats;
     OtherArt!: IArtLocation[];
-     ImageUrl!: string | null;
+    ImageUrl!: string | null;
 
-    protected async load(frameData: IFrameData): Promise<void> {
+    protected async load(frameData: RegFrameData): Promise<void> {
         this.ID = frameData.id;
         this.LicenseLevel = frameData.license_level;
         this.Source = frameData.source;
@@ -65,27 +71,30 @@ export class Frame extends RegEntry<EntryType.FRAME, IFrameData> {
         this.YPosition = frameData.y_pos || 30;
         this.Mounts = frameData.mounts;
         this.Stats = frameData.stats;
-        this.Traits = frameData.traits.map(x => new FrameTrait(x));
-        this.CoreSystem = new CoreSystem(frameData.core_system);
+        this.Traits = await this.Registry.resolve_many(frameData.traits);
+        this.CoreSystem = frameData.core_system
+            ? await this.Registry.resolve(frameData.core_system)
+            : null;
         this.ImageUrl = frameData.image_url || null;
         this.OtherArt = frameData.other_art || [];
     }
 
-    public async save(): Promise<IFrameData> {
+    public async save(): Promise<RegFrameData> {
         return {
             id: this.ID,
-            license_level: this.LicenseLevel ,
-            source: this.Source ,
-            name: this.Name ,
-            mechtype: this.MechType ,
-            y_pos: this.YPosition ,
-            mounts: Mounts ,
-            stats: Stats ,
-            traits: this.Traits.map(x => x.save()),
-            core_system: this.CoreSystem.save() ,
-            image_url: this.ImageUrl  ?? undefined,
-            other_art: this.OtherArt ,
-        }
+            description: this.Description,
+            license_level: this.LicenseLevel,
+            source: this.Source,
+            name: this.Name,
+            mechtype: this.MechType,
+            y_pos: this.YPosition,
+            mounts: this.Mounts,
+            stats: this.Stats,
+            traits: SerUtil.ref_all(this.Traits),
+            core_system: this.CoreSystem?.as_ref(),
+            image_url: this.ImageUrl ?? undefined,
+            other_art: this.OtherArt,
+        };
     }
 
     public get MechTypeString(): string {
@@ -96,7 +105,6 @@ export class Frame extends RegEntry<EntryType.FRAME, IFrameData> {
     public get SizeIcon(): string {
         return `cci-size-${this.Stats.size === 0.5 ? "half" : this.Stats.size}`;
     }
-
 
     public get DefaultImage(): string {
         if (this.ImageUrl) return this.ImageUrl;
