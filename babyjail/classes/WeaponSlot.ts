@@ -1,5 +1,4 @@
 import { MechWeapon,  } from "@/class";
-import { IWeaponSlotData } from "@/interface";
 import _ from "lodash";
 
 import { WeaponMod } from "@/class";

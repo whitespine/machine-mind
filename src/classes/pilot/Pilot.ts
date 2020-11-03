@@ -19,10 +19,8 @@ import {
 import * as gistApi from "@/io/apis/gist";
 import {
     IActionData,
-    IMechState,
     IOrganizationData,
     IRankedData,
-    IPilotLoadoutData,
     PackedReserveData,
     PackedMechData,
     PackedCounterSaveData,
@@ -243,7 +241,7 @@ public has(
 
     public get MaxHP(): number {
         let health = Rules.BasePilotHP + this.Grit;
-        health += Bonus.SumVal(this, this.UnmountedBonuses, "pilot_hp");
+        health += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_hp");
         return health;
     }
 
@@ -253,25 +251,25 @@ public has(
 
     public get Armor(): number {
         let armor = 0;
-        armor += Bonus.SumVal(this, this.UnmountedBonuses, "pilot_armor");
+        armor += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_armor");
         return armor;
     }
 
     public get Speed(): number {
         let speed = Rules.BasePilotSpeed;
-        speed += Bonus.SumVal(this, this.UnmountedBonuses, "pilot_speed");
+        speed += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_speed");
         return speed;
     }
 
     public get Evasion(): number {
         let evasion = Rules.BasePilotEvasion;
-        evasion += Bonus.SumVal(this, this.UnmountedBonuses, "pilot_evasion");
+        evasion += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_evasion");
         return evasion;
     }
 
     public get EDefense(): number {
         let edef = Rules.BasePilotEdef;
-        edef += Bonus.SumVal(this, this.UnmountedBonuses, "pilot_edef");
+        edef += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_edef");
         return edef;
     }
 
@@ -344,7 +342,7 @@ public has(
   public RemoveSkill(skill: Skill | CustomSkill): void {
     const index = this._skills.findIndex(x => x.Skill.ID === skill.ID)
     if (index === -1) {
-      console.error(`Skill Trigger "${skill.Name}" does not exist on Pilot ${this._callsign}`)
+      console.error(`Skill Trigger "${skill.Name}" does not exist on Pilot ${this.Callsign}`)
     } else {
       if (this._skills[index].Rank > 1) {
         this._skills[index].Decrement()
@@ -403,7 +401,7 @@ public has(
   public RemoveTalent(talent: Talent): void {
     const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent))
     if (index === -1) {
-      console.error(`Talent "${talent.Name}" does not exist on Pilot ${this._callsign}`)
+      console.error(`Talent "${talent.Name}" does not exist on Pilot ${this.Callsign}`)
     } else {
       if (this._talents[index].Rank > 1) {
         this._talents[index].Decrement()
@@ -426,22 +424,14 @@ public has(
     }
 
     // -- Core Bonuses ------------------------------------------------------------------------------
-    public get CoreBonuses(): CoreBonus[] {
-        return this._core_bonuses;
-    }
-
-    public set CoreBonuses(coreBonuses: CoreBonus[]) {
-        this._core_bonuses = coreBonuses;
-        this.save();
-    }
 
     public get CurrentCBPoints(): number {
-        return this._core_bonuses.length;
+        return this.CoreBonuses.length;
     }
 
     public get MaxCBPoints(): number {
         const bonus = this.Reserves.filter(x => x.ID === "reserve_corebonus").length;
-        return Math.floor(this._level / 3) + bonus;
+        return Math.floor(this.Level / 3) + bonus;
     }
 
     public get IsMissingCBs(): boolean {
@@ -456,66 +446,20 @@ public has(
         return this.CurrentCBPoints === this.MaxCBPoints;
     }
 
-    public AddCoreBonus(coreBonus: CoreBonus): void {
-        this._core_bonuses.push(coreBonus);
-        this.save();
-    }
-
-    public RemoveCoreBonus(coreBonus: CoreBonus): void {
-        const index = this._core_bonuses.findIndex(x => _.isEqual(coreBonus, x));
-        if (index === -1) {
-            console.error(
-                `CORE Bonus "${coreBonus.Name}" does not exist on Pilot ${this._callsign}`
-            );
-        } else {
-            this._core_bonuses.splice(index, 1);
-            this.removeCoreBonuses(coreBonus);
-        }
-        this.save();
-    }
-
-    public ClearCoreBonuses(): void {
-        for (let i = this._core_bonuses.length - 1; i >= 0; i--) {
-            this.RemoveCoreBonus(this._core_bonuses[i]);
-        }
-    }
-
-    private removeCoreBonuses(coreBonus: CoreBonus): void {
-        this._mechs.forEach(mech => {
-            mech.Loadouts.forEach(loadout => {
-                if (coreBonus.ID === "cb_mount_retrofitting") loadout.RemoveRetrofitting();
-                if (coreBonus.ID === "cb_improved_armament") loadout.ImprovedArmamentMount.Clear();
-                if (coreBonus.ID === "cb_integrated_weapon") loadout.IntegratedWeaponMount.Clear();
-                loadout.AllEquippableMounts(true).forEach(mount => {
-                    mount.RemoveCoreBonus(coreBonus);
-                });
-            });
-        });
-    }
-
     // -- Licenses ----------------------------------------------------------------------------------
-    public get Licenses(): PilotLicense[] {
-        return this._licenses;
-    }
-
-    public set Licenses(licenses: PilotLicense[]) {
-        this._licenses = licenses;
-        this.save();
-    }
-
-    public LicenseLevel(manufacturerID: string): number {
+    public CountLicenses(manufacturerID: string): number {
         return this.Licenses.filter(
             x => x.License.Source.toLowerCase() === manufacturerID.toLowerCase()
         ).reduce((a, b) => +a + +b.Rank, 0);
     }
 
     public get CurrentLicensePoints(): number {
-        return this._licenses.reduce((sum, license) => sum + license.Rank, 0);
+        return this.Licenses.reduce((sum, license) => sum + license.Rank, 0);
     }
 
     public get MaxLicensePoints(): number {
         const bonus = this.Reserves.filter(x => x.ID === "reserve_license").length;
-        return this._level + bonus;
+        return this.Level + bonus;
     }
 
     public get IsMissingLicenses(): boolean {
@@ -531,89 +475,63 @@ public has(
     }
 
     public getLicenseRank(_name: string): number {
-        const index = this._licenses.findIndex(x => x.License.Name === _name);
-        return index > -1 ? this._licenses[index].Rank : 0;
+        const index = this.Licenses.findIndex(x => x.License.Name === _name);
+        return index > -1 ? this.Licenses[index].Rank : 0;
     }
 
     public AddLicense(license: License): void {
-        const index = this._licenses.findIndex(x => _.isEqual(x.License, license));
+        const index = this.Licenses.findIndex(x => _.isEqual(x.License, license));
         if (index === -1) {
-            this._licenses.push(new PilotLicense(license, 1));
+            this.Licenses.push(new PilotLicense(license, 1));
         } else {
-            this._licenses[index].Increment();
+            this.Licenses[index].Increment();
         }
         this.save();
     }
 
     public RemoveLicense(license: License): void {
-        const index = this._licenses.findIndex(x => _.isEqual(x.License, license));
+        const index = this.Licenses.findIndex(x => _.isEqual(x.License, license));
         if (index === -1) {
             console.error(
-                `License "${license.ToString()}" does not exist on Pilot ${this._callsign}`
+                `License "${license.ToString()}" does not exist on Pilot ${this.Callsign}`
             );
         } else {
-            if (this._licenses[index].Rank > 1) {
-                this._licenses[index].Decrement();
+            if (this.Licenses[index].Rank > 1) {
+                this.Licenses[index].Decrement();
             } else {
-                this._licenses.splice(index, 1);
+                this.Licenses.splice(index, 1);
             }
         }
         this.save();
     }
 
     public ClearLicenses(): void {
-        for (let i = this._licenses.length - 1; i >= 0; i--) {
-            while (this._licenses[i]) {
-                this.RemoveLicense(this._licenses[i].License);
+        for (let i = this.Licenses.length - 1; i >= 0; i--) {
+            while (this.Licenses[i]) {
+                this.RemoveLicense(this.Licenses[i].License);
             }
         }
     }
 
     // -- Mech Skills -------------------------------------------------------------------------------
-    public get MechSkills(): MechSkills {
-        return this._mechSkills;
-    }
-
-    public set MechSkills(mechskills: MechSkills) {
-        this._mechSkills = mechskills;
-        this.save();
-    }
-
-    public resetHASE(): void {
-        this._mechSkills.Reset();
-    }
-
-    public get CurrentHASEPoints(): number {
-        return this._mechSkills.Sum;
-    }
-
     public get MaxHASEPoints(): number {
         const bonus = this.Reserves.filter(x => x.ID === "reserve_mechskill").length;
-        return Rules.MinimumMechSkills + this._level + bonus;
+        return Rules.MinimumMechSkills + this.Level + bonus;
     }
 
     public get IsMissingHASE(): boolean {
-        return this.CurrentHASEPoints < this.MaxHASEPoints;
+        return this.MechSkills.Sum < this.MaxHASEPoints;
     }
 
     public get TooManyHASE(): boolean {
-        return this.CurrentHASEPoints > this.MaxHASEPoints;
+        return this.MechSkills.Sum > this.MaxHASEPoints;
     }
 
     public get HasFullHASE(): boolean {
-        return this.CurrentHASEPoints === this.MaxHASEPoints;
+        return this.MechSkills.Sum === this.MaxHASEPoints;
     }
 
     // -- Downtime Reserves -------------------------------------------------------------------------
-    public get Reserves(): Reserve[] {
-        return this._reserves;
-    }
-
-    public set Reserves(reserves: Reserve[]) {
-        this._reserves = reserves;
-        this.save();
-    }
-
     public RemoveReserve(index: number): void {
         this._reserves.splice(index, 1);
         this.save();
@@ -656,7 +574,7 @@ public has(
     public RemoveMech(mech: Mech): void {
         const index = this._mechs.findIndex(x => _.isEqual(x, mech));
         if (index === -1) {
-            console.error(`Loadout "${mech.Name}" does not exist on Pilot ${this._callsign}`);
+            console.error(`Loadout "${mech.Name}" does not exist on Pilot ${this.Callsign}`);
         } else {
             this._mechs.splice(index, 1);
         }

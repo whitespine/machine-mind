@@ -2,7 +2,7 @@ import { Bonus, Mech } from "./class";
 
 // Same logic as interfaces, classes, etc.
 export { parseContentPack } from "@/io/ContentPackParser";
-export { getBaseContentPack } from "@/classes/registry";
+export { getBaseContentPack } from "@/classes/old_registry";
 export { getChangelog, getCredits, loadPilot, newPilot, savePilot } from "@/io/apis/gist";
 
 export function bound_int(x: number, min: number, max: number) {

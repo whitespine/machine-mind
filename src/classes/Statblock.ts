@@ -1,4 +1,4 @@
-import { Pilot, Mech, Npc, PilotWeapon } from "@/class";
+import { Pilot, Mech, PilotWeapon } from "@/class";
 import { store } from "@/hooks";
 
 function linebreak(i: number, length: number): string {
@@ -107,7 +107,7 @@ export class Statblock {
             for (const im of mech.IntegratedMounts) {
                 output += `  INTEGRATED MOUNT: ${im.Weapon ? im.Weapon.Name : ""}\n`;
             }
-            const loadout = mech.ActiveLoadout ? mech.ActiveLoadout : mech.Loadouts[0];
+            const loadout = mech.Loadout;
             const comp = store.compendium;
             if (loadout) {
                 for (const mount of loadout.AllEquippableMounts(
@@ -155,7 +155,7 @@ export class Statblock {
     }
 
     public static GenerateBuildSummary(pilot: Pilot, mech: Mech, discordEmoji: boolean): string {
-        const mechLoadout = mech.ActiveLoadout ? mech.ActiveLoadout : mech.Loadouts[0];
+        const mechLoadout = mech.Loadout;
         const comp = store.compendium;
         return `-- ${mech.Frame.Source} ${mech.Frame.Name} @ LL${pilot.Level} --
 [ LICENSES ]

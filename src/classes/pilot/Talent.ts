@@ -65,15 +65,15 @@ export interface RegTalentData {
 }
 
 export interface TalentRank {
-    name: string;
-    description: string; // v-html
-    exclusive: boolean; // see below -- basically, does the unlocks of this rank override prior ranks (replacing actions and so forth?)
-    actions: Action[];
-    bonuses: Bonus[];
-    synergies: Synergy[];
-    deployables: Deployable[];
-    counters: Counter[];
-    integrated: RegEntry<any, any>[];
+    Name: string;
+    Description: string; // v-html
+    Exclusive: boolean; 
+    Actions: Action[];
+    Bonuses: Bonus[];
+    Synergies: Synergy[];
+    Deployables: Deployable[];
+    Counters: Counter[];
+    Integrated: RegEntry<any, any>[];
 }
 
 export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
@@ -97,15 +97,15 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         this.Ranks = [];
         for (let r of data.ranks) {
             this.Ranks.push({
-                actions: SerUtil.process_actions(r.actions),
-                bonuses: SerUtil.process_bonuses(r.bonuses),
-                counters: SerUtil.process_counters(r.counters),
-                deployables: await this.Registry.resolve_many(r.deployables),
-                description: r.description,
-                exclusive: r.exclusive,
-                integrated: await this.Registry.resolve_many_rough(r.integrated),
-                name: r.name,
-                synergies: SerUtil.process_synergies(r.synergies),
+                Actions: SerUtil.process_actions(r.actions),
+                Bonuses: SerUtil.process_bonuses(r.bonuses),
+                Counters: SerUtil.process_counters(r.counters),
+                Deployables: await this.Registry.resolve_many(r.deployables),
+                Description: r.description,
+                Exclusive: r.exclusive,
+                Integrated: await this.Registry.resolve_many_rough(r.integrated),
+                Name: r.name,
+                Synergies: SerUtil.process_synergies(r.synergies),
             });
         }
         this.CurrentRank = data.curr_rank;
@@ -115,15 +115,15 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         let ranks: RegTalentRank[] = [];
         for (let r of this.Ranks) {
             ranks.push({
-                description: r.description,
-                exclusive: r.exclusive,
-                name: r.name,
-                actions: SerUtil.sync_save_all(r.actions),
-                bonuses: SerUtil.sync_save_all(r.bonuses),
-                integrated: SerUtil.ref_all(r.integrated),
-                counters: SerUtil.sync_save_all(r.counters),
-                synergies: SerUtil.sync_save_all(r.synergies),
-                deployables: SerUtil.ref_all(r.deployables),
+                description: r.Description,
+                exclusive: r.Exclusive,
+                name: r.Name,
+                actions: SerUtil.sync_save_all(r.Actions),
+                bonuses: SerUtil.sync_save_all(r.Bonuses),
+                integrated: SerUtil.ref_all(r.Integrated),
+                counters: SerUtil.sync_save_all(r.Counters),
+                synergies: SerUtil.sync_save_all(r.Synergies),
+                deployables: SerUtil.ref_all(r.Deployables),
             });
         }
 
@@ -155,27 +155,27 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
 
     // Flattening methods
     public get Counters(): Counter[] {
-        return this.UnlockedRanks.flatMap(x => x.counters);
+        return this.UnlockedRanks.flatMap(x => x.Counters);
     }
 
     public get Integrated(): RegEntry<any, any>[] {
-        return this.UnlockedRanks.flatMap(x => x.integrated);
+        return this.UnlockedRanks.flatMap(x => x.Integrated);
     }
 
     public get Deployables(): Deployable[] {
-        return this.UnlockedRanks.flatMap(x => x.deployables);
+        return this.UnlockedRanks.flatMap(x => x.Deployables);
     }
 
     public get Actions(): Action[] {
-        return this.UnlockedRanks.flatMap(x => x.actions);
+        return this.UnlockedRanks.flatMap(x => x.Actions);
     }
 
     public get Bonuses(): Bonus[] {
-        return this.UnlockedRanks.flatMap(x => x.bonuses);
+        return this.UnlockedRanks.flatMap(x => x.Bonuses);
     }
 
     public get Synergies(): Synergy[] {
-        return this.UnlockedRanks.flatMap(x => x.synergies);
+        return this.UnlockedRanks.flatMap(x => x.Synergies);
     }
 
     // TODO: Handle exclusive

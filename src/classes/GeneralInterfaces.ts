@@ -57,6 +57,7 @@ export interface IRankedData {
     custom_detail?: string;
 }
 
+/*
 export interface IEquipmentSaveData {
     id: string;
     destroyed: boolean;
@@ -117,3 +118,5 @@ export interface IWeaponSlotData {
     size: string;
     weapon: IMechWeaponSaveData | null;
 }
+
+*/

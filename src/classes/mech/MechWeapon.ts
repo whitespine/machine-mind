@@ -104,7 +104,23 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
   Cascading!: boolean; // In case GRAND-UNCLE ever exists
 
   protected async load(data: RegMechWeaponData): Promise<void> {
-    throw new Error('Method not implemented.');
+    this.ID = data.id;
+    this.Name = data.name;
+    this.Source = data.source;
+    this.License = data.license;
+    this.LicenseLevel = data.license_level;
+
+    this.Size = data.size;
+    this.SP = data.sp;
+    this.Integrated = await this.Registry.resolve_many(data.integrated);
+
+    this.Loaded = data.loaded;
+    this.Destroyed = data.destroyed;
+    this.Cascading = data.cascading;
+
+    this.SelectedProfileIndex = data.selected_profile;
+    // The big one
+    this.Profiles = await Promise.all(data.profiles.map(p => new MechWeaponProfile(this.Registry,  p).ready()));
   }
 
   public async save(): Promise<RegMechWeaponData> {
@@ -130,9 +146,14 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     return sel;
   }
 
+  // Wrapper to conveniently get active bonuses
+  get Bonuses(): Bonus[] {
+    return this.SelectedProfile.Bonuses;
+  }
+
   static async unpack(dat: PackedMechWeaponData, reg: Registry): Promise<MechWeapon> {
     // Get the basics
-    let integrated: RegEntry<any, any> = reg.();
+    let integrated = SerUtil.parse_integrated(dat.integrated);
 
     let unpacked: RegMechWeaponData = {
       id: dat.id,
@@ -145,7 +166,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
       size: dat.mount,
       name: dat.name,
       profiles: [],
-      integrated: [],
+      integrated,
       selected_profile: 0,
       source: dat.source,
       sp: dat.sp || 0
@@ -189,10 +210,6 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     // And we are done
     return reg.get_cat(EntryType.MECH_WEAPON).create(unpacked);
   }
-
-
-  // Checks whether the given bonus can apply to this weapon
-  // can_bonus_apply()
 }
 
 export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{

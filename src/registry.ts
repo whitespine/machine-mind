@@ -189,8 +189,12 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.WEAPON_MOD]: RegWeaponModData;
 }
 
+export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTypes
+    ? FixedRegEntryTypes[T]
+    : object;
+
 // What compcon holds
-export interface PackedEntryTypes extends _RegTypeMap {
+interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
     [EntryType.CORE_SYSTEM]: PackedCoreSystemData;
@@ -220,8 +224,8 @@ export interface PackedEntryTypes extends _RegTypeMap {
     [EntryType.WEAPON_MOD]: PackedWeaponModData;
 }
 
-export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTypes
-    ? FixedRegEntryTypes[T]
+export type PackedEntryTypes<T extends EntryType> = T extends keyof FixedPackedEntryTypes
+    ? FixedPackedEntryTypes[T]
     : object;
 
 // What our registries "revive" to, essentially wrapper types
@@ -435,8 +439,9 @@ export abstract class RegSer<SourceType> {
     }
 
     // Async ready check
-    public async ready(): Promise<void> {
+    public async ready(): Promise<this> {
         await this._load_promise;
+        return this;
     }
 
     // Populate this item with stuff

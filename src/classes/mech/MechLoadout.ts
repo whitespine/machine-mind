@@ -1,27 +1,258 @@
-import _ from "lodash";
 import {
     LicensedItem,
     MechSystem,
-    Mount,
     Mech,
-    Loadout,
-    MountType,
-    IntegratedMount,
-    EquippableMount,
-    MechEquipment,
     MechWeapon,
     WeaponMod,
+    MechEquipment,
 } from "@/class";
-import { IMechLoadoutData } from "@/interface";
 import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
+import { EntryType, RegRef, RegSer, SerUtil, SimSer } from '@/registry';
+import { FittingSize, WeaponSize } from '../enums';
 
-export class MechLoadout extends Loadout {
-    private _integratedMounts: IntegratedMount[];
-    private _equippableMounts: EquippableMount[];
-    private _improvedArmament: EquippableMount;
-    private _integratedWeapon: EquippableMount;
-    private _systems: MechSystem[];
-    private _integratedSystems: MechSystem[];
+//////////////////////// PACKED INFO ////////////////////////
+interface PackedEquipmentData {
+  id: string
+  destroyed: boolean
+  cascading: boolean
+  note: string
+  uses?: number
+  flavorName?: string
+  flavorDescription?: string
+  customDamageType?: string
+}
+interface PackedMechWeaponSaveData extends PackedEquipmentData {
+  loaded: boolean
+  mod?: PackedEquipmentData
+  customDamageType?: string
+  maxUseOverride?: number
+}
+export interface PackedWeaponSlotData {
+  size: string
+  weapon: PackedMechWeaponSaveData | null
+}
+
+export interface PackedMountData {
+  mount_type: string
+  lock: boolean
+  slots: PackedWeaponSlotData[]
+  extra: PackedWeaponSlotData[]
+  bonus_effects: string[]
+}
+
+export interface PackedMechLoadoutData {
+  id: string
+  name: string
+  systems: PackedEquipmentData[]
+  integratedSystems: PackedEquipmentData[]
+  mounts: PackedMountData[]
+  integratedMounts: { weapon: PackedMechWeaponSaveData }[]
+  improved_armament: PackedMountData
+  integratedWeapon: PackedMountData
+}
+
+//////////////// REG INFO ///////////////////
+// This is fortunately much simpler because we just use the state of weapons (no need to track anything about them, just the weapons themselves).
+// We also don't name things because aaaaaaaaaaaaaa
+// For the time being we are ignoring auto-stab. we'll probably just make it a standard mod
+export interface RegLoadoutData {
+    system_mounts: RegSysMountData[];
+    weapon_mounts: RegWepMountData[];
+}
+
+// Fairly simple, will eventually expand to cover sys mods
+export interface RegSysMountData {
+    system: RegRef<EntryType.MECH_SYSTEM> | null;
+}
+
+// Has a number of slots, each with a capacity for a mod
+export interface RegWepMountData {
+    fitting: FittingSize;
+    slots: Array<{
+        weapon: RegRef<EntryType.MECH_WEAPON> | null,
+        mod: RegRef<EntryType.WEAPON_MOD> | null,
+        size: WeaponSize
+    }>;
+}
+
+
+export class MechLoadout extends RegSer<RegLoadoutData> {
+    SysMounts!: SystemMount[];
+    WepMounts!: WeaponMount[];
+
+    protected async load(data: RegLoadoutData): Promise<void> {
+        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, s).ready()));
+        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, w).ready()));
+    }
+    public async save(): Promise<RegLoadoutData> {
+        return {
+            system_mounts: await SerUtil.save_all(this.SysMounts),
+            weapon_mounts: await SerUtil.save_all(this.WepMounts),
+        }
+    }
+
+    // A simple list of currently equipped systems
+    public get Systems(): MechSystem[] {
+        return this.SysMounts.filter(sm => sm.System != null).map(sm => sm.System!);
+    }
+
+    // A simple list of currently equipped weapons
+    public get Weapons(): MechWeapon[] {
+        let slots = this.WepMounts.flatMap(wm => wm.Slots);
+        return slots.map(s => s.Weapon).filter(x => !!x) as MechWeapon[];
+    }
+
+    // Concat the above
+    public get Equipment(): MechEquipment[] {
+        return [...this.Systems, ...this.Weapons];
+    }
+
+    // Get all mods as a list
+    public get AllMods(): WeaponMod[] {
+        let slots = this.WepMounts.flatMap(wm => wm.Slots);
+        return slots.filter(s => !!s.Weapon && !!s.Mod).map(s => s.Mod) as WeaponMod[];
+    }
+
+    // Compute total SP
+    public get TotalSP(): number {
+        let tot = 0;
+        for(let e of this.Equipment) {
+            tot += e.SP;
+        }
+        for(let m of this.AllMods) {
+            tot += m.SP;
+        }
+        return tot;
+    }
+
+    // Any empty mounts
+    public get HasEmptyMounts(): boolean {
+        for(let s of this.WepMounts.flatMap(s => s.Slots)) {
+            if(s.Weapon == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+// Just wraps a system (slot can be empty)
+export class SystemMount extends RegSer<RegSysMountData> {
+    System!: MechSystem | null;
+
+    protected async load(data: RegSysMountData): Promise<void> {
+        if(data.system) {
+            this.System = await this.Registry.resolve(data.system);
+        } else {
+            this.System = null;
+        }
+    }
+
+    public async save(): Promise<RegSysMountData> {
+        return {
+            system: this.System?.as_ref() ?? null
+        }
+    }
+
+}
+
+// Holds weapons/their mods. We don't support reshaping mounts very well as of yet
+export type WeaponSlot =  {
+    Weapon: MechWeapon | null,
+    Mod: WeaponMod | null ,
+    Size: WeaponSize // The size of this individual slot
+}
+export class WeaponMount extends RegSer<RegWepMountData> {
+    // The size of the mount
+    Fitting!: FittingSize;
+
+    // The slots of the mount
+    Slots!: WeaponSlot[];
+
+    // Is it integrated? (forbids mods)
+    Integrated!: boolean;
+
+    // Is it from a core bonus
+    // from_cb..... how we do this?
+
+    Bracing!: boolean; // True if this mount is being used as bracing
+
+    private validate_slot(slot: WeaponSlot, weapon: MechWeapon): string | null { // string error if something is amiss
+        if(slot.Mod && !slot.Weapon) {
+            return "Mod on empty weapon slot";
+        }
+
+        if(this.Integrated && slot.Mod) {
+            return "Mods are forbidden on integrated mounts";
+        }
+
+        // Otherwise size is the main concern
+        switch(slot.Size) {
+            case WeaponSize.Aux:
+                return (weapon.Size === WeaponSize.Aux) ? null : "Only Aux weapons can fit in aux slots";
+            case WeaponSize.Main:
+                return (weapon.Size === WeaponSize.Aux || weapon.Size === WeaponSize.Main) ? null : "Only Aux/Main weapons can fit in Main slots";
+            default:
+                break; // rest are fine
+        }
+
+        // TODO: Check mod is valid
+        return null;
+    }
+
+    // Makes sure everything is as we expect it
+    public validate(): boolean {
+        return true;
+        // Todo: check all slots, check that slot+sizes are correct
+    }
+
+    protected async load(data: RegWepMountData): Promise<void> {
+        this.Fitting = data.fitting;
+        this.Slots = [];
+        for(let s of data.slots) {
+            let wep = s.weapon ? await this.Registry.resolve(s.weapon) : null;
+            if(!wep) {
+                // It has been removed, in all likelihood
+                this.Slots.push({
+                    Weapon: null,
+                    Mod: null,
+                    Size: s.size
+                });
+            } else {
+                // Now look for mod
+                let mod = s.mod ? await this.Registry.resolve(s.mod) : null
+                this.Slots.push({
+                    Weapon: wep,
+                    Mod: mod,
+                    Size: s.size
+                });
+            }
+        }
+    }
+
+    public async save(): Promise<RegWepMountData> {
+        return {
+            fitting: this.Fitting,
+            slots: this.Slots.map(s =>  {
+                return {
+                    mod: s.Mod?.as_ref() ?? null,
+                    weapon: s.Weapon?.as_ref() ?? null,
+                    size: s.Size
+                };
+            })
+        }
+    }
+}
+
+
+/*
+export class MechLoadout {
+    IntegratedMounts!: IntegratedMount[];
+    EquippableMounts!: EquippableMount[];
+    ImprovedArmament!: EquippableMount;
+    IntegratedWeapon!: EquippableMount;
+    Systems!: MechSystem[];
+    IntegratedSystems!: MechSystem[];
 
     public constructor(mech: Mech) {
         super(mech.Loadouts ? mech.Loadouts.length : 0);
@@ -51,22 +282,6 @@ export class MechLoadout extends Loadout {
         this.save();
     }
 
-    public get IntegratedMounts(): IntegratedMount[] {
-        return this._integratedMounts;
-    }
-
-    public get EquippableMounts(): EquippableMount[] {
-        return this._equippableMounts;
-    }
-
-    public get IntegratedWeaponMount(): EquippableMount {
-        return this._integratedWeapon;
-    }
-
-    public get ImprovedArmamentMount(): EquippableMount {
-        return this._improvedArmament;
-    }
-
     public AllMounts(improved?: boolean | null, integrated?: boolean | null): Mount[] {
         let ms: Mount[] = [];
         if (integrated) ms.push(this._integratedWeapon);
@@ -80,9 +295,9 @@ export class MechLoadout extends Loadout {
         integrated?: boolean | null
     ): EquippableMount[] {
         let ms: EquippableMount[] = [];
-        if (integrated) ms.push(this._integratedWeapon);
-        if (improved && this._equippableMounts.length < 3) ms.push(this._improvedArmament);
-        ms = ms.concat(this._equippableMounts);
+        if (integrated) ms.push(this.IntegratedWeapon);
+        if (improved && this.EquippableMounts.length < 3) ms.push(this.ImprovedArmament);
+        ms = ms.concat(this.EquippableMounts);
         return ms;
     }
 
@@ -199,6 +414,7 @@ export class MechLoadout extends Loadout {
         return mountSP + systemSP;
     }
 
+    /*
     public get UniqueWeapons(): MechWeapon[] {
         return this.Weapons.filter(x => x.IsUnique);
     }
@@ -218,43 +434,12 @@ export class MechLoadout extends Loadout {
     }
 
     public get AICount(): number {
-        return this.Equipment.filter(x => x.IsAI).length;
+        return this.Equipment.filter(x => x.).length;
     }
 
     public get Color(): string {
         return "mech-system";
     }
-
-    public static Serialize(ml: MechLoadout): IMechLoadoutData {
-        return {
-            id: ml.ID,
-            name: ml.Name,
-            systems: ml._systems.map(x => MechSystem.Serialize(x)),
-            integratedSystems: ml._integratedSystems.map(x => MechSystem.Serialize(x)),
-            mounts: ml._equippableMounts.map(x => EquippableMount.Serialize(x)),
-            integratedMounts: ml._integratedMounts.map(x => IntegratedMount.Serialize(x)),
-            improved_armament: EquippableMount.Serialize(ml._improvedArmament),
-            integratedWeapon: EquippableMount.Serialize(ml._integratedWeapon),
-        };
-    }
-
-    public static Deserialize(loadoutData: IMechLoadoutData, mech: Mech): MechLoadout {
-        const ml = new MechLoadout(mech);
-        ml.ID = loadoutData.id;
-        ml._name = loadoutData.name;
-        ml._systems = loadoutData.systems.map(x => MechSystem.Deserialize(x));
-        ml._integratedSystems = !loadoutData.integratedSystems
-            ? mech.IntegratedSystems
-            : loadoutData.integratedSystems.map(x => MechSystem.Deserialize(x));
-        ml._equippableMounts = loadoutData.mounts.map(x => EquippableMount.Deserialize(x));
-        ml._integratedMounts = !loadoutData.integratedMounts
-            ? mech.IntegratedMounts
-            : loadoutData.integratedMounts.map(x => IntegratedMount.Deserialize(x));
-        ml._improvedArmament = EquippableMount.Deserialize(loadoutData.improved_armament);
-        ml._integratedWeapon = !loadoutData.integratedWeapon
-            ? new EquippableMount(MountType.Aux)
-            : EquippableMount.Deserialize(loadoutData.integratedWeapon);
-        if (!loadoutData.integratedSystems) ml.UpdateIntegrated(mech);
-        return ml;
-    }
 }
+
+    */

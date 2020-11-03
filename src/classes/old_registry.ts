@@ -24,73 +24,7 @@ import { CORE_BREW_ID } from '@/classes/enums';
 import { EntryType, LiveEntryTypes, RegCat, RegEntryTypes, RegSer } from '@/registry';
 
 
-/*
-Contains logic for looking up item templates by ID, or for examining lists of options
-Everything herein implements VCompendiumItem
-*/
 
-
-
-// This is how data is stored/retrieved throughout the application. Depending on context (web, static, etc) might have different storage and retreival mechanisms)
-
-
-
-
-// Ref implementation
-// Contains all lookupable items
-export class StaticRegistryCat<T extends EntryType> extends RegCat<T> {
-    // Just store our data as a k/v lookup
-    data: Map<string, RegEntryTypes[T]> = new Map();
-
-    // Create a bunch o thangs
-    async create_many(...vals: RegEntryTypes[T][]): Promise<LiveEntryTypes[T][]> {
-        let new_items: LiveEntryTypes[T][] = [];
-        for(let v of vals) {
-            // Make a random id
-            let id =nanoid.nanoid(); 
-
-            // Assign it
-            this.data.set(id, v);
-
-            // Yield as a live copy
-            let created = this.revive_func(this.parent, v);
-        }
-        return new_keys;
-    }
-
-    create_default(): Promise<LiveEntryTypes[T]> {
-        throw new Error('Method not implemented.');
-    }
-
-
-    async get_raw(id: string): Promise<RegEntryTypes[T] | null> {
-        return this.data.get(id) || null;
-    }
-    async list_raw(): Promise<RegEntryTypes[T][]> {
-        return Array.from(this.data.values());
-    }
-    get_live(id: string): Promise<LiveEntryTypes[T] | null> {
-        throw new Error('Method not implemented.');
-    }
-    list_live(): Promise<LiveEntryTypes[T][]> {
-        throw new Error('Method not implemented.');
-    }
-    update(...vals: LiveEntryTypes[T][]): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-    // Pretty simple
-    async delete_id(id: string): Promise<RegEntryTypes[T] | null> {
-        let r = this.data.get(id);
-        this.data.delete(id);
-        return r || null;
-    }
-
-    // Create new entries in our data map
-    async create(...vals: LiveEntryTypes[T][]): Promise<string[]> {
-    }
-
-}
 // So we don't have to treat it separately
 export function getBaseContentPack(): ContentPack {
     // lancerData.

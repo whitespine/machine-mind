@@ -1,7 +1,7 @@
 import { RangeType } from "./enums";
 import { SimSer } from "@/registry";
 import { MechWeapon } from "./mech/MechWeapon";
-import { Bonus } from "@/class";
+import { Bonus, Mech } from "@/class";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -62,16 +62,16 @@ export class Range extends SimSer<IRangeData> {
     public static CalculateRange(item: MechWeapon, mech: Mech): Range[] {
         const bonuses = mech.Bonuses.filter(x => x.ID === "range");
         const output = [];
-        item.Range.forEach(r => {
+        item.SelectedProfile.BaseRange.forEach(r => {
             if (r.Override) return;
             let bonus = 0;
             bonuses.forEach(b => {
-                if (b.WeaponTypes.length && !b.WeaponTypes.some(wt => item.WeaponType === wt))
+                if (b.WeaponTypes.length && !b.WeaponTypes.some(wt => item.SelectedProfile.WepType === wt))
                     return;
                 if (b.WeaponSizes.length && !b.WeaponSizes.some(ws => item.Size === ws)) return;
                 if (
                     b.DamageTypes.length &&
-                    !b.DamageTypes.some(dt => item.DamageType.some(x => x === dt))
+                    !b.DamageTypes.some(dt => item.SelectedProfile.BaseDamage.some(x => x.DamageType === dt))
                 )
                     return;
                 if (!b.RangeTypes.length || b.RangeTypes.some(rt => r.Type === rt)) {

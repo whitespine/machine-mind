@@ -105,14 +105,10 @@ export class StaticReg extends Registry {
             this.init_set_cat( simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
             this.init_set_cat( simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
             this.init_set_cat( simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
-            Pilot: null,
-            Deployables: null,
-            Mechs: (r) => new StaticRegCat( r, EntryType.MECH, async (_reg, _id, _raw) => new Mech(EntryType.MECH, _reg, _id, nodef(_raw))),
-
             // to be done
-            NpcClasses: null as any,
-            NpcFeatures: null as any,
-            NpcTemplates: null as any,
+            // NpcClasses: null as any,
+            // NpcFeatures: null as any,
+            // NpcTemplates: null as any,
     }
 
 
@@ -194,7 +190,8 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     // a bit tricky in terms of what side effects this could have, actually.
     async update(...items: LiveEntryTypes<T>[]): Promise<void> {
         for (let i of items) {
-            this.reg_data.set(i.RegistryID, await i.save());
+            let saved = await i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
+            this.reg_data.set(i.RegistryID, saved);
         }
     }
 
@@ -207,7 +204,8 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     async create_default(): Promise<LiveEntryTypes<T>> {
         let id = nanoid();
         let v = await this.revive_func(this.parent, id);
-        this.reg_data.set(id, await v.save());
+        let saved = await v.save() as RegEntryTypes<T>;
+        this.reg_data.set(id, saved);
         return v;
     }
 }

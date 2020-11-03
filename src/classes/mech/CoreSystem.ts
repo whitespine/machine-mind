@@ -1,7 +1,6 @@
 import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@/class";
 import {
     IActionData,
-    IBonusData,
     ISynergyData,
     PackedCounterData,
     PackedDeployableData,

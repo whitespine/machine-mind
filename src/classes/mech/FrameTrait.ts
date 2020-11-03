@@ -1,14 +1,13 @@
-import { Action, Bonus, Counter, Synergy } from "@/class";
+import { Action, Bonus, Counter, Deployable, Synergy } from "@/class";
 import {
     IActionData,
     IBonusData,
     ISynergyData,
-    IDeployableData,
     PackedCounterData,
+    PackedDeployableData,
     RegCounterData,
 } from "@/interface";
 import { EntryType, RegEntry, RegRef } from "@/registry";
-import { Deployable } from "../Deployable";
 import { FrameEffectUse } from "../enums";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
@@ -25,7 +24,7 @@ interface AllFrameTraitData {
 export interface PackedFrameTraitData extends AllFrameTraitData {
     integrated?: string[];
     counters?: PackedCounterData[];
-    deployables?: IDeployableData[];
+    deployables?: PackedDeployableData[];
 }
 
 export interface RegFrameTraitData extends AllFrameTraitData {
@@ -52,7 +51,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
         this.Actions = data.actions?.map(a => new Action(a)) || [];
         this.Bonuses = data.bonuses?.map(b => new Bonus(b)) || [];
         this.Synergies = data.synergies?.map(s => new Synergy(s)) || [];
-        this.Deployables = await Promise.all(data.deployables?.map(d => this.Registry.resolve(d)));
+        this.Deployables = await this.Registry.resolve_many(data.deployables);
     }
 
     public save(): Promise<RegFrameTraitData> {

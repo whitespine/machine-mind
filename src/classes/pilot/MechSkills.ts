@@ -31,7 +31,7 @@ export class MechSkills extends SimSer<IMechSkills> {
     }
 
     // Add all skills
-    public Sum(): number {
+    public get Sum(): number {
         return this.Hull + this.Agi + this.Sys + this.Eng;
     }
 

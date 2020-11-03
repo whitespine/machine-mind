@@ -79,38 +79,29 @@ export class Bonus extends SimSer<IBonusData> {
         return pmath.parse(val);
     }
 
-    /*
-    public static sum(id: string, mech: Mech): number {
-        return mech.GetBonuses(id).reduce(
-            (sum, bonus) => sum + this.Evaluate(bonus, mech.Pilot),
-            0
-        );
-    */
-
     // Sums all bonuses on the specific id, for the specified pilot
-    public static SumVal(pilot: Pilot, bonuses: Bonus[], bonus_type: string): number {
+    public static SumPilotBonuses(pilot: Pilot, bonuses: Bonus[], bonus_type: string): number {
         return bonuses
             .filter(x => x.ID === bonus_type)
             .reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
     }
 
     /*
+    */
     // Lists contributors for just the mech
     private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {
-        const output = [];
-        if (m.ActiveLoadout && m.ActiveLoadout.Equipment) {
-            m.ActiveLoadout.Equipment.filter(x => x && !x.Destroyed && !x.IsCascading).forEach(
+        const output: Array<{name: string, val: number}> = [];
+            m.Loadout.Equipment.filter(x => x && !x.Destroyed && !x.Cascading).forEach(
                 e => {
                     e.Bonuses.forEach(b => {
                         if (b.ID === id)
                             output.push({
-                                name: `${e.Source} ${e.Name} (${m.ActiveLoadout.Name} Loadout)`,
+                                name: `${e.Source} ${e.Name} (Mech Loadout)`,
                                 val: b.evaluate(m.Pilot),
                             });
                     });
                 }
             );
-        }
 
         m.Frame.Traits.forEach(t => {
             t.Bonuses.forEach(b => {
@@ -122,19 +113,19 @@ export class Bonus extends SimSer<IBonusData> {
             });
         });
 
-        m.Frame.CoreSystem.PassiveBonuses.forEach(b => {
+        m.Frame.CoreSystem?.PassiveBonuses?.forEach(b => {
             if (b.ID === id)
                 output.push({
-                    name: `${m.Frame.CoreSystem.PassiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Passive)`,
+                    name: `${m.Frame.CoreSystem?.PassiveName ?? ""} (${m.Frame.Source} ${m.Frame.Name} CORE System Passive)`,
                     val: b.evaluate(m.Pilot),
                 });
         });
 
         if (m.CoreActive) {
-            m.Frame.CoreSystem.ActiveBonuses.forEach(b => {
+            m.Frame.CoreSystem?.ActiveBonuses.forEach(b => {
                 if (b.ID === id)
                     output.push({
-                        name: `${m.Frame.CoreSystem.ActiveName} (${m.Frame.Source} ${m.Frame.Name} CORE System Active)`,
+                        name: `${m.Frame.CoreSystem?.ActiveName || ""} (${m.Frame.Source} ${m.Frame.Name} CORE System Active)`,
                         val: b.evaluate(m.Pilot),
                     });
             });
@@ -142,7 +133,7 @@ export class Bonus extends SimSer<IBonusData> {
         return output;
     }
 
-    // Includes pilot contributors
+    // Includes pilot contributors. Returns all contributors for bonus <id> for the given mech
     public static Contributors(id: string, m: Mech): { name: string; val: number }[] {
         const output = Bonus.MechContributors(m, id);
         m.Pilot.Loadout.Items.forEach(i => {
@@ -186,7 +177,12 @@ export class Bonus extends SimSer<IBonusData> {
         });
         return output;
     }
-    */
+
+    // Just the numeric form of the above
+    public static SumMechBonuses(bonus_id: string, mech: Mech): number {
+        return this.MechContributors(mech, bonus_id).reduce((sum, bonus) => sum + bonus.val, 0);
+    }
+
 }
 
 /*
