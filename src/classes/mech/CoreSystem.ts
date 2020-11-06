@@ -15,11 +15,13 @@ import { ActivationType, FrameEffectUse } from "../enums";
 export interface AllCoreSystemData {
     name: string;
     description: string; // v-html
-    active_name: string;
-    active_effect: string; // v-html
     activation: ActivationType;
     deactivation?: ActivationType;
     use?: FrameEffectUse;
+
+    // 
+    active_name: string;
+    active_effect: string; // v-html
     active_actions: IActionData[];
     active_synergies: ISynergyData[];
 
@@ -41,7 +43,7 @@ export interface PackedCoreSystemData extends AllCoreSystemData {
     passive_bonuses?: IBonusData[];
 }
 
-export interface RegCoreSystemData extends AllCoreSystemData {
+export interface RegCoreSystemData extends Required<AllCoreSystemData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
@@ -55,8 +57,8 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     Description!: string;
 
     Activation!: ActivationType;
-    Deactivation!: ActivationType | null;
-    Use!: FrameEffectUse | null;
+    Deactivation!: ActivationType; // If null, will have the "none" enum option
+    Use!: FrameEffectUse;
 
     ActiveName!: string;
     ActiveEffect!: string;
@@ -64,11 +66,11 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     ActiveBonuses!: Bonus[];
     ActiveSynergies!: Synergy[];
 
-    PassiveName!: string | null;
-    PassiveEffect!: string | null;
-    PassiveActions!: Action[] | null;
-    PassiveBonuses!: Bonus[] | null;
-    PassiveSynergies!: Synergy[] | null;
+    PassiveName!: string;
+    PassiveEffect!: string;
+    PassiveActions!: Action[];
+    PassiveBonuses!: Bonus[] ;
+    PassiveSynergies!: Synergy[] ;
 
     Deployables!: Deployable[];
     Counters!: Counter[];
@@ -85,14 +87,14 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         this.ActiveActions = SerUtil.process_actions(data.active_actions);
         this.ActiveBonuses = SerUtil.process_bonuses(data.active_bonuses);
         this.ActiveSynergies = SerUtil.process_synergies(data.active_synergies);
-        this.ActiveEffect = data.active_effect ?? null;
-        this.ActiveName = data.active_name ?? null;
+        this.ActiveEffect = data.active_effect;
+        this.ActiveName = data.active_name;
 
         this.PassiveActions = SerUtil.process_actions(data.passive_actions);
         this.PassiveBonuses = SerUtil.process_bonuses(data.passive_bonuses);
         this.PassiveSynergies = SerUtil.process_synergies(data.passive_synergies);
-        this.PassiveEffect = data.passive_effect ?? null;
-        this.PassiveName = data.passive_name ?? null;
+        this.PassiveEffect = data.passive_effect;
+        this.PassiveName = data.passive_name;
 
         this.Counters = SerUtil.process_counters(data.counters);
         this.Deployables = await this.Registry.resolve_many(data.deployables);
@@ -105,8 +107,8 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             activation: this.Activation,
             description: this.Description,
             name: this.Name,
-            deactivation: this.Deactivation ?? undefined,
-            use: this.Use ?? undefined,
+            deactivation: this.Deactivation,
+            use: this.Use,
 
             active_actions: SerUtil.sync_save_all(this.ActiveActions),
             active_bonuses: SerUtil.sync_save_all(this.ActiveBonuses),
@@ -114,9 +116,9 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             active_effect: this.ActiveEffect,
             active_name: this.ActiveName,
 
-            passive_actions: SerUtil.sync_save_all_opt(this.PassiveActions),
-            passive_bonuses: SerUtil.sync_save_all_opt(this.PassiveBonuses),
-            passive_synergies: SerUtil.sync_save_all_opt(this.PassiveSynergies),
+            passive_actions: SerUtil.sync_save_all(this.PassiveActions),
+            passive_bonuses: SerUtil.sync_save_all(this.PassiveBonuses),
+            passive_synergies: SerUtil.sync_save_all(this.PassiveSynergies),
             passive_effect: this.PassiveEffect ?? undefined,
             passive_name: this.PassiveName ?? undefined,
 
@@ -145,11 +147,25 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {
-            ...dep,
             counters,
             tags: reg_tags,
             deployables,
             integrated,
+            activation: dep.activation || ActivationType.None,
+            deactivation: dep.deactivation || ActivationType.None,
+            active_actions: dep.active_actions,
+            active_bonuses: dep.active_bonuses,
+            active_effect: dep.active_effect,
+            active_name: dep.active_name,
+            active_synergies: dep.active_synergies,
+            description: dep.description,
+            name: dep.name,
+            passive_actions: dep.passive_actions ?? [],
+            passive_bonuses: dep.passive_bonuses ?? [],
+            passive_synergies: dep.passive_synergies ?? [],
+            passive_effect: dep.passive_effect ?? "",
+            passive_name: dep.passive_name ?? "",
+            use: dep.use ?? FrameEffectUse.Unknown,
         };
         return reg.get_cat(EntryType.CORE_SYSTEM).create(unpacked);
     }
