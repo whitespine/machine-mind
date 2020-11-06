@@ -28,10 +28,10 @@ export interface PackedCoreBonusData extends AllCoreBonusData {
     integrated?: string[];
 }
 
-export interface RegCoreBonusData extends AllCoreBonusData {
-    deployables?: RegRef<EntryType.DEPLOYABLE>[];
-    counters?: RegCounterData[];
-    integrated?: RegRef<any>[];
+export interface RegCoreBonusData extends Required<AllCoreBonusData> {
+    deployables: RegRef<EntryType.DEPLOYABLE>[];
+    counters: RegCounterData[];
+    integrated: RegRef<any>[];
 }
 
 export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> {
@@ -41,7 +41,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     Source!: string; // No licensing info is needed other than manufacturer
     Description!: string;
     Effect!: string;
-    MountedEffect!: string | null;
+    MountedEffect!: string;
 
     // Common subfields
     Actions!: Action[];
@@ -57,12 +57,12 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         this.Source = data.source;
         this.Description = data.description;
         this.Effect = data.effect;
-        this.MountedEffect = data.mounted_effect ?? null;
+        this.MountedEffect = data.mounted_effect;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses);
         this.Synergies = SerUtil.process_synergies(data.synergies);
         this.Deployables = await this.Registry.resolve_many(data.deployables);
-        this.Counters = data.counters?.map(c => new Counter(c)) || [];
+        this.Counters = SerUtil.process_counters(data.counters);
         this.Integrated = await this.Registry.resolve_many(data.integrated);
     }
     public async save(): Promise<RegCoreBonusData> {
@@ -72,13 +72,13 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             id: this.ID,
             name: this.Name,
             source: this.Source,
-            actions: this.Actions.map(a => a.save()),
-            bonuses: this.Bonuses.map(b => b.save()),
-            counters: this.Counters.map(c => c.save()),
-            deployables: this.Deployables.map(d => d.as_ref()),
-            integrated: this.Integrated.map(i => i.as_ref()),
-            mounted_effect: this.MountedEffect ?? undefined,
-            synergies: this.Synergies.map(s => s.save()),
+            actions: SerUtil.sync_save_all(this.Actions),
+            bonuses: SerUtil.sync_save_all(this.Bonuses),
+            counters: SerUtil.sync_save_all(this.Counters),
+            deployables: SerUtil.ref_all(this.Deployables),
+            integrated: SerUtil.ref_all(this.Integrated),
+            mounted_effect: this.MountedEffect,
+            synergies: SerUtil.sync_save_all(this.Synergies)
         };
     }
 
@@ -98,6 +98,10 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             integrated,
             deployables,
             counters,
+            mounted_effect: cor.mounted_effect ?? "",
+            actions: cor.actions ?? [],
+            bonuses: cor.bonuses ?? [],
+            synergies: cor.synergies ?? []
         };
         return reg.create(EntryType.CORE_BONUS, cbdata);
     }

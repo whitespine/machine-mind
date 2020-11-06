@@ -9,7 +9,8 @@ import {
     PackedTagInstanceData,
     RegTagInstanceData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef } from "@/registry";
+import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
+import { RegDamageData } from '../Damage';
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -21,7 +22,7 @@ export type PackedPilotEquipmentData =
     | PackedPilotGearData;
 export type PilotEquipment = PilotWeapon | PilotArmor | PilotGear;
 
-interface AllPilotWeaponData {
+interface AllPackedData {
     id: string;
     name: string; // v-html
     description: string;
@@ -29,98 +30,112 @@ interface AllPilotWeaponData {
     actions?: IActionData[]; // these are only available to UNMOUNTED pilots
     bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies?: ISynergyData[];
+    deployables?: PackedDeployableData[];
+    tags?: PackedTagInstanceData[];
 }
-export interface RegPilotWeaponData extends AllPilotWeaponData {
+
+export interface PackedPilotWeaponData extends AllPackedData {
+    type: "Weapon";
+    damage: PackedDamageData[];
+    range: IRangeData[];
+}
+export interface PackedPilotGearData extends AllPackedData {
+    type: "Gear"
+}
+
+export interface PackedPilotArmorData extends AllPackedData {
+    type: "Armor"
+}
+
+// Reg items
+
+interface AllRegData {
+    id: string;
+    name: string; // v-html
+    description: string;
+    actions: IActionData[]; // these are only available to UNMOUNTED pilots
+    bonuses: IBonusData[]; // these bonuses are applied to the pilot, not parent system
+    synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     tags: RegTagInstanceData[];
 }
-// Packed bundles items
-export interface PackedPilotWeaponData extends AllPilotWeaponData {
-    type: "Weapon";
-    deployables: PackedDeployableData[];
-    damage: PackedDamageData[];
-    tags: PackedTagInstanceData[];
+
+export interface RegPilotWeaponData extends AllRegData {
+    damage: RegDamageData[],
+    range: IRangeData[]
 }
 
-interface AllPilotArmorData {
-    id: string;
-    name: string; // v-html
-    description: string;
-    actions?: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
-    synergies?: ISynergyData[];
-}
+export interface RegPilotArmorData extends AllRegData {}
 
-export interface RegPilotArmorData extends AllPilotArmorData {
-    deployables: RegRef<EntryType.DEPLOYABLE>[]; // these are only available to UNMOUNTED pilots
-    tags: RegTagInstanceData[];
-}
-export interface PackedPilotArmorData extends AllPilotArmorData {
-    type: "Armor";
-    tags: PackedTagInstanceData[];
-    deployables: PackedDeployableData[];
-}
-
-interface AllPilotGearData {
-    id: string;
-    name: string; // v-html
-    description: string;
-    actions?: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
-    synergies?: ISynergyData[];
-}
-
-export interface RegPilotGearData extends AllPilotGearData {
-    deployables: RegRef<EntryType.DEPLOYABLE>[]; // these are only available to UNMOUNTED pilots
-    tags: RegTagInstanceData[];
-}
-
-export interface PackedPilotGearData extends AllPilotGearData {
-    type: "Gear";
-    tags: PackedTagInstanceData[];
-    deployables: PackedDeployableData[];
-}
+export interface RegPilotGearData extends AllRegData {}
 
 /////////////////////////////////////////////////////////
 // Classes
 /////////////////////////////////////////////////////////
 
 export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorData> {
-    Name!: string;
     ID!: string;
+    Name!: string;
+    Description!: string;
     Tags!: TagInstance[];
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
     Deployables!: Deployable[];
-    protected load(data: RegPilotArmorData): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    protected async load(data: RegPilotArmorData): Promise<void> {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Description = data.description;
+
+        await SerUtil.load_commons(this.Registry, data, this);
     }
-    public save(): Promise<RegPilotArmorData> {
-        throw new Error("Method not implemented.");
+
+    public async save(): Promise<RegPilotArmorData> {
+        return {
+            description: this.Description,
+            id: this.ID,
+            name: this.Name,
+            ...await SerUtil.save_commons(this),
+        };
     }
 }
 
 export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> {
-    Name!: string;
     ID!: string;
+    Name!: string;
+    Description!: string;
     Tags!: TagInstance[];
     Actions!: Action[]; // these are only available to UNMOUNTED pilots
     Bonuses!: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
-    Type!: EntryType.PILOT_GEAR;
-    protected load(data: RegPilotGearData): Promise<void> {
-        throw new Error("Method not implemented.");
+
+
+    protected async load(data: RegPilotGearData): Promise<void> {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Description = data.description;
+
+        await SerUtil.load_commons(this.Registry, data, this);
     }
-    public save(): Promise<RegPilotGearData> {
-        throw new Error("Method not implemented.");
+
+    public async save(): Promise<RegPilotGearData> {
+        return {
+            description: this.Description,
+            id: this.ID,
+            name: this.Name,
+            ...await SerUtil.save_commons(this),
+        };
     }
+
+
 }
 
 export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeaponData> {
     Name!: string;
     ID!: string;
+    Description!: string;
     Effect!: string;
     Tags!: TagInstance[];
     Range!: Range[];
@@ -129,10 +144,26 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeapon
     Bonuses!: Bonus[]; // these bonuses are applied to the pilot, not parent system
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
-    protected load(data: RegPilotWeaponData): Promise<void> {
-        throw new Error("Method not implemented.");
+
+
+    protected async load(data: RegPilotWeaponData): Promise<void> {
+        this.ID = data.id;
+        this.Name = data.name;
+        this.Description = data.description;
+        this.Damage = SerUtil.process_damages(data.damage)
+        this.Range = SerUtil.process_ranges(data.range);
+        await SerUtil.load_commons(this.Registry, data, this);
     }
-    public save(): Promise<RegPilotWeaponData> {
-        throw new Error("Method not implemented.");
+
+    public async save(): Promise<RegPilotWeaponData> {
+        return {
+            id: this.ID,
+            description: this.Description,
+            name: this.Name,
+            damage: SerUtil.sync_save_all(this.Damage),
+            range: SerUtil.sync_save_all(this.Range),
+            ...await SerUtil.save_commons(this),
+        };
     }
+
 }
