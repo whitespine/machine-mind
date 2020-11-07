@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, SimSer } from "@/registry";
+import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
 
 export interface IFactionData {
     id: string;
@@ -35,5 +35,9 @@ export class Faction extends RegEntry<EntryType.FACTION, IFactionData> {
             color: this.Color,
             logo_url: undefined,
         };
+    }
+
+    public static async unpack(dep: IFactionData, reg: Registry): Promise<Faction> {
+        return reg.get_cat(EntryType.FACTION).create(dep);
     }
 }

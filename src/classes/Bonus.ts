@@ -13,7 +13,7 @@ export interface IBonusData {
     weapon_sizes?: WeaponSize[];
 }
 
-export class Bonus extends SimSer<IBonusData> {
+export class Bonus { // We don't extend simser {
     ID!: string;
     Value!: string | number;
     Title!: string | number;
@@ -23,16 +23,29 @@ export class Bonus extends SimSer<IBonusData> {
     WeaponTypes!: WeaponType[];
     WeaponSizes!: WeaponSize[];
 
-    protected load(data: IBonusData): void {
-        const entry = BonusDict.get(data.id);
+    // A transient value used for further display information
+    Source: string;
+
+    public constructor(data: IBonusData, source: string) {
         this.ID = data.id;
         this.Value = data.val;
         this.DamageTypes = data.damage_types ?? []; // We much prefer these just be empty
         this.RangeTypes = data.range_types ?? [];
         this.WeaponTypes = data.weapon_types ?? [];
         this.WeaponSizes = data.weapon_sizes ?? [];
+
+        // Set our source if need be
+        this.Source = source;
+
+        // Check for more metadata.
+        const entry = BonusDict.get(data.id);
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
+    }
+
+    // Just a more convenient constructor
+    public static generate(id: string, val: string | number, source: string): Bonus {
+        return new Bonus({id, val}, source);
     }
 
     public save(): IBonusData {
@@ -89,6 +102,7 @@ export class Bonus extends SimSer<IBonusData> {
     /*
     */
     // Lists contributors for just the mech
+    /*
     private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {
         const output: Array<{name: string, val: number}> = [];
             m.Loadout.Equipment.filter(x => x && !x.Destroyed && !x.Cascading).forEach(
@@ -132,8 +146,10 @@ export class Bonus extends SimSer<IBonusData> {
         }
         return output;
     }
+    */
 
     // Includes pilot contributors. Returns all contributors for bonus <id> for the given mech
+    /*
     public static Contributors(id: string, m: Mech): { name: string; val: number }[] {
         const output = Bonus.MechContributors(m, id);
         m.Pilot.Loadout.Items.forEach(i => {
@@ -177,12 +193,7 @@ export class Bonus extends SimSer<IBonusData> {
         });
         return output;
     }
-
-    // Just the numeric form of the above
-    public static SumMechBonuses(bonus_id: string, mech: Mech): number {
-        return this.MechContributors(mech, bonus_id).reduce((sum, bonus) => sum + bonus.val, 0);
-    }
-
+    */
 }
 
 /*

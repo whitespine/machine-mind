@@ -1,12 +1,10 @@
 import {
-    LicensedItem,
     MechSystem,
     Mech,
     MechWeapon,
     WeaponMod,
     MechEquipment,
 } from "@/class";
-import { LicensedRequirementBuilder, ILicenseRequirement } from "../LicensedItem";
 import { EntryType, RegRef, RegSer, SerUtil, SimSer } from '@/registry';
 import { FittingSize, WeaponSize } from '../enums';
 
@@ -55,7 +53,7 @@ export interface PackedMechLoadoutData {
 // This is fortunately much simpler because we just use the state of weapons (no need to track anything about them, just the weapons themselves).
 // We also don't name things because aaaaaaaaaaaaaa
 // For the time being we are ignoring auto-stab. we'll probably just make it a standard mod
-export interface RegLoadoutData {
+export interface RegMechLoadoutData {
     system_mounts: RegSysMountData[];
     weapon_mounts: RegWepMountData[];
 }
@@ -76,15 +74,15 @@ export interface RegWepMountData {
 }
 
 
-export class MechLoadout extends RegSer<RegLoadoutData> {
+export class MechLoadout extends RegSer<RegMechLoadoutData> {
     SysMounts!: SystemMount[];
     WepMounts!: WeaponMount[];
 
-    protected async load(data: RegLoadoutData): Promise<void> {
+    protected async load(data: RegMechLoadoutData): Promise<void> {
         this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, s).ready()));
         this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, w).ready()));
     }
-    public async save(): Promise<RegLoadoutData> {
+    public async save(): Promise<RegMechLoadoutData> {
         return {
             system_mounts: await SerUtil.save_all(this.SysMounts),
             weapon_mounts: await SerUtil.save_all(this.WepMounts),

@@ -10,7 +10,7 @@ import {
     RegDeployableData,
     RegTagInstanceData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 import { SystemType } from "../enums";
 
 interface AllMechSystemData {
@@ -86,11 +86,8 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
         this.Cascading = data.cascading;
         this.Destroyed = data.destroyed;
 
+        await SerUtil.load_commons(this.Registry, data, this);
         this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
-        this.Actions = SerUtil.process_actions(data.actions);
-        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
-        this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(data.deployables);
         this.Counters = data.counters?.map(c => new Counter(c)) || [];
         this.Integrated = await this.Registry.resolve_many(data.integrated);
     }
@@ -111,12 +108,22 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
             destroyed: this.Destroyed,
 
             tags: await SerUtil.save_all(this.Tags),
-            actions: SerUtil.sync_save_all(this.Actions),
-            bonuses: SerUtil.sync_save_all(this.Bonuses),
             counters: SerUtil.sync_save_all(this.Counters),
-            deployables: SerUtil.ref_all(this.Deployables),
             integrated: SerUtil.ref_all(this.Integrated),
-            synergies: SerUtil.sync_save_all(this.Synergies),
+            ...await SerUtil.save_commons(this),
         };
+    }
+
+    public static async unpack(data: PackedMechSystemData, reg: Registry): Promise<MechSystem> {
+        let rdata: RegMechSystemData = {
+            ...data,
+            ...await SerUtil.unpack_commons_and_tags(data, reg),
+            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+            counters: SerUtil.unpack_counters_default(data.counters),
+            cascading: false,
+            destroyed: false
+        }
+
+        return reg.get_cat(EntryType.MECH_SYSTEM).create(rdata)
     }
 }

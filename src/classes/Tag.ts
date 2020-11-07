@@ -42,6 +42,9 @@ export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
             hidden: this._hidden || undefined,
         };
     }
+    public static async unpack(dep: ITagTemplateData, reg: Registry): Promise<TagTemplate> {
+        return reg.get_cat(EntryType.TAG).create(dep);
+    }
 
     // Helpers for quickly checking common tags
     get IsHidden(): boolean {

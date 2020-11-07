@@ -1,7 +1,8 @@
 import { License } from "@/class";
+import { RegSer } from '@/registry';
 import { IRankedData } from "../GeneralInterfaces";
 
-export class PilotLicense {
+export class PilotLicense extends RegSer<IPilotLicenseData> {
     private license: License;
     private rank: number;
 

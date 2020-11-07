@@ -1,6 +1,6 @@
-import { Bonus, CoreBonus, Damage, Frame, MechLoadout, Pilot, Rules, Status } from "@/class";
+import { Action, Bonus, CoreBonus, Counter, Damage, Deployable, Frame, MechLoadout, MechSystem, MechWeapon, Pilot, Rules, Status, Synergy } from "@/class";
 import { bound_int, contrib_helper } from "@/funcs";
-import { IMechLoadoutData } from "@/interface";
+import { PackedMechLoadoutData, RegMechLoadoutData } from '@/interface';
 import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
 import { DamageType } from "../enums";
 import { ILicenseRequirement } from "../LicensedItem";
@@ -26,6 +26,7 @@ interface AllMechData {
     activations: number;
     meltdown_imminent: boolean; // TODO: Make this active effect
     cc_ver: string;
+    core_active: boolean;
 }
 
 export interface PackedMechData extends AllMechData {
@@ -34,8 +35,7 @@ export interface PackedMechData extends AllMechData {
     conditions: string[];
     resistances: string[];
     reactions: string[];
-    core_active: boolean;
-    loadouts: IMechLoadoutData[];
+    loadouts: PackedMechLoadoutData[];
     active_loadout_index: number;
 
     // These are easily deduced and thus not kept
@@ -50,7 +50,7 @@ export interface RegMechData extends AllMechData {
     resistances: DamageType[];
     //reactions: RegRef<EntryType.ACTION>[]
     reactions: string[];
-    loadout: IMechLoadoutData; // We only support one, for now
+    loadout: RegMechLoadoutData; // We only support one, for now
 }
 
 export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
@@ -77,7 +77,7 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     Cc_ver!: string;
     StatusesAndConditions!: Status[];
     Resistances!: DamageType[];
-    Reactions!: string[];
+    Reactions!: string[]; // I haven't decided what I want to do with this yet. for now just names?
     Ejected!: boolean;
     MeltdownImminent!: boolean;
     Burn!: number;
@@ -97,10 +97,10 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get IsCascading(): boolean {
-        if (!this.Loadout.AICount) return false;
         return !!this.Loadout.Equipment.filter(x => x.Cascading).length;
     }
 
+    /*
     public get RequiredLicenses(): ILicenseRequirement[] {
         const requirements = this.Loadout.RequiredLicenses;
 
@@ -127,156 +127,82 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
             return a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0;
         });
     }
+    */
 
     // -- Attributes --------------------------------------------------------------------------------
     public get SizeIcon(): string {
-        return `cci-size-${this.Stats.size === 0.5 ? "half" : this.Stats.size}`;
+        return `cci-size-${this.Size === 0.5 ? "half" : this.Size}`;
     }
 
     public get Size(): number {
-        const bonus = Bonus.SumMechBonuses("size", this);
+        const bonus = this.sum_bonuses("size");
         const size = Math.ceil(this.Frame.Stats.size + bonus);
         return bound_int(size, 0.5, Rules.MaxFrameSize);
     }
 
-
-    public get SizeContributors(): string[] {
-        return contrib_helper(this, `FRAME Base Size: ${this.Frame.Stats.size}`, "size");
-    }
-
     public get Armor(): number {
-        const bonus = Bonus.SumMechBonuses("armor", this);
+        const bonus = this.sum_bonuses("armor");
         const armor = this.Frame.Stats.armor + bonus;
         return bound_int(armor, 0, Rules.MaxMechArmor);
     }
 
-    public get ArmorContributors(): string[] {
-        return [ `FRAME Base Armor: ${this.Frame.Stats.armor}`, ...contrib_helper(this, "armor")];
-    }
-
     public get SaveTarget(): number {
-        const bonus = Bonus.SumMechBonuses("save", this) + this.Pilot.Grit;
+        const bonus = this.sum_bonuses("save");
         return this.Frame.Stats.save + bonus;
     }
 
-    public get SaveTargetContributors(): string[] {
-        return [
-            `FRAME Base Save Target: ${this.Frame.Stats.save}`,
-            `Pilot GRIT Bonus: +${this.Pilot.Grit}`,
-            ...contrib_helper(this,  "save"),
-        ];
-    }
-
     public get Evasion(): number {
-        if (this.IsStunned) return 5;
-        const bonus = Bonus.SumMechBonuses("evasion", this) + this.Agi;
+        // if (this.IsStunned) return 5;
+        // TODO - allow status bonuses to override somehow
+        const bonus = this.sum_bonuses("evade");
         return this.Frame.Stats.evasion + bonus;
     }
 
-    public get EvasionContributors(): string[] {
-        if (this.IsStunned) return ["STUNNED"];
-        return [
-            `FRAME Base Evasion: ${this.Frame.Stats.evasion}`,
-            `Pilot AGILITY Bonus: +${this.Agi}`,
-            ...contrib_helper(this, "evasion")
-        ];
-    }
-
     // Speed from agility
-    public get AgiSpeed(): number {
-        return Math.floor(this.Agi / 2);
-    }
-
     public get Speed(): number {
-        const bonus = Bonus.SumMechBonuses("speed", this) + this.AgiSpeed;
+        const bonus = this.sum_bonuses("speed");
         return this.Frame.Stats.speed + bonus;
     }
 
-    public get SpeedContributors(): string[] {
-        return [
-            `FRAME Base Speed: ${this.Frame.Stats.speed}`,
-            `Pilot AGILITY Bonus: +${this.AgiSpeed}`,
-            ...contrib_helper(this, "speed")
-        ];
-    }
 
     public get SensorRange(): number {
-        const bonus = Bonus.SumMechBonuses("sensor", this);
+        const bonus = this.sum_bonuses("sensor");
         return this.Frame.Stats.sensor_range + bonus;
     }
 
-    public get SensorRangeContributors(): string[] {
-        return [`FRAME Base Sensor Range: ${this.Frame.Stats.sensor_range}`, ...contrib_helper(this, "sensor")];
-    }
-
     public get EDefense(): number {
-        const bonus = Bonus.SumMechBonuses("edef", this) + this.Sys;
+        const bonus = this.sum_bonuses("edef");
         return this.Frame.Stats.edef + bonus;
     }
 
-    public get EDefenseContributors(): string[] {
-        return [
-            `FRAME Base E-Defense: ${this.Frame.Stats.edef}`,
-            `Pilot SYSTEMS Bonus: +${this.Sys}`,
-            ...contrib_helper(this, "edef")];
-    }
-
     public get LimitedBonus(): number {
-        const bonus = Bonus.SumMechBonuses("limited_bonus", this);
-        return Math.floor(this.Eng / 2) + bonus;
-    }
-
-    public get LimitedContributors(): string[] {
-        return [`Pilot ENGINEERING Bonus: +${Math.floor(this.Eng / 2)}`, ...contrib_helper(this, "limited_bonus")];
+        const bonus = this.sum_bonuses("limited_bonus");
+        return bonus;
     }
 
     public get AttackBonus(): number {
-        const bonus = Bonus.SumMechBonuses("attack", this);
-        return this.Pilot.Grit + bonus;
-    }
-
-    public get AttackBonusContributors(): string[] {
-        return [`Pilot GRIT Bonus: ${this.Pilot.Grit}`, ...contrib_helper(this, "attack")];
+        const bonus = this.sum_bonuses("attack");
+        return bonus;
     }
 
     public get TechAttack(): number {
-        const bonus = Bonus.SumMechBonuses("tech_attack", this) + this.Sys;
+        const bonus = this.sum_bonuses("tech_attack") ;
         return this.Frame.Stats.tech_attack + bonus;
     }
 
-    public get TechAttackContributors(): string[] {
-        return [
-            `FRAME Base Tech Attack: ${this.Frame.Stats.tech_attack}`,
-            `Pilot SYSTEMS Bonus: +${this.Sys}`,
-            ...contrib_helper(this, "tech_attack")
-        ];
-    }
-
     public get Grapple(): number {
-        const bonus = Bonus.SumMechBonuses("grapple", this);
+        const bonus = this.sum_bonuses("grapple");
         return Rules.BaseGrapple + bonus;
     }
 
-    public get GrappleContributors(): string[] {
-        return [`Base Grapple Value: ${this.Grapple}`, ...contrib_helper(this, "grapple")];
-    }
-
     public get Ram(): number {
-        const bonus = Bonus.SumMechBonuses("ram", this);
+        const bonus = this.sum_bonuses("ram");
         return Rules.BaseRam + bonus;
     }
 
-    public get RamContributors(): string[] {
-        return [`Base Ram Value: ${this.Ram}`, ...contrib_helper(this, "ram")];
-    }
-
     public get SaveBonus(): number {
-        const bonus = Bonus.SumMechBonuses("save", this);
-        return this.Pilot.Grit + bonus;
-    }
-
-    public get SaveBonusContributors(): string[] {
-        return [`Pilot GRIT Bonus: ${this.Pilot.Grit}`, ...contrib_helper(this, "save")];
+        const bonus = this.sum_bonuses("save");
+        return bonus;
     }
 
     // -- HASE --------------------------------------------------------------------------------------
@@ -306,14 +232,9 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get MaxStructure(): number {
-        const bonus = Bonus.SumMechBonuses("structure", this);
+        const bonus = this.sum_bonuses("structure", this);
         return this.Frame.Stats.structure + bonus;
     }
-
-    public get StructureContributors(): string[] {
-        return [`FRAME Base Structure: ${this.Frame.Stats.structure}`, ...contrib_helper(this, "structure")];
-    }
-
     // Applies damage to this mech, factoring in resistances. Does not handle structure. Do that yourself, however you feel is appropriate!
     /*
     public ApplyDamage(type: DamageType, val: number, shredded: boolean): void {
@@ -327,17 +248,8 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     */
 
     public get MaxHP(): number {
-        const bonus = Bonus.SumMechBonuses("hp", this) + this.Pilot.Grit + this.Hull * 2;
-        return this.Frame.HP + bonus;
-    }
-
-    public get HPContributors(): string[] {
-        return [
-            `FRAME Base HP: ${this.Frame.HP}`,
-            `Pilot GRIT Bonus: +${this.Pilot.Grit}`,
-            `Pilot HULL Bonus: +${this.Hull * 2}`,
-            ...contrib_helper(this, "hp")
-        ];
+        const bonus = this.sum_bonuses("hp");
+        return this.Frame.Stats.hp + bonus;
     }
 
     public get CurrentSP(): number {
@@ -345,22 +257,13 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get MaxSP(): number {
-        const bonus = Bonus.SumMechBonuses("sp", this) + this.Pilot.Grit + Math.floor(this.Sys / 2);
-        return this.Frame.SP + bonus;
+        return this.Frame.Stats.sp + this.sum_bonuses("sp");
     }
 
     public get FreeSP(): number {
         return this.MaxSP - this.CurrentSP;
     }
 
-    public get SPContributors(): string[] {
-        return [
-            `FRAME Base SP: ${this.Frame.Stats.sp}`,
-            `Pilot GRIT Bonus: +${this.Pilot.Grit}`,
-            `Pilot SYSTEMS Bonus: +${Math.floor(this.Sys / 2)}`,
-            ...contrib_helper(this, "sp")
-        ];
-    }
 
 
     /*
@@ -386,20 +289,12 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     */
 
     public get IsInDangerZone(): boolean {
-        return this.CurrentHeat >= Math.ceil(this.Frame.Stats.heatcapacity / 2);
+        return this.CurrentHeat >= Math.ceil(this.HeatCapacity / 2);
     }
 
     public get HeatCapacity(): number {
-        const bonus = Bonus.SumMechBonuses("heatcap", this) + this.Eng;
-        return this.Frame.Stats.heatcap + bonus;
-    }
+        return this.Frame.Stats.heatcap + this.sum_bonuses("heatcap");
 
-    public get HeatCapContributors(): string[] {
-        return [
-            `FRAME Base Heat Capacity: ${this.Frame.Stats.heatcap}`,
-            `Pilot ENGINEERING Bonus: +${this.Eng}`,
-            ...contrib_helper(this, "heat")
-        ];
     }
 
     public get CurrentStress(): number {
@@ -407,38 +302,19 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     }
 
     public set CurrentStress(stress: number) {
-        if (stress > this.MaxStress) this._current_stress = this.MaxStress;
-        else if (stress < 0) this._current_stress = 0;
-        else this._current_stress = stress;
-        this.save();
+        this._current_stress = bound_int(stress, 0, this.MaxStress);
     }
 
     public get MaxStress(): number {
-        const bonus = Bonus.SumMechBonuses("stress", this);
-        return this.Frame.Stats.stress + bonus;
-    }
-
-    public get StressContributors(): string[] {
-        return [`FRAME Base Reactor Stress: ${this.Frame.Stats.stress}`,
-    ...contrib_helper(this, "stress")];
+        return this.Frame.Stats.stress + this.sum_bonuses("stress");
     }
 
     public get RepairCapacity(): number {
-        const bonus = Bonus.SumMechBonuses("repcap", this) + Math.floor(this.Hull / 2);
-        return this.Frame.Stats.repcap + bonus;
+        return this.Frame.Stats.repcap + this.sum_bonuses("repcap");
     }
 
-    public get RepCapContributors(): string[] {
-        return [
-            `FRAME Base Repair Capacity: ${this.Frame.Stats.repcap}`,
-            `Pilot HULL Bonus: +${Math.floor(this.Hull / 2)}`,
-            ...contrib_helper(this, "repcap")
-        ];
-    }
-
-     
     public AddReaction(r: string): void {
-        if (!this.Reactions.some(x => x === r)) this.Reactions.push(r);
+        this.Reactions.push(r);
     }
 
     public RemoveReaction(r: string): void {
@@ -480,20 +356,10 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
     // Repair from destroyed
     public RepairDestroyed(): void {
         this.MeltdownImminent = false;
-        this.Statuses = [];
-        this.Conditions = [];
+        this.StatusesAndConditions = [];
         this.CurrentStress = 1;
         this.CurrentStructure = 1;
         this.CurrentHP = this.MaxHP;
-        this.save();
-    }
-
-    public get IsShutDown(): boolean {
-        return this.Statuses.includes("SHUT DOWN");
-    }
-
-    public get IsStunned(): boolean {
-        return this.Conditions.includes("STUNNED");
     }
 
     // -- Active Mode Utilities ---------------------------------------------------------------------
@@ -506,22 +372,22 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
         this.CurrentCoreEnergy = 1;
         this.CurrentOvercharge = 0;
         this.Loadout.Equipment.forEach(y => {
-            if (y.Destroyed) y.Repair();
-            if (y.IsLimited) y.Uses = y.getTotalUses(this.LimitedBonus);
+            y.Destroyed = false;
+            // let lim_max = 
+            // if (y.IsLimited) y.Uses = y.getTotalUses(this.LimitedBonus);
+            // TODO
         });
-        this.Statuses = [];
-        this.Conditions = [];
+        this.StatusesAndConditions = [];
         this.Resistances = [];
         this.Burn = 0;
         this.MeltdownImminent = false;
-        this.save();
     }
 
     // -- Loadouts ----------------------------------------------------------------------------------
 
-    public get ActiveMounts(): Mount[] {
-        return this.Loadout.AllActiveMounts(this);
-    }
+    // public get ActiveMounts(): Mount[] {
+        // return this.Loadout.AllActiveMounts(this);
+    // }
 
     // -- Mountable CORE Bonuses --------------------------------------------------------------------
     // public get PilotBonuses(): CoreBonus[] {
@@ -536,54 +402,70 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
         // return this.PilotBonuses.filter(x => !this.AppliedBonuses.includes(x));
     // }
 
+
+
+
     // -- Bonuses, Actions, Synergies, etc. ---------------------------------------------------------
-    // TODO: This code is slimy af
-    private features<T>(p: string): T[] {
-        let output = this.Pilot[p];
+    // All bonuses supplied by this mech and its equipment. 
+    // Named such to disambiguate from any inherited pilot bonuses (e.x. core bonus, HASE, or talent data)
+    // In some cases we still want destroyed equipment, most notably with deployables
+    private mech_feature_sources(include_destroyed: boolean): Array<{
+        Bonuses?: Bonus[],
+        Actions?: Action[],
+        Synergies?: Synergy[],
+        Deployables?: Deployable[],
+        Counters?: Counter[]
+    }> {
+       let output: Array<{Bonuses?: Bonus[], Actions?: Action[], Synergies?: Synergy[], Deployaables?: Deployable[], Counters?: Counter[]}> = [];
 
-            const activeBonuses = this.Loadout.Equipment.filter(
-                x => x && !x.Destroyed && !x.IsCascading
-            ).flatMap(x => x[p]);
-            output = output.concat(activeBonuses);
+       // Get from equipment
+       for(let item of this.Loadout.Equipment) {
+           if(include_destroyed || (!item.Destroyed && !item.Cascading)) {
+                output.push(item);
+           }
+       }
 
-        output = output
-            .concat(this.Frame.Traits.flatMap(x => x[p]))
-            .concat(this.Frame.CoreSystem[`Passive${p}`] || [])
-            .concat(this.CoreActive ? this.Frame.CoreSystem[`Active${p}`] || [] : []);
+       // Get from frame traits
+       output.push(...this.Frame.Traits);
 
-        return output.filter(x => !!x);
+       // Get from core passive/active. Gotta do a remap
+       if(this.Frame.CoreSystem) {
+           output.push({
+               Bonuses: this.Frame.CoreSystem.PassiveBonuses ?? [],
+               Actions: this.Frame.CoreSystem.PassiveActions ?? [],
+               Synergies: this.Frame.CoreSystem.PassiveSynergies ?? [],
+           });
+
+            if(this.CoreActive) {
+           output.push({
+               Bonuses: this.Frame.CoreSystem.ActiveBonuses ?? [],
+               Actions: this.Frame.CoreSystem.ActiveActions ?? [],
+               Synergies: this.Frame.CoreSystem.ActiveSynergies ?? [],
+           });
+            }
+       }
+
+       return output;
     }
 
-    public get Bonuses(): Bonus[] {
-        return this.features("Bonuses");
+    public get MechBonuses(): Bonus[] {
+        return this.mech_feature_sources(false).flatMap(x => x.Bonuses ?? []);
     }
 
-    public get Synergies(): Synergy[] {
-        return this.features("Synergies");
+    public get MechSynergies(): Synergy[] {
+        return this.mech_feature_sources(false).flatMap(x => x.Synergies ?? []);
     }
 
-    public get Actions(): Action[] {
-        return this.features("Actions");
+    public get MechActions(): Action[] {
+        return this.mech_feature_sources(false).flatMap(x => x.Actions ?? []);
     }
 
-
-    // Helpers for getting sub items
-    public get Deployables(): IDeployableData[] {
-        return this.features("Deployables");
+    public get MechDeployables(): Deployable[] {
+        return this.mech_feature_sources(true).flatMap(x => x.Deployables ?? []);
     }
 
-    public get Counters(): ICounterData[] {
-        return this.features("Counters");
-    }
-
-    public get IntegratedWeapons(): MechWeapon[] {
-        // console.log(this.features('IntegratedWeapons'))
-        return this.features("IntegratedWeapons");
-    }
-
-    public get IntegratedSystems(): MechSystem[] {
-        // console.log(this.features('IntegratedSystems'))
-        return this.features("IntegratedSystems");
+    public get MechCounters(): Counter[] {
+        return this.mech_feature_sources(true).flatMap(x => x.Counters ?? []);
     }
 
     // -- I/O ---------------------------------------------------------------------------------------
@@ -605,7 +487,7 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
             current_repairs: this.CurrentRepairs,
             current_overcharge: this.CurrentOvercharge,
             current_core_energy: this.CurrentCoreEnergy,
-            // loadouts: this.Loadouts.map(x => MechLoadout.Serialize(x)),
+            core_active: this.CoreActive,
             statuses_and_conditions: SerUtil.ref_all(this.StatusesAndConditions),
             resistances: this.Resistances,
             reactions: this.Reactions,
@@ -613,13 +495,12 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
             ejected: this.Ejected,
             activations: this.Activations,
             meltdown_imminent: this.MeltdownImminent,
-            // core_active: this.CoreActive,
             cc_ver: "MM-0",
             loadout: this.Loadout
         };
     }
 
-    protected async load(data: RegMechData): Promise<Mech> {
+    protected async load(data: RegMechData): Promise<void> {
        this.ID = data.id;
        this.Name = data.name;
        this.Notes = data.notes;
@@ -627,34 +508,32 @@ export class Mech extends RegEntry<EntryType.MECH, RegMechData> {
        this.Portrait = data.portrait;
        this.CloudPortrait = data.cloud_portrait;
        this.Active = data.active;
-       this.Loadout = await new MechLoadout(data.loadout).IntegratedSystems()
-        } else {
-           this._loadouts = data.loadouts.map((x: IMechLoadoutData) => MechLoadout.Deserialize(x, m));
-           this.Active_loadout = data.active_loadout_index
-                ?this._loadouts[data.active_loadout_index]
-                :this._loadouts[0];
-        }
+       this.Loadout = await new MechLoadout(this.Registry, data.loadout).ready();
        this.CurrentStructure = data.current_structure;
        this.CurrentHP = data.current_hp;
-       this._overshield = data.overshield || 0;
+       this.Overshield = data.overshield || 0;
        this._current_stress = data.current_stress;
        this.CurrentHeat = data.current_heat;
        this.CurrentRepairs = data.current_repairs;
-       this._current_overcharge = data.current_overcharge || 0;
-       this._current_core_energy = data.current_core_energy != null ? data.current_core_energy : 1;
-       this.Statuses = data.statuses || [];
-       this.Conditions = data.conditions || [];
+       this.CurrentOvercharge = data.current_overcharge || 0;
+       this.CurrentCoreEnergy = data.current_core_energy ?? 1;
+       this.StatusesAndConditions = await this.Registry.resolve_many(data.statuses_and_conditions || []);
        this.Resistances = data.resistances || [];
        this.Reactions = data.reactions || [];
        this.Burn = data.burn || 0;
-       this._ejected = data.ejected || false;
-       this._destroyed = data.destroyed || false;
-       this.Defeat = data.defeat || "";
+       this.Ejected = data.ejected || false;
        this.Activations = data.activations || 1;
        this.MeltdownImminent = data.meltdown_imminent || false;
-       this.ReactorDestroyed = data.reactor_destroyed || false;
-       this.CoreActive = data.coreActive || false;
-       this.CCVer = data.cc_ver || "";
-        return m;
+       this.CoreActive = data.core_active || false;
+    }
+
+    // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
+    public get AllBonuses(): Bonus[] {
+        return [...this.Pilot.PilotBonuses , ...this.MechBonuses];
+    }
+    
+    // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
+    private sum_bonuses(id: string): number {
+        return Bonus.SumPilotBonuses(this.Pilot, this.AllBonuses, id);
     }
 }

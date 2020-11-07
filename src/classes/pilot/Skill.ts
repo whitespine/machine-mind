@@ -69,9 +69,10 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         return false;
     }
 
-    // Just adds a number. Fairly trivial. These should mostly just come from content packs
-    public static unpack(packed_skill: PackedSkillData): RegSkillData {
-        return { ...packed_skill, rank: 2 };
+    // Very simple. reg is kept for consistency
+    public static async unpack(packed_skill: PackedSkillData, reg: Registry): Promise<Skill> {
+        let rdata =  { ...packed_skill, rank: 1 };
+        return reg.get_cat(EntryType.SKILL).create(rdata);
     }
 
     // Handles the tricky process of fetching skills via IRankedDaata
@@ -85,6 +86,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
             let cpy = await found.save();
             return cat.create(cpy);
         } else {
+            // TODO
             throw new Error("Do not yet support custom skills cuz I am lazy");
         }
     }

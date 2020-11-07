@@ -11,16 +11,18 @@
  * We handle this by having pilots, mechs, and deployables each have their own inventory (in the form of a Registry).
  *
  * Relations can be cross-registry (i.e. between items with their own registries).
- * This brings us to an important mandate: ALL REGISTRY OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
+ * This brings us to an important mandate: ALL REGISTRY-OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
  * Foundry does this for us by getActor methods. Anyone else will have to roll something themselves (check static_registry)
  * We don't uniquely type/categorize these, although we maybe should as they are categorically different from any other entry.
  * The key distinction for these types is that
  *  - The cat's for these types should behave identically between ALL items (in the same environment). The lowliest system mod should be able to find any pilot
  *  - These items can freely retrive their own regs. One can also just deliberately grab a registry by its id.
+ * In theory you could not do the above if you had a strictly-downward-waterfalling heirarchy, but this is weird
+ * 
  *
  * When a field describes a list of allowed/forbidden fields, [] means NONE.
  * undefined should either mean None or does not apply, contextually.
- * It might be easier to just treat as null in those cases
+ * It might be easier to just treat as null in those cases. However, never store as null
  *
  * Resolving MMID's is recommended to be done via unpacking from a static IContentPack array.
  * Though this might seem inefficient, note that this is only done on item/actor creation, where performance really isn't much of a concern
@@ -92,6 +94,7 @@ import {
     PackedPilotWeaponData,
     PackedReserveData,
     PackedSkillData,
+    PackedTagInstanceData,
     PackedTalentData,
     PackedWeaponModData,
     RegCoreBonusData,
@@ -126,34 +129,34 @@ import {
 // items that are stored as compendium data, refernced by ID and contain
 // at minimum a name, EntryType, and brew
 export enum EntryType {
-    CORE_BONUS = "CoreBonuses",
-    CORE_SYSTEM = "CoreSystems",
-    DEPLOYABLE = "Deployables",
-    ENVIRONMENT = "Environments",
-    FACTION = "Factions",
-    FRAME = "Frames",
-    FRAME_TRAIT = "FrameTraits",
-    MECH = "Mechs", // Mech actors
-    // LICENSE = "Licenses",
-    MANUFACTURER = "Manufacturers",
-    // NPC_CLASS = "NpcClasses",
-    // NPC_TEMPLATE = "NpcTemplates",
-    // NPC_FEATURE = "NpcFeatures",
-    WEAPON_MOD = "WeaponMods",
-    MECH_SYSTEM = "MechSystems",
-    MECH_WEAPON = "MechWeapons",
-    PILOT_ARMOR = "PilotArmor",
-    PILOT_GEAR = "PilotGear",
-    PILOT_WEAPON = "PilotWeapons",
+    CORE_BONUS = "Core Bonus",
+    CORE_SYSTEM = "Core System",
+    DEPLOYABLE = "Deployable",
+    ENVIRONMENT = "Environment",
+    FACTION = "Faction",
+    FRAME = "Frame",
+    FRAME_TRAIT = "Frame Trait",
+    MECH = "Mech", // Mech actors
+    LICENSE = "License",
+    MANUFACTURER = "Manufacturer",
+    // NPC_CLASS = "NpcClasse",
+    // NPC_TEMPLATE = "NpcTemplate",
+    // NPC_FEATURE = "NpcFeature",
+    WEAPON_MOD = "Weapon Mod",
+    MECH_SYSTEM = "Mech System",
+    MECH_WEAPON = "Mech Weapon",
+    PILOT_ARMOR = "Pilot Armor",
+    PILOT_GEAR = "Pilot Gear",
+    PILOT_WEAPON = "Pilot Weapon",
     PILOT = "Pilot",
-    RESERVE = "Reserves",
-    SITREP = "Sitreps",
-    SKILL = "Skills",
-    STATUS = "Statuses",
-    TAG = "Tags",
-    TALENT = "Talents",
-    // CONDITION = "Conditions", // Just use statuses
-    QUIRK = "Quirks",
+    RESERVE = "Reserve",
+    SITREP = "Sitrep",
+    SKILL = "Skill",
+    STATUS = "Status",
+    TAG = "Tag",
+    TALENT = "Talent",
+    // CONDITION = "Condition", // Just use statuses
+    QUIRK = "Quirk",
 }
 
 type _RegTypeMap = { [key in EntryType]: object };
@@ -167,6 +170,7 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.FACTION]: IFactionData;
     [EntryType.FRAME]: RegFrameData;
     [EntryType.FRAME_TRAIT]: RegFrameTraitData;
+    [EntryType.LICENSE]: RegLicenseData;
     [EntryType.MANUFACTURER]: IManufacturerData;
     [EntryType.MECH]: RegMechData;
     [EntryType.MECH_SYSTEM]: RegMechSystemData;
@@ -193,7 +197,7 @@ export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTy
     ? FixedRegEntryTypes[T]
     : object;
 
-// What compcon holds
+// What compcon holds. Unsure how useful this is???
 interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
@@ -203,6 +207,7 @@ interface FixedPackedEntryTypes {
     [EntryType.FACTION]: IFactionData;
     [EntryType.FRAME]: PackedFrameData;
     [EntryType.FRAME_TRAIT]: PackedFrameTraitData;
+    [EntryType.LICENSE]: null;
     [EntryType.MANUFACTURER]: IManufacturerData;
     [EntryType.MECH]: PackedMechData;
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
@@ -212,7 +217,7 @@ interface FixedPackedEntryTypes {
     // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
     [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
     [EntryType.PILOT_GEAR]: PackedPilotGearData;
-    [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
+   [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
     [EntryType.PILOT]: PackedPilotData;
     [EntryType.RESERVE]: PackedReserveData;
     [EntryType.SITREP]: ISitrepData;
@@ -238,6 +243,7 @@ type FixedLiveEntryTypes = {
     [EntryType.FACTION]: Faction;
     [EntryType.FRAME]: Frame;
     [EntryType.FRAME_TRAIT]: FrameTrait;
+    [EntryType.LICENSE]: License;
     [EntryType.MANUFACTURER]: Manufacturer;
     [EntryType.WEAPON_MOD]: WeaponMod;
     [EntryType.MECH]: Mech;
@@ -280,7 +286,7 @@ export abstract class SerUtil {
      * Note that this creates an UNRESOLVED REF, meaning that it may or not exist until we actually attempt to load this item.
      * This reference will exist until the item is saved for the first time, which will override the ref to an actual item ref.
      */
-    public static parse_integrated(integrated?: string[]): RoughRegRef[] {
+    public static unpack_integrated_refs(integrated?: string[]): RoughRegRef[] {
         return (integrated || []).map(i => ({
             id: i,
             type: null,
@@ -382,13 +388,77 @@ export abstract class SerUtil {
         return (actions || []).map(a => new Action(a));
     }
 
-    public static process_bonuses(bonuses?: IBonusData[]): Bonus[] {
-        return (bonuses || []).map(b => new Bonus(b));
+    public static process_bonuses(bonuses: IBonusData[] | undefined, source: string): Bonus[] {
+        return (bonuses || []).map(b => new Bonus(b, source));
     }
 
     // Because this is so common, we abstract it to here. Shouldn't try to do this for all of them
     public static process_counters(counters?: RegCounterData[]): Counter[] {
         return counters?.map(c => new Counter(c)) || [];
+    }
+
+    // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
+    public static async save_commons(x: {Bonuses: Bonus[], Actions: Action[], Synergies: Synergy[], Deployables: Deployable[], /*Tags: TagInstance[]*/}): Promise<{
+        bonuses: IBonusData[],
+        actions: IActionData[],
+        synergies: ISynergyData[],
+        deployables: RegRef<EntryType.DEPLOYABLE>[],
+        /*tags: RegTagInstanceData[] */
+    }> {
+        return {
+            actions: SerUtil.sync_save_all(x.Actions),
+            bonuses: SerUtil.sync_save_all(x.Bonuses),
+            synergies: SerUtil.sync_save_all(x.Synergies),
+            deployables: SerUtil.ref_all(x.Deployables),
+            /* tags: await SerUtil.save_all(x.Tags),*/
+        }
+    }
+
+    // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
+    public static async load_commons(reg: Registry, src: {
+        bonuses?: IBonusData[],
+        actions?: IActionData[],
+        synergies?: ISynergyData[],
+        deployables?: RegRef<EntryType.DEPLOYABLE>[],
+        /* tags: RegTagInstanceData[]*/
+    }, target: {Bonuses: Bonus[], Actions: Action[], Synergies: Synergy[], Deployables: Deployable[] /*, Tags: TagInstance[] */, Name?: string }): Promise<void> {
+        target.Actions = SerUtil.process_actions(src.actions);
+        target.Bonuses = SerUtil.process_bonuses(src.bonuses, target.Name ?? "");
+        target.Synergies = SerUtil.process_synergies(src.synergies);
+        target.Deployables = await reg.resolve_many(src.deployables);
+        // target.Tags = await SerUtil.process_tags(reg, src.tags);
+    }
+
+    // Hopefully should mitigate a lot of the code duplication I've had floating around
+    // Handles the bonuses, actions, synergies, deployables, and tags of an item
+    public static async unpack_commons_and_tags(src: {
+        bonuses?: IBonusData[],
+        actions?: IActionData[],
+        synergies?: ISynergyData[],
+        deployables?: PackedDeployableData[],
+        tags?: PackedTagInstanceData[]
+    }, reg: Registry): Promise<{
+        bonuses: IBonusData[],
+        actions: IActionData[],
+        synergies: ISynergyData[],
+        deployables: RegRef<EntryType.DEPLOYABLE>[],
+        tags: RegTagInstanceData[]
+    }> {
+        // Create deployable entries
+        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, src.deployables);
+        let deployables = SerUtil.ref_all(dep_entries);
+
+        // Get tags
+        let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, src.tags);
+        let reg_tags = await SerUtil.save_all(tags); 
+
+        return {
+            actions: src.actions ?? [],
+            bonuses: src.bonuses ?? [],
+            synergies: src.synergies ?? [],
+            deployables,
+            tags: reg_tags
+        }
     }
 
     // Tags are also an exception I'm willing to make. These should ___maybe___ be moved to their respective classes, but for convenience we keeping here.
@@ -599,9 +669,11 @@ export abstract class RegCat<T extends EntryType> {
     abstract async delete_id(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
+    // The awaited item should be .,ready
     abstract async create_many(...vals: Array<RegEntryTypes<T>>): Promise<LiveEntryTypes<T>[]>;
 
     // A simple singular form if you don't want to mess with arrays
+    // The awaited item should be .ready
     async create(val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         let vs = await this.create_many(val);
         return vs[0];
@@ -723,6 +795,7 @@ export abstract class Registry {
     }
 
     // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
+    // Find the item corresponding to this ref
     async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
         return this.resolve_rough(ref) as any; // Trust me bro
     }

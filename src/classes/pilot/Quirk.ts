@@ -8,9 +8,9 @@ import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 export interface RegQuirkData {
     name: string; // v-html
     description: string;
-    actions?: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
-    synergies?: ISynergyData[];
+    actions: IActionData[]; // these are only available to UNMOUNTED pilots
+    bonuses: IBonusData[]; // these bonuses are applied to the pilot, not parent system
+    synergies: ISynergyData[];
 
     // All associated content
     deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -20,6 +20,7 @@ export interface RegQuirkData {
 
 export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     Name!: string;
+    Description!: string,
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -28,19 +29,21 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     Integrated!: RegEntry<any, any>[];
 
     protected async load(data: RegQuirkData): Promise<void> {
-        this.ID = data.id;
-
         this.Name = data.name;
+        this.Description = data.description;
 
-        this.Actions = SerUtil.process_actions(data.actions);
-        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
-        this.Counters = SerUtil.process_counters(data.counters);
-        this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        SerUtil.load_commons(this.Registry, data, this);
         this.Integrated = await this.Registry.resolve_many_rough(data.integrated);
+        this.Counters = SerUtil.process_counters(data.counters);
     }
     public async save(): Promise<RegQuirkData> {
-        throw new Error("Method not implemented.");
+        return {
+            ...await SerUtil.save_commons(this),
+            name: this.Name,
+            description: this.Description,
+            integrated: SerUtil.ref_all(this.Integrated),
+            counters: SerUtil.sync_save_all(this.Counters)
+        }
     }
 
     public static async unpack(raw_quirk: string, reg: Registry): Promise<Quirk> {

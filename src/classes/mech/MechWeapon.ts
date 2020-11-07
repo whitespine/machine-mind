@@ -146,14 +146,22 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     return sel;
   }
 
-  // Wrapper to conveniently get active bonuses
+  // Wrappers to conveniently get active bonuses/actions/whatever
   get Bonuses(): Bonus[] {
     return this.SelectedProfile.Bonuses;
   }
 
+  get Actions(): Action[] {
+    return this.SelectedProfile.Actions;
+  }
+
+  get Synergies(): Synergy[] {
+    return this.SelectedProfile.Synergies;
+  }
+
   static async unpack(dat: PackedMechWeaponData, reg: Registry): Promise<MechWeapon> {
     // Get the basics
-    let integrated = SerUtil.parse_integrated(dat.integrated);
+    let integrated = SerUtil.unpack_integrated_refs(dat.integrated);
 
     let unpacked: RegMechWeaponData = {
       id: dat.id,
@@ -241,11 +249,8 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
       this.OnAttack = data.on_attack;
       this.OnHit = data.on_hit;
       this.OnCrit = data.on_crit;
-      this.Actions = SerUtil.process_actions(data.actions);
-      this.Bonuses = SerUtil.process_bonuses(data.bonuses);
-      this.Synergies = SerUtil.process_synergies(data.synergies);
 
-      this.Deployables = await this.Registry.resolve_many(data.deployables);
+      await SerUtil.load_commons(this.Registry, data, this);
       this.Counters = SerUtil.process_counters(data.counters);
       this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
     }
@@ -253,20 +258,17 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
     public async save(): Promise<RegMechWeaponProfile> {
       return {
             name: this.Name,
-            actions: SerUtil.sync_save_all(this.Actions),
-            bonuses: SerUtil.sync_save_all(this.Bonuses),
-            synergies: SerUtil.sync_save_all(this.Synergies),
-            tags: await SerUtil.save_all(this.Tags),
-            counters: SerUtil.sync_save_all(this.Counters),
-            description: this.Description,
             type: this.WepType,
-            damage: SerUtil.sync_save_all(this.BaseDamage),
-            deployables: SerUtil.ref_all(this.Deployables),
+            description: this.Description,
             effect: this.Effect,
             on_attack: this.OnAttack,
+            on_hit: this.OnHit,
             on_crit: this.OnCrit,
+            damage: SerUtil.sync_save_all(this.BaseDamage),
             range: SerUtil.sync_save_all(this.BaseRange),
-            on_hit: this.OnHit
+            ...await SerUtil.save_commons(this),
+            counters: SerUtil.sync_save_all(this.Counters),
+            tags: await SerUtil.save_all(this.Tags),
       }
     }
 }

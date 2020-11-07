@@ -25,14 +25,16 @@ import {
     PackedMechData,
     PackedCounterSaveData,
     PackedCounterData,
+    IMechState,
+    PackedPilotLoadoutData,
+    RegCounterData,
 } from "@/interface";
 import { store } from "@/hooks";
-import { ActiveState } from "../mech/ActiveState";
 import { EntryType, RegEntry, RegRef, RegSer } from "@/registry";
-import { Quirk } from "./Quirk";
-import { RegCounterData } from "../Counter";
-import { Bonus } from "../Bonus";
 import { nanoid } from "nanoid";
+import { RegPilotLoadoutData } from './PilotLoadout';
+import { Bonus } from '../Bonus';
+import { bound_int } from '@/funcs';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -74,13 +76,13 @@ export interface PackedPilotData extends BothPilotData {
     state?: IMechState;
     counter_data: PackedCounterSaveData[];
     custom_counters: PackedCounterData[];
-    loadout: IPilotLoadoutData;
+    loadout: PackedPilotLoadoutData;
     active_mech: string;
     brews: string[];
 }
 
 // This just gets converted into owned items
-export interface RegPilotData extends BothPilotData {
+export interface RegPilotData extends Required<BothPilotData> {
     active_mech: string | null;
 
     // Since pilots are actors we don't need to cascade item ownership - just actor ownership
@@ -88,7 +90,10 @@ export interface RegPilotData extends BothPilotData {
     skills: RegRef<EntryType.SKILL>[];
     talents: RegRef<EntryType.TALENT>[];
     custom_counters: RegCounterData[];
-    // loadout --- hmmmmmm
+    loadout: RegPilotLoadoutData;
+
+    // We don't really track active state much here. We do at least track mounted state
+    mounted: boolean;
 }
 
 export class Pilot extends RegEntry<EntryType.PILOT, RegPilotData> {
@@ -131,7 +136,9 @@ export class Pilot extends RegEntry<EntryType.PILOT, RegPilotData> {
     Orgs!: Organization[];
     Mechs!: Mech[];
     CustomCounters!: Counter[];
-    State!: ActiveState;
+    // State!: ActiveState;
+    Mounted!: boolean;
+
 
     CCVersion!: string;
 
@@ -139,35 +146,6 @@ export class Pilot extends RegEntry<EntryType.PILOT, RegPilotData> {
     public get Brews(): string[] {
         return [];
     }
-
-    // Just a simple check of if this pilot has a given thing. Largely deprecated but idk kinda still might be useful so I'm not deleting it
-    /*
-public has(
-        feature: License | CoreBonus | Skill | CustomSkill | Talent | Reserve,
-        rank?: number
-    ): boolean {
-          if (
-            feature instanceof Skill ||
-            feature instanceof Talent ||
-            feature instanceof CustomSkill
-        ) {
-            let pilot_rank = this.rank(feature);
-            return pilot_rank >= (rank || 1);
-        } else if (feature instanceof CoreBonus) {
-            return this.CoreBonuses.some(x => x.ID === feature.ID);
-        } else if (feature instanceof License) {
-            const license = this.Licenses.find(x => x.License.Name === feature.Name);
-            return !!(license && license.Rank >= (rank || 0));
-        } else if (feature instanceof Reserve) {
-            const e = this.Reserves.find(
-                x => x.ID === `reserve_${feature.ID}` || x.Name === feature.Name
-            );
-            return !!(e && !e.Used);
-        } else {
-            return false;
-        }
-    }
-    */
 
     // -- Attributes --------------------------------------------------------------------------------
     public RenewID(): void {
@@ -240,9 +218,7 @@ public has(
     }
 
     public get MaxHP(): number {
-        let health = Rules.BasePilotHP + this.Grit;
-        health += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_hp");
-        return health;
+        return this.sum_bonuses("pilot_hp");
     }
 
     public Heal(): void {
@@ -250,40 +226,27 @@ public has(
     }
 
     public get Armor(): number {
-        let armor = 0;
-        armor += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_armor");
-        return armor;
+        return bound_int(this.sum_bonuses("pilot_armor"), 0, Rules.MaxPilotArmor);
     }
 
     public get Speed(): number {
-        let speed = Rules.BasePilotSpeed;
-        speed += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_speed");
-        return speed;
+        return this.sum_bonuses("pilot_speed");
     }
 
     public get Evasion(): number {
-        let evasion = Rules.BasePilotEvasion;
-        evasion += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_evasion");
-        return evasion;
+        return this.sum_bonuses("pilot_evasion");
     }
 
     public get EDefense(): number {
-        let edef = Rules.BasePilotEdef;
-        edef += Bonus.SumPilotBonuses(this, this.UnmountedBonuses, "pilot_edef");
-        return edef;
+        return this.sum_bonuses("pilot_edef");
     }
 
-    //TODO: collect passives, eg:
     public get LimitedBonus(): number {
-        let bonus = Math.floor(this.MechSkills.Eng / 2);
-        if (this._core_bonuses.find(x => x.ID === "cb_integrated_ammo_feeds")) {
-            bonus += 2;
-        }
-        return bonus;
+        return this.sum_bonuses("limited_bonus");
     }
 
     public get AICapacity(): number {
-        return this.has("corebonus", "cb_the_lesson_of_shaping") ? 2 : 1;
+        return this.sum_bonuses("ai_cap");
     }
 
     // -- Skills ------------------------------------------------------------------------------------
@@ -292,8 +255,7 @@ public has(
     }
 
     public get MaxSkillPoints(): number {
-        const bonus = this.Reserves.filter(x => x.ID === "reserve_skill").length;
-        return Rules.MinimumPilotSkills + this.Level + bonus;
+        return this.sum_bonuses("skill_point");
     }
 
     public get IsMissingSkills(): boolean {
@@ -354,6 +316,7 @@ public has(
   }
   */
 
+  /*
     public ClearSkills(): void {
         for (let i = this._skills.length - 1; i >= 0; i--) {
             while (this._skills[i]) {
@@ -361,6 +324,7 @@ public has(
             }
         }
     }
+    */
 
     // -- Talents -----------------------------------------------------------------------------------
     public get CurrentTalentPoints(): number {
@@ -368,8 +332,7 @@ public has(
     }
 
     public get MaxTalentPoints(): number {
-        const bonus = this.Reserves.filter(x => x.ID === "reserve_talent").length;
-        return Rules.MinimumPilotTalents + this.Level + bonus;
+        return this.sum_bonuses("talent_point");
     }
 
     public get IsMissingTalents(): boolean {
@@ -415,6 +378,7 @@ public has(
   }
   */
 
+/*
     public ClearTalents(): void {
         for (let i = this._talents.length - 1; i >= 0; i--) {
             while (this._talents[i]) {
@@ -422,6 +386,7 @@ public has(
             }
         }
     }
+    */
 
     // -- Core Bonuses ------------------------------------------------------------------------------
 
@@ -430,8 +395,7 @@ public has(
     }
 
     public get MaxCBPoints(): number {
-        const bonus = this.Reserves.filter(x => x.ID === "reserve_corebonus").length;
-        return Math.floor(this.Level / 3) + bonus;
+        return this.sum_bonuses("cb_point");
     }
 
     public get IsMissingCBs(): boolean {
@@ -458,8 +422,7 @@ public has(
     }
 
     public get MaxLicensePoints(): number {
-        const bonus = this.Reserves.filter(x => x.ID === "reserve_license").length;
-        return this.Level + bonus;
+        return this.sum_bonuses("license_point");
     }
 
     public get IsMissingLicenses(): boolean {
@@ -478,6 +441,8 @@ public has(
         const index = this.Licenses.findIndex(x => x.License.Name === _name);
         return index > -1 ? this.Licenses[index].Rank : 0;
     }
+
+    /*
 
     public AddLicense(license: License): void {
         const index = this.Licenses.findIndex(x => _.isEqual(x.License, license));
@@ -512,11 +477,11 @@ public has(
             }
         }
     }
+    */
 
     // -- Mech Skills -------------------------------------------------------------------------------
     public get MaxHASEPoints(): number {
-        const bonus = this.Reserves.filter(x => x.ID === "reserve_mechskill").length;
-        return Rules.MinimumMechSkills + this.Level + bonus;
+        return this.sum_bonuses("mech_skill_point");
     }
 
     public get IsMissingHASE(): boolean {
@@ -532,6 +497,7 @@ public has(
     }
 
     // -- Downtime Reserves -------------------------------------------------------------------------
+    /*
     public RemoveReserve(index: number): void {
         this._reserves.splice(index, 1);
         this.save();
@@ -550,70 +516,9 @@ public has(
         this._orgs.splice(index, 1);
         this.save();
     }
-
-    // -- Loadouts ----------------------------------------------------------------------------------
-    public get Loadout(): PilotLoadout {
-        return this._loadout;
-    }
-
-    public set Loadout(l: PilotLoadout) {
-        this._loadout = l;
-        this.save();
-    }
-
+    */
     // -- Mechs -----------------------------------------------------------------------------------
-    public get Mechs(): Mech[] {
-        return this._mechs;
-    }
-
-    public AddMech(mech: Mech): void {
-        this._mechs.push(mech);
-        this.save();
-    }
-
-    public RemoveMech(mech: Mech): void {
-        const index = this._mechs.findIndex(x => _.isEqual(x, mech));
-        if (index === -1) {
-            console.error(`Loadout "${mech.Name}" does not exist on Pilot ${this.Callsign}`);
-        } else {
-            this._mechs.splice(index, 1);
-        }
-        this.save();
-    }
-
-    public CloneMech(mech: Mech): void {
-        const mechData = Mech.Serialize(mech);
-        const clone = Mech.Deserialize(mechData, this);
-        clone.RenewID();
-        clone.Name += "*";
-        clone.IsActive = false;
-        this._mechs.push(clone);
-        this.save();
-    }
-
-    public get ActiveMech(): Mech | null {
-        if (!this._active_mech) {
-            if (!this._mechs.length) return null;
-            this.ActiveMech = this._mechs[0];
-        }
-        return this._mechs.find(x => x.ID === this._active_mech) || null;
-    }
-
-    public set ActiveMech(mech: Mech | null) {
-        this._mechs.forEach(m => {
-            m.IsActive = false;
-        });
-
-        if (!mech) {
-            this.save();
-            return;
-        }
-
-        mech.IsActive = true;
-        this._active_mech = mech.ID;
-        this.save();
-    }
-
+    /*
     public get Mounted(): boolean {
         if (!this.ActiveMech) return false;
         if (
@@ -624,48 +529,7 @@ public has(
             return false;
         return this._mounted;
     }
-
-    public set Mounted(val: boolean) {
-        if (val) this.ActiveMech.Ejected = false;
-        this._mounted = val;
-        this.save();
-    }
-
-    // -- COUNTERS ----------------------------------------------------------------------------------
-
-    private _counterSaveData = [];
-    public get CounterSaveData(): ICounterSaveData[] {
-        return this._counterSaveData;
-    }
-    public saveCounter(inputData: ICounterSaveData): void {
-        const index = this._counterSaveData.findIndex(datum => datum.id === inputData.id);
-        if (index < 0) {
-            this._counterSaveData = [...this._counterSaveData, inputData];
-        } else {
-            this._counterSaveData[index] = inputData;
-            this._counterSaveData = [...this._counterSaveData];
-        }
-        this.save();
-    }
-
-    public createCustomCounter(name: string): void {
-        const counter = {
-            name,
-            id: nanoid(),
-            custom: true,
-        };
-        this._customCounters = [...this._customCounters, counter];
-        this.save();
-    }
-
-    public deleteCustomCounter(id: string): void {
-        const index = this._customCounters.findIndex(c => c.custom && c.id === id);
-        if (index > -1) {
-            this._customCounters.splice(index, 1);
-            this._customCounters = [...this._customCounters];
-        }
-        this.save();
-    }
+    */
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
     public get Counters(): Counter[] {
@@ -678,8 +542,14 @@ public has(
     }
 
     // Lists all of the bonuses this unmounted pilot is receiving
-    public get UnmountedBonuses(): Bonus[] {
+    public get PilotBonuses(): Bonus[] {
         // TODO
         return [];
+    }
+
+
+    // Sum our pilot bonuses for the specified id, return the number
+    private sum_bonuses(id: string): number {
+        return Bonus.SumPilotBonuses(this, this.PilotBonuses, id);
     }
 }

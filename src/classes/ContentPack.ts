@@ -1,10 +1,7 @@
-import { mapValues } from "lodash";
-
 import {
     Manufacturer,
     Faction,
     CoreBonus,
-    Frame,
     MechWeapon,
     MechSystem,
     WeaponMod,
@@ -28,15 +25,29 @@ import {
     Environment,
     Sitrep,
     Status,
+    Frame,
+    Quirk,
 } from "@/class";
 import {
     IManufacturerData,
     IFactionData,
-    IFrameData,
     IEnvironmentData,
     ISitrepData,
+    PackedCoreBonusData,
+    PackedTalentData,
+    PackedPilotEquipmentData,
+    PackedWeaponModData,
+    PackedMechSystemData,
+    PackedMechWeaponData,
+    PackedFrameData,
+    PackedReserveData,
+    ITagTemplateData,
+    PackedSkillData,
 } from "@/interface";
 import _ from "lodash";
+import { IStatusData } from "./Statuses";
+import { Registry } from "@/registry";
+import { LicensedItem } from './License';
 
 export interface IContentPackManifest {
     name: string;
@@ -51,22 +62,22 @@ export interface IContentPackData {
     manufacturers: IManufacturerData[];
     factions: IFactionData[];
     coreBonuses: PackedCoreBonusData[];
-    frames: IFrameData[];
-    weapons: IMechWeaponData[];
-    systems: IMechSystemData[];
-    mods: IWeaponModData[];
-    pilotGear: IPilotEquipmentData[];
-    talents: ITalentData[];
-    tags: ITagCompendiumData[];
+    frames: PackedFrameData[];
+    weapons: PackedMechWeaponData[];
+    systems: PackedMechSystemData[];
+    mods: PackedWeaponModData[];
+    pilotGear: PackedPilotEquipmentData[];
+    talents: PackedTalentData[];
+    tags: ITagTemplateData[];
 
-    npcClasses: INpcClassData[];
-    npcFeatures: INpcFeatureData[];
-    npcTemplates: INpcTemplateData[];
+    // npcClasses: INpcClassData[];
+    // npcFeatures: INpcFeatureData[];
+    // npcTemplates: INpcTemplateData[];
 
     // New additions courtesy of whitespine
-    skills?: ISkillData[];
+    skills?: PackedSkillData[];
     statuses?: IStatusData[];
-    reserves?: IReserveData[];
+    reserves?: PackedReserveData[];
     environments?: IEnvironmentData[];
     sitreps?: ISitrepData[];
     quirks?: string[];
@@ -79,241 +90,85 @@ export interface IContentPack {
     data: IContentPackData;
 }
 
-export class ContentPack {
-    private _manifest: IContentPackManifest;
-    private _id: string;
-    public get ID(): string {
-        return this._id;
+export async function intake_pack(pack: IContentPack, to_registry: Registry) {
+    // Let us begin. Unpacking automatically adds the item to the registry in most cases
+    let d = pack.data;
+    let reg = to_registry;
+    let licenseables: LicensedItem[] = [];
+    for (let m of d.manufacturers) {
+        Manufacturer.unpack(m, reg);
+    }
+    for (let f of d.factions) {
+        Faction.unpack(f, reg);
+    }
+    for (let cb of d.coreBonuses) {
+        CoreBonus.unpack(cb, reg);
+    }
+    for (let f of d.frames) {
+        licenseables.push(await Frame.unpack(f, reg));
+    }
+    for (let mw of d.weapons) {
+        licenseables.push(await MechWeapon.unpack(mw, reg));
+    }
+    for (let ms of d.systems) {
+        licenseables.push(await MechSystem.unpack(ms, reg));
+    }
+    for (let wm of d.mods) {
+        licenseables.push(await WeaponMod.unpack(wm, reg));
+    }
+    for (let x of d.pilotGear) {
+        if(x.type == "Armor")
+            await PilotArmor.unpack(x, reg);
+        else if(x.type == "Gear") 
+            await PilotGear.unpack(x, reg);
+        else if(x.type == "Weapon")
+            await PilotWeapon.unpack(x, reg);
+    }
+    for (let x of d.talents) {
+        await Talent.unpack(x, reg);
+    }
+    for (let x of d.tags) {
+        await TagTemplate.unpack(x, reg);
+    }
+    /*
+    for (let x of d.) {
+        NpcClasses.unpack(x, reg);
+    }
+    for (let x of d.NpcTemplates) {
+        NpcTemplates.unpack(x, reg);
+    }
+    for (let x of d.NpcFeatures) {
+        NpcFeatures.unpack(x, reg);
+    }
+    */
+    for (let x of d.environments ?? []) {
+        await Environment.unpack(x, reg);
+    }
+    for (let x of d.reserves ?? []) {
+        await Reserve.unpack(x, reg);
+    }
+    for (let x of d.sitreps ?? []) {
+        await Sitrep.unpack(x, reg);
+    }
+    for (let x of d.skills ?? []) {
+        await Skill.unpack(x, reg);
+    }
+    for (let x of d.statuses ?? []) {
+        await Status.unpack(x, reg);
+    }
+    for (let x of d.quirks ?? []) {
+        await Quirk.unpack(x, reg);
     }
 
-    public get Name(): string {
-        return this._manifest.name;
-    }
-    public get Author(): string {
-        return this._manifest.author;
-    }
-    public get Version(): string {
-        return this._manifest.version;
-    }
-    public get Description(): string {
-        return this._manifest.description || null;
-    }
-    public get Website(): string {
-        return this._manifest.website || null;
-    }
-    public get ImageURL(): string {
-        return this._manifest.image_url || null;
+
+    // Find licenses
+    let unique_license_names: Set<string> = new Set();
+    for(let x of licenseables) {
+        unique_license_names.add(x.License);
     }
 
-    private _data: IContentPackData;
-
-    private _Manufacturers: Manufacturer[];
-    public get Manufacturers(): Manufacturer[] {
-        return this._Manufacturers;
-    }
-    private _Factions: Faction[];
-    public get Factions(): Faction[] {
-        return this._Factions;
-    }
-
-    private _CoreBonuses: CoreBonus[];
-    public get CoreBonuses(): CoreBonus[] {
-        return this._CoreBonuses;
-    }
-
-    private _Frames: Frame[];
-    public get Frames(): Frame[] {
-        return this._Frames;
-    }
-
-    private _MechWeapons: MechWeapon[];
-    public get MechWeapons(): MechWeapon[] {
-        return this._MechWeapons;
-    }
-
-    private _MechSystems: MechSystem[];
-    public get MechSystems(): MechSystem[] {
-        return this._MechSystems;
-    }
-
-    private _WeaponMods: WeaponMod[];
-    public get WeaponMods(): WeaponMod[] {
-        return this._WeaponMods;
-    }
-
-    // Includes gear, weapons, and armor
-    private _PilotEquipment: PilotEquipment[];
-    public get PilotEquipment(): PilotEquipment[] {
-        return this._PilotEquipment;
-    }
-
-    private _PilotGear: PilotGear[];
-    public get PilotGear(): PilotGear[] {
-        return this._PilotGear;
-    }
-
-    private _PilotWeapons: PilotWeapon[];
-    public get PilotWeapons(): PilotWeapon[] {
-        return this._PilotWeapons;
-    }
-
-    private _PilotArmor: PilotArmor[];
-    public get PilotArmor(): PilotArmor[] {
-        return this._PilotArmor;
-    }
-
-    private _Talents: Talent[];
-    public get Talents(): Talent[] {
-        return this._Talents;
-    }
-
-    private _Tags: TagTemplate[];
-    public get Tags(): TagTemplate[] {
-        return this._Tags;
-    }
-
-    private _NpcClasses: NpcClass[];
-    public get NpcClasses(): NpcClass[] {
-        return this._NpcClasses;
-    }
-
-    private _NpcTemplates: NpcTemplate[];
-    public get NpcTemplates(): NpcTemplate[] {
-        return this._NpcTemplates;
-    }
-
-    private _NpcFeatures: NpcFeature[];
-    public get NpcFeatures(): NpcFeature[] {
-        return this._NpcFeatures;
-    }
-
-    private _Environments: Environment[];
-    public get Environments(): Environment[] {
-        return this._Environments;
-    }
-
-    private _Reserves: Reserve[];
-    public get Reserves(): Reserve[] {
-        return this._Reserves;
-    }
-
-    private _Sitreps: Sitrep[];
-    public get Sitreps(): Sitrep[] {
-        return this._Sitreps;
-    }
-
-    private _Skills: Skill[];
-    public get Skills(): Skill[] {
-        return this._Skills;
-    }
-
-    private _StatusesAndConditions: Status[];
-    public get StatusesAndConditions(): Status[] {
-        return this._StatusesAndConditions;
-    }
-
-    private _Statuses: Status[];
-    public get Statuses(): Status[] {
-        return this._Statuses;
-    }
-
-    private _Conditions: Status[];
-    public get Conditions(): Status[] {
-        return this._Conditions;
-    }
-
-    private _Quirks: string[];
-    public get Quirks(): string[] {
-        return this._Quirks;
-    }
-
-    private _Licenses: License[];
-    public get Licenses(): License[] {
-        return this._Licenses;
-    }
-
-    private _active: boolean;
-    public get Active(): boolean {
-        return this._active;
-    }
-    public SetActive(active: boolean): void {
-        this._active = active;
-    }
-
-    constructor(pack: IContentPack) {
-        const { id, active, manifest, data } = pack;
-
-        this._active = active;
-        this._manifest = manifest;
-        this._data = mapValues(data, (items: any) => items.map(item => ({ ...item, brew: id })));
-        this._id = id;
-
-        this._Manufacturers = this._data.manufacturers?.map(x => new Manufacturer(x)) || [];
-        this._Factions = this._data.factions?.map(x => new Faction(x)) || [];
-        this._CoreBonuses = this._data.coreBonuses?.map(x => new CoreBonus(x)) || [];
-        this._Frames = this._data.frames?.map(x => new Frame(x)) || [];
-        this._MechWeapons = this._data.weapons?.map(x => new MechWeapon(x)) || [];
-        this._MechSystems = this._data.systems?.map(x => new MechSystem(x)) || [];
-        this._WeaponMods = this._data.mods?.map(x => new WeaponMod(x)) || [];
-
-        this._PilotArmor = [];
-        this._PilotEquipment = [];
-        this._PilotGear = [];
-        this._PilotWeapons = [];
-
-        for (let igear of this._data.pilotGear || []) {
-            let equip: PilotEquipment;
-            if (igear.type.toLowerCase() === "weapon") {
-                let wep = new PilotWeapon(igear as IPilotWeaponData);
-                this._PilotWeapons.push(wep);
-                equip = wep;
-            } else if (igear.type.toLowerCase() === "armor") {
-                let arm = new PilotArmor(igear as IPilotArmorData);
-                this._PilotArmor.push(arm);
-                equip = arm;
-            } else {
-                // We assume gear otherwise. should maybe explicitly check
-                let gear = new PilotGear(igear as IPilotGearData);
-                equip = gear;
-                this._PilotGear.push(gear);
-            }
-            this._PilotEquipment.push(equip);
-        }
-
-        this._Talents = this._data.talents?.map(x => new Talent(x)) || [];
-        this._Tags = this._data.tags?.map(x => new TagTemplate(x)) || [];
-
-        this._NpcFeatures =
-            this._data.npcFeatures?.map(function(x) {
-                if (x.type.toLowerCase() === "weapon") return new NpcWeapon(x as INpcWeaponData);
-                else if (x.type.toLowerCase() === "reaction")
-                    return new NpcReaction(x as INpcReactionData);
-                else if (x.type.toLowerCase() === "trait") return new NpcTrait(x);
-                else if (x.type.toLowerCase() === "system")
-                    return new NpcSystem(x as INpcSystemData);
-                return new NpcTech(x as INpcTechData);
-            }) || [];
-        this._NpcClasses = this._data.npcClasses?.map(x => new NpcClass(x)) || [];
-        this._NpcTemplates = this._data.npcTemplates?.map(x => new NpcTemplate(x)) || [];
-
-        this._Quirks = this._data.quirks || [];
-        this._Skills = (this._data.skills || []).map(s => new Skill(s));
-        this._Sitreps = (this._data.sitreps || []).map(Sitrep.Deserialize);
-        this._Reserves = (this._data.reserves || []).map(s => new Reserve(s));
-        this._StatusesAndConditions = (this._data.statuses || []).map(Status.Deserialize);
-        this._Environments = (this._data.environments || []).map(Environment.Deserialize);
-        this._Licenses = this.Frames.map(f => new License(f));
-
-        this._Statuses = this._StatusesAndConditions.filter(s => s.is_status);
-        this._Conditions = this._StatusesAndConditions.filter(s => s.is_condition);
-    }
-
-    public static Serialize(dat: ContentPack): IContentPack {
-        return {
-            id: dat._id,
-            active: dat._active,
-            manifest: dat._manifest,
-            data: dat._data, // We never get rid of the raw data, so no need to reserialize
-        };
+    // Actually create them
+    for(let name of unique_license_names) {
+        await License.unpack(name, reg);
     }
 }

@@ -3,7 +3,7 @@ import { reserves } from "lancer-data";
 import { IActionData, Action } from "@/classes/Action";
 import { IBonusData, Bonus } from "@/classes/Bonus";
 import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@/interface";
-import { EntryType, RegEntry, RegRef, SerUtil, SimSer } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@/registry";
 import { ReserveType } from "@/classes/enums";
 
 interface AllReserveData {
@@ -27,7 +27,7 @@ export interface PackedReserveData extends AllReserveData {
     integrated?: string[];
 }
 
-export interface RegReserveData extends AllReserveData {
+export interface RegReserveData extends Required<AllReserveData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
@@ -53,21 +53,21 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
 
     protected async load(data: RegReserveData) {
         this.ID = data.id;
-        this.ResourceLabel = data.label || "";
+        this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
         this.ReserveType = (data.type as ReserveType) || ReserveType.Resources;
-        this.Name = data.name || "";
+        this.Name = data.name;
         this.ResourceName = data.resource_name;
         this.ResourceNote = data.resource_note;
         this.ResourceCost = data.resource_cost;
-        this.Description = data.description || "";
-        this.Actions = data.actions?.map(x => new Action(x)) ?? [];
-        this.Bonuses = data.bonuses?.map(x => new Bonus(x)) ?? [];
-        this.Synergies = data.synergies?.map(x => new Synergy(x)) ?? [];
+        this.Description = data.description;
+        this.Actions = data.actions.map(x => new Action(x));
+        this.Bonuses = data.bonuses.map(x => new Bonus(x));
+        this.Synergies = data.synergies.map(x => new Synergy(x));
         this.Deployables = await this.Registry.resolve_many(data.deployables);
-        this.Counters = data.counters?.map(c => new Counter(c));
+        this.Counters = data.counters.map(c => new Counter(c));
         this.Integrated = await this.Registry.resolve_many(data.integrated);
-        this.Used = data.used ?? false;
+        this.Used = data.used;
     }
 
     public get Icon(): string {
@@ -113,5 +113,32 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
             bonuses: this.Bonuses.map(b => b.save()),
             synergies: this.Synergies.map(s => s.save()),
         };
+    }
+    
+    // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
+    static async unpack(res: PackedReserveData, reg: Registry): Promise<Reserve> {
+        // Create deployable entries
+        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, res.deployables);
+        let deployables = SerUtil.ref_all(dep_entries);
+
+        // Get integrated refs
+        let integrated = SerUtil.unpack_integrated_refs(res.integrated || []);
+
+        // Get the counters
+        let counters = SerUtil.unpack_counters_default(res.counters);
+        let rdata: RegReserveData = {
+            ...res,
+            integrated,
+            deployables,
+            counters,
+            type: res.type ?? ReserveType.Resources,
+            name: res.name ?? "New Reserve",
+            label: res.label ?? "",
+            description: res.description ?? "",
+            actions: res.actions ?? [],
+            bonuses: res.bonuses ?? [],
+            synergies: res.synergies ?? []
+        };
+        return reg.create(EntryType.RESERVE, rdata);
     }
 }

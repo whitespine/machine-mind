@@ -7,7 +7,7 @@ import {
     PackedDeployableData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 import { FrameEffectUse } from "../enums";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
@@ -27,7 +27,7 @@ export interface PackedFrameTraitData extends AllFrameTraitData {
     deployables?: PackedDeployableData[];
 }
 
-export interface RegFrameTraitData extends AllFrameTraitData {
+export interface RegFrameTraitData extends Required<AllFrameTraitData> {
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -36,7 +36,7 @@ export interface RegFrameTraitData extends AllFrameTraitData {
 export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitData> {
     Name!: string;
     Description!: string;
-    Use!: FrameEffectUse | null;
+    Use!: FrameEffectUse;
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -48,13 +48,29 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
         this.Name = data.name;
         this.Description = data.description;
         this.Use = data.use ?? null;
-        this.Actions = data.actions?.map(a => new Action(a)) || [];
-        this.Bonuses = data.bonuses?.map(b => new Bonus(b)) || [];
-        this.Synergies = data.synergies?.map(s => new Synergy(s)) || [];
-        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        await SerUtil.load_commons(this.Registry, data, this);
     }
 
-    public save(): Promise<RegFrameTraitData> {
-        throw new Error("Method not implemented.");
+    public async save(): Promise<RegFrameTraitData> {
+        return {
+            name: this.Name,
+            description: this.Description,
+            use: this.Use,
+            ...await SerUtil.save_commons(this),
+            integrated: SerUtil.ref_all(this.Integrated),
+            counters: SerUtil.sync_save_all(this.Counters)
+        };
+    }
+
+    public static async unpack(data: PackedFrameTraitData, reg: Registry): Promise<FrameTrait> {
+        let rdata: RegFrameTraitData = {
+            name: data.name,
+            description: data.description,
+            use: data.use ?? FrameEffectUse.Unknown,
+            ...await SerUtil.unpack_commons_and_tags(data, reg),
+            counters: SerUtil.unpack_counters_default(data.counters),
+            integrated: SerUtil.unpack_integrated_refs(data.integrated)
+        }
+        return reg.get_cat(EntryType.FRAME_TRAIT).create(rdata);
     }
 }

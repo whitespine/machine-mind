@@ -89,7 +89,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
-        let integrated = SerUtil.parse_integrated(cor.integrated || []);
+        let integrated = SerUtil.unpack_integrated_refs(cor.integrated || []);
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(cor.counters);

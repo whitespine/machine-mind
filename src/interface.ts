@@ -12,7 +12,7 @@ export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./clas
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
 
 export { ISynergyData } from "@/classes/Synergy";
-export { ILicensedItemData } from "./classes/LicensedItem";
+export { LicensedItem, LicensedItemType, RegLicenseData } from "./classes/License";
 export { PackedCoreSystemData, RegCoreSystemData } from "./classes/mech/CoreSystem";
 export { PackedDeployableData, RegDeployableData } from "./classes/Deployable";
 export { PackedFrameData, RegFrameData, IFrameStats } from "./classes/mech/Frame";
@@ -22,6 +22,14 @@ export { IRangeData } from "./classes/Range";
 export { PackedMechData, RegMechData } from "./classes/mech/Mech";
 export { PackedMechSystemData, RegMechSystemData } from "./classes/mech/MechSystem";
 export { PackedMechWeaponData, RegMechWeaponData } from "./classes/mech/MechWeapon";
+export {
+    PackedMechLoadoutData,
+    PackedMountData,
+    PackedWeaponSlotData,
+    RegMechLoadoutData,
+    RegSysMountData,
+    RegWepMountData,
+} from "./classes/mech/MechLoadout";
 export { RegWeaponModData, PackedWeaponModData } from "./classes/mech/WeaponMod";
 export { PackedPilotData, RegPilotData } from "./classes/pilot/Pilot";
 export {
@@ -58,7 +66,7 @@ export { PackedSkillData, RegSkillData } from "./classes/pilot/Skill";
 // export { INpcClassData } from "./classes/npc/NpcClass";
 // export { INpcTemplateData } from "./classes/npc/NpcTemplate";
 // export { INpcData } from "./classes/npc/Npc";
-export { IEncounterData } from "./classes/encounter/Encounter";
+export { IEncounterData } from "./classes/encounter/Encounter.dts";
 export { IMissionData } from "./classes/encounter/Mission";
 export { IMissionStep } from "./classes/encounter/IMissionStep";
 export { VActor } from "./classes/encounter/Actor";

@@ -1,7 +1,7 @@
 import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@/class";
 import { store } from "@/hooks";
 import { IActionData, IBonusData, IRangeData, ISynergyData, PackedCounterData, PackedDamageData, PackedDeployableData, PackedTagInstanceData, RegCounterData, RegDamageData, RegTagInstanceData } from '@/interface';
-import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, RoughRegRef, SerUtil } from "@/registry";
 import { SystemType, WeaponSize, WeaponType } from '../enums';
 import { TagInstance } from '../Tag';
 
@@ -105,12 +105,9 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
       allowed_sizes: this.AllowedSizes,
       allowed_types: this.AllowedTypes,
 
-      actions: SerUtil.sync_save_all(this.Actions),
-      bonuses: SerUtil.sync_save_all(this.Bonuses),
+      ... await SerUtil.save_commons(this),
       counters: SerUtil.sync_save_all(this.Counters),
-      synergies: SerUtil.sync_save_all(this.Synergies),
       tags: await SerUtil.save_all(this.Tags),
-      deployables: SerUtil.ref_all(this.Deployables),
       integrated: SerUtil.ref_all(this.Integrated),
     }
   }
@@ -127,17 +124,32 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
 
       this.AddedRange = SerUtil.process_ranges(data.added_range),
       this.AddedDamage = SerUtil.process_damages(data.added_damage),
-      this.AddedTags =   await SerUtil.(data.added_tags),
+      this.AddedTags = await SerUtil.process_tags(this.Registry, data.added_tags),
 
       this.AllowedSizes = data.allowed_sizes ?? [];
       this.AllowedTypes = data.allowed_types ?? [];
 
-      this.Actions = SerUtil.process_actions(data.actions);
-      this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+      await SerUtil.load_commons(this.Registry, data, this);
       this.Counters = SerUtil.process_counters(data.counters);
-      this.Synergies = SerUtil.process_synergies(data.synergies);
       this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
-      this.Deployables = await this.Registry.resolve_many(data.deployables);
       this.Integrated = await this.Registry.resolve_many_rough(data.integrated);
   }
+
+    public static async unpack(data: PackedWeaponModData, reg: Registry): Promise<WeaponMod> {
+        // Get tags
+        let add_tags = await SerUtil.unpack_children(TagInstance.unpack, reg, data.added_tags ?? []);
+        let add_reg_tags = await SerUtil.save_all(add_tags); 
+
+        let rdata: RegWeaponModData = {
+            ...data,
+            added_damage: data.added_damage?.map(Damage.unpack) ?? [],
+            added_tags: add_reg_tags,
+
+            // Boring stuff
+            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+            counters: SerUtil.unpack_counters_default(data.counters),
+            ...await SerUtil.unpack_commons_and_tags(data, reg),
+        }
+        return  reg.get_cat(EntryType.WEAPON_MOD).create(rdata);
+    }
 } 

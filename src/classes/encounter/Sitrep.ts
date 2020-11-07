@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, SimSer } from "@/registry";
+import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
 
 export interface ISitrepData {
     id: string;
@@ -51,5 +51,9 @@ export class Sitrep extends RegEntry<EntryType.SITREP, ISitrepData> {
         this.Objective = data.objective || "";
         this.ControlZone = data.controlZone || "";
         this.Extraction = data.extraction || "";
+    }
+
+   public static async unpack(dep: ISitrepData, reg: Registry): Promise<Sitrep> {
+        return reg.get_cat(EntryType.SITREP).create(dep);
     }
 }

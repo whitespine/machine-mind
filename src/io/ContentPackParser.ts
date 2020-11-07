@@ -1,22 +1,25 @@
 import JSZip, { JSZipObject } from "jszip";
+import * as lancerData from "@/classes/utility/typed_lancerdata";
+import { CORE_BREW_ID } from '@/classes/enums';
 import {
     IContentPackManifest,
     IContentPack,
-    ICompendiumItemData,
+    // ICompendiumItemData,
     IManufacturerData,
     IFactionData,
-    ICoreBonusData,
-    IFrameData,
-    IMechWeaponData,
-    IMechSystemData,
-    IWeaponModData,
-    IPilotEquipmentData,
-    ITalentData,
-    ITagCompendiumData,
-    INpcClassData,
-    INpcFeatureData,
-    INpcTemplateData,
+    PackedCoreBonusData,
+    PackedFrameData,
+    PackedMechWeaponData,
+    PackedMechSystemData,
+    PackedWeaponModData,
+    PackedPilotEquipmentData,
+    PackedTalentData,
+    // PackedTagCompendiumData,
+    // PackedNpcClassData,
+    // PackedNpcFeatureData,
+    // PackedNpcTemplateData,
 } from "@/interface";
+import { ITagTemplateData } from '@/classes/Tag';
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (
@@ -74,27 +77,32 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
         }
     };
 
-    function generateIDs<T extends ICompendiumItemData>(data: T[], dataPrefix: string): T[] {
-        return data.map(x => ({ ...x, id: x.id || generateItemID(dataPrefix, x.name) }));
+    function generateIDs<T extends {id: string}>(data: T[], dataPrefix?: string): T[] {
+        if(dataPrefix) {
+            for(let d of data) {
+                d.id = generateItemID(dataPrefix, d.id);
+            }
+        }
+        return data;
     }
 
     const manufacturers = await getZipData<IManufacturerData>(zip, "manufacturers.json");
     const factions = await getZipData<IFactionData>(zip, "factions.json");
-    const coreBonuses = generateIDs(await getZipData<ICoreBonusData>(zip, "core_bonus.json"), "cb");
-    const frames = generateIDs(await getZipData<IFrameData>(zip, "frames.json"), "mf");
-    const weapons = generateIDs(await getZipData<IMechWeaponData>(zip, "weapons.json"), "mw");
-    const systems = generateIDs(await getZipData<IMechSystemData>(zip, "systems.json"), "ms");
-    const mods = generateIDs(await getZipData<IWeaponModData>(zip, "mods.json"), "wm");
+    const coreBonuses = generateIDs(await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"), "cb");
+    const frames = generateIDs(await getZipData<PackedFrameData>(zip, "frames.json"), "mf");
+    const weapons = generateIDs(await getZipData<PackedMechWeaponData>(zip, "weapons.json"), "mw");
+    const systems = generateIDs(await getZipData<PackedMechSystemData>(zip, "systems.json"), "ms");
+    const mods = generateIDs(await getZipData<PackedWeaponModData>(zip, "mods.json"), "wm");
     const pilotGear = generateIDs(
-        await getZipData<IPilotEquipmentData>(zip, "pilot_gear.json"),
+        await getZipData<PackedPilotEquipmentData>(zip, "pilot_gear.json"),
         "pg"
     );
-    const talents = generateIDs(await getZipData<ITalentData>(zip, "talents.json"), "t");
-    const tags = generateIDs(await getZipData<ITagCompendiumData>(zip, "tags.json"), "tg");
+    const talents = generateIDs(await getZipData<PackedTalentData>(zip, "talents.json"), "t");
+    const tags = generateIDs(await getZipData<ITagTemplateData>(zip, "tags.json"), "tg");
 
-    const npcClasses = (await readZipJSON<INpcClassData[]>(zip, "npc_classes.json")) || [];
-    const npcFeatures = (await readZipJSON<INpcFeatureData[]>(zip, "npc_features.json")) || [];
-    const npcTemplates = (await readZipJSON<INpcTemplateData[]>(zip, "npc_templates.json")) || [];
+    // const npcClasses = (await readZipJSON<INpcClassData[]>(zip, "npc_classes.json")) || [];
+    // const npcFeatures = (await readZipJSON<INpcFeatureData[]>(zip, "npc_features.json")) || [];
+    // const npcTemplates = (await readZipJSON<INpcTemplateData[]>(zip, "npc_templates.json")) || [];
 
     const id = await getPackID(manifest);
 
@@ -113,9 +121,46 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
             pilotGear,
             talents,
             tags,
-            npcClasses,
-            npcFeatures,
-            npcTemplates,
+            // npcClasses,
+            // npcFeatures,
+            // npcTemplates,
+        },
+    };
+}
+
+// So we don't have to treat it separately
+export function get_base_content_pack(): IContentPack {
+    // lancerData.
+    return {
+        active: true,
+        id: CORE_BREW_ID,
+        manifest: {
+            author: "Massif-Press",
+            item_prefix: "", // Don't want one
+            name: "Lancer Core Book Data",
+            version: "1.X",
+        },
+        data: {
+            coreBonuses: lancerData.core_bonuses,
+            factions: lancerData.factions,
+            frames: lancerData.frames,
+            manufacturers: lancerData.manufacturers,
+            mods: lancerData.mods,
+            // npcClasses: lancerData.npc_classes,
+            // npcFeatures: lancerData.npc_features,
+            // npcTemplates: lancerData.npc_templates,
+            pilotGear: lancerData.pilot_gear,
+            systems: lancerData.systems,
+            tags: lancerData.tags,
+            talents: lancerData.talents,
+            weapons: lancerData.weapons,
+
+            quirks: lancerData.quirks,
+            environments: lancerData.environments,
+            reserves: lancerData.reserves,
+            sitreps: lancerData.sitreps,
+            skills: lancerData.skills,
+            statuses: lancerData.statuses,
         },
     };
 }

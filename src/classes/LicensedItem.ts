@@ -1,5 +1,6 @@
-import { CompendiumItem, EntryType, Manufacturer, Pilot, License } from "@/class";
-import { ICompendiumItemData } from "@/interface";
+/*
+import { Manufacturer, Pilot, License } from "@/class";
+import {  } from "@/interface";
 import { store } from "@/hooks";
 import _ from "lodash";
 
@@ -90,3 +91,5 @@ export class LicensedRequirementBuilder {
         return requirements;
     }
 }
+
+*/

@@ -85,13 +85,13 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         this.Use = data.use ?? null;
 
         this.ActiveActions = SerUtil.process_actions(data.active_actions);
-        this.ActiveBonuses = SerUtil.process_bonuses(data.active_bonuses);
+        this.ActiveBonuses = SerUtil.process_bonuses(data.active_bonuses, data.active_name);
         this.ActiveSynergies = SerUtil.process_synergies(data.active_synergies);
         this.ActiveEffect = data.active_effect;
         this.ActiveName = data.active_name;
 
         this.PassiveActions = SerUtil.process_actions(data.passive_actions);
-        this.PassiveBonuses = SerUtil.process_bonuses(data.passive_bonuses);
+        this.PassiveBonuses = SerUtil.process_bonuses(data.passive_bonuses, data.passive_name);
         this.PassiveSynergies = SerUtil.process_synergies(data.passive_synergies);
         this.PassiveEffect = data.passive_effect;
         this.PassiveName = data.passive_name;
@@ -143,7 +143,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data
-        let integrated = SerUtil.parse_integrated(dep.integrated);
+        let integrated = SerUtil.unpack_integrated_refs(dep.integrated);
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {

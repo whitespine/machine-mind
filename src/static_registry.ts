@@ -23,7 +23,7 @@ import {
     TagTemplate,
     Talent,
     WeaponMod,
-    Mech
+    Mech,
 } from "@/class";
 import {
     EntryType,
@@ -34,8 +34,8 @@ import {
     Registry,
     ReviveFunc,
 } from "@/registry";
-import { RegDeployableData, RegMechData, RegPilotData } from './interface';
-import { Deployable } from './classes/Deployable';
+import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
+import { Deployable } from "./classes/Deployable";
 
 // This is a shared item between registries that basically just keeps their actors in sync
 class RegEnv {
@@ -50,21 +50,31 @@ class RegEnv {
 
 // Our static builders
 // Simple cat thing. This Takes a few liberties with the type checking but not tooo much
-function simple_cat_builder<T extends EntryType>(type: T, reg: StaticReg, clazz: {
-    new(type: T, registry: Registry, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<T> // This essentially just means "give us a class, please"
-},
+function simple_cat_builder<T extends EntryType>(
+    type: T,
+    reg: StaticReg,
+    clazz: {
+        new (type: T, registry: Registry, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<
+            T
+        >; // This essentially just means "give us a class, please"
+    },
     data_source_override?: Map<string, RegEntryTypes<T>>
 ): StaticRegCat<T> {
     // Our outer builder, which is used during
-    return new StaticRegCat(reg, type, async (reg, id, raw?) => {
-        // Our actual builder function
-        let new_item = new clazz(type, reg, id, nodef(raw));
-        await new_item.ready();
+    return new StaticRegCat(
+        reg,
+        type,
+        async (reg, id, raw?) => {
+            // Our actual builder function
+            let new_item = new clazz(type, reg, id, nodef(raw));
+            await new_item.ready();
 
-        // And we're done
-        return new_item;
-    }, data_source_override);
-} 
+            // And we're done
+            return new_item;
+        },
+        data_source_override
+    );
+}
 
 // We need this to facillitate items with inventories
 export class StaticReg extends Registry {
@@ -75,49 +85,45 @@ export class StaticReg extends Registry {
         return this.env.inventories.get(for_actor_id) ?? null;
     }
 
-    // Just delegates to std_builders, as we need 
+    // Just delegates to std_builders, as we need
     constructor(env: RegEnv) {
         super();
         this.env = env;
         this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus));
-            this.init_set_cat( simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem));
-            this.init_set_cat( simple_cat_builder(EntryType.ENVIRONMENT, this, Environment),);
-            this.init_set_cat( simple_cat_builder(EntryType.FACTION, this, Faction),);
-            this.init_set_cat( simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait),);
-            this.init_set_cat( simple_cat_builder(EntryType.FRAME, this, Frame),);
-            this.init_set_cat( simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer),);
-            this.init_set_cat( simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem),);
-            this.init_set_cat( simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon),);
-            this.init_set_cat( simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor),);
-            this.init_set_cat( simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear),);
-            this.init_set_cat( simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon),);
-            this.init_set_cat( simple_cat_builder(EntryType.QUIRK, this, Quirk),);
-            this.init_set_cat( simple_cat_builder(EntryType.RESERVE, this, Reserve),);
-            this.init_set_cat( simple_cat_builder(EntryType.SITREP, this, Sitrep),);
-            this.init_set_cat( simple_cat_builder(EntryType.SKILL, this, Skill),);
-            this.init_set_cat( simple_cat_builder(EntryType.STATUS, this, Status),);
-            this.init_set_cat( simple_cat_builder(EntryType.TAG, this, TagTemplate),);
-            this.init_set_cat( simple_cat_builder(EntryType.TALENT, this, Talent),);
-            this.init_set_cat( simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod),);
-            
-            
-            // The inventoried things (actors!)
-            this.init_set_cat( simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
-            this.init_set_cat( simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
-            this.init_set_cat( simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
-            // to be done
-            // NpcClasses: null as any,
-            // NpcFeatures: null as any,
-            // NpcTemplates: null as any,
+        this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem));
+        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
+        this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
+        this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait));
+        this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame));
+        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));
+        this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve));
+        this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep));
+        this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill));
+        this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status));
+        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate));
+        this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent));
+        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
+
+        // The inventoried things (actors!)
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
+        // to be done
+        // NpcClasses: null as any,
+        // NpcFeatures: null as any,
+        // NpcTemplates: null as any,
     }
-
-
 }
 
 // This implements the regcat interface with a very simple Map
 export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     private reg_data: Map<string, RegEntryTypes<T>> = new Map();
-
 
     constructor(
         parent: Registry,
@@ -129,11 +135,10 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         this.cat = cat;
         this.revive_func = creator;
 
-        if(data_source_override) {
+        if (data_source_override) {
             this.reg_data = data_source_override;
         }
     }
-
 
     async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null> {
         // lil' a bit janky, but serviceable
@@ -190,7 +195,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     // a bit tricky in terms of what side effects this could have, actually.
     async update(...items: LiveEntryTypes<T>[]): Promise<void> {
         for (let i of items) {
-            let saved = await i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
+            let saved = (await i.save()) as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
             this.reg_data.set(i.RegistryID, saved);
         }
     }
@@ -204,7 +209,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     async create_default(): Promise<LiveEntryTypes<T>> {
         let id = nanoid();
         let v = await this.revive_func(this.parent, id);
-        let saved = await v.save() as RegEntryTypes<T>;
+        let saved = (await v.save()) as RegEntryTypes<T>;
         this.reg_data.set(id, saved);
         return v;
     }

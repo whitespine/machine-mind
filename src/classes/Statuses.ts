@@ -1,4 +1,4 @@
-import { EntryType, RegEntry } from "@/registry";
+import { EntryType, RegEntry, Registry } from "@/registry";
 
 export interface IStatusData {
     name: string;
@@ -27,6 +27,10 @@ export class Status extends RegEntry<EntryType.STATUS, IStatusData> {
             type: this.Subtype,
             effects: this.Effects,
         };
+    }
+
+    public static async unpack(dep: IStatusData, reg: Registry): Promise<Status> {
+        return reg.get_cat(EntryType.STATUS).create(dep);
     }
 
     public get is_status(): boolean {

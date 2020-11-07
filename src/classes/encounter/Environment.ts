@@ -1,4 +1,4 @@
-import { EntryType, RegEntry } from "@/registry";
+import { EntryType, RegEntry, Registry } from "@/registry";
 export interface IEnvironmentData {
     id: string;
     name: string;
@@ -23,5 +23,9 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentDat
             id: this.ID,
             name: this.Name,
         };
+    }
+
+   public static async unpack(dep: IEnvironmentData, reg: Registry): Promise<Environment> {
+        return reg.get_cat(EntryType.ENVIRONMENT).create(dep);
     }
 }

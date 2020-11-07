@@ -10,7 +10,7 @@ export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Deployable } from "./classes/Deployable";
-export { LicensedItem } from "./classes/LicensedItem";
+// export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage } from "./classes/Damage";
 export { Range } from "./classes/Range";
@@ -54,14 +54,14 @@ export {
 } from "../babyjail/classes/dice/DiceRoller";
 export { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
 */
-export { Encounter } from "./classes/encounter/Encounter";
+// export { Encounter } from "./classes/encounter/Encounter.dts";
 export { Rest } from "./classes/encounter/Rest";
 export { Mission, MissionStepType } from "./classes/encounter/Mission";
 export { ActiveMission } from "./classes/encounter/ActiveMission";
 export { Sitrep } from "./classes/encounter/Sitrep";
 export { Environment } from "./classes/encounter/Environment";
 export { Status } from "./classes/Statuses";
-export { ContentPack } from "./classes/ContentPack";
+// export { ContentPack } from "./classes/ContentPack";
 export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
 // export { NpcFeatureType, NpcFeature } from "@/classes/npc//NpcFeature";

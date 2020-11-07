@@ -2,7 +2,8 @@ import { Bonus, Mech } from "./class";
 
 // Same logic as interfaces, classes, etc.
 export { parseContentPack } from "@/io/ContentPackParser";
-export { getBaseContentPack } from "@/classes/old_registry";
+export { intake_pack } from "@/classes/ContentPack";
+export { get_base_content_pack } from "@/io/ContentPackParser";
 export { getChangelog, getCredits, loadPilot, newPilot, savePilot } from "@/io/apis/gist";
 
 export function bound_int(x: number, min: number, max: number) {
@@ -15,12 +16,15 @@ export function bound_int(x: number, min: number, max: number) {
     }
 }
 
-// Provides a helpful display
-export function contrib_helper(for_mech: Mech, bonusName: string): string[] {
+// Provides a helpful display of bonuses
+export function contrib_helper(for_mech: Mech, bonus_id: string): string[] {
     let output: string[] = [];
-    Bonus.Contributors(bonusName, for_mech).forEach(b => {
-        const sign = b.val > -1 ? "+" : "-";
-        output.push(`${b.name}: ${sign}${b.val}`);
+    for_mech.AllBonuses.forEach(b => {
+        if(b.ID == bonus_id) {
+            let val = b.evaluate(for_mech.Pilot);
+            const sign = val > -1 ? "+" : "-";
+            output.push(`${b.Title ?? b.ID}: ${sign}${val}`);
+        }
     });
     return output;
 }

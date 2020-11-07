@@ -1,6 +1,6 @@
-import { CoreSystem } from "@/class";
+import { CoreSystem, FrameTrait } from "@/class";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@/interface";
-import { EntryType, RegEntry, RegRef, SerUtil } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
 
@@ -97,6 +97,17 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         };
     }
 
+    public static async unpack(frame: PackedFrameData, reg: Registry): Promise<Frame> {
+        let traits = await SerUtil.unpack_children(FrameTrait.unpack, reg, frame.traits);
+        let cs = await CoreSystem.unpack(frame.core_system, reg);
+        let fdata: RegFrameData = {
+            ...frame,
+            traits: SerUtil.ref_all(traits),
+            core_system: cs.as_ref(),
+        };
+        return reg.get_cat(EntryType.FRAME).create(fdata);
+    }
+
     public get MechTypeString(): string {
         if (this.MechType.length === 1) return this.MechType[0];
         return `${this.MechType[0]} / ${this.MechType[1]}`;
@@ -110,5 +121,10 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         if (this.ImageUrl) return this.ImageUrl;
         return ""; // TODO, maybe
         // return getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
+    }
+
+    // For consistency's sake
+    public get License(): string {
+        return this.Name;
     }
 }

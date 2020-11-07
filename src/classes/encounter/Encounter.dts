@@ -64,7 +64,7 @@ export class Encounter implements IMissionStep {
     }
 
     public RenewID(): void {
-        this._id = uuid();
+        this._id = nanoid();
         this.save();
     }
 

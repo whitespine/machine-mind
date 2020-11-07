@@ -56,7 +56,23 @@ export interface IRankedData {
     custom_desc?: string;
     custom_detail?: string;
 }
-
+export interface IMechState {
+    stage: string;
+    turn: number;
+    move: number;
+    actions: number;
+    overwatch: boolean;
+    braced: boolean;
+    overcharged: boolean;
+    prepare: boolean;
+    bracedCooldown: boolean;
+    redundant: boolean;
+    history: IHistoryItem[];
+}
+export interface IHistoryItem {
+    field: string;
+    val?: any;
+}
 /*
 export interface IEquipmentSaveData {
     id: string;
@@ -76,24 +92,8 @@ export interface IMechWeaponSaveData extends IEquipmentSaveData {
     maxUseOverride?: number;
 }
 
-export interface IHistoryItem {
-    field: string;
-    val?: any;
-}
 
-export interface IMechState {
-    stage: string;
-    turn: number;
-    move: number;
-    actions: number;
-    overwatch: boolean;
-    braced: boolean;
-    overcharged: boolean;
-    prepare: boolean;
-    bracedCooldown: boolean;
-    redundant: boolean;
-    history: IHistoryItem[];
-}
+
 
 export interface IMechLoadoutData {
     id: string;

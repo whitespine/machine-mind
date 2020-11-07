@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Deployable, MechEquipment, Synergy } from "@/class";
+import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@/class";
 import {
     IActionData,
     IBonusData,
@@ -7,7 +7,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, RegRef, RoughRegRef, SerUtil } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, RoughRegRef, SerUtil } from "@/registry";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -98,7 +98,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         for (let r of data.ranks) {
             this.Ranks.push({
                 Actions: SerUtil.process_actions(r.actions),
-                Bonuses: SerUtil.process_bonuses(r.bonuses),
+                Bonuses: SerUtil.process_bonuses(r.bonuses, `TALENT ${r.name} RANK ${this.Ranks.length + 1}`),
                 Counters: SerUtil.process_counters(r.counters),
                 Deployables: await this.Registry.resolve_many(r.deployables),
                 Description: r.description,
@@ -139,6 +139,29 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         };
     }
 
+    public static async unpack(data: PackedTalentData, reg: Registry): Promise<Talent> {
+        // Process talent ranks
+        let ranks: RegTalentRank[] = [];
+        for(let r of data.ranks) {
+            ranks.push({
+                name: r.name;
+                description: r.description,
+                exclusive: r.exclusive,
+                ...await SerUtil.unpack_commons_and_tags(r, reg),
+                counters: SerUtil.unpack_counters_default(r.counters),
+                integrated: SerUtil.unpack_integrated_refs(r.integrated)
+            });
+        }
+
+
+        // Finish with entire reg
+        let rdata: RegTalentData = {
+            ...data,
+            ranks,
+            curr_rank: 1
+        }
+        return reg.get_cat(EntryType.TALENT).create(rdata);
+    }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed
     public Rank(rank: number): TalentRank | null {
         if (this.Ranks[rank - 1]) {
@@ -150,7 +173,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
 
     // The ranks granted by our current level
     public get UnlockedRanks(): TalentRank[] {
-        return this.Ranks.slice(0, this.CurrentRank - 1);
+        return this.Ranks.slice(0, this.CurrentRank);
     }
 
     // Flattening methods
