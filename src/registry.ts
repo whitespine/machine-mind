@@ -8,7 +8,7 @@
  *
  * A unique situation we encounter is that in some cases, it only makes sense for an entity to know about certain other entities
  * (and more importantly, it is more efficient/easily logically to ask "Where is MY <lmg>" vs "Where is <lmg>")
- * We handle this by having pilots, mechs, and npcs each have their own inventory (in the form of a Registry). (maybe deployables? What would they own? statuses, maybe)
+ * We handle this by having pilots, mechs, and npcs each have their own inventory (in the form of a Registry). (maybe deployables? What would they own? statuses, maybe. Foundry supports regardless but begs the question of what the point is)
  *
  * Relations can be cross-registry (i.e. between items with their own registries).
  * This brings us to an important mandate: ALL REGISTRY-OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
@@ -950,6 +950,11 @@ export abstract class Registry {
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
     public abstract get_inventory(for_item_id: string): Promise<Registry | null>;
+
+    // Creates an inventory for the specified id.
+    // public abstract get_inventory(for_item_id: string): Promise<Registry | null>;
+
+    // Deletes an inventory for the specified id
 }
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)

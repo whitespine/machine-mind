@@ -1,4 +1,4 @@
-// TODO: make raw coercers for all of these. For now, we just kinda trust (bad idea, bro!)
+export const CC_VERSION = "MchMnd2.0A";
 
 // Holds enums that are as of yet seen nowhere else
 export enum MountType {

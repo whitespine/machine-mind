@@ -17,7 +17,7 @@ import {
 import { bound_int } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
 import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { DamageType } from "../enums";
+import { CC_VERSION, DamageType } from "../enums";
 import { WeaponMod } from "./WeaponMod";
 
 interface AllMechData {
@@ -27,7 +27,6 @@ interface AllMechData {
     gm_note: string;
     portrait: string;
     cloud_portrait: string;
-    active: boolean;
     current_structure: number;
     current_hp: number;
     overshield: number;
@@ -45,6 +44,7 @@ interface AllMechData {
 }
 
 export interface PackedMechData extends AllMechData {
+    active: boolean;
     frame: string;
     statuses: string[];
     conditions: string[];
@@ -61,7 +61,6 @@ export interface PackedMechData extends AllMechData {
 
 export interface RegMechData extends AllMechData {
     pilot: RegRef<EntryType.PILOT> | null;
-    frame: RegRef<EntryType.FRAME>;
     statuses_and_conditions: RegRef<EntryType.STATUS>[]; // Also includes conditions
     resistances: DamageType[];
     //reactions: RegRef<EntryType.ACTION>[]
@@ -77,7 +76,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     Portrait!: string;
     CloudPortrait!: string;
     BuiltInImg!: string;
-    Frame!: Frame;
     Loadout!: MechLoadout;
     private _current_structure!: number; // Get set elsewhere to bound
     private _current_stress!: number;
@@ -88,7 +86,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     CurrentCoreEnergy!: number;
     CurrentOvercharge!: number;
     Activations!: number;
-    Active!: boolean;
     Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
     StatusesAndConditions!: Status[];
@@ -105,6 +102,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     OwnedWeapons!: MechWeapon[];
     OwnedSystems!: MechSystem[];
     OwnedWeaponMods!: WeaponMod[];
+    OwnedFrames!: Frame[];
 
     // Per turn data
     TurnActions!: number;
@@ -117,6 +115,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
 
     public get IsCascading(): boolean {
         return !!this.Loadout.Equipment.filter(x => x.Cascading).length;
+    }
+
+    public get Frame(): Frame | null {
+        return this.Loadout.Frame;
     }
 
     /*
@@ -154,23 +156,27 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get Size(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("size");
         const size = Math.ceil(this.Frame.Stats.size + bonus);
         return bound_int(size, 0.5, Rules.MaxFrameSize);
     }
 
     public get Armor(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("armor");
         const armor = this.Frame.Stats.armor + bonus;
         return bound_int(armor, 0, Rules.MaxMechArmor);
     }
 
     public get SaveTarget(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("save");
         return this.Frame.Stats.save + bonus;
     }
 
     public get Evasion(): number {
+        if(!this.Frame) return 0;
         // if (this.IsStunned) return 5;
         // TODO - allow status bonuses to override somehow
         const bonus = this.sum_bonuses("evade");
@@ -178,46 +184,55 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get Speed(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("speed");
         return this.Frame.Stats.speed + bonus;
     }
 
     public get SensorRange(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("sensor");
         return this.Frame.Stats.sensor_range + bonus;
     }
 
     public get EDefense(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("edef");
         return this.Frame.Stats.edef + bonus;
     }
 
     public get LimitedBonus(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("limited_bonus");
         return bonus;
     }
 
     public get AttackBonus(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("attack");
         return bonus;
     }
 
     public get TechAttack(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("tech_attack");
         return this.Frame.Stats.tech_attack + bonus;
     }
 
     public get Grapple(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("grapple");
         return Rules.BaseGrapple + bonus;
     }
 
     public get Ram(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("ram");
         return Rules.BaseRam + bonus;
     }
 
     public get SaveBonus(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("save");
         return bonus;
     }
@@ -249,6 +264,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get MaxStructure(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("structure");
         return this.Frame.Stats.structure + bonus;
     }
@@ -264,19 +280,23 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     */
 
     public get MaxHP(): number {
+        if(!this.Frame) return 0;
         const bonus = this.sum_bonuses("hp");
         return this.Frame.Stats.hp + bonus;
     }
 
     public get CurrentSP(): number {
+        if(!this.Frame) return 0;
         return this.Loadout.TotalSP;
     }
 
     public get MaxSP(): number {
+        if(!this.Frame) return 0;
         return this.Frame.Stats.sp + this.sum_bonuses("sp");
     }
 
     public get FreeSP(): number {
+        if(!this.Frame) return 0;
         return this.MaxSP - this.CurrentSP;
     }
 
@@ -303,14 +323,17 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     */
 
     public get IsInDangerZone(): boolean {
+        if(!this.Frame) return false;
         return this.CurrentHeat >= Math.ceil(this.HeatCapacity / 2);
     }
 
     public get HeatCapacity(): number {
+        if(!this.Frame) return 0;
         return this.Frame.Stats.heatcap + this.sum_bonuses("heatcap");
     }
 
     public get CurrentStress(): number {
+        if(!this.Frame) return 0;
         return this._current_stress;
     }
 
@@ -319,10 +342,12 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public get MaxStress(): number {
+        if(!this.Frame) return 0;
         return this.Frame.Stats.stress + this.sum_bonuses("stress");
     }
 
     public get RepairCapacity(): number {
+        if(!this.Frame) return 0;
         return this.Frame.Stats.repcap + this.sum_bonuses("repcap");
     }
 
@@ -339,12 +364,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     public NewTurn(): void {
         this.Activations = 1;
         this.TurnActions = 2;
-        this.CurrentMove = this.Frame.Stats.speed;
+        this.CurrentMove = this.Speed;
     }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
     public get StatusString(): string[] {
         const out: string[] = [];
+        if (this.Frame) return ["No frame equipped"];
         if (this.ReactorDestroyed) out.push("Reactor Destroyed");
         if (this.Destroyed) out.push("Destroyed");
         if (this.Ejected) out.push("Ejected");
@@ -410,6 +436,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         Deployables?: Deployable[];
         Counters?: Counter[];
     }> {
+        if(!this.Frame) return [];
         let output: Array<{
             Bonuses?: Bonus[];
             Actions?: Action[];
@@ -417,6 +444,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
             Deployaables?: Deployable[];
             Counters?: Counter[];
         }> = [];
+
 
         // Get from equipment
         for (let item of this.Loadout.Equipment) {
@@ -478,8 +506,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
             gm_note: this.GmNote,
             portrait: this.Portrait,
             cloud_portrait: this.CloudPortrait,
-            frame: this.Frame.as_ref(),
-            active: this.Active,
             current_structure: this.CurrentStructure,
             current_hp: this.CurrentHP,
             overshield: this.Overshield,
@@ -496,7 +522,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
             ejected: this.Ejected,
             activations: this.Activations,
             meltdown_imminent: this.MeltdownImminent,
-            cc_ver: "MM-0",
+            cc_ver: CC_VERSION,
             loadout: await this.Loadout.save(),
         };
     }
@@ -510,7 +536,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         this.GmNote = data.gm_note;
         this.Portrait = data.portrait;
         this.CloudPortrait = data.cloud_portrait;
-        this.Active = data.active;
         this.Loadout = await new MechLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
@@ -549,10 +574,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
 
     public get_child_entries(): RegEntry<any, any>[] {
         return [
-            this.Frame,
             ...this.OwnedSystems,
             ...this.OwnedWeapons,
             ...this.OwnedWeaponMods,
+            ...this.OwnedFrames,
             ...this.StatusesAndConditions,
         ];
     }

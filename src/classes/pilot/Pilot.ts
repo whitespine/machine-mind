@@ -43,6 +43,7 @@ import { bound_int, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
 import { RegStack } from "../regstack";
+import { CC_VERSION } from '../enums';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -633,7 +634,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
             background: this.Background,
             callsign: this.Callsign,
             campaign: this.Campaign,
-            cc_ver: this.CCVersion,
+            cc_ver: CC_VERSION,
             cloudID: this.CloudID,
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,

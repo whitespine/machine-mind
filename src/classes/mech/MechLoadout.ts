@@ -51,6 +51,7 @@ export interface PackedMechLoadoutData {
 export interface RegMechLoadoutData {
     system_mounts: RegSysMountData[];
     weapon_mounts: RegWepMountData[];
+    frame: RegRef<EntryType.FRAME> | null;
 }
 
 // Fairly simple, will eventually expand to cover sys mods
@@ -69,6 +70,7 @@ export interface RegWepMountData {
 }
 
 export class MechLoadout extends RegSer<RegMechLoadoutData> {
+    Frame!: Frame | null;
     SysMounts!: SystemMount[];
     WepMounts!: WeaponMount[];
 
@@ -79,12 +81,14 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         this.WepMounts = await Promise.all(
             data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).ready())
         );
+        this.Frame = data.frame ? await this.Registry.resolve(data.frame, this.OpCtx) : null
     }
 
     public async save(): Promise<RegMechLoadoutData> {
         return {
             system_mounts: await SerUtil.save_all(this.SysMounts),
             weapon_mounts: await SerUtil.save_all(this.WepMounts),
+            frame: this.Frame?.as_ref() ?? null
         };
     }
 

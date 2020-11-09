@@ -40,7 +40,7 @@ import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
 import { Deployable } from "./classes/Deployable";
 import { License } from './classes/License';
 import { Organization } from './classes/pilot/reserves/Organization';
-import { DEFAULT_PILOT } from './classes/default_entries';
+import { DEFAULT_MECH, DEFAULT_PILOT } from './classes/default_entries';
 
 // This is a shared item between registries that basically just keeps their actors in sync
 export class RegEnv {
@@ -84,8 +84,14 @@ export class StaticReg extends Registry {
     // Simple lookup for envs. We do NOT self register
     private env: RegEnv;
 
+    // Fetch inventory. Create if not present
     async get_inventory(for_actor_id: string): Promise<Registry | null> {
-        return this.env.inventories.get(for_actor_id) ?? null;
+        let result = this.env.inventories.get(for_actor_id);
+        if(!result) {
+            result = new StaticReg(this.env);
+            this.env.inventories.set(for_actor_id, result);
+        }
+        return result;
     }
 
     // Just delegates to std_builders, as we need
@@ -116,9 +122,9 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
 
         // The inventoried things (actors!)
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, DEFAULT_PILOT, env.pilot_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, DEFAULT_PILOT(), env.pilot_cat));
         this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, undefined, env.dep_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, undefined, env.mech_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, DEFAULT_MECH(), env.mech_cat));
         // to be done
         // NpcClasses: null as any,
         // NpcFeatures: null as any,
