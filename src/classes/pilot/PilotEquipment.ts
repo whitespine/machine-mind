@@ -1,4 +1,4 @@
-import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@/class";
+import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -8,8 +8,8 @@ import {
     PackedDeployableData,
     PackedTagInstanceData,
     RegTagInstanceData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { RegDamageData } from "../Damage";
 
 ///////////////////////////////////////////////////////////

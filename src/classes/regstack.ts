@@ -6,7 +6,7 @@ import {
     RegEntryTypes,
     Registry,
     RegRef,
-} from "@/registry";
+} from "@src/registry";
 
 // Provides a mechanism for fallback regs
 export class RegStack extends Registry {

@@ -24,7 +24,7 @@ import {
     Talent,
     WeaponMod,
     Mech,
-} from "@/class";
+} from "@src/class";
 import {
     EntryConstructor,
     EntryType,
@@ -34,9 +34,11 @@ import {
     RegEntryTypes,
     Registry,
     ReviveFunc,
-} from "@/registry";
+} from "@src/registry";
 import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
 import { Deployable } from "./classes/Deployable";
+import { License } from './classes/License';
+import { Organization } from './classes/pilot/reserves/Organization';
 
 // This is a shared item between registries that basically just keeps their actors in sync
 export class RegEnv {
@@ -93,9 +95,11 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
         this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait));
         this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame));
+        this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License));
         this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer));
         this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem));
         this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon));
@@ -143,9 +147,9 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null> {
         // lil' a bit janky, but serviceable
         for (let v of this.reg_data.values()) {
-            let va = v as any;
-            if (va.id == mmid) {
-                return this.revive_func(this.parent, va);
+            let id = (v as any).id;
+            if (id == mmid) {
+                return this.revive_func(this.parent, id, v);
             }
         }
         return null;
@@ -195,6 +199,9 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     // a bit tricky in terms of what side effects this could have, actually.
     async update(...items: LiveEntryTypes<T>[]): Promise<void> {
         for (let i of items) {
+            if(!this.reg_data.has(i.RegistryID)) {
+                console.warn("Tried to update a destroyed/nonexistant/non-owned item");
+            }
             let saved = (await i.save()) as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
             this.reg_data.set(i.RegistryID, saved);
         }

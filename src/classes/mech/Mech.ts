@@ -13,10 +13,10 @@ import {
     Rules,
     Status,
     Synergy,
-} from "@/class";
-import { bound_int } from "@/funcs";
-import { PackedMechLoadoutData, RegMechLoadoutData } from "@/interface";
-import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/class";
+import { bound_int } from "@src/funcs";
+import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
+import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { DamageType } from "../enums";
 import { WeaponMod } from "./WeaponMod";
 

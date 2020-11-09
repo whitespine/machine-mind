@@ -46,8 +46,8 @@ import {
     IEnvironmentData,
     IActionData,
     PackedPilotEquipmentData,
-} from "@/interface";
-import { Rules } from "@/class";
+} from "@src/interface";
+import { Rules } from "@src/class";
 
 export interface GlossaryItem {
     name: string;

@@ -1,5 +1,5 @@
 /*
-import { MissionStepType } from "@/class";
+import { MissionStepType } from "@src/class";
 
 export interface IMissionStep {
     ID: string;

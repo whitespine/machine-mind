@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Deployable, Synergy } from "@/class";
+import { Action, Bonus, Counter, Deployable, Synergy } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -6,8 +6,8 @@ import {
     PackedCounterData,
     PackedDeployableData,
     RegCounterData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { FrameEffectUse } from "../enums";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])

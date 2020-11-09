@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry } from "@/registry";
+import { EntryType, RegEntry, Registry } from "@src/registry";
 
 export interface IStatusData {
     name: string;

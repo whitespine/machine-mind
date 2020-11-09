@@ -1,7 +1,7 @@
 /*
-import { Encounter, Rest } from "@/class";
-import { store } from "@/hooks";
-import { IMissionStep } from "@/interface";
+import { Encounter, Rest } from "@src/class";
+import { store } from "@src/hooks";
+import { IMissionStep } from "@src/interface";
 
 export enum MissionStepType {
     Encounter = "Encounter",

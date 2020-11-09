@@ -27,7 +27,7 @@ import {
     Status,
     Frame,
     Quirk,
-} from "@/class";
+} from "@src/class";
 import {
     IManufacturerData,
     IFactionData,
@@ -43,10 +43,10 @@ import {
     PackedReserveData,
     ITagTemplateData,
     PackedSkillData,
-} from "@/interface";
+} from "@src/interface";
 import _ from "lodash";
 import { IStatusData } from "./Statuses";
-import { Registry } from "@/registry";
+import { Registry } from "@src/registry";
 import { LicensedItem } from "./License";
 
 export interface IContentPackManifest {
@@ -92,6 +92,11 @@ export interface IContentPack {
 
 export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     // Let us begin. Unpacking automatically adds the item to the registry in most cases
+
+    // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise! 
+    // However, their reg data will be totally fine, as the reg's will still have the unresolved refs
+    // This is do to a peculiarity of our setup in that even if you load an item and its refs fail to resolve,
+    // because there is no automatic writeback those unresolved refs will still exist in the registry copy
     let d = pack.data;
     let reg = to_registry;
     let licenseables: LicensedItem[] = [];

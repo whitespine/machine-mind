@@ -1,5 +1,5 @@
-import { Range, Damage, NpcFeature, NpcFeatureType, CreateRange} from "@/class";
-import { INpcFeatureData, ITagInstanceData, IRangeData } from "@/interface";
+import { Range, Damage, NpcFeature, NpcFeatureType, CreateRange} from "@src/class";
+import { INpcFeatureData, ITagInstanceData, IRangeData } from "@src/interface";
 import { DamageType } from "../enums";d
 
 export interface INpcDamageData {

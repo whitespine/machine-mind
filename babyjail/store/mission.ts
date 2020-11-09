@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Mission, ActiveMission } from "@/class";
-import { PersistentStore } from "@/io/persistence";
-import { IMissionData } from "@/classes/encounter/Mission";
-import { IActiveMissionData } from "@/classes/encounter/ActiveMission";
+import { Mission, ActiveMission } from "@src/class";
+import { PersistentStore } from "@src/io/persistence";
+import { IMissionData } from "@src/classes/encounter/Mission";
+import { IActiveMissionData } from "@src/classes/encounter/ActiveMission";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
-import { logger } from "@/hooks";
+import { logger } from "@src/hooks";
 
 export const FILEKEY_MISSIONS = "missions_v2.json";
 export const FILEKEY_ACTIVE_MISSIONS = "active_missions_v2.json";

@@ -1,6 +1,6 @@
-import { OrgType } from "@/classes/enums";
-import { bound_int } from "@/funcs";
-import { EntryType, RegEntry, SimSer } from "@/registry";
+import { OrgType } from "@src/classes/enums";
+import { bound_int } from "@src/funcs";
+import { EntryType, RegEntry, SimSer } from "@src/registry";
 
 export interface IOrganizationData {
     name: string;

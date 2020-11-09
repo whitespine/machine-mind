@@ -4,14 +4,14 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 
 // first in this file.
-export { IActionData } from "@/classes/Action";
-export { IBackground } from "@/classes/Background";
-export { IBonusData } from "@/classes/Bonus";
+export { IActionData } from "@src/classes/Action";
+export { IBackground } from "@src/classes/Background";
+export { IBonusData } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
 
-export { ISynergyData } from "@/classes/Synergy";
+export { ISynergyData } from "@src/classes/Synergy";
 export { LicensedItem, LicensedItemType, RegLicenseData } from "./classes/License";
 export { PackedCoreSystemData, RegCoreSystemData } from "./classes/mech/CoreSystem";
 export { PackedDeployableData, RegDeployableData } from "./classes/Deployable";

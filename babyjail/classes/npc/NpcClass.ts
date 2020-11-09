@@ -1,7 +1,7 @@
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
-import { store } from "@/hooks";
-import { NpcFeature } from "@/class";
-import { EntryType, RegEntry, RegRef } from '@/new_meta';
+import { store } from "@src/hooks";
+import { NpcFeature } from "@src/class";
+import { EntryType, RegEntry, RegRef } from '@src/new_meta';
 import { CORE_BREW_ID, USER_BREW_ID } from '../enums';
 
 interface AllNpcClassData {

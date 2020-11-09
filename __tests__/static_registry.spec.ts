@@ -29,7 +29,7 @@ describe("Counter", () => {
 
     it("Can retrieve all categories", async () => {
         let s = await init_basic_setup(false);
-        for(let et in Object.values(EntryType)) {
+        for(let et of Object.values(EntryType)) {
             expect(s.reg.get_cat(et as EntryType)).toBeDefined();
         }
     });
@@ -59,7 +59,7 @@ describe("Counter", () => {
 
         // Try retrieving by mmid
         expect(await c.lookup_mmid("bmw")).toBeDefined();
-        expect(await c.lookup_mmid("zoop")).toBeUndefined(); // 5
+        expect(await c.lookup_mmid("zoop")).toBeNull(); // 5
 
         // Check listing of both types
         expect((await c.list_raw()).length).toEqual(1);
@@ -70,7 +70,7 @@ describe("Counter", () => {
         man.Description = "small gunz";
         await man.writeback();
 
-        // Make sure writeback didn't break things or whatever
+        // Make sure writeback didn't break things in the live copy somehow.
         expect(man.ID).toEqual("smz");
 
         // Check listing of both types again
@@ -80,7 +80,7 @@ describe("Counter", () => {
         // Check raw matches expected updated value
         raw = await c.get_raw(man.RegistryID);
         expect(raw).toBeDefined();
-        expect(raw!.id).toEqual("bmw");
+        expect(raw!.id).toEqual("smz");
         expect(raw!.description).toEqual("small gunz");
 
         // Delete it, make sure it is gone

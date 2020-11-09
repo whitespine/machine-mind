@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
+import { EntryType, RegEntry, Registry, SimSer } from "@src/registry";
 
 export interface ISitrepData {
     id: string;

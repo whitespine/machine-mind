@@ -1,7 +1,7 @@
 // Wrapper class for items assigned to an NPC
 
-import { store } from "@/hooks";
-import { NpcFeature } from "@/class";
+import { store } from "@src/hooks";
+import { NpcFeature } from "@src/class";
 
 export interface INpcItemSaveData {
     itemID: string;

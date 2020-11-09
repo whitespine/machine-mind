@@ -7,9 +7,9 @@ import {
     Counter,
     Bonus,
     Synergy,
-} from "@/class";
-import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@/interface";
-import { EntryType, LiveEntryTypes, Registry, RegRef, RegSer, SerUtil, SimSer } from "@/registry";
+} from "@src/class";
+import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@src/interface";
+import { EntryType, LiveEntryTypes, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
 
 // This is what is actually in the loadouts. The id's ref actual weapons
 export interface PackedPilotEquipmentState {

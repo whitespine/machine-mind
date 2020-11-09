@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@/class";
+import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@src/class";
 import {
     IActionData,
     ISynergyData,
@@ -8,8 +8,8 @@ import {
     RegCounterData,
     RegTagInstanceData,
     IBonusData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { ActivationType, FrameEffectUse } from "../enums";
 
 export interface AllCoreSystemData {
@@ -130,10 +130,8 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     }
 
     public static async unpack(dep: PackedCoreSystemData, reg: Registry): Promise<CoreSystem> {
-        SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
-        // Get the tags
-        let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
-        let reg_tags = await SerUtil.save_all(tags); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
+        // Get tags
+        let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(dep.counters);
@@ -148,7 +146,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {
             counters,
-            tags: reg_tags,
+            tags,
             deployables,
             integrated,
             activation: dep.activation || ActivationType.None,

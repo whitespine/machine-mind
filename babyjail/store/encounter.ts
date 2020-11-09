@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Encounter } from "@/class";
-import { IEncounterData } from "@/classes/encounter/Encounter";
-import { logger } from "@/hooks";
+import { Encounter } from "@src/class";
+import { IEncounterData } from "@src/classes/encounter/Encounter";
+import { logger } from "@src/hooks";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
 
 export const FILEKEY_ENCOUNTERS = "encounters_v2.json";

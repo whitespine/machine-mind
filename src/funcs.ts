@@ -1,12 +1,12 @@
 import { Bonus, Mech } from "./class";
 
 // Same logic as interfaces, classes, etc.
-export { parseContentPack } from "@/io/ContentPackParser";
-export { intake_pack } from "@/classes/ContentPack";
-export { get_base_content_pack } from "@/io/ContentPackParser";
-export { download_pilot, update_cloud_pilot, upload_new_pilot } from "@/io/apis/gist";
-export { cloud_sync } from "@/classes/pilot/Pilot";
-export { mech_cloud_sync } from "@/classes/mech/Mech";
+export { parseContentPack } from "@src/io/ContentPackParser";
+export { intake_pack } from "@src/classes/ContentPack";
+export { get_base_content_pack } from "@src/io/ContentPackParser";
+export { download_pilot, update_cloud_pilot, upload_new_pilot } from "@src/io/apis/gist";
+export { cloud_sync } from "@src/classes/pilot/Pilot";
+export { mech_cloud_sync } from "@src/classes/mech/Mech";
 
 export function bound_int(x: number, min: number, max: number) {
     if (x < min) {

@@ -1,4 +1,4 @@
-import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@/class";
+import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -11,8 +11,8 @@ import {
     RegCounterData,
     RegDamageData,
     RegTagInstanceData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../enums";
 import { TagInstance } from "../Tag";
 
@@ -146,18 +146,10 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
     }
 
     public static async unpack(data: PackedWeaponModData, reg: Registry): Promise<WeaponMod> {
-        // Get tags
-        let add_tags = await SerUtil.unpack_children(
-            TagInstance.unpack,
-            reg,
-            data.added_tags ?? []
-        );
-        let add_reg_tags = await SerUtil.save_all(add_tags);
-
         let rdata: RegWeaponModData = {
             ...data,
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
-            added_tags: add_reg_tags,
+            added_tags: data.added_tags?.map(TagInstance.unpack_reg) ?? [],
 
             // Boring stuff
             integrated: SerUtil.unpack_integrated_refs(data.integrated),

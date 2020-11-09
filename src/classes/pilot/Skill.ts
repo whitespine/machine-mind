@@ -1,5 +1,5 @@
-import { Rules } from "@/class";
-import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
+import { Rules } from "@src/class";
+import { EntryType, RegEntry, Registry, SimSer } from "@src/registry";
 import { IRankedData } from "../GeneralInterfaces";
 
 /*

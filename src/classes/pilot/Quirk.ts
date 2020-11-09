@@ -1,6 +1,6 @@
-import { Action, Bonus, Deployable, Synergy, Counter } from "@/class";
-import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
+import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 ///////////////////////////////////////////////////////////
 // Data

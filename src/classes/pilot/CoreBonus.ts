@@ -1,4 +1,4 @@
-import { Synergy, Bonus, Action, Counter, Deployable } from "@/class";
+import { Synergy, Bonus, Action, Counter, Deployable } from "@src/class";
 
 import {
     IActionData,
@@ -6,8 +6,8 @@ import {
     PackedDeployableData,
     PackedCounterData,
     IBonusData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { RegCounterData } from "../Counter";
 
 // These attrs are shared

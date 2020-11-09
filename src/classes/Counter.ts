@@ -1,5 +1,5 @@
-import { bound_int } from "@/funcs";
-import { SimSer } from "@/registry";
+import { bound_int } from "@src/funcs";
+import { SimSer } from "@src/registry";
 
 /* eslint-disable @typescript-eslint/camelcase */
 export interface PackedCounterData {

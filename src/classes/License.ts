@@ -1,4 +1,4 @@
-import { EntryType, LiveEntryTypes, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@/registry";
+import { EntryType, LiveEntryTypes, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { Manufacturer } from "./Manufacturer";
 
 export type LicensedItemType =

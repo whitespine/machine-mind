@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SimSer } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
 
 export interface ITagTemplateData {
     id: string;
@@ -85,7 +85,6 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
         this.Value = data.val ?? null;
         let Tag = await this.Registry.resolve(data.tag);
         if (!Tag) {
-            console.error(`Tag ${data.tag.id} not found - defaulting to an anonymous tag.`);
             Tag = new TagTemplate(EntryType.TAG, this.Registry, "error", {
                 description: "INVALID",
                 id: "INVALID",
@@ -106,8 +105,8 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     }
 
     // Unpacks this tag instance, forming a proper reg ref instead of the old shoddy id lookup based thing
-    public static async unpack(inst: PackedTagInstanceData, reg: Registry): Promise<TagInstance> {
-        // Just create an unresolved ref
+    // we don't instantiate to avoid a farily common race condition
+    public static unpack_reg(inst: PackedTagInstanceData): RegTagInstanceData {        // Just create an unresolved ref
         let dat: RegTagInstanceData = {
             tag: {
                 id: inst.id,
@@ -116,8 +115,6 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
             },
             val: inst.val,
         };
-        let ti = new TagInstance(reg, dat);
-        await ti.ready();
-        return ti;
+        return dat;
     }
 }

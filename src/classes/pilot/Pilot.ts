@@ -13,8 +13,8 @@ import {
     License,
     Skill,
     Bonus,
-} from "@/class";
-import * as gistApi from "@/io/apis/gist";
+} from "@src/class";
+import * as gistApi from "@src/io/apis/gist";
 import {
     IActionData,
     IOrganizationData,
@@ -26,7 +26,7 @@ import {
     IMechState,
     PackedPilotLoadoutData,
     RegCounterData,
-} from "@/interface";
+} from "@src/interface";
 import {
     EntryType,
     InventoriedRegEntry,
@@ -37,11 +37,11 @@ import {
     RegRef,
     RegSer,
     SerUtil,
-} from "@/registry";
+} from "@src/registry";
 import { PackedPilotEquipmentState, RegPilotLoadoutData } from "./PilotLoadout";
-import { bound_int, mech_cloud_sync } from "@/funcs";
+import { bound_int, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
-import { get_user_id } from "@/hooks";
+import { get_user_id } from "@src/hooks";
 import { RegStack } from "../regstack";
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form

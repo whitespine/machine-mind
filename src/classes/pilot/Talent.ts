@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@/class";
+import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -6,8 +6,8 @@ import {
     PackedDeployableData,
     PackedCounterData,
     RegCounterData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {

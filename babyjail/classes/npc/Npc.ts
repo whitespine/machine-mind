@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
 
-import { imageManagement, ImageTag, store, is_web } from "@/hooks";
-import { EncounterSide, NpcClass, NpcTemplate, NpcItem, NpcStats, NpcFeature } from "@/class";
-import { ICounterData, ICounterSaveData, IActor, INpcStats, INpcItemSaveData } from "@/interface";
+import { imageManagement, ImageTag, store, is_web } from "@src/hooks";
+import { EncounterSide, NpcClass, NpcTemplate, NpcItem, NpcStats, NpcFeature } from "@src/class";
+import { ICounterData, ICounterSaveData, IActor, INpcStats, INpcItemSaveData } from "@src/interface";
 
 export interface INpcData {
     active: boolean;

@@ -1,6 +1,6 @@
 import axios from "axios";
-import { PackedPilotData } from "@/interface";
-import { Pilot } from "@/class";
+import { PackedPilotData } from "@src/interface";
+import { Pilot } from "@src/class";
 
 // this token is scoped to only allow for the creation of gists on a burner account
 // if this is insufficient, we'll move to a login scheme

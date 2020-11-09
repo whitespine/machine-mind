@@ -1,7 +1,7 @@
 /*
 import { nanoid } from "nanoid";
-import { MissionStepType } from "@/class";
-import { IMissionStep } from "@/interface";
+import { MissionStepType } from "@src/class";
+import { IMissionStep } from "@src/interface";
 
 export interface IRestData {
     id: string;

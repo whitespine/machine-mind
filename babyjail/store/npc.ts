@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import _ from "lodash";
-import { Npc } from "@/class";
-import { PersistentStore } from "@/io/persistence";
-import { INpcData } from "@/classes/npc/Npc";
+import { Npc } from "@src/class";
+import { PersistentStore } from "@src/io/persistence";
+import { INpcData } from "@src/classes/npc/Npc";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
-import { logger } from "@/hooks";
+import { logger } from "@src/hooks";
 
 export const FILEKEY_NPCS = "npcs_v2.json";
 

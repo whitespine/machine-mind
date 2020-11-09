@@ -9,10 +9,10 @@ import {
     Synergy,
     TagInstance,
     WeaponMod,
-} from "@/class";
-import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@/interface";
+} from "@src/class";
+import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
 import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@/registry';
+import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { RegMechData } from './Mech';
 // TODO:
 // class WeaponAmmo {}
@@ -205,12 +205,11 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
       parent_deployables.push(...dep_refs);
 
       // The rest is left to the profile
-      let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, p.tags);
-      let reg_tags = await SerUtil.save_all(tags); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
+      let tags = p.tags?.map(TagInstance.unpack_reg) ?? [];
       let unpacked_profile: RegMechWeaponProfile = {
         damage: (p.damage || []).map(Damage.unpack),
         range: p.range || [],
-        tags: reg_tags,
+        tags,
         effect: p.effect || "",
         on_attack: p.on_attack || "",
         on_crit: p.on_crit || "",

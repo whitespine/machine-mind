@@ -7,10 +7,10 @@ module.exports = {
         },
     },
     moduleNameMapper: {
-        "@/*": ["src/*"],
+      "^@src/(.*)$": "<rootDir>/src/$1",
     },
     testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     testPathIgnorePatterns: ["/lib/", "/node_modules/", "/babyjail/", "/dist/"],
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-    collectCoverage: true,
+    collectCoverage: false,
 };

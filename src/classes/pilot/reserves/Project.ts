@@ -2,7 +2,7 @@
 
 Probably best to just nuke this one. its only real unique feature (progress) can more or less just be accomplished via counters
 
-import { Reserve } from "@/class";
+import { Reserve } from "@src/class";
 import { IReserveData } from "./Reserve";
 
 export interface IProjectData extends IReserveData {

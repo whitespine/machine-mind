@@ -1,4 +1,4 @@
-import { LicensedItem } from "@/class";
+import { LicensedItem } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -6,7 +6,7 @@ import {
     ILicensedItemData,
     ISynergyData,
     ITagInstanceData,
-} from "@/interface";
+} from "@src/interface";
 
 interface AllMechEquipmentData {
     // ICompendiumItemData

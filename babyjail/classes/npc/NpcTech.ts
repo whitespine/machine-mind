@@ -1,5 +1,5 @@
-import { INpcFeatureData, ITagInstanceData } from "@/interface";
-import { NpcFeature, NpcFeatureType } from "@/class";
+import { INpcFeatureData, ITagInstanceData } from "@src/interface";
+import { NpcFeature, NpcFeatureType } from "@src/class";
 
 export interface INpcTechData extends INpcFeatureData {
     tags: ITagInstanceData[];

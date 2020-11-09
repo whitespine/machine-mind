@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { Mount, WeaponSlot, CoreBonus, MountType, FittingSize } from "@/class";
-import { IMountData } from "@/interface";
+import { Mount, WeaponSlot, CoreBonus, MountType, FittingSize } from "@src/class";
+import { IMountData } from "@src/interface";
 
 export class EquippableMount extends Mount {
     private _bonuses: CoreBonus[];

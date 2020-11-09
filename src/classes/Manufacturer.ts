@@ -1,5 +1,5 @@
-import { imageManagement, ImageTag } from "@/hooks";
-import { EntryType, RegEntry, Registry, SimSer } from "@/registry";
+import { imageManagement, ImageTag } from "@src/hooks";
+import { EntryType, RegEntry, Registry, SimSer } from "@src/registry";
 
 export interface IManufacturerData {
     id: string;

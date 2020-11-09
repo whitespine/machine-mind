@@ -65,7 +65,7 @@ import {
     Counter,
     TagInstance,
     License,
-} from "@/class";
+} from "@src/class";
 import { IOrganizationData, Organization } from "./classes/pilot/reserves/Organization";
 import {
     IActionData,
@@ -479,15 +479,14 @@ export abstract class SerUtil {
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get tags
-        let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, src.tags);
-        let reg_tags = await SerUtil.save_all(tags);
+        let tags = src.tags?.map(TagInstance.unpack_reg) ?? [];
 
         return {
             actions: src.actions ?? [],
             bonuses: src.bonuses ?? [],
             synergies: src.synergies ?? [],
             deployables,
-            tags: reg_tags,
+            tags,
         };
     }
 
@@ -599,6 +598,11 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     // TODO: Cleanup children? Need some sort of refcounting, maybe.
     public async destroy(): Promise<void> {
         this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
+    }
+
+    // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
+    public async refreshed(): Promise<LiveEntryTypes<T> | null> {
+        return this.Registry.get_cat(this.Type).get_live(this.RegistryID);
     }
 
     // List all child items of this item. We assume none by default

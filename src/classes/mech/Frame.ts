@@ -1,6 +1,6 @@
-import { CoreSystem, FrameTrait } from "@/class";
-import { PackedCoreSystemData, PackedFrameTraitData } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+import { CoreSystem, FrameTrait } from "@src/class";
+import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
 

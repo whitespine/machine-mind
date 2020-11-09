@@ -1,6 +1,6 @@
 import JSZip, { JSZipObject } from "jszip";
-import * as lancerData from "@/classes/utility/typed_lancerdata";
-import { CORE_BREW_ID } from "@/classes/enums";
+import * as lancerData from "@src/classes/utility/typed_lancerdata";
+import { CORE_BREW_ID } from "@src/classes/enums";
 import {
     IContentPackManifest,
     IContentPack,
@@ -18,8 +18,8 @@ import {
     // PackedNpcClassData,
     // PackedNpcFeatureData,
     // PackedNpcTemplateData,
-} from "@/interface";
-import { ITagTemplateData } from "@/classes/Tag";
+} from "@src/interface";
+import { ITagTemplateData } from "@src/classes/Tag";
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (

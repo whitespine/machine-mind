@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Synergy, TagInstance } from "@/class";
+import { Action, Bonus, Counter, Synergy, TagInstance } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -7,8 +7,8 @@ import {
     RegTagInstanceData,
     PackedCounterData,
     RegCounterData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, SerUtil } from "@src/registry";
 import { ActivationType } from "./enums";
 
 interface AllDeployableData {
@@ -144,13 +144,12 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
 
     // Loads this item into the registry. Only use as needed (IE once)
     public static async unpack(dep: PackedDeployableData, reg: Registry): Promise<Deployable> {
-        let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, dep.tags);
-        let reg_tags = await SerUtil.save_all(tags); // A bit silly, but tags don't actually make entries for us to refer to or whatever, so we need to save them back
+        let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
         let counters = SerUtil.unpack_counters_default(dep.counters);
         let unpacked: RegDeployableData = {
             ...dep,
             counters,
-            tags: reg_tags,
+            tags
         };
         return reg.get_cat(EntryType.DEPLOYABLE).create(unpacked);
     }

@@ -1,5 +1,5 @@
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
-import { PersistentStore } from "@/io/persistence";
+import { PersistentStore } from "@src/io/persistence";
 import { nanoid } from "nanoid";
 
 export const FILEKEY_USER = "user.config";

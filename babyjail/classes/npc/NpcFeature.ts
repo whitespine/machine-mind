@@ -1,4 +1,4 @@
-import { PackedTagInstanceData } from '@/interface';
+import { PackedTagInstanceData } from '@src/interface';
 
 export enum NpcFeatureType {
     Trait = "Trait",

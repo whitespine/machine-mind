@@ -1,6 +1,6 @@
-import { store } from "@/hooks";
-import { NpcFeature } from "@/class";
-import { EntryType, RegRef } from '@/new_meta';
+import { store } from "@src/hooks";
+import { NpcFeature } from "@src/class";
+import { EntryType, RegRef } from '@src/new_meta';
 
 interface AllNpcTemplateData {
     name: string;

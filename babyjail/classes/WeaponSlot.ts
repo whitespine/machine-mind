@@ -1,8 +1,8 @@
-import { MechWeapon,  } from "@/class";
+import { MechWeapon,  } from "@src/class";
 import _ from "lodash";
 
-import { WeaponMod } from "@/class";
-import { store } from "@/hooks";
+import { WeaponMod } from "@src/class";
+import { store } from "@src/hooks";
 import { FittingSize } from '../enums';
 
 export class WeaponSlot {

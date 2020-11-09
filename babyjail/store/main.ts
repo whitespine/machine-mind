@@ -3,7 +3,7 @@ import { PilotManagementStore, FILEKEY_PILOTS, FILEKEY_PILOT_GROUPS } from "./pi
 import { NpcStore, FILEKEY_NPCS } from "./npc";
 import { EncounterStore, FILEKEY_ENCOUNTERS } from "./encounter";
 import { MissionStore, FILEKEY_ACTIVE_MISSIONS, FILEKEY_MISSIONS } from "./mission";
-import { PersistentStore } from "@/io/persistence";
+import { PersistentStore } from "@src/io/persistence";
 import { UserProfileStore, FILEKEY_USER, IUserProfile } from "./user_profile";
 import { load_setter_handler, DataStoreOptions, DEFAULT_STORE_OPTIONS } from "./store_module";
 

@@ -1,4 +1,4 @@
-import { MechWeapon } from "@/class";
+import { MechWeapon } from "@src/class";
 import { TagInstance } from "../Tag";
 import { MechSystem } from "./MechSystem";
 

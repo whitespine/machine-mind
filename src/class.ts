@@ -4,7 +4,7 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 // first in this file.
 
-export * from "@/classes/GeneralClasses";
+export * from "@src/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
 // export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
 export { Action } from "./classes/Action";
@@ -14,7 +14,7 @@ export { Deployable } from "./classes/Deployable";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage } from "./classes/Damage";
 export { Range } from "./classes/Range";
-export { Synergy } from "@/classes/Synergy";
+export { Synergy } from "@src/classes/Synergy";
 export { Skill } from "./classes/pilot/Skill";
 export { PilotArmor, PilotGear, PilotWeapon, PilotEquipment } from "./classes/pilot/PilotEquipment";
 export { CoreSystem } from "./classes/mech/CoreSystem";
@@ -61,14 +61,14 @@ export { Status } from "./classes/Statuses";
 // export { ContentPack } from "./classes/ContentPack";
 // export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
-// export { NpcFeatureType, NpcFeature } from "@/classes/npc//NpcFeature";
-// export { NpcItem } from "@/classes/npc/NpcItem";
-// export { NpcReaction } from "@/classes/npc/NpcReaction";
-// export { NpcSystem } from "@/classes/npc/NpcSystem";
-// export { NpcTech } from "@/classes/npc/NpcTech";
-// export { NpcTrait } from "@/classes/npc/NpcTrait";
-// export { NpcWeapon } from "@/classes/npc/NpcWeapon";
-// export { NpcStats } from "@/classes/npc/NpcStats";
-// export { NpcClass } from "@/classes/npc/NpcClass";
-// export { NpcTemplate } from "@/classes/npc/NpcTemplate";
-// export { Npc } from "@/classes/npc/Npc";
+// export { NpcFeatureType, NpcFeature } from "@src/classes/npc//NpcFeature";
+// export { NpcItem } from "@src/classes/npc/NpcItem";
+// export { NpcReaction } from "@src/classes/npc/NpcReaction";
+// export { NpcSystem } from "@src/classes/npc/NpcSystem";
+// export { NpcTech } from "@src/classes/npc/NpcTech";
+// export { NpcTrait } from "@src/classes/npc/NpcTrait";
+// export { NpcWeapon } from "@src/classes/npc/NpcWeapon";
+// export { NpcStats } from "@src/classes/npc/NpcStats";
+// export { NpcClass } from "@src/classes/npc/NpcClass";
+// export { NpcTemplate } from "@src/classes/npc/NpcTemplate";
+// export { Npc } from "@src/classes/npc/Npc";

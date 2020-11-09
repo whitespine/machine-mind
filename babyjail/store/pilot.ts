@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import _ from "lodash";
-import { Pilot } from "@/class";
+import { Pilot } from "@src/class";
 import { AbsStoreModule, load_setter_handler } from "./store_module";
-import { IPilotData } from "@/interface";
+import { IPilotData } from "@src/interface";
 
 export const FILEKEY_PILOTS = "pilots_v2.json";
 export const FILEKEY_PILOT_GROUPS = "pilot_groups.json";

@@ -1,4 +1,4 @@
-// import { Pilot, Npc, Encounter } from "@/class";
+// import { Pilot, Npc, Encounter } from "@src/class";
 // import { getVersion } from "jest";
 
 // Interface image management

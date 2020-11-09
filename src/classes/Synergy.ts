@@ -1,5 +1,5 @@
-import { MechEquipment, MechWeapon, MechSystem, Frame } from "@/class";
-import { SimSer, EntryType } from "@/registry";
+import { MechEquipment, MechWeapon, MechSystem, Frame } from "@src/class";
+import { SimSer, EntryType } from "@src/registry";
 import { WeaponType, WeaponSize, SystemType } from "./enums";
 
 export type SynergyLocation =

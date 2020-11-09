@@ -1,4 +1,4 @@
-import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@/class";
+import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@src/class";
 import {
     IActionData,
     IBonusData,
@@ -9,8 +9,8 @@ import {
     RegCounterData,
     RegDeployableData,
     RegTagInstanceData,
-} from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
+} from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType } from "../enums";
 
 interface AllMechSystemData {

@@ -1,6 +1,6 @@
 /*
-import { Pilot, Mech, PilotWeapon } from "@/class";
-import { store } from "@/hooks";
+import { Pilot, Mech, PilotWeapon } from "@src/class";
+import { store } from "@src/hooks";
 
 function linebreak(i: number, length: number): string {
     if (i > 0 && (i + 1) % 2 === 0 && i + 1 !== length) {

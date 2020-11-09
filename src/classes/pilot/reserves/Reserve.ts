@@ -1,10 +1,10 @@
-import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@/class";
+import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@src/class";
 import { reserves } from "lancer-data";
-import { IActionData, Action } from "@/classes/Action";
-import { IBonusData, Bonus } from "@/classes/Bonus";
-import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@/registry";
-import { ReserveType } from "@/classes/enums";
+import { IActionData, Action } from "@src/classes/Action";
+import { IBonusData, Bonus } from "@src/classes/Bonus";
+import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@src/interface";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
+import { ReserveType } from "@src/classes/enums";
 
 interface AllReserveData {
     id: string;

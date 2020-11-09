@@ -1,7 +1,7 @@
-import { Mech, Pilot } from "@/class";
+import { Mech, Pilot } from "@src/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "./enums";
-import { SerUtil, SimSer } from "@/registry";
+import { SerUtil, SimSer } from "@src/registry";
 import * as pmath from "parsemath";
 
 export interface IBonusData {

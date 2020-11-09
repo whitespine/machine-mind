@@ -1,5 +1,5 @@
 /*
-import { MechEquipment } from "@/class";
+import { MechEquipment } from "@src/class";
 import { Mech } from "../mech/Mech";
 
 export interface ItemFilterParam {

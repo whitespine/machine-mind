@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { store } from "@/hooks";
-import { NpcClass } from "@/class";
+import { store } from "@src/hooks";
+import { NpcClass } from "@src/class";
 
 export interface INpcStats {
     activations: number;

@@ -6,9 +6,9 @@
 // new ver tutorial on startup (first time only, track in profile)
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Mech, Drone, Deployable, Pilot, Rules, MechEquipment } from "@/class";
-import { IActionData, IMechState, IHistoryItem } from "@/interface";
-import { store } from "@/hooks";
+import { Mech, Drone, Deployable, Pilot, Rules, MechEquipment } from "@src/class";
+import { IActionData, IMechState, IHistoryItem } from "@src/interface";
+import { store } from "@src/hooks";
 
 enum Stage {
     Narrative = "Narrative",

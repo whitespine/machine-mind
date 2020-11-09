@@ -1,7 +1,7 @@
 /*
-import { Manufacturer, Pilot, License } from "@/class";
-import {  } from "@/interface";
-import { store } from "@/hooks";
+import { Manufacturer, Pilot, License } from "@src/class";
+import {  } from "@src/interface";
+import { store } from "@src/hooks";
 import _ from "lodash";
 
 export interface ILicensedItemData extends ICompendiumItemData {

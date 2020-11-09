@@ -1,5 +1,5 @@
-import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment } from "@/class";
-import { EntryType, RegRef, RegSer, SerUtil, SimSer } from "@/registry";
+import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment } from "@src/class";
+import { EntryType, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
 import { FittingSize, WeaponSize } from "../enums";
 import { Frame } from "./Frame";
 

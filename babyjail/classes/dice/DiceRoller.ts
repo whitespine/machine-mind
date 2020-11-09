@@ -1,4 +1,4 @@
-import { IDamageRollResult, Id20RollResult } from "@/interface";
+import { IDamageRollResult, Id20RollResult } from "@src/interface";
 
 export class DieSet {
     private _type: number;

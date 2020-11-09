@@ -1,4 +1,4 @@
-import { PersistentStore } from "@/io/persistence";
+import { PersistentStore } from "@src/io/persistence";
 
 // This is a bit complex but basically,
 // this is a function A, which takes a function B, where
