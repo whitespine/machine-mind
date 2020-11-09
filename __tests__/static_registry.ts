@@ -123,4 +123,72 @@ describe("Static Registry Reference implementation", () => {
         expect(lanny.CoreSystem.Integrated.length).toEqual(1);
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
     });
+
+    it("Can create inventories things", async () => {
+        expect.assertions(6);
+        let env = await init_basic_setup();
+
+        // make a pilot
+        let pilots = env.reg.get_cat(EntryType.PILOT);
+        let steve = await pilots.create_default();
+        steve.Name = "Steve";
+        let steve_inv = steve.get_inventory()
+
+        // Inventory should be unique
+        expect(steve_inv).not.toBe(env.reg);
+
+        // Make an armor (in the global scope!)
+        let armors = env.reg.get_cat(EntryType.PILOT_ARMOR);
+        let my_armor = await armors.create_default();
+        my_armor.Name = "Steve's global armor";
+        await my_armor.writeback();
+
+        // Insinuate the armor into steve's personal inventory
+        let old_reg_id = my_armor.RegistryID;
+        await my_armor.insinuate(steve_inv);
+
+        // Moving reg's should've changed registry ids, barring hilariously bad luck
+        expect(my_armor.RegistryID).not.toEqual(old_reg_id);
+        expect(my_armor.Registry).not.toBe(env.reg);
+        expect(my_armor.Registry).toBe(steve.get_inventory());
+
+        // Change its name
+        my_armor.Name = "Steve's personal armor";
+        await my_armor.writeback();
+
+        // Let's check our raws, to be sure what we wanted to change changed
+        let old_raw = await env.reg.get_cat(EntryType.PILOT_ARMOR).get_raw(old_reg_id);
+        let new_raw = await steve_inv.get_cat(EntryType.PILOT_ARMOR).get_raw(my_armor.RegistryID);
+        expect(old_raw.name).toEqual("Steve's global armor"); // 5
+        expect(new_raw.name).toEqual("Steve's personal armor");
+        // Wowie zowie!
+    });
+
+    it("Properly re-finds the same live item", async () => {
+        expect.assertions(5);
+        let env = await init_basic_setup();
+
+        // Oops! All lannies
+        let ctx = new OpCtx();
+
+        // Regardless of id resolution method we expect these to be the same
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_lancaster", ctx);
+        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_lancaster", ctx);
+        expect(lanny === lenny).toBeTruthy();
+        let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(lanny.RegistryID, ctx);
+        expect(lanny === larry).toBeTruthy();
+        let harry: Frame = await env.reg.resolve_wildcard_mmid("mf_lancaster", ctx);
+        expect(lanny === harry).toBeTruthy();
+        let terry: Frame = await env.reg.resolve(lanny.as_ref(), ctx);
+        expect(lanny === terry).toBeTruthy();
+
+        // Does changing the ctx break it? (it should)
+        let ctx_2 = new OpCtx();
+        let gary: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(lanny.RegistryID, ctx_2);
+        expect(gary === lanny).toBeFalsy();
+    });
+
+
+
+    
 });

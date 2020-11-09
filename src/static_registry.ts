@@ -40,7 +40,7 @@ import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
 import { Deployable } from "./classes/Deployable";
 import { License } from './classes/License';
 import { Organization } from './classes/pilot/reserves/Organization';
-import { DEFAULT_MECH, DEFAULT_PILOT } from './classes/default_entries';
+import { DEFAAULT_PILOT_ARMOR, DEFAULT_MECH, DEFAULT_PILOT } from './classes/default_entries';
 
 // This is a shared item between registries that basically just keeps their actors in sync
 export class RegEnv {
@@ -68,8 +68,16 @@ function simple_cat_builder<T extends EntryType>(
         reg,
         type,
         async (reg, ctx, id, raw?) => {
-            // Our actual builder function. Completely unremarkable in almost every way
+            // Our actual builder function shared between all cats.
+            // First check for existing item in ctx
+            let pre = ctx.get(reg, id);
+            if(pre){
+                return pre;
+            }
+
+            // Otherwise create
             let new_item = new clazz(type, reg, ctx, id, nodef(raw ?? template));
+            ctx.set(reg, id, new_item);
             await new_item.ready();
 
             // And we're done
@@ -85,7 +93,7 @@ export class StaticReg extends Registry {
     private env: RegEnv;
 
     // Fetch inventory. Create if not present
-    async get_inventory(for_actor_id: string): Promise<Registry | null> {
+    get_inventory(for_actor_id: string): Registry | null {
         let result = this.env.inventories.get(for_actor_id);
         if(!result) {
             result = new StaticReg(this.env);
@@ -109,7 +117,7 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem));
         this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon));
         this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, DEFAAULT_PILOT_ARMOR()));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon));
         this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));

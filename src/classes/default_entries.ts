@@ -1,7 +1,19 @@
-import { RegPilotData } from "@src/interface";
+import { RegMechData, RegPilotArmorData, RegPilotData } from "@src/interface";
 import { nanoid } from "nanoid";
 import { CC_VERSION } from "./enums";
-import { PackedMechData, RegMechData } from "./mech/Mech";
+
+export function DEFAAULT_PILOT_ARMOR(): RegPilotArmorData {
+    return {
+        actions: [],
+        bonuses: [],
+        deployables: [],
+        description: "",
+        id: nanoid(),
+        name: "New Armor",
+        synergies: [],
+        tags: []
+    }
+}
 
 export function DEFAULT_PILOT(): RegPilotData {
     return {

@@ -16,8 +16,9 @@ import {
 } from "@src/class";
 import { bound_int } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
-import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { CC_VERSION, DamageType } from "../enums";
+import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
 interface AllMechData {
@@ -528,7 +529,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public async load(data: RegMechData): Promise<void> {
-        let subreg = await this.inventory_reg();
+        let subreg = await this.get_inventory();
         this.ID = data.id;
         this.Pilot = data.pilot ? await subreg.resolve(data.pilot, this.OpCtx) : null;
         this.Name = data.name;
@@ -587,4 +588,59 @@ export async function mech_cloud_sync(
     data: PackedMechData,
     mech: Mech,
     compendium_reg: Registry
-): Promise<void> {}
+): Promise<void> {
+    // Reg stuff
+    let mech_inv = await mech.get_inventory();
+    let reg_stack = new RegStack([mech_inv, compendium_reg]);
+
+    // All of this
+    mech.ID = data.id;
+    mech.Name = data.name;
+    mech.Notes = data.notes;
+    mech.GmNote = data.gm_note;
+    mech.Portrait = data.portrait;
+    mech.CloudPortrait = data.cloud_portrait;
+    mech.CurrentStructure = data.current_structure;
+    mech.CurrentStress = data.current_stress;
+    mech.CurrentHP = data.current_hp;
+    mech.Overshield = data.overshield;
+    mech.CurrentHeat = data.current_heat;
+    mech.CurrentRepairs = data.current_repairs;
+    mech.CurrentOvercharge = data.current_overcharge;
+    mech.CurrentCoreEnergy = data.current_core_energy;
+    mech.Burn = data.burn;
+    mech.Ejected = data.ejected;
+    mech.Activations = data.activations;
+    mech.MeltdownImminent = data.meltdown_imminent;
+    mech.Cc_ver = data.cc_ver;
+    mech.CoreActive = data.core_active;
+    mech.Resistances = data.resistances as DamageType[];
+    mech.Reactions = data.reactions;
+
+    // These are eeeever so slightly more complicated (read: way more
+    let ctx = mech.OpCtx;
+    let ofid = mech.Loadout.Frame?.RegistryID
+    mech.Loadout.Frame = await reg_stack.get_cat(EntryType.FRAME).lookup_mmid(data.frame, ctx);
+
+    // It's new - add to owned
+    if(mech.Frame && ofid != mech.Frame.RegistryID) {
+        mech.OwnedFrames.push(mech.Frame);
+    }
+
+    // We only keep one loadout
+    let packed_loadout = data.loadouts[data.active_loadout_index];
+    //todo
+
+    // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)
+    for(let s of mech.StatusesAndConditions) {
+        await s.destroy();
+    }
+    let snc_names = [...data.statuses, ...data.conditions];
+
+    // And re-resolve
+    mech.StatusesAndConditions = await reg_stack.resolve_many(snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)), ctx);
+
+    // We always want to insinuate and writeback to be sure we own all of these items
+    await mech.insinuate(mech_inv);
+    await mech.writeback();
+}

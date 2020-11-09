@@ -39,14 +39,8 @@ export class RegStack extends Registry {
         return null;
     }
 
-    public async get_inventory(for_item_id: string): Promise<Registry | null> {
-        for (let r of this.stack) {
-            let found = await r.get_inventory(for_item_id);
-            if (found) {
-                return found;
-            }
-        }
-        return null;
+    public get_inventory(for_item_id: string): Registry {
+        throw new Error("Getting inventory of a regstack is undefined behavior");
     }
 
     async delete(...args: any) {

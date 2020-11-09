@@ -590,7 +590,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
     }
 
     public async load(data: RegPilotData): Promise<void> {
-        let subreg = await this.inventory_reg();
+        let subreg = await this.get_inventory();
         this.ActiveMech = data.active_mech ? await subreg.resolve(data.active_mech, this.OpCtx) : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
@@ -697,7 +697,7 @@ export async function cloud_sync(
 ): Promise<void> {
     // The simplest way to do this is to, for each entry, just look in a regstack and insinuate to the pilot inventory.
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
-    let pilot_inv = await pilot.inventory_reg();
+    let pilot_inv = pilot.get_inventory();
     let reg_stack = new RegStack([pilot_inv, compendium_reg]);
 
     // Track all items that we hit

@@ -598,13 +598,17 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Convenience function to update self in registry. Note that this doesn't read first!
     public async writeback(): Promise<void> {
-        this.Registry.get_cat(this.Type).update((this as unknown) as LiveEntryTypes<T>); // please don't make me regret this
+        await this.Registry.get_cat(this.Type).update((this as unknown) as LiveEntryTypes<T>); // please don't make me regret this
     }
 
     // Convenience function to delete self in registry. Note that you should probably stop using this item afterwards!
     // TODO: Cleanup children? Need some sort of refcounting, maybe.
     public async destroy(): Promise<void> {
-        this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
+        // Remove self from ctx first.
+        this.OpCtx.delete(this.Registry, this.RegistryID, (this as any).ID);
+
+        // Then actually destroy
+        await this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
     }
 
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
@@ -676,12 +680,15 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
         // To do ourself is quite simple once this is done. Now that all of our child data is in the new registry, we simply transfer ourself via save/load
         // We change our registry before saving, in order to more reliably catch weird saving reg interaactions
+        this.OpCtx.delete(this.Registry, this.RegistryID, (this as any).ID);
         (this as any).Registry = to_new_reg;
         let saved = await this.save();
 
         // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
         let new_entry = await to_new_reg.create(this.Type, saved as any);
         (this as any).RegistryID = new_entry.RegistryID;
+        this.OpCtx.set(this.Registry, this.RegistryID, (this as any).ID);
+
         // We just dismiss the new entry, as we are still it (in theory) but with probably more reliably maintained refs.
 
         // In cases of Non-DAG heirarchies (the only example of which I can think of being Mechs knowing their Pilot and perhaps deployables knowing their deployer),
@@ -708,8 +715,8 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
     }
 
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
-    async inventory_reg(): Promise<Registry> {
-        let v = await this.Registry.get_inventory(this.RegistryID);
+    get_inventory(): Registry {
+        let v = this.Registry.get_inventory(this.RegistryID);
         if (!v) {
             console.error(
                 `Couldn't lookup inventory registry for item ${this.Type}:${this.RegistryID}`
@@ -730,7 +737,7 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
 
 // Reg is for looking up other values. ID is the id that this item will/already has in the reg
 // If raw is supplied as undefined, produce a desired default value (e.g. to create a new default value)
-// export type ReviveFunc<RawType, LiveType> = (reg: Registry, id: string, raw?: RawType) => Promise<LiveType>;
+// IT IS THE SOLE RESPONSIBILITY OF THE REVIVE FUNC TO PROPERLY ADD ITEMS TO AND CHECK THE OpCtx
 export type ReviveFunc<T extends EntryType> = (
     reg: Registry,
     ctx: OpCtx,
@@ -763,6 +770,17 @@ export class OpCtx {
             return reg_resolved.set(ref, val);
         } else {
             return reg_resolved.set(ref.id, val);
+        }
+    }
+
+    // Removes a quantity from a ctx, e.g. in case of deletion or migration (? not sure on migration. they maybe need to re-create selves????)
+    delete(reg: Registry, id: string, mmid: string | undefined) {
+        let reg_resolved = this.resolved.get(reg);
+        if(reg_resolved) {
+            reg_resolved.delete(id);
+            if(mmid) {
+                reg_resolved.delete(mmid);
+            }
         }
     }
 }
@@ -875,7 +893,7 @@ export abstract class Registry {
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
     public async resolve_wildcard_mmid(mmid: string, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
-        // Check ctx for a hit
+        // Check ctx for a hit. Saves time given the laborious nature of this search
         let pre = ctx.get(this, mmid);
         if(pre) {
             return pre;
@@ -886,7 +904,6 @@ export abstract class Registry {
             let attempt = await cat.lookup_mmid(mmid, ctx);
             if (attempt) {
                 // We found it!
-                ctx.set(this, mmid, attempt);
                 return attempt;
             }
         }
@@ -904,12 +921,6 @@ export abstract class Registry {
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
     public async resolve_rough(ref: RegRef<EntryType>, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
-        // Fixup and check ctx
-        let pre_found = ctx.get(this, ref);
-        if(pre_found) {
-            return pre_found;
-        }
-
         // Haven't resolved this yet
         let result: RegEntry<any, any> | null;
         if (ref.is_unresolved_mmid) {
@@ -922,8 +933,6 @@ export abstract class Registry {
             result = await this.get_cat(ref.type!).get_live(ref.id, ctx);
         }
 
-        // Tell ctx what we found
-        ctx.set(this, ref, result);
         return result;
     }
 
@@ -949,7 +958,7 @@ export abstract class Registry {
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
-    public abstract get_inventory(for_item_id: string): Promise<Registry | null>;
+    public abstract get_inventory(for_item_id: string): Registry | null;
 
     // Creates an inventory for the specified id.
     // public abstract get_inventory(for_item_id: string): Promise<Registry | null>;
