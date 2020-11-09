@@ -39,7 +39,7 @@ import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
 import { Deployable } from "./classes/Deployable";
 
 // This is a shared item between registries that basically just keeps their actors in sync
-class RegEnv {
+export class RegEnv {
     // Since actors are global, we use these to track global data
     public pilot_cat: Map<string, RegPilotData> = new Map();
     public mech_cat: Map<string, RegMechData> = new Map();
@@ -116,6 +116,8 @@ export class StaticReg extends Registry {
         // NpcClasses: null as any,
         // NpcFeatures: null as any,
         // NpcTemplates: null as any,
+
+        this.init_finalize();
     }
 }
 

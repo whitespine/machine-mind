@@ -590,12 +590,18 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     // Export this item for registry saving back to registry
     public abstract async save(): Promise<SourceType>;
 
-    // Convenience function to update self in registry. Note that this doesn't read!
+    // Convenience function to update self in registry. Note that this doesn't read first!
     public async writeback(): Promise<void> {
         this.Registry.get_cat(this.Type).update((this as unknown) as LiveEntryTypes<T>); // please don't make me regret this
     }
 
-    // List all child items of this item
+    // Convenience function to delete self in registry. Note that you should probably stop using this item afterwards!
+    // TODO: Cleanup children? Need some sort of refcounting, maybe.
+    public async destroy(): Promise<void> {
+        this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
+    }
+
+    // List all child items of this item. We assume none by default
     public get_child_entries(): RegEntry<any, any>[] {
         return [];
     }
@@ -786,12 +792,12 @@ export abstract class Registry {
     private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
 
     // Use at initialization. Sets the provided category to its appropriate place in the cat map
-    init_set_cat<T extends EntryType>(cat: RegCat<T>) {
+    public init_set_cat<T extends EntryType>(cat: RegCat<T>) {
         this.cat_map.set(cat.cat, cat);
     }
 
     // Throws an error if not all entrytypes are properly represented
-    init_finalize() {
+    public init_finalize() {
         for (let t of SerUtil.list_enum(EntryType)) {
             if (!this.cat_map.has(t)) {
                 throw Error(`Category ${t} not set`);
@@ -800,22 +806,22 @@ export abstract class Registry {
     }
 
     // Create a live item. Shorthand for get cat and create
-    async create<T extends EntryType>(type: T, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
+    public async create<T extends EntryType>(type: T, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         return this.get_cat(type).create(val);
     }
 
     // Delete an item, by cat + id. Just delegates through get_cat
-    async delete(cat: EntryType, id: string) {
+    public async delete(cat: EntryType, id: string) {
         this.get_cat(cat).delete_id(id);
     }
 
     // In theory should never fail because of type bounding, so long as all cats were loaded that is
-    get_cat<T extends EntryType>(cat: T): RegCat<T> {
+    public get_cat<T extends EntryType>(cat: T): RegCat<T> {
         return this.try_get_cat(cat) as RegCat<T>;
     }
 
     // Fetch the specified category or error if it doesn't exist
-    try_get_cat(cat: string): RegCat<any> | null {
+    public try_get_cat(cat: string): RegCat<any> | null {
         let v = this.cat_map.get(cat as EntryType);
         if (!v) {
             console.error(`Error: Category "${cat}" does not exist`);
@@ -827,7 +833,7 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    async resolve_wildcard_mmid(mmid: string): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(mmid: string): Promise<RegEntry<any, any> | null> {
         // The generic does nothing really
         for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_mmid(mmid);
@@ -840,11 +846,11 @@ export abstract class Registry {
 
     // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
     // Find the item corresponding to this ref
-    async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
+    public async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
         return this.resolve_rough(ref) as any; // Trust me bro
     }
 
-    async resolve_rough(ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+    public async resolve_rough(ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
         let result: RegEntry<any, any> | null;
         if (ref.is_unresolved_mmid) {
             if (ref.type) {
@@ -859,14 +865,14 @@ export abstract class Registry {
     }
 
     // Similar to resolve above, this is just for type flavoring basically
-    async resolve_many<T extends EntryType>(
+    public async resolve_many<T extends EntryType>(
         refs: RegRef<T>[] | undefined
     ): Promise<Array<LiveEntryTypes<T>>> {
         return this.resolve_many_rough(refs) as any; // bro trust me
     }
 
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
-    async resolve_many_rough(
+    public async resolve_many_rough(
         refs: RegRef<EntryType>[] | undefined
     ): Promise<Array<RegEntry<any, any>>> {
         if (!refs) {
@@ -878,7 +884,7 @@ export abstract class Registry {
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
-    abstract get_inventory(for_item_id: string): Promise<Registry | null>;
+    public abstract get_inventory(for_item_id: string): Promise<Registry | null>;
 }
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)

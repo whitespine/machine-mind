@@ -11,3 +11,4 @@ libc7zip.dylib
 schema_out/
 yarn-error.log
 .idea/
+coverage/
