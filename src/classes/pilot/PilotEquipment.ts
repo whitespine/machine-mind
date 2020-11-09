@@ -87,7 +87,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorDat
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
 
         await SerUtil.load_commons(this.Registry, data, this);
     }
@@ -129,7 +129,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> 
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
 
         await SerUtil.load_commons(this.Registry, data, this);
     }
@@ -174,7 +174,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeapon
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Damage = SerUtil.process_damages(data.damage);
         this.Range = SerUtil.process_ranges(data.range);
         await SerUtil.load_commons(this.Registry, data, this);

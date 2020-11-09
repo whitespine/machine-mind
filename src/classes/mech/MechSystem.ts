@@ -87,9 +87,9 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
         this.Destroyed = data.destroyed;
 
         await SerUtil.load_commons(this.Registry, data, this);
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(c => new Counter(c)) || [];
-        this.Integrated = await this.Registry.resolve_many(data.integrated);
+        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
     }
 
     public async save(): Promise<RegMechSystemData> {

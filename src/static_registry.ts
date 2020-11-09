@@ -29,6 +29,7 @@ import {
     EntryConstructor,
     EntryType,
     LiveEntryTypes,
+    OpCtx,
     RegCat,
     RegEntry,
     RegEntryTypes,
@@ -39,6 +40,7 @@ import { RegDeployableData, RegMechData, RegPilotData } from "./interface";
 import { Deployable } from "./classes/Deployable";
 import { License } from './classes/License';
 import { Organization } from './classes/pilot/reserves/Organization';
+import { DEFAULT_PILOT } from './classes/default_entries';
 
 // This is a shared item between registries that basically just keeps their actors in sync
 export class RegEnv {
@@ -58,15 +60,16 @@ function simple_cat_builder<T extends EntryType>(
     type: T,
     reg: StaticReg,
     clazz: EntryConstructor<T>,
+    template?: RegEntryTypes<T>,
     data_source_override?: Map<string, RegEntryTypes<T>>
 ): StaticRegCat<T> {
     // Our outer builder, which is used during
     return new StaticRegCat(
         reg,
         type,
-        async (reg, id, raw?) => {
+        async (reg, ctx, id, raw?) => {
             // Our actual builder function. Completely unremarkable in almost every way
-            let new_item = new clazz(type, reg, id, nodef(raw));
+            let new_item = new clazz(type, reg, ctx, id, nodef(raw ?? template));
             await new_item.ready();
 
             // And we're done
@@ -113,9 +116,9 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
 
         // The inventoried things (actors!)
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, DEFAULT_PILOT, env.pilot_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, undefined, env.dep_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, undefined, env.mech_cat));
         // to be done
         // NpcClasses: null as any,
         // NpcFeatures: null as any,
@@ -144,21 +147,21 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         }
     }
 
-    async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null> {
+    async lookup_mmid(mmid: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
         // lil' a bit janky, but serviceable
-        for (let v of this.reg_data.values()) {
-            let id = (v as any).id;
-            if (id == mmid) {
-                return this.revive_func(this.parent, id, v);
+        for (let [reg_id, reg_raw] of this.reg_data.entries()) {
+            let reg_mmid = (reg_raw as any).id;
+            if (reg_mmid == mmid) {
+                return this.revive_func(this.parent, ctx, reg_id, reg_raw); // Be sure to use the proper id, here!
             }
         }
         return null;
     }
 
-    async list_live(): Promise<LiveEntryTypes<T>[]> {
+    async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
         let result: Promise<LiveEntryTypes<T>>[] = [];
         for (let [id, val] of this.reg_data.entries()) {
-            result.push(this.revive_func(this.parent, id, val));
+            result.push(this.revive_func(this.parent, ctx, id, val));
         }
         return Promise.all(result);
     }
@@ -167,10 +170,11 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         let revived: Promise<LiveEntryTypes<T>>[] = [];
 
         // Set and revive all
+        let ctx = new OpCtx();
         for (let raw of vals) {
             let new_id = nanoid();
             this.reg_data.set(new_id, raw); // It's just that easy!
-            let viv = this.revive_func(this.parent, new_id, raw);
+            let viv = this.revive_func(this.parent, ctx, new_id, raw);
             revived.push(viv);
         }
 
@@ -188,12 +192,12 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     // ezzzz
-    async get_live(id: string): Promise<LiveEntryTypes<T> | null> {
+    async get_live(id: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
         let raw = this.reg_data.get(id);
         if (!raw) {
             return null;
         }
-        return this.revive_func(this.parent, id, raw);
+        return this.revive_func(this.parent, ctx, id, raw);
     }
 
     // a bit tricky in terms of what side effects this could have, actually.
@@ -215,7 +219,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
 
     async create_default(): Promise<LiveEntryTypes<T>> {
         let id = nanoid();
-        let v = await this.revive_func(this.parent, id);
+        let v = await this.revive_func(this.parent, new OpCtx(), id);
         let saved = (await v.save()) as RegEntryTypes<T>;
         this.reg_data.set(id, saved);
         return v;

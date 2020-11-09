@@ -85,16 +85,16 @@ export class Bonus {
     }
 
     // Returns this bonus as a numerical value
-    public evaluate(pilot: Pilot): number {
+    public evaluate(pilot: Pilot | null): number {
         if (typeof this.Value === "number") return this.Value;
         let val = this.Value;
-        val = val.replaceAll(`{ll}`, pilot.Level.toString());
-        val = val.replaceAll(`{grit}`, pilot.Grit.toString());
+        val = val.replaceAll(`{ll}`, pilot?.Level.toString() || "0");
+        val = val.replaceAll(`{grit}`, pilot?.Grit.toString() || "0");
         return pmath.parse(val);
     }
 
     // Sums all bonuses on the specific id, for the specified pilot
-    public static SumPilotBonuses(pilot: Pilot, bonuses: Bonus[], bonus_type: string): number {
+    public static SumPilotBonuses(pilot: Pilot | null, bonuses: Bonus[], bonus_type: string): number {
         return bonuses
             .filter(x => x.ID === bonus_type)
             .reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);

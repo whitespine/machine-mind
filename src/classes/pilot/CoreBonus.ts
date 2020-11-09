@@ -61,9 +61,9 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, data.name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(data.deployables);
+        this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Integrated = await this.Registry.resolve_many(data.integrated);
+        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
     }
     public async save(): Promise<RegCoreBonusData> {
         return {

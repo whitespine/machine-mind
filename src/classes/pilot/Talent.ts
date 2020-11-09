@@ -103,10 +103,10 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                     `TALENT ${r.name} RANK ${this.Ranks.length + 1}`
                 ),
                 Counters: SerUtil.process_counters(r.counters),
-                Deployables: await this.Registry.resolve_many(r.deployables),
+                Deployables: await this.Registry.resolve_many(r.deployables, this.OpCtx),
                 Description: r.description,
                 Exclusive: r.exclusive,
-                Integrated: await this.Registry.resolve_many_rough(r.integrated),
+                Integrated: await this.Registry.resolve_many_rough(r.integrated, this.OpCtx),
                 Name: r.name,
                 Synergies: SerUtil.process_synergies(r.synergies),
             });

@@ -590,7 +590,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
 
     public async load(data: RegPilotData): Promise<void> {
         let subreg = await this.inventory_reg();
-        this.ActiveMech = data.active_mech ? await subreg.resolve(data.active_mech) : null;
+        this.ActiveMech = data.active_mech ? await subreg.resolve(data.active_mech, this.OpCtx) : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
         this.Campaign = data.campaign;
@@ -598,32 +598,32 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.CloudID = data.cloudID;
         this.CloudOwnerID = data.cloudOwnerID;
         this.CloudPortrait = data.cloud_portrait;
-        this.CoreBonuses = await subreg.resolve_many(data.core_bonuses);
+        this.CoreBonuses = await subreg.resolve_many(data.core_bonuses, this.OpCtx);
         this.CurrentHP = data.current_hp;
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
-        this.Faction = data.faction ? await subreg.resolve(data.faction) : null;
+        this.Faction = data.faction ? await subreg.resolve(data.faction, this.OpCtx) : null;
         this.Group = data.group;
         this.History = data.history;
         this.ID = data.id;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
-        this.Loadout = await new PilotLoadout(subreg, data.loadout).ready();
+        this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
-        this.Mechs = await subreg.resolve_many(data.mechs);
+        this.Mechs = await subreg.resolve_many(data.mechs, this.OpCtx);
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
-        this.Orgs = await subreg.resolve_many(data.organizations);
-        this.OwnedArmor = await subreg.resolve_many(data.owned_armor);
-        this.OwnedWeapons = await subreg.resolve_many(data.owned_weapons);
-        this.OwnedGear = await subreg.resolve_many(data.owned_gear);
+        this.Orgs = await subreg.resolve_many(data.organizations, this.OpCtx);
+        this.OwnedArmor = await subreg.resolve_many(data.owned_armor, this.OpCtx);
+        this.OwnedWeapons = await subreg.resolve_many(data.owned_weapons, this.OpCtx);
+        this.OwnedGear = await subreg.resolve_many(data.owned_gear, this.OpCtx);
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
-        this.Quirk = data.quirk ? await subreg.resolve(data.quirk) : null;
-        this.Skills = await subreg.resolve_many(data.skills);
+        this.Quirk = data.quirk ? await subreg.resolve(data.quirk, this.OpCtx) : null;
+        this.Skills = await subreg.resolve_many(data.skills, this.OpCtx);
         this.SortIndex = data.sort_index;
         this.Status = data.status;
-        this.Talents = await subreg.resolve_many(data.talents);
+        this.Talents = await subreg.resolve_many(data.talents, this.OpCtx);
         this.TextAppearance = data.text_appearance;
     }
 
@@ -794,30 +794,36 @@ export async function cloud_sync(
 
     // Get equipment and stuff. These are "guaranteed" to be in the compendium
     pilot.CoreBonuses = await reg_stack.resolve_many(
-        data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb))
+        data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)),
+        pilot.OpCtx
     );
     pilot.CoreBonuses.forEach(cb => untouched_children.delete(cb));
     pilot.Licenses = await reg_stack.resolve_many(
-        data.licenses.map(l => quick_mm_ref(EntryType.LICENSE, l.id))
+        data.licenses.map(l => quick_mm_ref(EntryType.LICENSE, l.id)),
+        pilot.OpCtx
     );
     pilot.Licenses.forEach(l => untouched_children.delete(l));
     pilot.Talents = await reg_stack.resolve_many(
-        data.talents.map(x => quick_mm_ref(EntryType.TALENT, x.id))
+        data.talents.map(x => quick_mm_ref(EntryType.TALENT, x.id)),
+        pilot.OpCtx
     );
     pilot.Talents.forEach(x => untouched_children.delete(x));
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // TODO: Do what I just described
     pilot.Reserves = await reg_stack.resolve_many(
-        data.reserves.map(x => quick_mm_ref(EntryType.RESERVE, x.id))
+        data.reserves.map(x => quick_mm_ref(EntryType.RESERVE, x.id)),
+        pilot.OpCtx
     );
     pilot.Reserves.forEach(x => untouched_children.delete(x));
     pilot.Skills = await reg_stack.resolve_many(
-        data.skills.map(x => quick_mm_ref(EntryType.SKILL, x.id))
+        data.skills.map(x => quick_mm_ref(EntryType.SKILL, x.id)),
+        pilot.OpCtx
     );
     pilot.Skills.forEach(x => untouched_children.delete(x));
     pilot.Orgs = await reg_stack.resolve_many(
-        data.orgs.map(x => quick_mm_ref(EntryType.ORGANIZATION, x.name))
+        data.orgs.map(x => quick_mm_ref(EntryType.ORGANIZATION, x.name)),
+        pilot.OpCtx
     );
     pilot.Orgs.forEach(x => untouched_children.delete(x));
 
@@ -847,7 +853,7 @@ export async function cloud_sync(
     }
 
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(data.active_mech, pilot.OpCtx); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, reg_stack); // Using reg stack here guarantees we'll grab stuff if we don't have it
 
     // We don't remove old owned pilot equipment, but we do update our loadout and ensure that everything in it is also marked as an owned item

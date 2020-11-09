@@ -60,6 +60,7 @@ export interface PackedMechData extends AllMechData {
 }
 
 export interface RegMechData extends AllMechData {
+    pilot: RegRef<EntryType.PILOT> | null;
     frame: RegRef<EntryType.FRAME>;
     statuses_and_conditions: RegRef<EntryType.STATUS>[]; // Also includes conditions
     resistances: DamageType[];
@@ -88,7 +89,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     CurrentOvercharge!: number;
     Activations!: number;
     Active!: boolean;
-    Pilot!: Pilot;
+    Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
     StatusesAndConditions!: Status[];
     Resistances!: DamageType[];
@@ -223,19 +224,19 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
 
     // -- HASE --------------------------------------------------------------------------------------
     public get Hull(): number {
-        return this.Pilot.MechSkills.Hull;
+        return this.Pilot?.MechSkills.Hull || 0;
     }
 
     public get Agi(): number {
-        return this.Pilot.MechSkills.Agi;
+        return this.Pilot?.MechSkills.Agi || 0;
     }
 
     public get Sys(): number {
-        return this.Pilot.MechSkills.Sys;
+        return this.Pilot?.MechSkills.Sys || 0;
     }
 
     public get Eng(): number {
-        return this.Pilot.MechSkills.Eng;
+        return this.Pilot?.MechSkills.Eng || 0;
     }
 
     // -- Stats -------------------------------------------------------------------------------------
@@ -471,6 +472,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     public async save(): Promise<RegMechData> {
         return {
             id: this.ID,
+            pilot: this.Pilot?.as_ref() ?? null,
             name: this.Name,
             notes: this.Notes,
             gm_note: this.GmNote,
@@ -502,13 +504,14 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     public async load(data: RegMechData): Promise<void> {
         let subreg = await this.inventory_reg();
         this.ID = data.id;
+        this.Pilot = data.pilot ? await subreg.resolve(data.pilot, this.OpCtx) : null;
         this.Name = data.name;
         this.Notes = data.notes;
         this.GmNote = data.gm_note;
         this.Portrait = data.portrait;
         this.CloudPortrait = data.cloud_portrait;
         this.Active = data.active;
-        this.Loadout = await new MechLoadout(subreg, data.loadout).ready();
+        this.Loadout = await new MechLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
         this.Overshield = data.overshield || 0;
@@ -517,7 +520,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge || 0;
         this.CurrentCoreEnergy = data.current_core_energy ?? 1;
-        this.StatusesAndConditions = await subreg.resolve_many(data.statuses_and_conditions || []);
+        this.StatusesAndConditions = await subreg.resolve_many(
+            data.statuses_and_conditions || [],
+            this.OpCtx
+        );
         this.Resistances = data.resistances || [];
         this.Reactions = data.reactions || [];
         this.Burn = data.burn || 0;
@@ -529,7 +535,11 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
     public get AllBonuses(): Bonus[] {
-        return [...this.Pilot.PilotBonuses, ...this.MechBonuses];
+        if (this.Pilot) {
+            return [...this.Pilot.PilotBonuses, ...this.MechBonuses];
+        } else {
+            return this.MechBonuses;
+        }
     }
 
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number

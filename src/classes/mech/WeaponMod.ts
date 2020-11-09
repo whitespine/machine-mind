@@ -135,14 +135,14 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
 
         (this.AddedRange = SerUtil.process_ranges(data.added_range)),
             (this.AddedDamage = SerUtil.process_damages(data.added_damage)),
-            (this.AddedTags = await SerUtil.process_tags(this.Registry, data.added_tags)),
+            (this.AddedTags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.added_tags)),
             (this.AllowedSizes = data.allowed_sizes ?? []);
         this.AllowedTypes = data.allowed_types ?? [];
 
         await SerUtil.load_commons(this.Registry, data, this);
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
-        this.Integrated = await this.Registry.resolve_many_rough(data.integrated);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
+        this.Integrated = await this.Registry.resolve_many_rough(data.integrated, this.OpCtx);
     }
 
     public static async unpack(data: PackedWeaponModData, reg: Registry): Promise<WeaponMod> {

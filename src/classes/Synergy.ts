@@ -42,7 +42,7 @@ export class Synergy extends SimSer<ISynergyData> {
     WeaponSizes!: WeaponSize[] | null;
 
     public load(data: ISynergyData): void {
-        function resolver<T>(data: T | Array<T | "any"> | "any" | undefined): T[] | null {
+        function resolver<T extends string>(data: T | Array<T | "any"> | "any" | undefined): T[] | null {
             if (!data) {
                 return null; // All we need
             } else if (Array.isArray(data)) {
@@ -52,11 +52,12 @@ export class Synergy extends SimSer<ISynergyData> {
             }
 
             // Handle "any" / empty case
-            if (data.length == 0 || !!data.find("any" as any)) {
-                // Lazy typing, sorry
+            if (data.length == 0 || data.indexOf("any") != -1) {
                 return null;
             }
-            return null;
+
+            // It's normal
+            return data as T[];
         }
 
         this.Locations = resolver(data.locations);

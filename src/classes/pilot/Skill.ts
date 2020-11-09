@@ -75,6 +75,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         return reg.get_cat(EntryType.SKILL).create(rdata);
     }
 
+    /*
     // Handles the tricky process of fetching skills via IRankedDaata
     public static async unpack_ranked_data(rank: IRankedData, reg: Registry): Promise<Skill> {
         // Find the appropriate skill
@@ -90,4 +91,5 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
             throw new Error("Do not yet support custom skills cuz I am lazy");
         }
     }
+    */
 }

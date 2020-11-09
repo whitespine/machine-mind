@@ -1,6 +1,7 @@
 import {
     EntryType,
     LiveEntryTypes,
+    OpCtx,
     RegCat,
     RegEntry,
     RegEntryTypes,
@@ -18,9 +19,9 @@ export class RegStack extends Registry {
         this.stack = registry_stack;
     }
 
-    async resolve_rough(ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+    async resolve_rough(ref: RegRef<EntryType>, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
         for (let r of this.stack) {
-            let found = await r.resolve_rough(ref);
+            let found = await r.resolve_rough(ref, ctx);
             if (found) {
                 return found;
             }
@@ -28,9 +29,9 @@ export class RegStack extends Registry {
         return null;
     }
 
-    public async resolve_wildcard_mmid(mmid: string): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(mmid: string, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
         for (let r of this.stack) {
-            let found = await r.resolve_wildcard_mmid(mmid);
+            let found = await r.resolve_wildcard_mmid(mmid, ctx);
             if (found) {
                 return found;
             }
@@ -73,9 +74,9 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Delegate to stack
-    async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null> {
+    async lookup_mmid(mmid: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
         for (let r of this.stack) {
-            let found = await r.lookup_mmid(mmid);
+            let found = await r.lookup_mmid(mmid, ctx);
             if (found) {
                 return found;
             }
@@ -105,9 +106,9 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Delegate to stack
-    async get_live(id: string): Promise<LiveEntryTypes<T> | null> {
+    async get_live(id: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
         for (let r of this.stack) {
-            let found = await r.get_live(id);
+            let found = await r.get_live(id, ctx);
             if (found) {
                 return found;
             }
@@ -116,11 +117,11 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Combine stack
-    async list_live(): Promise<LiveEntryTypes<T>[]> {
+    async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
         // Be aware thate this will have duplicate entries
         let result: LiveEntryTypes<T>[] = [];
         for (let r of this.stack) {
-            result.push(...(await r.list_live()));
+            result.push(...(await r.list_live(ctx)));
         }
         return result;
     }

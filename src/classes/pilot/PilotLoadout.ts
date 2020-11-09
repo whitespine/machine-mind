@@ -9,7 +9,7 @@ import {
     Synergy,
 } from "@src/class";
 import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@src/interface";
-import { EntryType, LiveEntryTypes, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
+import { EntryType, LiveEntryTypes, OpCtx, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
 
 // This is what is actually in the loadouts. The id's ref actual weapons
 export interface PackedPilotEquipmentState {
@@ -113,16 +113,16 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         this.ID = data.id;
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
-        this.Armor = await Promise.all(data.armor.map(a => (a ? this.Registry.resolve(a) : null)));
-        this.Gear = await Promise.all(data.gear.map(a => (a ? this.Registry.resolve(a) : null)));
+        this.Armor = await Promise.all(data.armor.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null)));
+        this.Gear = await Promise.all(data.gear.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null)));
         this.Weapons = await Promise.all(
-            data.weapons.map(a => (a ? this.Registry.resolve(a) : null))
+            data.weapons.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
         );
         this.ExtendedGear = await Promise.all(
-            data.extendedGear.map(a => (a ? this.Registry.resolve(a) : null))
+            data.extendedGear.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
         );
         this.ExtendedWeapons = await Promise.all(
-            data.extendedWeapons.map(a => (a ? this.Registry.resolve(a) : null))
+            data.extendedWeapons.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
         );
     }
 
@@ -139,23 +139,24 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     }
 
     public static async unpack(data: PackedPilotLoadoutData, reg: Registry): Promise<PilotLoadout> {
+        let ctx = new OpCtx();
         let armor = await Promise.all(
-            data.armor.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_ARMOR))
+            data.armor.map(a => PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_ARMOR))
         );
         let gear = await Promise.all(
-            data.gear.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_GEAR))
+            data.gear.map(a => PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_GEAR))
         );
         let extended_gear = await Promise.all(
             data.extendedGear.map(a =>
-                PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_GEAR)
+                PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_GEAR)
             )
         );
         let weapons = await Promise.all(
-            data.weapons.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_WEAPON))
+            data.weapons.map(a => PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_WEAPON))
         );
         let extended_weapons = await Promise.all(
             data.extendedWeapons.map(a =>
-                PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_WEAPON)
+                PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_WEAPON)
             )
         );
 
@@ -183,13 +184,14 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             extendedGear: reffer(extended_gear),
             extendedWeapons: reffer(extended_weapons),
         };
-        let final_v = new PilotLoadout(reg, reg_dat);
+        let final_v = new PilotLoadout(reg, ctx, reg_dat);
         await final_v.ready();
         return final_v;
     }
 
     private static async resolve_state_item<T extends EntryType>(
         reg: Registry,
+        ctx: OpCtx,
         item_state: PackedPilotEquipmentState | null,
         expect_type: T
     ): Promise<LiveEntryTypes<T> | null> {
@@ -198,7 +200,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             return null;
         }
         // Get the item
-        let item = await reg.get_cat(expect_type).lookup_mmid(item_state.id);
+        let item = await reg.get_cat(expect_type).lookup_mmid(item_state.id, ctx);
         if (!item) {
             console.warn(`Could not resolve item ${item_state.id}`);
             return null;

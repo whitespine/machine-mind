@@ -1,4 +1,4 @@
-import { EntryType, LiveEntryTypes, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
+import { EntryType, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { Manufacturer } from "./Manufacturer";
 
 export type LicensedItemType =
@@ -29,14 +29,14 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
     CurrentRank!: number;
 
     public async load(data: RegLicenseData): Promise<void> {
-        this.Name = name;
+        this.Name = data.name;
         this.Manufacturer =
-            (await this.Registry.resolve(data.manufacturer)) ??
-            (await this.Registry.get_cat(EntryType.MANUFACTURER).lookup_mmid("GMS"))!;
+            (await this.Registry.resolve(data.manufacturer, this.OpCtx)) ??
+            (await this.Registry.get_cat(EntryType.MANUFACTURER).lookup_mmid("GMS", this.OpCtx))!;
         this.CurrentRank = data.rank;
         this.Unlocks = [];
         for (let uarr of data.unlocks) {
-            let resolved = await this.Registry.resolve_many(uarr);
+            let resolved = await this.Registry.resolve_many(uarr, this.OpCtx);
             this.Unlocks.push(resolved);
         }
     }
@@ -57,11 +57,12 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
 
     public static async unpack(license_name: string, reg: Registry): Promise<License> {
         // Get every possibility
+        let ctx = new OpCtx();
         let all_licensed_items: LicensedItem[] = [
-            ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live()),
-            ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live()),
-            ...(await reg.get_cat(EntryType.FRAME).list_live()),
-            ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live()),
+            ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx)),
+            ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(ctx)),
+            ...(await reg.get_cat(EntryType.FRAME).list_live(ctx)),
+            ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(ctx)),
         ];
 
         // Cull to those with the desired license name
@@ -89,9 +90,8 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         }
 
         // Lookup the manufacturer
-        let manufacturer = (
-            await reg.get_cat(EntryType.MANUFACTURER).lookup_mmid(manufacturer_name)
-        )?.as_ref()!;
+        let manufacturer_entry = await reg.get_cat(EntryType.MANUFACTURER).lookup_mmid(manufacturer_name, new OpCtx());
+        let manufacturer = manufacturer_entry ? manufacturer_entry.as_ref() : quick_mm_ref(EntryType.MANUFACTURER, "GMS");
 
         let rdata: RegLicenseData = {
             name: license_name,

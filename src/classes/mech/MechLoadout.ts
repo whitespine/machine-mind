@@ -74,10 +74,10 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         this.SysMounts = await Promise.all(
-            data.system_mounts.map(s => new SystemMount(this.Registry, s).ready())
+            data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).ready())
         );
         this.WepMounts = await Promise.all(
-            data.weapon_mounts.map(w => new WeaponMount(this.Registry, w).ready())
+            data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).ready())
         );
     }
 
@@ -139,7 +139,7 @@ export class SystemMount extends RegSer<RegSysMountData> {
 
     public async load(data: RegSysMountData): Promise<void> {
         if (data.system) {
-            this.System = await this.Registry.resolve(data.system);
+            this.System = await this.Registry.resolve(data.system, this.OpCtx);
         } else {
             this.System = null;
         }
@@ -211,7 +211,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         this.Fitting = data.fitting;
         this.Slots = [];
         for (let s of data.slots) {
-            let wep = s.weapon ? await this.Registry.resolve(s.weapon) : null;
+            let wep = s.weapon ? await this.Registry.resolve(s.weapon, this.OpCtx) : null;
             if (!wep) {
                 // It has been removed, in all likelihood
                 this.Slots.push({
@@ -221,7 +221,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
                 });
             } else {
                 // Now look for mod
-                let mod = s.mod ? await this.Registry.resolve(s.mod) : null;
+                let mod = s.mod ? await this.Registry.resolve(s.mod, this.OpCtx) : null;
                 this.Slots.push({
                     Weapon: wep,
                     Mod: mod,

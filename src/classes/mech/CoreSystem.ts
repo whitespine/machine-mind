@@ -97,9 +97,9 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         this.PassiveName = data.passive_name;
 
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Deployables = await this.Registry.resolve_many(data.deployables);
-        this.Integrated = await this.Registry.resolve_many(data.integrated);
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
     public async save(): Promise<RegCoreSystemData> {

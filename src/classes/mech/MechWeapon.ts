@@ -113,8 +113,8 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
 
     this.Size = data.size;
     this.SP = data.sp;
-    this.Integrated = await this.Registry.resolve_many(data.integrated);
-    this.Deployables = await this.Registry.resolve_many(data.deployables);
+    this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+    this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
 
     this.Loaded = data.loaded;
     this.Destroyed = data.destroyed;
@@ -122,7 +122,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
 
     this.SelectedProfileIndex = data.selected_profile;
     // The big one
-    this.Profiles = await Promise.all(data.profiles.map(p => new MechWeaponProfile(this.Registry,  p).ready()));
+    this.Profiles = await Promise.all(data.profiles.map(p => new MechWeaponProfile(this.Registry, this.OpCtx,  p).ready()));
   }
 
   public async save(): Promise<RegMechWeaponData> {
@@ -266,7 +266,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
       this.Bonuses = SerUtil.process_bonuses(data.bonuses, `Profile: ${this.Name}`);
       this.Synergies = SerUtil.process_synergies(data.synergies);
       this.Counters = SerUtil.process_counters(data.counters);
-      this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+      this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
     public async save(): Promise<RegMechWeaponProfile> {

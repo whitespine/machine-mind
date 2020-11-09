@@ -102,7 +102,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
 
         // Make sure tags ready

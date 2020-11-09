@@ -66,6 +66,7 @@ import {
     TagInstance,
     License,
 } from "@src/class";
+import { Op } from 'parsemath/dist/Types';
 import { IOrganizationData, Organization } from "./classes/pilot/reserves/Organization";
 import {
     IActionData,
@@ -287,7 +288,7 @@ export type LiveEntryTypes<T extends EntryType> = T extends keyof FixedLiveEntry
 ////////////////////////////////////////////////////////////////////////
 // This type can be used to take a RegEntry subclass as a parameter.
 export type EntryConstructor<T extends EntryType> = {
-    new (type: T, registry: Registry, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<T>;
+    new (type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<T>;
 };
 
 export abstract class SerUtil {
@@ -447,12 +448,13 @@ export abstract class SerUtil {
             Synergies: Synergy[];
             Deployables: Deployable[] /*, Tags: TagInstance[] */;
             Name?: string;
+            OpCtx: OpCtx;
         }
     ): Promise<void> {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, target.Name ?? "");
         target.Synergies = SerUtil.process_synergies(src.synergies);
-        target.Deployables = await reg.resolve_many(src.deployables);
+        target.Deployables = await reg.resolve_many(src.deployables, target.OpCtx);
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
     }
 
@@ -494,9 +496,10 @@ export abstract class SerUtil {
     // A typescript wiz could probably abstract it somehow
     public static async process_tags(
         reg: Registry,
-        tags?: RegTagInstanceData[]
+        ctx: OpCtx,
+        tags: RegTagInstanceData[] | undefined,
     ): Promise<TagInstance[]> {
-        let real_tags = tags?.map(c => new TagInstance(reg, c)) || [];
+        let real_tags = tags?.map(c => new TagInstance(reg, ctx, c)) || [];
         await this.all_ready(real_tags);
         return real_tags;
     }
@@ -529,11 +532,13 @@ export abstract class SimSer<S> {
 // Serialization and deserialization requires a registry, but is not itself an entry.
 export abstract class RegSer<SourceType> {
     public readonly Registry: Registry;
+    public readonly OpCtx: OpCtx;
     private _load_promise: Promise<any>;
 
     // Setup
-    constructor(registry: Registry, data: SourceType) {
+    constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
         this.Registry = registry;
+        this.OpCtx = ctx;
         this._load_promise = this.load(data);
     }
 
@@ -556,14 +561,16 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     public readonly Type: T;
     public readonly RegistryID: string;
     public readonly Registry: Registry;
+    public readonly OpCtx: OpCtx;
     private _load_promise: Promise<any>;
 
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
-    constructor(type: T, registry: Registry, id: string, reg_data: SourceType) {
+    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: SourceType) {
         this.Type = type;
         this.Registry = registry;
         this.RegistryID = id;
+        this.OpCtx = ctx;
 
         // Load
         this._load_promise = this.load(reg_data);
@@ -602,7 +609,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
     public async refreshed(): Promise<LiveEntryTypes<T> | null> {
-        return this.Registry.get_cat(this.Type).get_live(this.RegistryID);
+        return this.Registry.get_cat(this.Type).get_live(this.RegistryID, new OpCtx()); // new opctx to refresh _everything_
     }
 
     // List all child items of this item. We assume none by default
@@ -696,8 +703,8 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
     SourceType
 > {
     // Pretty simple
-    constructor(type: T, registry: Registry, id: string, reg_data: SourceType) {
-        super(type, registry, id, reg_data);
+    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: SourceType) {
+        super(type, registry, ctx, id, reg_data);
     }
 
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
@@ -726,9 +733,39 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
 // export type ReviveFunc<RawType, LiveType> = (reg: Registry, id: string, raw?: RawType) => Promise<LiveType>;
 export type ReviveFunc<T extends EntryType> = (
     reg: Registry,
+    ctx: OpCtx,
     id: string,
     raw?: RegEntryTypes<T>
 ) => Promise<LiveEntryTypes<T>>;
+
+// This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
+export class OpCtx {
+    // We do not disambiguate by mmid and regid due to the frankly-astronomically low chance of collision
+    private resolved: Map<Registry, Map<string, any>> = new Map(); // Maps lookups with a key in a specified registry to their results
+
+    get(reg: Registry, ref: string | RegRef<any>): any | null{
+        if(typeof ref == "string") {
+            return this.resolved.get(reg)?.get(ref) ?? null;
+        } else {
+            return this.resolved.get(reg)?.get(ref.id) ?? null;
+        }
+    }
+
+    // Tell the ctx that we resolved <ref> as <val>
+    set(reg: Registry, ref: string | RegRef<any>, val: any) {
+        // Make the reg entry if not there
+        let reg_resolved = this.resolved.get(reg);
+        if(!reg_resolved) {
+            reg_resolved = new Map();
+            this.resolved.set(reg, reg_resolved);
+        }
+        if(typeof ref == "string") {
+            return reg_resolved.set(ref, val);
+        } else {
+            return reg_resolved.set(ref.id, val);
+        }
+    }
+}
 
 export abstract class RegCat<T extends EntryType> {
     // Need this to key them because we can't really identify otherwise
@@ -747,7 +784,7 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Find a value by mmid
-    abstract async lookup_mmid(mmid: string): Promise<LiveEntryTypes<T> | null>;
+    abstract async lookup_mmid(mmid: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches the specific raw item of a category by its ID
     abstract async get_raw(id: string): Promise<RegEntryTypes<T> | null>;
@@ -756,10 +793,10 @@ export abstract class RegCat<T extends EntryType> {
     abstract async list_raw(): Promise<Array<RegEntryTypes<T>>>;
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract async get_live(id: string): Promise<LiveEntryTypes<T> | null>;
+    abstract async get_live(id: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
-    abstract async list_live(): Promise<Array<LiveEntryTypes<T>>>;
+    abstract async list_live(ctx: OpCtx): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
     // Do NOT attempt to feed this items foreign to this cat
@@ -837,52 +874,76 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    public async resolve_wildcard_mmid(mmid: string): Promise<RegEntry<any, any> | null> {
-        // The generic does nothing really
+    public async resolve_wildcard_mmid(mmid: string, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
+        // Check ctx for a hit
+        let pre = ctx.get(this, mmid);
+        if(pre) {
+            return pre;
+        }
+
+        // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
-            let attempt = await cat.lookup_mmid(mmid);
+            let attempt = await cat.lookup_mmid(mmid, ctx);
             if (attempt) {
+                // We found it!
+                ctx.set(this, mmid, attempt);
                 return attempt;
             }
         }
+
+        // It is unfindable
+        ctx.set(this, mmid,null);
         return null;
     }
 
     // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
     // Find the item corresponding to this ref
-    public async resolve<T extends EntryType>(ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
-        return this.resolve_rough(ref) as any; // Trust me bro
+    public async resolve<T extends EntryType>(ref: RegRef<T>, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
+        return this.resolve_rough(ref, ctx) as any; // Trust me bro
     }
 
-    public async resolve_rough(ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+    // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
+    public async resolve_rough(ref: RegRef<EntryType>, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
+        // Fixup and check ctx
+        let pre_found = ctx.get(this, ref);
+        if(pre_found) {
+            return pre_found;
+        }
+
+        // Haven't resolved this yet
         let result: RegEntry<any, any> | null;
         if (ref.is_unresolved_mmid) {
             if (ref.type) {
-                result = await this.try_get_cat(ref.type)?.lookup_mmid(ref.id);
+                result = await this.try_get_cat(ref.type)?.lookup_mmid(ref.id, ctx);
             } else {
-                result = await this.resolve_wildcard_mmid(ref.id);
+                result = await this.resolve_wildcard_mmid(ref.id, ctx);
             }
         } else {
-            result = await this.get_cat(ref.type!).get_live(ref.id);
+            result = await this.get_cat(ref.type!).get_live(ref.id, ctx);
         }
+
+        // Tell ctx what we found
+        ctx.set(this, ref, result);
         return result;
     }
 
     // Similar to resolve above, this is just for type flavoring basically
     public async resolve_many<T extends EntryType>(
-        refs: RegRef<T>[] | undefined
+        refs: RegRef<T>[] | undefined,
+        ctx: OpCtx
     ): Promise<Array<LiveEntryTypes<T>>> {
-        return this.resolve_many_rough(refs) as any; // bro trust me
+        return this.resolve_many_rough(refs, ctx) as any; // bro trust me
     }
 
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
     public async resolve_many_rough(
-        refs: RegRef<EntryType>[] | undefined
+        refs: RegRef<EntryType>[] | undefined,
+        ctx: OpCtx
     ): Promise<Array<RegEntry<any, any>>> {
         if (!refs) {
             return [];
         }
-        let resolves = await Promise.all(refs.map(r => this.resolve_rough(r)));
+        let resolves = await Promise.all(refs.map(r => this.resolve_rough(r, ctx)));
         resolves = resolves.filter(d => d != null);
         return resolves as RegEntry<any, any>[]; // We filtered the nulls
     }

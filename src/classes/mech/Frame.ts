@@ -71,9 +71,9 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         this.YPosition = frameData.y_pos || 30;
         this.Mounts = frameData.mounts;
         this.Stats = frameData.stats;
-        this.Traits = await this.Registry.resolve_many(frameData.traits);
+        this.Traits = await this.Registry.resolve_many(frameData.traits, this.OpCtx);
         this.CoreSystem = frameData.core_system
-            ? await this.Registry.resolve(frameData.core_system)
+            ? await this.Registry.resolve(frameData.core_system, this.OpCtx)
             : null;
         this.ImageUrl = frameData.image_url || null;
         this.OtherArt = frameData.other_art || [];
