@@ -18,6 +18,7 @@ export interface RegTagInstanceData {
     val?: string | number;
 }
 
+// TODO: I decided how to do these very early on, while still holding closely to compcons patterns. It should maybe be different (perhaps a single object)
 export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
     ID!: string;
     Name!: string;
@@ -25,7 +26,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
     _filter_ignore!: boolean | null; // Whether to ignore this tags data when filtering
     _hidden!: boolean | null;
 
-    protected async load(data: ITagTemplateData): Promise<void> {
+    public async load(data: ITagTemplateData): Promise<void> {
         this.ID = data.id;
         this.Name = data.id;
         this.Description = data.description;
@@ -80,7 +81,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     Tag!: TagTemplate;
     Value!: string | number | null;
 
-    protected async load(data: RegTagInstanceData): Promise<void> {
+    public async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
         let Tag = await this.Registry.resolve(data.tag);
         if (!Tag) {

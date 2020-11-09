@@ -119,7 +119,7 @@ export enum FrameEffectUse { // Handles cores and traits usage duration thingies
     Scene = "Scene",
     Encounter = "Encounter",
     Mission = "Mission",
-    Unknown = "?"
+    Unknown = "?",
 }
 
 export enum ActivationType {

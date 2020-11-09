@@ -1,14 +1,5 @@
 // import { Pilot, Npc, Encounter } from "@/class";
 // import { getVersion } from "jest";
-import * as DataModules from "./store/main";
-export * from "./store/main";
-
-// Interface store interaction
-export var store: DataModules.CCDataStore;
-
-export function setup_store(_store: DataModules.CCDataStore) {
-    store = _store;
-}
 
 // Interface image management
 export var imageManagement: ImageShim;
@@ -51,4 +42,14 @@ export var logger: Logger = () => {};
 
 export function set_logger(_logger: Logger) {
     logger = _logger;
+}
+
+// Config this at setup
+var user_id: string = "unknown";
+export function set_user_id(new_v: string) {
+    user_id = new_v;
+}
+
+export function get_user_id(): string {
+    return user_id;
 }

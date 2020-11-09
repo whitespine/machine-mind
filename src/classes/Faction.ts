@@ -17,7 +17,7 @@ export class Faction extends RegEntry<EntryType.FACTION, IFactionData> {
     LogoURL!: string | null;
     Color!: string;
 
-    protected async load(data: IFactionData): Promise<void> {
+    public async load(data: IFactionData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;

@@ -62,7 +62,7 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
     OtherArt!: IArtLocation[];
     ImageUrl!: string | null;
 
-    protected async load(frameData: RegFrameData): Promise<void> {
+    public async load(frameData: RegFrameData): Promise<void> {
         this.ID = frameData.id;
         this.LicenseLevel = frameData.license_level;
         this.Source = frameData.source;
@@ -126,5 +126,9 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
     // For consistency's sake
     public get License(): string {
         return this.Name;
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Traits, ...(this.CoreSystem ? [this.CoreSystem] : [])];
     }
 }

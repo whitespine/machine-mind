@@ -4,7 +4,9 @@ import { Bonus, Mech } from "./class";
 export { parseContentPack } from "@/io/ContentPackParser";
 export { intake_pack } from "@/classes/ContentPack";
 export { get_base_content_pack } from "@/io/ContentPackParser";
-export { getChangelog, getCredits, loadPilot, newPilot, savePilot } from "@/io/apis/gist";
+export { download_pilot, update_cloud_pilot, upload_new_pilot } from "@/io/apis/gist";
+export { cloud_sync } from "@/classes/pilot/Pilot";
+export { mech_cloud_sync } from "@/classes/mech/Mech";
 
 export function bound_int(x: number, min: number, max: number) {
     if (x < min) {
@@ -20,7 +22,7 @@ export function bound_int(x: number, min: number, max: number) {
 export function contrib_helper(for_mech: Mech, bonus_id: string): string[] {
     let output: string[] = [];
     for_mech.AllBonuses.forEach(b => {
-        if(b.ID == bonus_id) {
+        if (b.ID == bonus_id) {
             let val = b.evaluate(for_mech.Pilot);
             const sign = val > -1 ? "+" : "-";
             output.push(`${b.Title ?? b.ID}: ${sign}${val}`);

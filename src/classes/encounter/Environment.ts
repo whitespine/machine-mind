@@ -11,7 +11,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentDat
     Name!: string;
     Description!: string;
 
-    protected async load(data: IEnvironmentData): Promise<void> {
+    public async load(data: IEnvironmentData): Promise<void> {
         this.ID = data.id;
         this.Description = data.description;
         this.Name = data.name;
@@ -25,7 +25,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentDat
         };
     }
 
-   public static async unpack(dep: IEnvironmentData, reg: Registry): Promise<Environment> {
+    public static async unpack(dep: IEnvironmentData, reg: Registry): Promise<Environment> {
         return reg.get_cat(EntryType.ENVIRONMENT).create(dep);
     }
 }

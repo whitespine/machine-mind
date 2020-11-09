@@ -1,5 +1,4 @@
-import uuid from "uuid/v4";
-
+/*
 import { Encounter, Rest } from "@/class";
 import { store } from "@/hooks";
 import { IMissionStep } from "@/interface";
@@ -29,7 +28,7 @@ export class Mission {
     private _step_ids: string[];
 
     public constructor() {
-        this._id = uuid();
+        this._id = nanoid();
         this._name = "New Mission";
         this._note = "";
         this._campaign = "";
@@ -47,7 +46,7 @@ export class Mission {
     }
 
     public RenewID(): void {
-        this._id = uuid();
+        this._id = nanoid();
         this.save();
     }
 
@@ -172,7 +171,7 @@ export class Mission {
 
     public static Deserialize(data: IMissionData): Mission {
         const m = new Mission();
-        m._id = data.id || uuid();
+        m._id = data.id || nanoid();
         m._name = data.name;
         m._note = data.note;
         m._labels = data.labels;
@@ -182,3 +181,4 @@ export class Mission {
         return m;
     }
 }
+*/

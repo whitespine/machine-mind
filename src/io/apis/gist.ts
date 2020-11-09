@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IPilotData } from "@/interface";
+import { PackedPilotData } from "@/interface";
 import { Pilot } from "@/class";
 
 // this token is scoped to only allow for the creation of gists on a burner account
@@ -17,6 +17,7 @@ const gistApi = axios.create({
     responseType: "json",
 });
 
+/* potentially misleading at this point...
 const changelogGistID = "3eaedde89e606f60a6346ab190972edf";
 const getChangelog = function() {
     return gistApi.get(changelogGistID).then(res => res.data);
@@ -26,40 +27,39 @@ const creditsGistID = "c79f09f5459c5991c1228c853191bd51";
 const getCredits = function() {
     return gistApi.get(creditsGistID).then(res => res.data);
 };
+*/
 
-const newPilot = async function(pilot: Pilot): Promise<any> {
+export async function upload_new_pilot(pilot: Pilot): Promise<any> {
     return gistApi
         .post("", {
             files: {
                 "pilot.txt": {
-                    content: JSON.stringify(Pilot.Serialize(pilot)),
+                    content: JSON.stringify(await pilot.save()),
                 },
             },
             description: `${pilot.Callsign} - ${pilot.Name} (LL:${pilot.Level})`,
             public: true,
         })
         .then(res => res.data);
-};
+}
 
-const savePilot = async function(pilot: Pilot) {
+export async function update_cloud_pilot(pilot: Pilot): Promise<any> {
     return gistApi
         .patch(pilot.CloudID, {
             files: {
                 "pilot.txt": {
-                    content: JSON.stringify(Pilot.Serialize(pilot)),
+                    content: JSON.stringify(await pilot.save()),
                 },
             },
             description: `${pilot.Callsign} - ${pilot.Name} (LL:${pilot.Level})`,
         })
         .then(res => res.data);
-};
+}
 
-const loadPilot = async function(id: string): Promise<IPilotData> {
+export async function download_pilot(id: string): Promise<PackedPilotData> {
     const gistData = (await gistApi.get(id)).data;
-    const pilotData = JSON.parse(gistData.files["pilot.txt"].content) as IPilotData;
+    const pilotData = JSON.parse(gistData.files["pilot.txt"].content) as PackedPilotData;
     // This is occasionally missing from the transmitted data
     pilotData.cloudID = id;
     return pilotData;
-};
-
-export { getChangelog, getCredits, newPilot, savePilot, loadPilot };
+}

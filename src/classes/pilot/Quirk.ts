@@ -20,7 +20,7 @@ export interface RegQuirkData {
 
 export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     Name!: string;
-    Description!: string,
+    Description!: string;
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -28,7 +28,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     Deployables!: Deployable[];
     Integrated!: RegEntry<any, any>[];
 
-    protected async load(data: RegQuirkData): Promise<void> {
+    public async load(data: RegQuirkData): Promise<void> {
         this.Name = data.name;
         this.Description = data.description;
 
@@ -38,12 +38,12 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     }
     public async save(): Promise<RegQuirkData> {
         return {
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
             name: this.Name,
             description: this.Description,
             integrated: SerUtil.ref_all(this.Integrated),
-            counters: SerUtil.sync_save_all(this.Counters)
-        }
+            counters: SerUtil.sync_save_all(this.Counters),
+        };
     }
 
     public static async unpack(raw_quirk: string, reg: Registry): Promise<Quirk> {
@@ -59,5 +59,9 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
         };
 
         return reg.get_cat(EntryType.QUIRK).create(qdata);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables, ...this.Integrated];
     }
 }

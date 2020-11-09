@@ -51,7 +51,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
     Integrated!: RegEntry<any, any>[];
     Used!: boolean;
 
-    protected async load(data: RegReserveData) {
+    public async load(data: RegReserveData) {
         this.ID = data.id;
         this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
@@ -62,7 +62,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
         this.ResourceCost = data.resource_cost;
         this.Description = data.description;
         this.Actions = data.actions.map(x => new Action(x));
-        this.Bonuses = data.bonuses.map(x => new Bonus(x));
+        this.Bonuses = data.bonuses.map(x => new Bonus(x, `${this.ReserveType} - ${this.Name}`));
         this.Synergies = data.synergies.map(x => new Synergy(x));
         this.Deployables = await this.Registry.resolve_many(data.deployables);
         this.Counters = data.counters.map(c => new Counter(c));
@@ -114,7 +114,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
             synergies: this.Synergies.map(s => s.save()),
         };
     }
-    
+
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
     static async unpack(res: PackedReserveData, reg: Registry): Promise<Reserve> {
         // Create deployable entries
@@ -137,7 +137,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
             description: res.description ?? "",
             actions: res.actions ?? [],
             bonuses: res.bonuses ?? [],
-            synergies: res.synergies ?? []
+            synergies: res.synergies ?? [],
         };
         return reg.create(EntryType.RESERVE, rdata);
     }

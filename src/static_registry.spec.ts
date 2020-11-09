@@ -1,7 +1,7 @@
 import "jest";
 import {} from "./static_registry";
 import { RegCat, Registry, InventoriedRegEntry } from "./registry";
-import { Counter } from './class';
+import { Counter } from "./class";
 
 type DefSetup = Registry;
 

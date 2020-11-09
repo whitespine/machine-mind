@@ -1,105 +1,107 @@
-import type { MechEquipment, MechWeapon, MechSystem, Registry, Frame } from "@/class";
-import { SimSer, EntryType } from '@/registry';
-import { WeaponType, WeaponSize, SystemType } from './enums';
+import { MechEquipment, MechWeapon, MechSystem, Frame } from "@/class";
+import { SimSer, EntryType } from "@/registry";
+import { WeaponType, WeaponSize, SystemType } from "./enums";
 
-export type SynergyLocation = "any" | "active_effects" | "rest" | "weapon" | "system" | "move" | "boost" | "other" | "ram" | "grapple" | "tech_attack" | "overcharge" | "skill_check" | "overwatch" | "improvised_attack" | "disengage" | "stabilize" | "tech" | "lock_on" | "hull" | "agility" | "systems" | "engineering";
+export type SynergyLocation =
+    | "any"
+    | "active_effects"
+    | "rest"
+    | "weapon"
+    | "system"
+    | "move"
+    | "boost"
+    | "other"
+    | "ram"
+    | "grapple"
+    | "tech_attack"
+    | "overcharge"
+    | "skill_check"
+    | "overwatch"
+    | "improvised_attack"
+    | "disengage"
+    | "stabilize"
+    | "tech"
+    | "lock_on"
+    | "hull"
+    | "agility"
+    | "systems"
+    | "engineering";
 export interface ISynergyData {
-    locations: SynergyLocation[]; 
+    locations?: SynergyLocation[] | SynergyLocation; // I do not know why the hell you would use any here, but its easier than checking for edge cases, lol
     detail: string; // v-html
-    system_types?: SystemType[];
-    weapon_types?: WeaponType[];
-    weapon_sizes?: WeaponSize[];
-
+    system_types?: Array<SystemType | "any"> | SystemType | "any";
+    weapon_types?: Array<WeaponType | "any"> | WeaponType | "any";
+    weapon_sizes?: Array<WeaponSize | "any"> | WeaponSize | "any";
 }
 
 export class Synergy extends SimSer<ISynergyData> {
-    Locations!: SynergyLocation[];
+    Locations!: SynergyLocation[] | null;
     Detail!: string;
-    SystemTypes!: SystemType[];
-    WeaponTypes!: WeaponType[];
-    WeaponSizes!: WeaponSize[];
+    SystemTypes!: SystemType[] | null;
+    WeaponTypes!: WeaponType[] | null;
+    WeaponSizes!: WeaponSize[] | null;
 
+    public load(data: ISynergyData): void {
+        function resolver<T>(data: T | Array<T | "any"> | "any" | undefined): T[] | null {
+            if (!data) {
+                return null; // All we need
+            } else if (Array.isArray(data)) {
+                // pass
+            } else {
+                data = [data];
+            }
 
-    allows_weapon(this: Synergy, weapon: MechWeapon): boolean {
-        if(this.WeaponSizes?.includes(weapon.Size) === false) {
-            return false;
+            // Handle "any" / empty case
+            if (data.length == 0 || !!data.find("any" as any)) {
+                // Lazy typing, sorry
+                return null;
+            }
+            return null;
         }
-        if(this.WeaponTypes?.includes(weapon.WepType) === false) {
-            return false;
-        }
-        return true;
+
+        this.Locations = resolver(data.locations);
+        this.Detail = data.detail;
+        this.SystemTypes = resolver(data.system_types);
+        this.WeaponTypes = resolver(data.weapon_types);
+        this.WeaponSizes = resolver(data.weapon_sizes);
+    }
+    public save(): ISynergyData {
+        return {
+            locations: this.Locations ?? ["any"],
+            detail: this.Detail,
+            system_types: this.SystemTypes ?? ["any"],
+            weapon_types: this.WeaponTypes ?? ["any"],
+            weapon_sizes: this.WeaponSizes ?? ["any"],
+        };
     }
 
-    allows_system(this: Synergy, system: MechSystem): boolean {
-        if(this.SystemTypes?.includes(system.SysType) === false) {
-            return false;
+    allows_weapon(weapon: MechWeapon): boolean {
+        if (this.WeaponSizes?.includes(weapon.Size) ?? true) {
+            if (this.WeaponTypes?.includes(weapon.SelectedProfile.WepType) ?? true) {
+                return true;
+            }
         }
-        return true
+        return false;
     }
 
+    allows_system(system: MechSystem): boolean {
+        return this.SystemTypes?.includes(system.SysType) ?? true;
+    }
 
     // Filters a list of synergies to the given piece of equipment/location
-    match_synergies(
+    public static match_synergies(
         item: MechEquipment,
         active_synergies: Synergy[],
         location: SynergyLocation
     ): Synergy[] {
         // Get type and size of the equip
-        let item_type: WeaponType | SystemType;
-        let item_size: WeaponSize | null = null;
-        if(item.EquipType === EntryType.MECH_SYSTEM) {
-            let sys = item as MechSystem;
-            item_type = sys.EquipType;
-        } else if(item.EquipType === EntryType.MECH_WEAPON) {
-            let wep = item as MechWeapon;
-            item_type = wep.EquipType;
-            item_size = wep.Size;
+        if (item instanceof MechSystem) {
+            active_synergies = active_synergies.filter(x => x.allows_system(item));
+        } else if (item instanceof MechWeapon) {
+            active_synergies = active_synergies.filter(x => x.allows_weapon(item));
         }
 
-        active_synergies = active_synergies.filter(x => x.Locations === "any" || x.locations.includes(location));
-        if(item_size) {
-            active_synergies = active_synergies.filter(x => x.Sizes === "any" || x.sizes.includes(item_size!));
-        }
-        active_synergies = active_synergies.filter(x => x.Types === "any" || x.Types.includes(item_type));
-        return active_synergies
-    }
-    
-    
-     PilotSynergies(pilot: Pilot): Synergy[] {
-        let synergies: Synergy[] = [];
-        // Find talents that match up
-        for(let pt of pilot.Talents) {
-            let i = 0;
-            for(let rank of pt.UnlockedRanks) {
-                let rank_synergies = rank.synergies || [];
-                for (let s of rank_synergies) {
-                    synergies.push(s);
-                        //title: `${pt.Talent.Name} RANK ${"I".repeat(++i)}//${pt.Talent.Rank(i).name}`,
-                }
-            }
-        }
-
-        return synergies;
-    }
-
-     FrameSynergies(frame: Frame, location: string): Synergy[] {
-        let synergies: Synergy[] = [];
-        for (let t of frame.Traits) {
-            for (let s of t.synergies || []) {
-                synergies.push({
-                    title: t.name,
-                    synergy: s,
-                });
-            }
-        }
-
-        synergies = synergies.filter(
-            x =>
-                !x.synergy.locations ||
-                x.synergy.locations.includes(location) ||
-                x.synergy.locations.includes("any")
-        );
-
-        return synergies;
+        active_synergies = active_synergies.filter(x => x.Locations?.includes(location) ?? true);
+        return active_synergies;
     }
 }

@@ -1,6 +1,6 @@
 import { AbsStoreModule, load_setter_handler, DataStoreOptions } from "./store_module";
 import { PersistentStore } from "@/io/persistence";
-import uuid from "uuid/v4";
+import { nanoid } from "nanoid";
 
 export const FILEKEY_USER = "user.config";
 
@@ -43,7 +43,7 @@ export class UserProfileStore extends AbsStoreModule {
         const data = (await this.persistence.get_item(FILEKEY_USER)) as IUserProfile;
         handler(user => {
             if (data) {
-                user.ID = data.id || uuid();
+                user.ID = data.id || nanoid();
                 user.SelectorView = data.selectorView || "split";
                 user.NpcView = data.npcView || "list";
                 user.RosterView = data.rosterView || "list";
@@ -51,7 +51,7 @@ export class UserProfileStore extends AbsStoreModule {
                 user.PilotSheetView = data.pilotSheetView || "tabbed";
                 user.Theme = data.theme || "gms";
             } else {
-                user._id = uuid();
+                user._id = nanoid();
                 user._selectorView = "split";
                 user._npcView = "list";
                 user._rosterView = "list";
@@ -128,7 +128,7 @@ export class UserProfileStore extends AbsStoreModule {
     /*
     public static Deserialize(data: IUserProfile): UserProfile {
         const profile = new UserProfile();
-        profile._id = data.id || uuid();
+        profile._id = data.id || nanoid();
         profile.SelectorView = data.selectorView || "split";
         profile.NpcView = data.npcView || "list";
         profile.RosterView = data.rosterView || "list";

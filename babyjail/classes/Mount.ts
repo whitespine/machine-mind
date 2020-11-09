@@ -53,7 +53,7 @@ export abstract class Mount {
     }
 
     protected getID(): void {
-        this._id = uuid();
+        this._id = nanoid();
     }
 
     public get ID(): string {

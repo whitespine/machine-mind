@@ -1,3 +1,4 @@
+/*
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@/class";
 import { IMissionData, INpcData, IMissionStep } from "@/interface";
 import { EncounterSide } from "../enums";
@@ -102,12 +103,12 @@ export class ActiveMission {
         nn.RenewID();
         nn.Active = true;
         nn.Side = s;
-        const aCount = this._activeNpcs
-            .map(x => x.Name.replace(/ #[\d]*/, ""))
-            .filter(x => x === nn.Name).length;
-        const rCount = this._activeReinforcements
-            .map(x => x.Name.replace(/ #[\d]*/, ""))
-            .filter(x => x === nn.Name).length;
+        const aCount = this._activeNpcs*/
+//.map(x => x.Name.replace(/ #[\d]*/, ""))
+//.filter(x => x === nn.Name).length;
+//const rCount = this._activeReinforcements
+//.map(x => x.Name.replace(/ #[\d]*/, ""))
+/*.filter(x => x === nn.Name).length;
         nn.Name += ` #${aCount + rCount + 1}`;
         return nn;
     }
@@ -133,7 +134,9 @@ export class ActiveMission {
         nn.RenewID();
         nn.Active = true;
         const count = this._activeNpcs
-            .map(x => x.Name.replace(/ #[\d]*/, ""))
+        */
+//.map(x => x.Name.replace(/ #[\d]*/, ""))
+/*
             .filter(x => x === nn.Name).length;
         nn.Name += ` #${count}`;
         this.ActiveNpcs.push(nn);
@@ -273,3 +276,4 @@ export class ActiveMission {
         return m;
     }
 }
+*/

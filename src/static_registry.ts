@@ -26,6 +26,7 @@ import {
     Mech,
 } from "@/class";
 import {
+    EntryConstructor,
     EntryType,
     LiveEntryTypes,
     RegCat,
@@ -50,14 +51,11 @@ class RegEnv {
 
 // Our static builders
 // Simple cat thing. This Takes a few liberties with the type checking but not tooo much
+
 function simple_cat_builder<T extends EntryType>(
     type: T,
     reg: StaticReg,
-    clazz: {
-        new (type: T, registry: Registry, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<
-            T
-        >; // This essentially just means "give us a class, please"
-    },
+    clazz: EntryConstructor<T>,
     data_source_override?: Map<string, RegEntryTypes<T>>
 ): StaticRegCat<T> {
     // Our outer builder, which is used during
@@ -65,7 +63,7 @@ function simple_cat_builder<T extends EntryType>(
         reg,
         type,
         async (reg, id, raw?) => {
-            // Our actual builder function
+            // Our actual builder function. Completely unremarkable in almost every way
             let new_item = new clazz(type, reg, id, nodef(raw));
             await new_item.ready();
 

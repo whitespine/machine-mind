@@ -1,52 +1,47 @@
-import {
-    MechSystem,
-    Mech,
-    MechWeapon,
-    WeaponMod,
-    MechEquipment,
-} from "@/class";
-import { EntryType, RegRef, RegSer, SerUtil, SimSer } from '@/registry';
-import { FittingSize, WeaponSize } from '../enums';
+import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment } from "@/class";
+import { EntryType, RegRef, RegSer, SerUtil, SimSer } from "@/registry";
+import { FittingSize, WeaponSize } from "../enums";
+import { Frame } from "./Frame";
 
 //////////////////////// PACKED INFO ////////////////////////
 interface PackedEquipmentData {
-  id: string
-  destroyed: boolean
-  cascading: boolean
-  note: string
-  uses?: number
-  flavorName?: string
-  flavorDescription?: string
-  customDamageType?: string
+    id: string;
+    destroyed: boolean;
+    cascading: boolean;
+    note: string;
+    uses?: number;
+    flavorName?: string;
+    flavorDescription?: string;
+    customDamageType?: string;
 }
 interface PackedMechWeaponSaveData extends PackedEquipmentData {
-  loaded: boolean
-  mod?: PackedEquipmentData
-  customDamageType?: string
-  maxUseOverride?: number
+    loaded: boolean;
+    mod?: PackedEquipmentData;
+    customDamageType?: string;
+    maxUseOverride?: number;
 }
 export interface PackedWeaponSlotData {
-  size: string
-  weapon: PackedMechWeaponSaveData | null
+    size: string;
+    weapon: PackedMechWeaponSaveData | null;
 }
 
 export interface PackedMountData {
-  mount_type: string
-  lock: boolean
-  slots: PackedWeaponSlotData[]
-  extra: PackedWeaponSlotData[]
-  bonus_effects: string[]
+    mount_type: string;
+    lock: boolean;
+    slots: PackedWeaponSlotData[];
+    extra: PackedWeaponSlotData[];
+    bonus_effects: string[];
 }
 
 export interface PackedMechLoadoutData {
-  id: string
-  name: string
-  systems: PackedEquipmentData[]
-  integratedSystems: PackedEquipmentData[]
-  mounts: PackedMountData[]
-  integratedMounts: { weapon: PackedMechWeaponSaveData }[]
-  improved_armament: PackedMountData
-  integratedWeapon: PackedMountData
+    id: string;
+    name: string;
+    systems: PackedEquipmentData[];
+    integratedSystems: PackedEquipmentData[];
+    mounts: PackedMountData[];
+    integratedMounts: { weapon: PackedMechWeaponSaveData }[];
+    improved_armament: PackedMountData;
+    integratedWeapon: PackedMountData;
 }
 
 //////////////// REG INFO ///////////////////
@@ -67,26 +62,30 @@ export interface RegSysMountData {
 export interface RegWepMountData {
     fitting: FittingSize;
     slots: Array<{
-        weapon: RegRef<EntryType.MECH_WEAPON> | null,
-        mod: RegRef<EntryType.WEAPON_MOD> | null,
-        size: WeaponSize
+        weapon: RegRef<EntryType.MECH_WEAPON> | null;
+        mod: RegRef<EntryType.WEAPON_MOD> | null;
+        size: WeaponSize;
     }>;
 }
-
 
 export class MechLoadout extends RegSer<RegMechLoadoutData> {
     SysMounts!: SystemMount[];
     WepMounts!: WeaponMount[];
 
-    protected async load(data: RegMechLoadoutData): Promise<void> {
-        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, s).ready()));
-        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, w).ready()));
+    public async load(data: RegMechLoadoutData): Promise<void> {
+        this.SysMounts = await Promise.all(
+            data.system_mounts.map(s => new SystemMount(this.Registry, s).ready())
+        );
+        this.WepMounts = await Promise.all(
+            data.weapon_mounts.map(w => new WeaponMount(this.Registry, w).ready())
+        );
     }
+
     public async save(): Promise<RegMechLoadoutData> {
         return {
             system_mounts: await SerUtil.save_all(this.SysMounts),
             weapon_mounts: await SerUtil.save_all(this.WepMounts),
-        }
+        };
     }
 
     // A simple list of currently equipped systems
@@ -114,10 +113,10 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Compute total SP
     public get TotalSP(): number {
         let tot = 0;
-        for(let e of this.Equipment) {
+        for (let e of this.Equipment) {
             tot += e.SP;
         }
-        for(let m of this.AllMods) {
+        for (let m of this.AllMods) {
             tot += m.SP;
         }
         return tot;
@@ -125,8 +124,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // Any empty mounts
     public get HasEmptyMounts(): boolean {
-        for(let s of this.WepMounts.flatMap(s => s.Slots)) {
-            if(s.Weapon == null) {
+        for (let s of this.WepMounts.flatMap(s => s.Slots)) {
+            if (s.Weapon == null) {
                 return true;
             }
         }
@@ -138,8 +137,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 export class SystemMount extends RegSer<RegSysMountData> {
     System!: MechSystem | null;
 
-    protected async load(data: RegSysMountData): Promise<void> {
-        if(data.system) {
+    public async load(data: RegSysMountData): Promise<void> {
+        if (data.system) {
             this.System = await this.Registry.resolve(data.system);
         } else {
             this.System = null;
@@ -148,18 +147,17 @@ export class SystemMount extends RegSer<RegSysMountData> {
 
     public async save(): Promise<RegSysMountData> {
         return {
-            system: this.System?.as_ref() ?? null
-        }
+            system: this.System?.as_ref() ?? null,
+        };
     }
-
 }
 
 // Holds weapons/their mods. We don't support reshaping mounts very well as of yet
-export type WeaponSlot =  {
-    Weapon: MechWeapon | null,
-    Mod: WeaponMod | null ,
-    Size: WeaponSize // The size of this individual slot
-}
+export type WeaponSlot = {
+    Weapon: MechWeapon | null;
+    Mod: WeaponMod | null;
+    Size: WeaponSize; // The size of this individual slot
+};
 export class WeaponMount extends RegSer<RegWepMountData> {
     // The size of the mount
     Fitting!: FittingSize;
@@ -175,21 +173,26 @@ export class WeaponMount extends RegSer<RegWepMountData> {
 
     Bracing!: boolean; // True if this mount is being used as bracing
 
-    private validate_slot(slot: WeaponSlot, weapon: MechWeapon): string | null { // string error if something is amiss
-        if(slot.Mod && !slot.Weapon) {
+    private validate_slot(slot: WeaponSlot, weapon: MechWeapon): string | null {
+        // string error if something is amiss
+        if (slot.Mod && !slot.Weapon) {
             return "Mod on empty weapon slot";
         }
 
-        if(this.Integrated && slot.Mod) {
+        if (this.Integrated && slot.Mod) {
             return "Mods are forbidden on integrated mounts";
         }
 
         // Otherwise size is the main concern
-        switch(slot.Size) {
+        switch (slot.Size) {
             case WeaponSize.Aux:
-                return (weapon.Size === WeaponSize.Aux) ? null : "Only Aux weapons can fit in aux slots";
+                return weapon.Size === WeaponSize.Aux
+                    ? null
+                    : "Only Aux weapons can fit in aux slots";
             case WeaponSize.Main:
-                return (weapon.Size === WeaponSize.Aux || weapon.Size === WeaponSize.Main) ? null : "Only Aux/Main weapons can fit in Main slots";
+                return weapon.Size === WeaponSize.Aux || weapon.Size === WeaponSize.Main
+                    ? null
+                    : "Only Aux/Main weapons can fit in Main slots";
             default:
                 break; // rest are fine
         }
@@ -204,25 +207,25 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         // Todo: check all slots, check that slot+sizes are correct
     }
 
-    protected async load(data: RegWepMountData): Promise<void> {
+    public async load(data: RegWepMountData): Promise<void> {
         this.Fitting = data.fitting;
         this.Slots = [];
-        for(let s of data.slots) {
+        for (let s of data.slots) {
             let wep = s.weapon ? await this.Registry.resolve(s.weapon) : null;
-            if(!wep) {
+            if (!wep) {
                 // It has been removed, in all likelihood
                 this.Slots.push({
                     Weapon: null,
                     Mod: null,
-                    Size: s.size
+                    Size: s.size,
                 });
             } else {
                 // Now look for mod
-                let mod = s.mod ? await this.Registry.resolve(s.mod) : null
+                let mod = s.mod ? await this.Registry.resolve(s.mod) : null;
                 this.Slots.push({
                     Weapon: wep,
                     Mod: mod,
-                    Size: s.size
+                    Size: s.size,
                 });
             }
         }
@@ -231,17 +234,16 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     public async save(): Promise<RegWepMountData> {
         return {
             fitting: this.Fitting,
-            slots: this.Slots.map(s =>  {
+            slots: this.Slots.map(s => {
                 return {
                     mod: s.Mod?.as_ref() ?? null,
                     weapon: s.Weapon?.as_ref() ?? null,
-                    size: s.Size
+                    size: s.Size,
                 };
-            })
-        }
+            }),
+        };
     }
 }
-
 
 /*
 export class MechLoadout {

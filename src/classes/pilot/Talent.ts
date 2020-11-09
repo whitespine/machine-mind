@@ -7,7 +7,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@/interface";
-import { EntryType, RegEntry, Registry, RegRef, RoughRegRef, SerUtil } from "@/registry";
+import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -50,7 +50,7 @@ export interface RegTalentRank {
     synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
-    integrated: RoughRegRef[];
+    integrated: RegRef<any>[];
 }
 
 export interface RegTalentData {
@@ -67,7 +67,7 @@ export interface RegTalentData {
 export interface TalentRank {
     Name: string;
     Description: string; // v-html
-    Exclusive: boolean; 
+    Exclusive: boolean;
     Actions: Action[];
     Bonuses: Bonus[];
     Synergies: Synergy[];
@@ -87,7 +87,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
     Ranks!: Array<TalentRank>;
     CurrentRank!: number;
 
-    protected async load(data: RegTalentData): Promise<void> {
+    public async load(data: RegTalentData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Icon = data.icon;
@@ -98,7 +98,10 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         for (let r of data.ranks) {
             this.Ranks.push({
                 Actions: SerUtil.process_actions(r.actions),
-                Bonuses: SerUtil.process_bonuses(r.bonuses, `TALENT ${r.name} RANK ${this.Ranks.length + 1}`),
+                Bonuses: SerUtil.process_bonuses(
+                    r.bonuses,
+                    `TALENT ${r.name} RANK ${this.Ranks.length + 1}`
+                ),
                 Counters: SerUtil.process_counters(r.counters),
                 Deployables: await this.Registry.resolve_many(r.deployables),
                 Description: r.description,
@@ -142,24 +145,23 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
     public static async unpack(data: PackedTalentData, reg: Registry): Promise<Talent> {
         // Process talent ranks
         let ranks: RegTalentRank[] = [];
-        for(let r of data.ranks) {
+        for (let r of data.ranks) {
             ranks.push({
-                name: r.name;
+                name: r.name,
                 description: r.description,
                 exclusive: r.exclusive,
-                ...await SerUtil.unpack_commons_and_tags(r, reg),
+                ...(await SerUtil.unpack_commons_and_tags(r, reg)),
                 counters: SerUtil.unpack_counters_default(r.counters),
-                integrated: SerUtil.unpack_integrated_refs(r.integrated)
+                integrated: SerUtil.unpack_integrated_refs(r.integrated),
             });
         }
-
 
         // Finish with entire reg
         let rdata: RegTalentData = {
             ...data,
             ranks,
-            curr_rank: 1
-        }
+            curr_rank: 1,
+        };
         return reg.get_cat(EntryType.TALENT).create(rdata);
     }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed
@@ -199,6 +201,10 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
 
     public get Synergies(): Synergy[] {
         return this.UnlockedRanks.flatMap(x => x.Synergies);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables, ...this.Integrated];
     }
 
     // TODO: Handle exclusive

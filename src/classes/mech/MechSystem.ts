@@ -72,7 +72,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
     Cascading!: boolean;
     // Loaded!: boolean  // is this needed?
 
-    protected async load(data: RegMechSystemData): Promise<void> {
+    public async load(data: RegMechSystemData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source;
@@ -110,20 +110,24 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
             tags: await SerUtil.save_all(this.Tags),
             counters: SerUtil.sync_save_all(this.Counters),
             integrated: SerUtil.ref_all(this.Integrated),
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
         };
     }
 
     public static async unpack(data: PackedMechSystemData, reg: Registry): Promise<MechSystem> {
         let rdata: RegMechSystemData = {
             ...data,
-            ...await SerUtil.unpack_commons_and_tags(data, reg),
+            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
             integrated: SerUtil.unpack_integrated_refs(data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
             cascading: false,
-            destroyed: false
-        }
+            destroyed: false,
+        };
 
-        return reg.get_cat(EntryType.MECH_SYSTEM).create(rdata)
+        return reg.get_cat(EntryType.MECH_SYSTEM).create(rdata);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables, ...this.Integrated];
     }
 }

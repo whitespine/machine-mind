@@ -47,7 +47,7 @@ import {
 import _ from "lodash";
 import { IStatusData } from "./Statuses";
 import { Registry } from "@/registry";
-import { LicensedItem } from './License';
+import { LicensedItem } from "./License";
 
 export interface IContentPackManifest {
     name: string;
@@ -117,12 +117,9 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
         licenseables.push(await WeaponMod.unpack(wm, reg));
     }
     for (let x of d.pilotGear) {
-        if(x.type == "Armor")
-            await PilotArmor.unpack(x, reg);
-        else if(x.type == "Gear") 
-            await PilotGear.unpack(x, reg);
-        else if(x.type == "Weapon")
-            await PilotWeapon.unpack(x, reg);
+        if (x.type == "Armor") await PilotArmor.unpack(x, reg);
+        else if (x.type == "Gear") await PilotGear.unpack(x, reg);
+        else if (x.type == "Weapon") await PilotWeapon.unpack(x, reg);
     }
     for (let x of d.talents) {
         await Talent.unpack(x, reg);
@@ -160,15 +157,14 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
         await Quirk.unpack(x, reg);
     }
 
-
     // Find licenses
     let unique_license_names: Set<string> = new Set();
-    for(let x of licenseables) {
+    for (let x of licenseables) {
         unique_license_names.add(x.License);
     }
 
     // Actually create them
-    for(let name of unique_license_names) {
+    for (let name of unique_license_names) {
         await License.unpack(name, reg);
     }
 }

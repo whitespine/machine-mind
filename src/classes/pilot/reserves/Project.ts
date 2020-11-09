@@ -1,5 +1,8 @@
-import { EntryType, Reserve, ReserveType } from "@/class";
-import { ident, MixBuilder, MixLinks, restrict_enum, RWMix, uuid } from "@/mixmeta.typs";
+/*
+
+Probably best to just nuke this one. its only real unique feature (progress) can more or less just be accomplished via counters
+
+import { Reserve } from "@/class";
 import { IReserveData } from "./Reserve";
 
 export interface IProjectData extends IReserveData {
@@ -53,3 +56,5 @@ export function CreateProject(data: IProjectData | null): Project {
     mb.with(new RWMix("Requirements", "requirements", ident, ident));
     return mb.finalize(data);
 }
+
+*/

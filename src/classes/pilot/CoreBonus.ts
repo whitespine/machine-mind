@@ -51,7 +51,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     Counters!: Counter[];
     Integrated!: RegEntry<any, any>[];
 
-    protected async load(data: RegCoreBonusData): Promise<void> {
+    public async load(data: RegCoreBonusData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source;
@@ -59,7 +59,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         this.Effect = data.effect;
         this.MountedEffect = data.mounted_effect;
         this.Actions = SerUtil.process_actions(data.actions);
-        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+        this.Bonuses = SerUtil.process_bonuses(data.bonuses, data.name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
         this.Deployables = await this.Registry.resolve_many(data.deployables);
         this.Counters = SerUtil.process_counters(data.counters);
@@ -78,7 +78,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             deployables: SerUtil.ref_all(this.Deployables),
             integrated: SerUtil.ref_all(this.Integrated),
             mounted_effect: this.MountedEffect,
-            synergies: SerUtil.sync_save_all(this.Synergies)
+            synergies: SerUtil.sync_save_all(this.Synergies),
         };
     }
 
@@ -101,8 +101,12 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             mounted_effect: cor.mounted_effect ?? "",
             actions: cor.actions ?? [],
             bonuses: cor.bonuses ?? [],
-            synergies: cor.synergies ?? []
+            synergies: cor.synergies ?? [],
         };
         return reg.create(EntryType.CORE_BONUS, cbdata);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables, ...this.Integrated];
     }
 }

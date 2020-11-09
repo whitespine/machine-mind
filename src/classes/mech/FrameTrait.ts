@@ -44,7 +44,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
     Counters!: Counter[];
     Integrated!: RegEntry<any, any>[];
 
-    protected async load(data: RegFrameTraitData): Promise<void> {
+    public async load(data: RegFrameTraitData): Promise<void> {
         this.Name = data.name;
         this.Description = data.description;
         this.Use = data.use ?? null;
@@ -56,9 +56,9 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
             name: this.Name,
             description: this.Description,
             use: this.Use,
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
             integrated: SerUtil.ref_all(this.Integrated),
-            counters: SerUtil.sync_save_all(this.Counters)
+            counters: SerUtil.sync_save_all(this.Counters),
         };
     }
 
@@ -67,10 +67,13 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
             name: data.name,
             description: data.description,
             use: data.use ?? FrameEffectUse.Unknown,
-            ...await SerUtil.unpack_commons_and_tags(data, reg),
+            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
             counters: SerUtil.unpack_counters_default(data.counters),
-            integrated: SerUtil.unpack_integrated_refs(data.integrated)
-        }
+            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+        };
         return reg.get_cat(EntryType.FRAME_TRAIT).create(rdata);
+    }
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables, ...this.Integrated];
     }
 }

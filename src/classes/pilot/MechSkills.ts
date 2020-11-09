@@ -1,6 +1,6 @@
 import { Rules } from "@/class";
 import { SimSer } from "@/registry";
-import { Bonus } from '../Bonus';
+import { Bonus } from "../Bonus";
 import { HASE } from "../enums";
 
 // It's HASE, baby!
@@ -36,14 +36,13 @@ export class MechSkills extends SimSer<IMechSkills> {
         return this.Hull + this.Agi + this.Sys + this.Eng;
     }
 
-    protected load(data: IMechSkills): void {
+    public load(data: IMechSkills): void {
         [this.Hull, this.Agi, this.Sys, this.Eng] = data;
     }
 
     public save(): IMechSkills {
         return [this.Hull, this.Agi, this.Sys, this.Eng];
     }
-
 
     // Get the bonuses imparted by these skills to mechs
     public get SkillBonuses(): Bonus[] {
@@ -63,23 +62,23 @@ export class MechSkills extends SimSer<IMechSkills> {
     // TODO: allow overrides by some mechanism. Alternatively, just tell emperor to have a -grit penalty to hp (actually that's way easier)
     // This is somewhat unrelated but felt a fitting place to put this. Bonuses from grit
     public static LevelBonuses: Bonus[] = [
-            Bonus.generate("hp", "{grit}", "Pilot GRIT"),
-            Bonus.generate("sp", "{grit}", "Pilot GRIT"),
-            Bonus.generate("attack", "{grit}", "Pilot GRIT"),
-            Bonus.generate("save", "{grit}", "Pilot GRIT"),
-            Bonus.generate("cb_point", "floor({ll} / 3)", "Pilot LEVEL / 3"),
-            Bonus.generate("talent_point", "{ll}", "Pilot LEVEL"),
-            Bonus.generate("skill_point", "{ll}", "Pilot LEVEL"),
-            Bonus.generate("mech_skill_point", "{ll}", "Pilot LEVEL"),
-            Bonus.generate("license_point", "{ll}", "Pilot LEVEL"),
-        ];
+        Bonus.generate("hp", "{grit}", "Pilot GRIT"),
+        Bonus.generate("sp", "{grit}", "Pilot GRIT"),
+        Bonus.generate("attack", "{grit}", "Pilot GRIT"),
+        Bonus.generate("save", "{grit}", "Pilot GRIT"),
+        Bonus.generate("cb_point", "floor({ll} / 3)", "Pilot LEVEL / 3"),
+        Bonus.generate("talent_point", "{ll}", "Pilot LEVEL"),
+        Bonus.generate("skill_point", "{ll}", "Pilot LEVEL"),
+        Bonus.generate("mech_skill_point", "{ll}", "Pilot LEVEL"),
+        Bonus.generate("license_point", "{ll}", "Pilot LEVEL"),
+    ];
 
     public static BaseBonuses: Bonus[] = [
-            Bonus.generate("hp", Rules.BasePilotHP, "Base HP"),
-            Bonus.generate("skill_point", Rules.MinimumPilotSkills, "Base Points"),
-            Bonus.generate("mech_skill_point", Rules.MinimumMechSkills, "Base Points"),
-            Bonus.generate("talent_point", Rules.MinimumPilotTalents, "Base Points"),
-            Bonus.generate("ai_cap", 1, "Base AI Cap"),
+        Bonus.generate("hp", Rules.BasePilotHP, "Base HP"),
+        Bonus.generate("skill_point", Rules.MinimumPilotSkills, "Base Points"),
+        Bonus.generate("mech_skill_point", Rules.MinimumMechSkills, "Base Points"),
+        Bonus.generate("talent_point", Rules.MinimumPilotTalents, "Base Points"),
+        Bonus.generate("ai_cap", 1, "Base AI Cap"),
     ];
 
     public get AllBonuses(): Bonus[] {

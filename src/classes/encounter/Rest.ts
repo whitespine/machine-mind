@@ -1,4 +1,5 @@
-import uuid from "uuid/v4";
+/*
+import { nanoid } from "nanoid";
 import { MissionStepType } from "@/class";
 import { IMissionStep } from "@/interface";
 
@@ -12,7 +13,7 @@ export class Rest implements IMissionStep {
     private _note: string;
 
     public constructor() {
-        this._id = uuid();
+        this._id = nanoid();
         this._note = "";
     }
 
@@ -46,3 +47,5 @@ export class Rest implements IMissionStep {
         return r;
     }
 }
+
+*/

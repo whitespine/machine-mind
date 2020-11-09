@@ -40,7 +40,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP, ISitrepData> {
         };
     }
 
-    protected async load(data: ISitrepData) {
+    public async load(data: ISitrepData) {
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
@@ -53,7 +53,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP, ISitrepData> {
         this.Extraction = data.extraction || "";
     }
 
-   public static async unpack(dep: ISitrepData, reg: Registry): Promise<Sitrep> {
+    public static async unpack(dep: ISitrepData, reg: Registry): Promise<Sitrep> {
         return reg.get_cat(EntryType.SITREP).create(dep);
     }
 }

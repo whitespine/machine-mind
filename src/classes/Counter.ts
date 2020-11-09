@@ -32,7 +32,7 @@ export class Counter extends SimSer<RegCounterData> {
     public Default!: number;
     private _value!: number;
 
-    protected load(data: RegCounterData) {
+    public load(data: RegCounterData) {
         this.ID = data.id;
         this.Name = data.name;
         this.Level = data.level || null;
@@ -67,22 +67,22 @@ export class Counter extends SimSer<RegCounterData> {
     }
 
     // Doesn't need registers
-    static unpack(
-        packed_counter: PackedCounterData,
-        counter_saves?: PackedCounterSaveData[]
-    ): RegCounterData {
+    static unpack(packed_counter: PackedCounterData): RegCounterData {
         // Init
         let out: RegCounterData = {
             ...packed_counter,
             val: packed_counter.default_value || packed_counter.min || 0,
         };
 
-        // Load saves
-        let save = counter_saves?.find(y => y.id == out.id);
-        if (save) {
-            out.val = save.val;
-        }
-
         return out;
+    }
+
+    // Try to set this counters value from a set of counter save data
+    public sync_state_from(counter_saves: PackedCounterSaveData[]) {
+        // Load saves
+        let save = counter_saves?.find(y => y.id == this.ID);
+        if (save) {
+            this.Value = save.val;
+        }
     }
 }

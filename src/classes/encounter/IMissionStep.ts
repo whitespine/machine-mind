@@ -1,3 +1,4 @@
+/*
 import { MissionStepType } from "@/class";
 
 export interface IMissionStep {
@@ -5,3 +6,5 @@ export interface IMissionStep {
     Note: string;
     StepType: MissionStepType;
 }
+
+*/

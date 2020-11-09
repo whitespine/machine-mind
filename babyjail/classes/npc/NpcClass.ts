@@ -36,7 +36,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS, RegNpcClassData> {
     Power!: number;
     Brew!: string;
 
-    protected async load(data: RegNpcClassData): Promise<void> {
+    public async load(data: RegNpcClassData): Promise<void> {
         this.Id = data.id;
         this.Name = data.name;
         this.Role = data.role;

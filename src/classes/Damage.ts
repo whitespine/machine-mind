@@ -40,7 +40,7 @@ export class Damage extends SimSer<RegDamageData> {
         return `damage--${this.DamageType.toLowerCase()}`;
     }
 
-    protected load(data: RegDamageData): void {
+    public load(data: RegDamageData): void {
         this.DamageType = SerUtil.restrict_enum(DamageType, DamageType.Kinetic, data.type);
         this.Value = "" + data.val;
     }

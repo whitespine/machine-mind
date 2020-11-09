@@ -8,17 +8,17 @@
  *
  * A unique situation we encounter is that in some cases, it only makes sense for an entity to know about certain other entities
  * (and more importantly, it is more efficient/easily logically to ask "Where is MY <lmg>" vs "Where is <lmg>")
- * We handle this by having pilots, mechs, and deployables each have their own inventory (in the form of a Registry).
+ * We handle this by having pilots, mechs, and npcs each have their own inventory (in the form of a Registry). (maybe deployables? What would they own? statuses, maybe)
  *
  * Relations can be cross-registry (i.e. between items with their own registries).
  * This brings us to an important mandate: ALL REGISTRY-OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
  * Foundry does this for us by getActor methods. Anyone else will have to roll something themselves (check static_registry)
- * We don't uniquely type/categorize these, although we maybe should as they are categorically different from any other entry.
  * The key distinction for these types is that
  *  - The cat's for these types should behave identically between ALL items (in the same environment). The lowliest system mod should be able to find any pilot
+ *  - These items meet the above situation of pilots/mechs having their own inventory
  *  - These items can freely retrive their own regs. One can also just deliberately grab a registry by its id.
  * In theory you could not do the above if you had a strictly-downward-waterfalling heirarchy, but this is weird
- * 
+ *
  *
  * When a field describes a list of allowed/forbidden fields, [] means NONE.
  * undefined should either mean None or does not apply, contextually.
@@ -64,7 +64,9 @@ import {
     Mech,
     Counter,
     TagInstance,
+    License,
 } from "@/class";
+import { IOrganizationData, Organization } from "./classes/pilot/reserves/Organization";
 import {
     IActionData,
     IBonusData,
@@ -104,6 +106,7 @@ import {
     RegDeployableData,
     RegFrameData,
     RegFrameTraitData,
+    RegLicenseData,
     RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
@@ -145,6 +148,7 @@ export enum EntryType {
     WEAPON_MOD = "Weapon Mod",
     MECH_SYSTEM = "Mech System",
     MECH_WEAPON = "Mech Weapon",
+    ORGANIZATION = "Organization",
     PILOT_ARMOR = "Pilot Armor",
     PILOT_GEAR = "Pilot Gear",
     PILOT_WEAPON = "Pilot Weapon",
@@ -178,6 +182,7 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     // [EntryType.NPC_CLASS]: INpcClassData;
     // [EntryType.NPC_FEATURE]: INpcFeatureData;
     // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: RegPilotArmorData;
     [EntryType.PILOT_GEAR]: RegPilotGearData;
     [EntryType.PILOT_WEAPON]: RegPilotWeaponData;
@@ -215,9 +220,10 @@ interface FixedPackedEntryTypes {
     // [EntryType.NPC_CLASS]: INpcClassData;
     // [EntryType.NPC_FEATURE]: INpcFeatureData;
     // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
     [EntryType.PILOT_GEAR]: PackedPilotGearData;
-   [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
+    [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
     [EntryType.PILOT]: PackedPilotData;
     [EntryType.RESERVE]: PackedReserveData;
     [EntryType.SITREP]: ISitrepData;
@@ -252,6 +258,7 @@ type FixedLiveEntryTypes = {
     // [EntryType.NPC_CLASS]: NpcClass;
     // [EntryType.NPC_FEATURE]: NpcFeature;
     // [EntryType.NPC_TEMPLATE]: NpcTemplate;
+    [EntryType.ORGANIZATION]: Organization;
     [EntryType.PILOT_ARMOR]: PilotArmor;
     [EntryType.PILOT_GEAR]: PilotGear;
     [EntryType.PILOT_WEAPON]: PilotWeapon;
@@ -278,6 +285,11 @@ export type LiveEntryTypes<T extends EntryType> = T extends keyof FixedLiveEntry
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
+// This type can be used to take a RegEntry subclass as a parameter.
+export type EntryConstructor<T extends EntryType> = {
+    new (type: T, registry: Registry, id: string, reg_data: RegEntryTypes<T>): LiveEntryTypes<T>;
+};
+
 export abstract class SerUtil {
     // These functions are just generally pretty useful!
 
@@ -286,7 +298,7 @@ export abstract class SerUtil {
      * Note that this creates an UNRESOLVED REF, meaning that it may or not exist until we actually attempt to load this item.
      * This reference will exist until the item is saved for the first time, which will override the ref to an actual item ref.
      */
-    public static unpack_integrated_refs(integrated?: string[]): RoughRegRef[] {
+    public static unpack_integrated_refs(integrated?: string[]): RegRef<any>[] {
         return (integrated || []).map(i => ({
             id: i,
             type: null,
@@ -398,11 +410,16 @@ export abstract class SerUtil {
     }
 
     // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
-    public static async save_commons(x: {Bonuses: Bonus[], Actions: Action[], Synergies: Synergy[], Deployables: Deployable[], /*Tags: TagInstance[]*/}): Promise<{
-        bonuses: IBonusData[],
-        actions: IActionData[],
-        synergies: ISynergyData[],
-        deployables: RegRef<EntryType.DEPLOYABLE>[],
+    public static async save_commons(x: {
+        Bonuses: Bonus[];
+        Actions: Action[];
+        Synergies: Synergy[];
+        Deployables: Deployable[] /*Tags: TagInstance[]*/;
+    }): Promise<{
+        bonuses: IBonusData[];
+        actions: IActionData[];
+        synergies: ISynergyData[];
+        deployables: RegRef<EntryType.DEPLOYABLE>[];
         /*tags: RegTagInstanceData[] */
     }> {
         return {
@@ -411,17 +428,27 @@ export abstract class SerUtil {
             synergies: SerUtil.sync_save_all(x.Synergies),
             deployables: SerUtil.ref_all(x.Deployables),
             /* tags: await SerUtil.save_all(x.Tags),*/
-        }
+        };
     }
 
     // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
-    public static async load_commons(reg: Registry, src: {
-        bonuses?: IBonusData[],
-        actions?: IActionData[],
-        synergies?: ISynergyData[],
-        deployables?: RegRef<EntryType.DEPLOYABLE>[],
-        /* tags: RegTagInstanceData[]*/
-    }, target: {Bonuses: Bonus[], Actions: Action[], Synergies: Synergy[], Deployables: Deployable[] /*, Tags: TagInstance[] */, Name?: string }): Promise<void> {
+    public static async load_commons(
+        reg: Registry,
+        src: {
+            bonuses?: IBonusData[];
+            actions?: IActionData[];
+            synergies?: ISynergyData[];
+            deployables?: RegRef<EntryType.DEPLOYABLE>[];
+            /* tags: RegTagInstanceData[]*/
+        },
+        target: {
+            Bonuses: Bonus[];
+            Actions: Action[];
+            Synergies: Synergy[];
+            Deployables: Deployable[] /*, Tags: TagInstance[] */;
+            Name?: string;
+        }
+    ): Promise<void> {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, target.Name ?? "");
         target.Synergies = SerUtil.process_synergies(src.synergies);
@@ -431,18 +458,21 @@ export abstract class SerUtil {
 
     // Hopefully should mitigate a lot of the code duplication I've had floating around
     // Handles the bonuses, actions, synergies, deployables, and tags of an item
-    public static async unpack_commons_and_tags(src: {
-        bonuses?: IBonusData[],
-        actions?: IActionData[],
-        synergies?: ISynergyData[],
-        deployables?: PackedDeployableData[],
-        tags?: PackedTagInstanceData[]
-    }, reg: Registry): Promise<{
-        bonuses: IBonusData[],
-        actions: IActionData[],
-        synergies: ISynergyData[],
-        deployables: RegRef<EntryType.DEPLOYABLE>[],
-        tags: RegTagInstanceData[]
+    public static async unpack_commons_and_tags(
+        src: {
+            bonuses?: IBonusData[];
+            actions?: IActionData[];
+            synergies?: ISynergyData[];
+            deployables?: PackedDeployableData[];
+            tags?: PackedTagInstanceData[];
+        },
+        reg: Registry
+    ): Promise<{
+        bonuses: IBonusData[];
+        actions: IActionData[];
+        synergies: ISynergyData[];
+        deployables: RegRef<EntryType.DEPLOYABLE>[];
+        tags: RegTagInstanceData[];
     }> {
         // Create deployable entries
         let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, src.deployables);
@@ -450,15 +480,15 @@ export abstract class SerUtil {
 
         // Get tags
         let tags = await SerUtil.unpack_children(TagInstance.unpack, reg, src.tags);
-        let reg_tags = await SerUtil.save_all(tags); 
+        let reg_tags = await SerUtil.save_all(tags);
 
         return {
             actions: src.actions ?? [],
             bonuses: src.bonuses ?? [],
             synergies: src.synergies ?? [],
             deployables,
-            tags: reg_tags
-        }
+            tags: reg_tags,
+        };
     }
 
     // Tags are also an exception I'm willing to make. These should ___maybe___ be moved to their respective classes, but for convenience we keeping here.
@@ -474,7 +504,7 @@ export abstract class SerUtil {
 
     // We almost never have synced data
     public static unpack_counters_default(counters?: PackedCounterData[]): RegCounterData[] {
-        return counters?.map(c => Counter.unpack(c, [])) || [];
+        return counters?.map(c => Counter.unpack(c)) || [];
     }
 
     // Awaitable for all items to be ready
@@ -526,7 +556,7 @@ export abstract class RegSer<SourceType> {
 export abstract class RegEntry<T extends EntryType, SourceType> {
     public readonly Type: T;
     public readonly RegistryID: string;
-    readonly Registry: Registry;
+    public readonly Registry: Registry;
     private _load_promise: Promise<any>;
 
     // This constructor assumes that we've already got an entry in this registry.
@@ -561,7 +591,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     public abstract async save(): Promise<SourceType>;
 
     // Convenience function to update self in registry. Note that this doesn't read!
-    public async update(): Promise<void> {
+    public async writeback(): Promise<void> {
         this.Registry.get_cat(this.Type).update((this as unknown) as LiveEntryTypes<T>); // please don't make me regret this
     }
 
@@ -595,8 +625,59 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 
     // Repack this item. Can oftentimes just be save() with a few minor tweaks. Used for ccio.
-    public async pack(): Promise<any> {
-        /* todo */
+    public async pack(): Promise<PackedEntryTypes<T>> {
+        return {} as any;
+        // TODO
+    }
+
+    // Create self in a new DB, in-place. This is the only situation in which the Registry or RegistryID of a live object can change
+    // Note that since a live copy is always a mere reflection of the underlying reg data, this has no effect on the original reg
+    // In order to properly resettle children, we require valid implementations of get_child_entries
+    private is_insinuating = false;
+    public async insinuate(to_new_reg: Registry, root_call: boolean = true): Promise<void> {
+        // Check if we've been hit to avoid spurious copying
+        if (this.is_insinuating) {
+            return;
+        }
+        this.is_insinuating = true;
+
+        // Ask all of our live children to insinuate themselves. They shall insinuate recursively
+        for (let child of this.get_child_entries()) {
+            await child.insinuate(to_new_reg, false); // Ensure that they don't get root call true. This prevents dumb save-thrashing
+        }
+
+        // Bail out here if we actually already live in the specified reg. Easiest way to check is equality, but for global/stack regs we had better be more specific
+        if (
+            this.Registry == to_new_reg ||
+            (await to_new_reg.get_cat(this.Type).get_raw(this.RegistryID)) != null
+        ) {
+            if (root_call) {
+                this.is_insinuating = false;
+            }
+            return;
+        }
+
+        // To do ourself is quite simple once this is done. Now that all of our child data is in the new registry, we simply transfer ourself via save/load
+        // We change our registry before saving, in order to more reliably catch weird saving reg interaactions
+        (this as any).Registry = to_new_reg;
+        let saved = await this.save();
+
+        // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
+        let new_entry = await to_new_reg.create(this.Type, saved as any);
+        (this as any).RegistryID = new_entry.RegistryID;
+        // We just dismiss the new entry, as we are still it (in theory) but with probably more reliably maintained refs.
+
+        // In cases of Non-DAG heirarchies (the only example of which I can think of being Mechs knowing their Pilot and perhaps deployables knowing their deployer),
+        // this simplistic approach will unfortunately leave us with some possibly unmaintained references... A possible solution is to re-propagate the update function back through the chain
+        // to make sure that everything saved properly. We do this here - Need specific test cases to validate it is working
+        if (root_call) {
+            // No more processing is going to occur, so links/refs can be stably saved
+            for (let i of this.get_child_entries_recursive()) {
+                await i.writeback();
+                i.is_insinuating = false;
+            }
+            this.is_insinuating = false;
+        }
     }
 }
 
@@ -609,8 +690,17 @@ export abstract class InventoriedRegEntry<T extends EntryType, SourceType> exten
         super(type, registry, id, reg_data);
     }
 
-    // What does this item own?
-    abstract sub_registry(): Registry;
+    // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
+    async inventory_reg(): Promise<Registry> {
+        let v = await this.Registry.get_inventory(this.RegistryID);
+        if (!v) {
+            console.error(
+                `Couldn't lookup inventory registry for item ${this.Type}:${this.RegistryID}`
+            );
+            return this.Registry;
+        }
+        return v;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -691,20 +781,6 @@ export abstract class Registry {
      * An important thing to note is that this was built with the foundry vtt paradigm in mind, wherein there are MANY possible
      * places that "contain" regentry items; compendiums can hold actors, actors can hold items, etc.
      * A Registry object is just ONE of these. As such, most registries will in fact be nearly empty.
-     *
-     * The natural question then is how do we safely transfer items?
-     * Though we might initially be tempted to simply copy the origin reg entry data and `create` it into the destination registry,
-     * this will completely fail when regrefs are in play.
-     * Gonna be honest, I was planning on just packing then unpacking the data.
-     *
-     * But a potentially viable solution is as follows:
-     * defun migrate(entry):
-     *  - `create` the new regentry via simple copy of entry.data
-     *  - for child in entry.refs:
-     *    + `migrate(child)` so that we have a copy in our "personal" registry as well.
-     *    + Override the contents of the live copy of entries refs
-     *
-     * All reg_entries will need to implement this, basically, but it should have a trivial implementation as well.
      */
     // This just maps to the other cats below
     private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
@@ -728,26 +804,6 @@ export abstract class Registry {
         return this.get_cat(type).create(val);
     }
 
-    // Call this only if the registry categories aren't polling from some external source
-    /*
-    async create_many<T extends EntryType>(...vals: RegEntry<any, any>[]): Promise<void> {
-        // As a courtesy / optimization measure, we categorize these first, then send in batches
-        let groupings = new Map<EntryType, Array<RegEntry<any, any>>>();
-        for (let v of vals) {
-            if (groupings.has(v.Type)) {
-                groupings.get(v.Type)!.push(v);
-            } else {
-                groupings.set(v.Type, [v]);
-            }
-        }
-
-        // Dispatch groups
-        for (let [k, v] of groupings.entries()) {
-            this.get_cat(k).create_many(...v);
-        }
-    }
-    */
-
     // Delete an item, by cat + id. Just delegates through get_cat
     async delete(cat: EntryType, id: string) {
         this.get_cat(cat).delete_id(id);
@@ -767,18 +823,6 @@ export abstract class Registry {
         }
         return v;
     }
-
-    // Get by ID from _anywhere_. This is pretty funky/unreliable/slow, depending on implementation, because it just polls all categories
-    // You should be able to figure out the type from the `Type` of the VRegistryItem
-    // async get_from_anywhere(id: string): Promise<RegEntry<any, any> | null> {
-    // for (let [k, c] of this.cat_map) {
-    // let v = await c.get_live(k);
-    // if (v) {
-    // return v;
-    // }
-    // }
-    // return null;
-    // }
 
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
@@ -800,16 +844,18 @@ export abstract class Registry {
         return this.resolve_rough(ref) as any; // Trust me bro
     }
 
-    async resolve_rough(ref: RoughRegRef): Promise<RegEntry<any, any> | null> {
+    async resolve_rough(ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+        let result: RegEntry<any, any> | null;
         if (ref.is_unresolved_mmid) {
             if (ref.type) {
-                return this.try_get_cat(ref.type)?.lookup_mmid(ref.id);
+                result = await this.try_get_cat(ref.type)?.lookup_mmid(ref.id);
             } else {
-                return this.resolve_wildcard_mmid(ref.id);
+                result = await this.resolve_wildcard_mmid(ref.id);
             }
         } else {
-            return this.get_cat(ref.type!).get_live(ref.id);
+            result = await this.get_cat(ref.type!).get_live(ref.id);
         }
+        return result;
     }
 
     // Similar to resolve above, this is just for type flavoring basically
@@ -820,7 +866,9 @@ export abstract class Registry {
     }
 
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
-    async resolve_many_rough(refs: RoughRegRef[] | undefined): Promise<Array<RegEntry<any, any>>> {
+    async resolve_many_rough(
+        refs: RegRef<EntryType>[] | undefined
+    ): Promise<Array<RegEntry<any, any>>> {
         if (!refs) {
             return [];
         }
@@ -833,28 +881,30 @@ export abstract class Registry {
     abstract get_inventory(for_item_id: string): Promise<Registry | null>;
 }
 
-// Handles cross referencing of data
+// "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)
+// Usually, a ref has a specific type. For instance, a reference to a weapon would be a RegRef<EntryType.MECH_WEAPON>. They can/should be resolved via the `resolve` or `resolve_many` functions.
+// Sometimes we do not know the type. These are typed as RegRef<any>. Generally trying to `resolve` these gives wonky typing, so I would advise using `resolve_rough` and `resolve_many_rough`
+//
+// Sometimes, we don't even know the item's actual unique registry-id, and instead only know the compcon-provided id. Slightly perplexingly, I decided to call these "mmid"s. I don't remember why. Just roll with it
+// These are typically encountered only on freshly unpacked daata, and provide a means of navigating tricky chicken-egg scenarios by leaving the references unresolved until the items are first loaded.
+// For the most part every rough ref is an unresolved mmid, though there are certain cases where theoretically one might simply not know the type of
 // Use rough basically only when you cannot be explicit about the type, IE for unresolved mmids
 // If mmid is resolved but you have a mixed content array, might still be / definitely is better to just use `any`
-export interface RoughRegRef {
-    // The item id
-    id: string;
-
-    // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
-    type: EntryType | null;
-
-    // Is our ID like, the actual id, or just like "DRAKE" or some shit
-    is_unresolved_mmid: boolean;
-}
-
-// Same thing basically, except with firm typing
 export interface RegRef<T extends EntryType> {
     // The item id
     id: string;
 
     // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
-    type: T;
+    type: T | null;
 
     // Is our ID like, the actual id, or just like "DRAKE" or some shit
     is_unresolved_mmid: boolean;
+}
+
+export function quick_mm_ref<T extends EntryType>(type: T | null, mmid: string): RegRef<T> {
+    return {
+        id: mmid,
+        type: type as T | null,
+        is_unresolved_mmid: true,
+    };
 }

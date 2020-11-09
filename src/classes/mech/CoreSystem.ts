@@ -19,7 +19,7 @@ export interface AllCoreSystemData {
     deactivation?: ActivationType;
     use?: FrameEffectUse;
 
-    // 
+    //
     active_name: string;
     active_effect: string; // v-html
     active_actions: IActionData[];
@@ -69,15 +69,15 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     PassiveName!: string;
     PassiveEffect!: string;
     PassiveActions!: Action[];
-    PassiveBonuses!: Bonus[] ;
-    PassiveSynergies!: Synergy[] ;
+    PassiveBonuses!: Bonus[];
+    PassiveSynergies!: Synergy[];
 
     Deployables!: Deployable[];
     Counters!: Counter[];
     Integrated!: RegEntry<any, any>[];
     Tags!: TagInstance[];
 
-    protected async load(data: RegCoreSystemData): Promise<void> {
+    public async load(data: RegCoreSystemData): Promise<void> {
         this.Activation = data.activation;
         this.Description = data.description;
         this.Name = data.name;
@@ -183,6 +183,10 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
 
     // Helper to get weapons, specifically
     get IntegratedWeapons(): MechWeapon[] {
-        return this.Integrated.filter(r => r.Type == EntryType.MECH_WEAPON) as MechWeapon[];
+        return this.Integrated.filter(r => r instanceof MechWeapon) as MechWeapon[];
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Integrated, ...this.Deployables];
     }
 }

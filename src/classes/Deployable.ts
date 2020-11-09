@@ -42,6 +42,7 @@ export interface PackedDeployableData extends AllDeployableData {
 }
 
 export interface RegDeployableData extends AllDeployableData {
+    // deployer: ????? // TODO - needed for bonuses. Alternatively, provide a means of injecting bonuses somehow
     counters: RegCounterData[];
     tags: RegTagInstanceData[];
     overshield?: number;
@@ -76,7 +77,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
     Counters!: Counter[];
     Tags!: TagInstance[];
 
-    protected async load(data: RegDeployableData): Promise<void> {
+    public async load(data: RegDeployableData): Promise<void> {
         this.Name = data.name;
         this.DeployableType = data.type;
         this.Detail = data.detail;
@@ -99,7 +100,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         this.Save = data.save ?? null;
         this.Speed = data.speed ?? null;
         this.Actions = SerUtil.process_actions(data.actions);
-        this.Bonuses = SerUtil.process_bonuses(data.bonuses);
+        this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
         this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
@@ -107,6 +108,8 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         // Make sure tags ready
         await Promise.all(this.Tags.map(x => x.ready()));
     }
+
+    // TODO: Track
 
     public async save(): Promise<RegDeployableData> {
         return {

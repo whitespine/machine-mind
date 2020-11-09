@@ -46,7 +46,7 @@ export { PackedPilotEquipmentState, PackedPilotLoadoutData } from "./classes/pil
 export { IFactionData } from "./classes/Faction";
 export { PackedReserveData, RegReserveData } from "./classes/pilot/reserves/Reserve";
 export { IOrganizationData } from "./classes/pilot/reserves/Organization";
-export { IProjectData } from "./classes/pilot/reserves/Project";
+// export { IProjectData } from "./classes/pilot/reserves/Project";
 export {
     PackedTalentData,
     PackedTalentRank,
@@ -66,12 +66,11 @@ export { PackedSkillData, RegSkillData } from "./classes/pilot/Skill";
 // export { INpcClassData } from "./classes/npc/NpcClass";
 // export { INpcTemplateData } from "./classes/npc/NpcTemplate";
 // export { INpcData } from "./classes/npc/Npc";
-export { IEncounterData } from "./classes/encounter/Encounter.dts";
-export { IMissionData } from "./classes/encounter/Mission";
-export { IMissionStep } from "./classes/encounter/IMissionStep";
-export { VActor } from "./classes/encounter/Actor";
+// export { IEncounterData } from "./classes/encounter/Encounter.dts";
+// export { IMissionData } from "./classes/encounter/Mission";
+// export { IMissionStep } from "./classes/encounter/IMissionStep";
 export { RegQuirkData } from "./classes/pilot/Quirk";
-export { IActiveMissionData } from "./classes/encounter/ActiveMission";
+// export { IActiveMissionData } from "./classes/encounter/ActiveMission";
 export { IStatusData } from "./classes/Statuses";
 export { ISitrepData } from "./classes/encounter/Sitrep";
 export { IEnvironmentData } from "./classes/encounter/Environment";

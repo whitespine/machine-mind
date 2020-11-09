@@ -35,14 +35,14 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
     Description!: string;
     Detail!: string;
     Family!: SkillFamily;
-    Rank!: number;
+    CurrentRank!: number;
 
-    protected async load(data: RegSkillData): Promise<void> {
+    public async load(data: RegSkillData): Promise<void> {
         (this.ID = data.id), (this.Name = data.name);
         this.Description = data.description;
         this.Detail = data.detail;
         this.Family = data.family;
-        this.Rank = data.rank;
+        this.CurrentRank = data.rank;
     }
 
     public async save(): Promise<RegSkillData> {
@@ -52,26 +52,26 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
             family: this.Family,
             id: this.Family,
             name: this.Name,
-            rank: this.Rank,
+            rank: this.CurrentRank,
         };
     }
 
     // Number go up (or down)
     public Increment(): boolean {
-        if (this.Rank >= Rules.MaxTriggerRank) return false;
-        this.Rank += 1;
+        if (this.CurrentRank >= Rules.MaxTriggerRank) return false;
+        this.CurrentRank += 1;
         return true;
     }
 
     public Decrement(): boolean {
-        if (this.Rank <= 1) return false;
-        this.Rank -= 1;
+        if (this.CurrentRank <= 1) return false;
+        this.CurrentRank -= 1;
         return false;
     }
 
     // Very simple. reg is kept for consistency
     public static async unpack(packed_skill: PackedSkillData, reg: Registry): Promise<Skill> {
-        let rdata =  { ...packed_skill, rank: 1 };
+        let rdata = { ...packed_skill, rank: 1 };
         return reg.get_cat(EntryType.SKILL).create(rdata);
     }
 

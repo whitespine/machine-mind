@@ -35,7 +35,7 @@ export class Action extends SimSer<IActionData> {
     Trigger!: string | null; // What sets this reaction off, if anything
     SubActions!: Action[];
 
-    protected load(data: IActionData): void {
+    public load(data: IActionData): void {
         this.ID;
         this.Name = data.name;
         this.Activation = SerUtil.restrict_enum(

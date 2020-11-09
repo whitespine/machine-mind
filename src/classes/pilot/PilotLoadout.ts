@@ -107,26 +107,22 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         };
     }
 
-    protected async load(data: RegPilotLoadoutData): Promise<void> {
+    public async load(data: RegPilotLoadoutData): Promise<void> {
         // Simple
         this.Name = data.name;
         this.ID = data.id;
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
-        this.Armor = await Promise.all(
-            data.armor.map(a => a ? this.Registry.resolve(a) : null)
-        );
-        this.Gear = await Promise.all(
-            data.gear.map(a => a ? this.Registry.resolve(a) : null)
-        );
+        this.Armor = await Promise.all(data.armor.map(a => (a ? this.Registry.resolve(a) : null)));
+        this.Gear = await Promise.all(data.gear.map(a => (a ? this.Registry.resolve(a) : null)));
         this.Weapons = await Promise.all(
-            data.weapons.map(a => a ? this.Registry.resolve(a) : null)
+            data.weapons.map(a => (a ? this.Registry.resolve(a) : null))
         );
         this.ExtendedGear = await Promise.all(
-            data.extendedGear.map(a => a ? this.Registry.resolve(a) : null)
+            data.extendedGear.map(a => (a ? this.Registry.resolve(a) : null))
         );
         this.ExtendedWeapons = await Promise.all(
-            data.extendedWeapons.map(a => a ? this.Registry.resolve(a) : null)
+            data.extendedWeapons.map(a => (a ? this.Registry.resolve(a) : null))
         );
     }
 
@@ -140,8 +136,8 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             extendedGear: this.ExtendedGear.map(a => a?.as_ref() ?? null),
             extendedWeapons: this.ExtendedWeapons.map(a => a?.as_ref() ?? null),
         };
-    } 
-    
+    }
+
     public static async unpack(data: PackedPilotLoadoutData, reg: Registry): Promise<PilotLoadout> {
         let armor = await Promise.all(
             data.armor.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_ARMOR))
@@ -150,19 +146,25 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             data.gear.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_GEAR))
         );
         let extended_gear = await Promise.all(
-            data.extendedGear.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_GEAR))
+            data.extendedGear.map(a =>
+                PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_GEAR)
+            )
         );
         let weapons = await Promise.all(
             data.weapons.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_WEAPON))
         );
         let extended_weapons = await Promise.all(
-            data.extendedWeapons.map(a => PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_WEAPON))
+            data.extendedWeapons.map(a =>
+                PilotLoadout.resolve_state_item(reg, a, EntryType.PILOT_WEAPON)
+            )
         );
 
-        function reffer<T extends EntryType>(dat: Array<LiveEntryTypes<T> | null>): Array<RegRef<T> | null> {
+        function reffer<T extends EntryType>(
+            dat: Array<LiveEntryTypes<T> | null>
+        ): Array<RegRef<T> | null> {
             let result: Array<RegRef<T> | null> = [];
-            for(let d of dat) {
-                if(d) {
+            for (let d of dat) {
+                if (d) {
                     let ref = d.as_ref() as RegRef<T>;
                     result.push(ref);
                 } else {
@@ -206,7 +208,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             );
             return null;
         }
-     // TODO: apply the other details
+        // TODO: apply the other details
         /*
             id: string;
     destroyed: boolean;
@@ -216,9 +218,6 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     */
         return item;
     }
-
-
-
 
     // Adds an item to the first free slot it can find
     /*

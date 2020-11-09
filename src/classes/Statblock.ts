@@ -1,3 +1,4 @@
+/*
 import { Pilot, Mech, PilotWeapon } from "@/class";
 import { store } from "@/hooks";
 
@@ -255,3 +256,4 @@ export class Statblock {
         return output;
     }
 }
+*/

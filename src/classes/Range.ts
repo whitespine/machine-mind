@@ -18,7 +18,7 @@ export class Range extends SimSer<IRangeData> {
     Override!: boolean;
     Bonus!: number;
 
-    protected load(data: IRangeData): void {
+    public load(data: IRangeData): void {
         this.RangeType = data.type;
         this.Value = data.val;
         this.Override = data.override || false;
@@ -60,28 +60,33 @@ export class Range extends SimSer<IRangeData> {
     }
 
     public static CalculateRange(item: MechWeapon, mech: Mech): Range[] {
-        const bonuses = mech.Bonuses.filter(x => x.ID === "range");
-        const output = [];
+        const bonuses = mech.AllBonuses.filter(x => x.ID === "range");
+        const output: Range[] = [];
         item.SelectedProfile.BaseRange.forEach(r => {
             if (r.Override) return;
             let bonus = 0;
             bonuses.forEach(b => {
-                if (b.WeaponTypes.length && !b.WeaponTypes.some(wt => item.SelectedProfile.WepType === wt))
+                if (
+                    b.WeaponTypes.length &&
+                    !b.WeaponTypes.some(wt => item.SelectedProfile.WepType === wt)
+                )
                     return;
                 if (b.WeaponSizes.length && !b.WeaponSizes.some(ws => item.Size === ws)) return;
                 if (
                     b.DamageTypes.length &&
-                    !b.DamageTypes.some(dt => item.SelectedProfile.BaseDamage.some(x => x.DamageType === dt))
+                    !b.DamageTypes.some(dt =>
+                        item.SelectedProfile.BaseDamage.some(x => x.DamageType === dt)
+                    )
                 )
                     return;
-                if (!b.RangeTypes.length || b.RangeTypes.some(rt => r.Type === rt)) {
-                    bonus += Bonus.Evaluate(b, mech.Pilot);
+                if (!b.RangeTypes.length || b.RangeTypes.some(rt => r.RangeType === rt)) {
+                    bonus += b.evaluate(mech.Pilot);
                 }
             });
             output.push(
                 new Range({
-                    type: r.Type,
-                    val: r._value,
+                    type: r.RangeType,
+                    val: r.Value,
                     override: r.Override,
                     bonus: bonus,
                 })

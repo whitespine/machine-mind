@@ -13,7 +13,8 @@ export interface IBonusData {
     weapon_sizes?: WeaponSize[];
 }
 
-export class Bonus { // We don't extend simser {
+export class Bonus {
+    // We don't extend simser {
     ID!: string;
     Value!: string | number;
     Title!: string | number;
@@ -45,7 +46,7 @@ export class Bonus { // We don't extend simser {
 
     // Just a more convenient constructor
     public static generate(id: string, val: string | number, source: string): Bonus {
-        return new Bonus({id, val}, source);
+        return new Bonus({ id, val }, source);
     }
 
     public save(): IBonusData {
@@ -100,7 +101,7 @@ export class Bonus { // We don't extend simser {
     }
 
     /*
-    */
+     */
     // Lists contributors for just the mech
     /*
     private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {

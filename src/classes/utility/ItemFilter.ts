@@ -1,4 +1,5 @@
-import { MechEquipment, CompendiumItem } from "@/class";
+/*
+import { MechEquipment } from "@/class";
 import { Mech } from "../mech/Mech";
 
 export interface ItemFilterParam {
@@ -20,3 +21,5 @@ export class ItemFilter {
         return items;
     }
 }
+
+*/

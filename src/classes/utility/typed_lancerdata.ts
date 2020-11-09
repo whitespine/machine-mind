@@ -36,15 +36,16 @@ import {
     IFactionData,
     IManufacturerData,
     PackedWeaponModData,
-    PackedNpcClassData,
-    PackedNpcFeatureData,
-    PackedNpcTemplateData,
-    PackedPilotEquipmentData,
+    // PackedNpcClassData,
+    // PackedNpcFeatureData,
+    // PackedNpcTemplateData,
+    // PackedPilotEquipmentData,
     ITagTemplateData,
     IStatusData,
     ISitrepData,
     IEnvironmentData,
     IActionData,
+    PackedPilotEquipmentData,
 } from "@/interface";
 import { Rules } from "@/class";
 
@@ -56,10 +57,10 @@ export const glossary = _glossary as GlossaryItem[];
 
 export const actions = _actions as IActionData[];
 export const backgrounds = _backgrounds as IBackground[];
-export const core_bonuses = _core_bonuses as ICoreBonusData[];
+export const core_bonuses = _core_bonuses as PackedCoreBonusData[];
 export const environments = _environments as IEnvironmentData[];
 export const factions = _factions as IFactionData[];
-export const frames = _frames as IFrameData[];
+export const frames = _frames as PackedFrameData[];
 
 export const info = _info as {
     name: string;
@@ -70,19 +71,19 @@ export const info = _info as {
     active: true;
 };
 export const manufacturers = _manufacturers as IManufacturerData[];
-export const mods = _mods as IWeaponModData[];
-export const npc_classes = _npc_classes as INpcClassData[];
-export const npc_features = _npc_features as INpcFeatureData[];
-export const npc_templates = _npc_templates as INpcTemplateData[];
-export const pilot_gear = _pilot_gear as IPilotEquipmentData[];
+export const mods = _mods as PackedWeaponModData[];
+// export const npc_classes = _npc_classes as PackedNpcClassData[];
+// export const npc_features = _npc_features as PackedNpcFeatureData[];
+// export const npc_templates = _npc_templates as PackedNpcTemplateData[];
+export const pilot_gear = _pilot_gear as PackedPilotEquipmentData[];
 export const quirks = _quirks as string[];
-export const reserves = _reserves as IReserveData[];
+export const reserves = _reserves as PackedReserveData[];
 export const sitreps = _sitreps as ISitrepData[];
-export const skills = _skills as ISkillData[];
+export const skills = _skills as PackedSkillData[];
 export const statuses = _statuses as IStatusData[];
-export const systems = _systems as IMechSystemData[];
+export const systems = _systems as PackedMechSystemData[];
 export const tags = _tags as ITagTemplateData[];
-export const talents = _talents as ITalentData[];
-export const weapons = _weapons as IMechWeaponData[];
+export const talents = _talents as PackedTalentData[];
+export const weapons = _weapons as PackedMechWeaponData[];
 
 export const rules = Rules;

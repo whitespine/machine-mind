@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+import { nanoid } from "nanoid";
 import { store } from "@/hooks";
 
 interface IDroneData {

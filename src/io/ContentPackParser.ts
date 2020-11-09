@@ -1,6 +1,6 @@
 import JSZip, { JSZipObject } from "jszip";
 import * as lancerData from "@/classes/utility/typed_lancerdata";
-import { CORE_BREW_ID } from '@/classes/enums';
+import { CORE_BREW_ID } from "@/classes/enums";
 import {
     IContentPackManifest,
     IContentPack,
@@ -19,7 +19,7 @@ import {
     // PackedNpcFeatureData,
     // PackedNpcTemplateData,
 } from "@/interface";
-import { ITagTemplateData } from '@/classes/Tag';
+import { ITagTemplateData } from "@/classes/Tag";
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (
@@ -77,9 +77,9 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
         }
     };
 
-    function generateIDs<T extends {id: string}>(data: T[], dataPrefix?: string): T[] {
-        if(dataPrefix) {
-            for(let d of data) {
+    function generateIDs<T extends { id: string }>(data: T[], dataPrefix?: string): T[] {
+        if (dataPrefix) {
+            for (let d of data) {
                 d.id = generateItemID(dataPrefix, d.id);
             }
         }
@@ -88,7 +88,10 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
 
     const manufacturers = await getZipData<IManufacturerData>(zip, "manufacturers.json");
     const factions = await getZipData<IFactionData>(zip, "factions.json");
-    const coreBonuses = generateIDs(await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"), "cb");
+    const coreBonuses = generateIDs(
+        await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"),
+        "cb"
+    );
     const frames = generateIDs(await getZipData<PackedFrameData>(zip, "frames.json"), "mf");
     const weapons = generateIDs(await getZipData<PackedMechWeaponData>(zip, "weapons.json"), "mw");
     const systems = generateIDs(await getZipData<PackedMechSystemData>(zip, "systems.json"), "ms");

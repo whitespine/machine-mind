@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+import { nanoid } from "nanoid";
 
 import { imageManagement, ImageTag, store, is_web } from "@/hooks";
 import { EncounterSide, NpcClass, NpcTemplate, NpcItem, NpcStats, NpcFeature } from "@/class";
@@ -66,7 +66,7 @@ export class Npc implements IActor {
     public constructor(npcClass: NpcClass, tier?: number | null) {
         const t = tier || 1;
         this._active = false;
-        this._id = uuid();
+        this._id = nanoid();
         this._name = `New ${npcClass.Name[0].toUpperCase()}${npcClass.Name.slice(1)}`;
         this._subtitle = "";
         this._tier = t;
@@ -113,7 +113,7 @@ export class Npc implements IActor {
     }
 
     public RenewID(): void {
-        this._id = uuid();
+        this._id = nanoid();
     }
 
     public get Power(): number {
@@ -392,7 +392,7 @@ export class Npc implements IActor {
     public createCustomCounter(name: string): void {
         const counter = {
             name,
-            id: uuid(),
+            id: nanoid(),
             custom: true,
         };
         this._customCounters = [...this._customCounters, counter];

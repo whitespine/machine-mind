@@ -6,7 +6,7 @@
 
 export * from "@/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
-export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
+// export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Deployable } from "./classes/Deployable";
@@ -29,21 +29,18 @@ export { MechWeapon, MechSystem };
 export { Talent } from "./classes/pilot/Talent";
 export { License } from "./classes/License";
 export { MechSkills } from "./classes/pilot/MechSkills";
-export { PilotLicense } from "./classes/pilot/PilotLicense";
 export { PilotLoadout } from "./classes/pilot/PilotLoadout";
-export { PilotSkill } from "./classes/pilot/PilotSkill";
-export { PilotTalent } from "./classes/pilot/PilotTalent";
 export { Quirk } from "./classes/pilot/Quirk";
 export { Pilot } from "./classes/pilot/Pilot";
 export { TagInstance, TagTemplate } from "./classes/Tag";
 export { MechLoadout } from "./classes/mech/MechLoadout";
 export { Mech } from "./classes/mech/Mech";
 export { Reserve } from "./classes/pilot/reserves/Reserve";
-export { Project } from "./classes/pilot/reserves/Project";
+// export { Project } from "./classes/pilot/reserves/Project";
 export { Organization } from "./classes/pilot/reserves/Organization";
 export { Manufacturer } from "./classes/Manufacturer";
 export { Faction } from "./classes/Faction";
-export { Statblock } from "./classes/Statblock";
+// export { Statblock } from "./classes/Statblock";
 /*
 export {
     DiceRoller,
@@ -55,14 +52,14 @@ export {
 export { DiceStats, DiceStatsResult } from "./classes/dice/DiceStats";
 */
 // export { Encounter } from "./classes/encounter/Encounter.dts";
-export { Rest } from "./classes/encounter/Rest";
-export { Mission, MissionStepType } from "./classes/encounter/Mission";
-export { ActiveMission } from "./classes/encounter/ActiveMission";
+// export { Rest } from "./classes/encounter/Rest";
+// export { Mission, MissionStepType } from "./classes/encounter/Mission";
+// export { ActiveMission } from "./classes/encounter/ActiveMission";
 export { Sitrep } from "./classes/encounter/Sitrep";
 export { Environment } from "./classes/encounter/Environment";
 export { Status } from "./classes/Statuses";
 // export { ContentPack } from "./classes/ContentPack";
-export { PersistentStore } from "./io/persistence";
+// export { PersistentStore } from "./io/persistence";
 export { Counter } from "./classes/Counter";
 // export { NpcFeatureType, NpcFeature } from "@/classes/npc//NpcFeature";
 // export { NpcItem } from "@/classes/npc/NpcItem";

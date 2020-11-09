@@ -34,7 +34,7 @@
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "tests/**/*.tsx", "babyjail/classes/dice/DiceRoller.ts", "src/mixmeta.typs"
+    "tests/**/*.tsx", "babyjail/classes/dice/DiceRoller.ts", "src/mixmeta.typs", "src/classes/encounter/Encounter.dts"
   ],
   "exclude": [
     "node_modules"

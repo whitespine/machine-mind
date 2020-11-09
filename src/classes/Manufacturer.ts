@@ -22,7 +22,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
     Dark!: string;
     Quote!: string;
 
-    protected async load(data: IManufacturerData): Promise<void> {
+    public async load(data: IManufacturerData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this._logo = data.logo;

@@ -1,6 +1,6 @@
 import { OrgType } from "@/classes/enums";
 import { bound_int } from "@/funcs";
-import { SimSer } from "@/registry";
+import { EntryType, RegEntry, SimSer } from "@/registry";
 
 export interface IOrganizationData {
     name: string;
@@ -11,7 +11,7 @@ export interface IOrganizationData {
     actions: string;
 }
 
-export class Organization extends SimSer<IOrganizationData> {
+export class Organization extends RegEntry<EntryType.ORGANIZATION, IOrganizationData> {
     public Purpose!: OrgType;
     public Name!: string;
     public Description!: string;
@@ -37,7 +37,7 @@ export class Organization extends SimSer<IOrganizationData> {
         this._influence = bound_int(n, 1, 6);
     }
 
-    protected load(data: IOrganizationData): void {
+    public async load(data: IOrganizationData): Promise<void> {
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
         this.Efficiency = bound_int(data.efficiency, 0, 6);
@@ -45,7 +45,7 @@ export class Organization extends SimSer<IOrganizationData> {
         this.Description = data.description;
         this.Actions = data.actions;
     }
-    public save(): IOrganizationData {
+    public async save(): Promise<IOrganizationData> {
         return {
             name: this.Name,
             purpose: this.Purpose,

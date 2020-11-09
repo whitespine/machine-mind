@@ -10,7 +10,7 @@ import {
     RegTagInstanceData,
 } from "@/interface";
 import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@/registry";
-import { RegDamageData } from '../Damage';
+import { RegDamageData } from "../Damage";
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -40,11 +40,11 @@ export interface PackedPilotWeaponData extends AllPackedData {
     range: IRangeData[];
 }
 export interface PackedPilotGearData extends AllPackedData {
-    type: "Gear"
+    type: "Gear";
 }
 
 export interface PackedPilotArmorData extends AllPackedData {
-    type: "Armor"
+    type: "Armor";
 }
 
 // Reg items
@@ -61,8 +61,8 @@ interface AllRegData {
 }
 
 export interface RegPilotWeaponData extends AllRegData {
-    damage: RegDamageData[],
-    range: IRangeData[]
+    damage: RegDamageData[];
+    range: IRangeData[];
 }
 
 export interface RegPilotArmorData extends AllRegData {}
@@ -83,11 +83,11 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorDat
     Synergies!: Synergy[];
     Deployables!: Deployable[];
 
-    protected async load(data: RegPilotArmorData): Promise<void> {
+    public async load(data: RegPilotArmorData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags)
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
 
         await SerUtil.load_commons(this.Registry, data, this);
     }
@@ -98,16 +98,20 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorDat
             id: this.ID,
             name: this.Name,
             tags: await SerUtil.save_all(this.Tags),
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
         };
     }
 
     public static async unpack(data: PackedPilotArmorData, reg: Registry): Promise<PilotArmor> {
         let rdata: RegPilotArmorData = {
             ...data,
-            ...await SerUtil.unpack_commons_and_tags(data, reg),
-        }
+            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
+        };
         return reg.get_cat(EntryType.PILOT_ARMOR).create(rdata);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables];
     }
 }
 
@@ -121,12 +125,11 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> 
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
-
-    protected async load(data: RegPilotGearData): Promise<void> {
+    public async load(data: RegPilotGearData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags)
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
 
         await SerUtil.load_commons(this.Registry, data, this);
     }
@@ -137,18 +140,21 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> 
             id: this.ID,
             name: this.Name,
             tags: await SerUtil.save_all(this.Tags),
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
         };
     }
 
     public static async unpack(data: PackedPilotGearData, reg: Registry): Promise<PilotGear> {
         let rdata: RegPilotGearData = {
             ...data,
-            ...await SerUtil.unpack_commons_and_tags(data, reg),
-        }
+            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
+        };
         return reg.get_cat(EntryType.PILOT_GEAR).create(rdata);
     }
 
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables];
+    }
 }
 
 export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeaponData> {
@@ -164,13 +170,12 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeapon
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
-
-    protected async load(data: RegPilotWeaponData): Promise<void> {
+    public async load(data: RegPilotWeaponData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
-        this.Tags = await SerUtil.process_tags(this.Registry, data.tags)
-        this.Damage = SerUtil.process_damages(data.damage)
+        this.Tags = await SerUtil.process_tags(this.Registry, data.tags);
+        this.Damage = SerUtil.process_damages(data.damage);
         this.Range = SerUtil.process_ranges(data.range);
         await SerUtil.load_commons(this.Registry, data, this);
     }
@@ -183,17 +188,21 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeapon
             damage: SerUtil.sync_save_all(this.Damage),
             range: SerUtil.sync_save_all(this.Range),
             tags: await SerUtil.save_all(this.Tags),
-            ...await SerUtil.save_commons(this),
+            ...(await SerUtil.save_commons(this)),
         };
     }
 
     public static async unpack(data: PackedPilotWeaponData, reg: Registry): Promise<PilotWeapon> {
         let rdata: RegPilotWeaponData = {
             ...data,
-            ...await SerUtil.unpack_commons_and_tags(data, reg),
+            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
             damage: data.damage.map(d => Damage.unpack(d)),
-            range: data.range
-        }
+            range: data.range,
+        };
         return reg.get_cat(EntryType.PILOT_WEAPON).create(rdata);
+    }
+
+    public get_child_entries(): RegEntry<any, any>[] {
+        return [...this.Deployables];
     }
 }
