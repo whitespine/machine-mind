@@ -5,6 +5,8 @@ import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "
 import { Counter, Frame, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
+import { DEFAULT_PILOT } from "../src/classes/default_entries";
+import { validate_props } from "../src/classes/fill_test_util";
 
 type DefSetup = {
     reg: StaticReg;
@@ -42,7 +44,7 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
 
-        let man = await c.create({
+        let man = await c.create(ctx, {
             id: "bmw",
             name: "Big Mech Weapons",
             dark: "black",
@@ -60,8 +62,8 @@ describe("Static Registry Reference implementation", () => {
         expect(raw!.id).toEqual("bmw");
 
         // Try retrieving by mmid
-        expect(await c.lookup_mmid("bmw", ctx)).toBeTruthy();
-        expect(await c.lookup_mmid("zoop", ctx)).toBeNull(); // 5
+        expect(await c.lookup_mmid(ctx, "bmw")).toBeTruthy();
+        expect(await c.lookup_mmid(ctx, "zoop")).toBeNull(); // 5
 
         // Check listing of both types
         expect((await c.list_raw()).length).toEqual(1);
@@ -104,7 +106,7 @@ describe("Static Registry Reference implementation", () => {
         let env = await init_basic_setup();
         let ctx = new OpCtx();
 
-        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_standard_pattern_i_everest", ctx);
+        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_standard_pattern_i_everest")
         expect(ever).toBeTruthy();
         expect(ever.Name).toEqual("EVEREST")
 
@@ -118,49 +120,62 @@ describe("Static Registry Reference implementation", () => {
         expect(ever.Traits[1].Bonuses[0].Title).toEqual("Half Cost for Structure Repairs");
 
         // Check a lancaster - should have an integrated
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_lancaster", ctx);
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster")
         expect(lanny.CoreSystem).toBeTruthy();
         expect(lanny.CoreSystem.Integrated.length).toEqual(1);
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
     });
 
+    it("All core items have all keys", async () => {
+        // expect.assertions(7);
+        let env = await init_basic_setup();
+        let ctx = new OpCtx();
+        for(let k of Object.values(EntryType)) {
+            let cat = env.reg.get_cat(k);
+            for(let x of await cat.list_live(ctx)) {
+                validate_props(x);
+            }
+        }
+    });
+
     it("Can create inventories things", async () => {
-        expect.assertions(6);
+        expect.assertions(7);
         let env = await init_basic_setup();
 
         // make a pilot
+        let ctx = new OpCtx();
         let pilots = env.reg.get_cat(EntryType.PILOT);
-        let steve = await pilots.create_default();
+        let steve = await pilots.create_default(ctx);
         steve.Name = "Steve";
         let steve_inv = steve.get_inventory()
 
         // Inventory should be unique
-        expect(steve_inv).not.toBe(env.reg);
+        expect(steve_inv == env.reg).toBeFalsy();
 
         // Make an armor (in the global scope!)
         let armors = env.reg.get_cat(EntryType.PILOT_ARMOR);
-        let my_armor = await armors.create_default();
-        my_armor.Name = "Steve's global armor";
-        await my_armor.writeback();
+        let global_armor = await armors.create_default(ctx);
+        global_armor.Name = "Steve's global armor";
+        await global_armor.writeback();
 
         // Insinuate the armor into steve's personal inventory
-        let old_reg_id = my_armor.RegistryID;
-        await my_armor.insinuate(steve_inv);
+        let personal_armor = await global_armor.insinuate(steve_inv);
 
         // Moving reg's should've changed registry ids, barring hilariously bad luck
-        expect(my_armor.RegistryID).not.toEqual(old_reg_id);
-        expect(my_armor.Registry).not.toBe(env.reg);
-        expect(my_armor.Registry).toBe(steve.get_inventory());
+        expect(personal_armor.RegistryID == global_armor.RegistryID).toBeFalsy();
+        expect(personal_armor.Registry == global_armor.Registry).toBeFalsy();
+        expect(personal_armor.Registry == env.reg).toBeFalsy();
+        expect(global_armor.Registry == steve.get_inventory()).toBeFalsy(); // 5
 
         // Change its name
-        my_armor.Name = "Steve's personal armor";
-        await my_armor.writeback();
+        personal_armor.Name = "Steve's personal armor";
+        await personal_armor.writeback();
 
         // Let's check our raws, to be sure what we wanted to change changed
-        let old_raw = await env.reg.get_cat(EntryType.PILOT_ARMOR).get_raw(old_reg_id);
-        let new_raw = await steve_inv.get_cat(EntryType.PILOT_ARMOR).get_raw(my_armor.RegistryID);
-        expect(old_raw.name).toEqual("Steve's global armor"); // 5
-        expect(new_raw.name).toEqual("Steve's personal armor");
+        let old_raw = await env.reg.get_cat(EntryType.PILOT_ARMOR).get_raw(global_armor.RegistryID);
+        let new_raw = await steve_inv.get_cat(EntryType.PILOT_ARMOR).get_raw(personal_armor.RegistryID); 
+        expect(old_raw.name).toEqual("Steve's global armor"); 
+        expect(new_raw.name).toEqual("Steve's personal armor"); // 7
         // Wowie zowie!
     });
 
@@ -172,23 +187,61 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
         // Regardless of id resolution method we expect these to be the same
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_lancaster", ctx);
-        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid("mf_lancaster", ctx);
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster");
+        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster"); // Double identical lookup via mmid
         expect(lanny === lenny).toBeTruthy();
-        let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(lanny.RegistryID, ctx);
+        let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx, lanny.RegistryID); // Repeat lookup by reg iD
         expect(lanny === larry).toBeTruthy();
-        let harry: Frame = await env.reg.resolve_wildcard_mmid("mf_lancaster", ctx);
+        let harry: Frame = await env.reg.resolve_wildcard_mmid(ctx, "mf_lancaster");
         expect(lanny === harry).toBeTruthy();
-        let terry: Frame = await env.reg.resolve(lanny.as_ref(), ctx);
+        let terry: Frame = await env.reg.resolve(ctx, lanny.as_ref());
         expect(lanny === terry).toBeTruthy();
 
         // Does changing the ctx break it? (it should)
         let ctx_2 = new OpCtx();
-        let gary: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(lanny.RegistryID, ctx_2);
+        let gary: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx_2, lanny.RegistryID);
         expect(gary === lanny).toBeFalsy();
     });
 
+    it("Can handle some more peculiar insinuation/ctx cases", async () => {
+        let full_env = await init_basic_setup();
+        let empty_env = await init_basic_setup(false);
 
+        // Insinuate the lancaster from the full to the empty, using a refresh to ensure things remain cool
+        let ctx = new OpCtx();
+        let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster")
+        let moved_lanny = await lanny.insinuate(empty_env.reg);
+        let moved_ctx = moved_lanny.OpCtx;
 
+        // Should share nothing in common
+        expect(lanny === moved_lanny).toBeFalsy();
+        expect(ctx === moved_ctx).toBeFalsy();
+        expect(lanny.Registry === moved_lanny.Registry).toBeFalsy();
+        expect(lanny.RegistryID === moved_lanny.RegistryID).toBeFalsy();
+
+    });
+
+    it("Can handle circular loops", async () => {
+
+        let env = await init_basic_setup();
+
+        let ctx = new OpCtx();
+        // Make our pilot and mech
+        let pilot = await env.reg.create(EntryType.PILOT, ctx);
+        let mech = await env.reg.create(EntryType.MECH, ctx);
+
+        // Make them friends
+        pilot.Mechs.push(mech);
+        mech.Pilot = pilot;
+        
+        // Write them back
+        await pilot.writeback();
+        await mech.writeback();
+
+        // Read them back in a new ctx
+        ctx = new OpCtx();
+        let pilot = await env.reg.get_cat(EntryType.PILOT).create_default(ctx);
+
+    });
     
 });

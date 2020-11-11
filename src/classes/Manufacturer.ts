@@ -1,5 +1,5 @@
 import { imageManagement, ImageTag } from "@src/hooks";
-import { EntryType, RegEntry, Registry, SimSer } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
 export interface IManufacturerData {
     id: string;
@@ -45,8 +45,8 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
         };
     }
 
-    public static async unpack(dep: IManufacturerData, reg: Registry): Promise<Manufacturer> {
-        return reg.get_cat(EntryType.MANUFACTURER).create(dep);
+    public static async unpack(dep: IManufacturerData, reg: Registry, ctx: OpCtx): Promise<Manufacturer> {
+        return reg.get_cat(EntryType.MANUFACTURER).create(ctx, dep);
     }
 
     public GetColor(dark?: boolean): string {

@@ -3,7 +3,7 @@ import { reserves } from "lancer-data";
 import { IActionData, Action } from "@src/classes/Action";
 import { IBonusData, Bonus } from "@src/classes/Bonus";
 import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
 import { ReserveType } from "@src/classes/enums";
 
 interface AllReserveData {
@@ -116,9 +116,9 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
     }
 
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
-    static async unpack(res: PackedReserveData, reg: Registry): Promise<Reserve> {
+    static async unpack(res: PackedReserveData, reg: Registry, ctx: OpCtx): Promise<Reserve> {
         // Create deployable entries
-        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, res.deployables);
+        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, res.deployables);
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
@@ -139,6 +139,6 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
             bonuses: res.bonuses ?? [],
             synergies: res.synergies ?? [],
         };
-        return reg.create(EntryType.RESERVE, rdata);
+        return reg.create(EntryType.RESERVE, ctx, rdata);
     }
 }

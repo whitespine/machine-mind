@@ -443,7 +443,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
     // -- Licenses ----------------------------------------------------------------------------------
     public CountLicenses(manufacturerID: string): number {
         return this.Licenses.filter(
-            x => x.Manufacturer.ID.toLowerCase() === manufacturerID.toLowerCase()
+            x => x.Manufacturer?.ID.toLowerCase() === manufacturerID.toLowerCase()
         ).reduce((a, b) => +a + +b.CurrentRank, 0);
     }
 
@@ -591,7 +591,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
 
     public async load(data: RegPilotData): Promise<void> {
         let subreg = await this.get_inventory();
-        this.ActiveMech = data.active_mech ? await subreg.resolve(data.active_mech, this.OpCtx) : null;
+        this.ActiveMech = data.active_mech ? await subreg.resolve(this.OpCtx, data.active_mech) : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
         this.Campaign = data.campaign;
@@ -602,7 +602,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.CoreBonuses = await subreg.resolve_many(data.core_bonuses, this.OpCtx);
         this.CurrentHP = data.current_hp;
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
-        this.Faction = data.faction ? await subreg.resolve(data.faction, this.OpCtx) : null;
+        this.Faction = data.faction ? await subreg.resolve(this.OpCtx, data.faction) : null;
         this.Group = data.group;
         this.History = data.history;
         this.ID = data.id;
@@ -620,7 +620,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.OwnedGear = await subreg.resolve_many(data.owned_gear, this.OpCtx);
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
-        this.Quirk = data.quirk ? await subreg.resolve(data.quirk, this.OpCtx) : null;
+        this.Quirk = data.quirk ? await subreg.resolve(this.OpCtx, data.quirk) : null;
         this.Skills = await subreg.resolve_many(data.skills, this.OpCtx);
         this.SortIndex = data.sort_index;
         this.Status = data.status;
@@ -719,7 +719,7 @@ export async function cloud_sync(
         let corr_mech = pilot.Mechs.find(m => m.ID == md.id);
         if (!corr_mech) {
             // Make a new one
-            corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default();
+            corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(pilot.OpCtx);
             // Add it to the pilot
             pilot.Mechs.push(corr_mech);
         } else {
@@ -741,7 +741,7 @@ export async function cloud_sync(
             pilot.Quirk.Description = data.quirk;
         } else {
             //Make new quirk
-            let new_quirk = await Quirk.unpack(data.quirk, pilot_inv);
+            let new_quirk = await Quirk.unpack(data.quirk, pilot_inv, pilot.OpCtx);
             pilot.Quirk = new_quirk;
         }
     }
@@ -773,7 +773,7 @@ export async function cloud_sync(
                     logo_url: "",
                 },
                 pilot_inv
-            );
+            , pilot.OpCtx);
         }
     }
 
@@ -854,8 +854,8 @@ export async function cloud_sync(
     }
 
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(data.active_mech, pilot.OpCtx); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
-    pilot.Loadout = await PilotLoadout.unpack(data.loadout, reg_stack); // Using reg stack here guarantees we'll grab stuff if we don't have it
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(pilot.OpCtx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.Loadout = await PilotLoadout.unpack(data.loadout, reg_stack, pilot.OpCtx); // Using reg stack here guarantees we'll grab stuff if we don't have it
 
     // We don't remove old owned pilot equipment, but we do update our loadout and ensure that everything in it is also marked as an owned item
     async function loadout_resolver<

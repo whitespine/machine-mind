@@ -46,7 +46,7 @@ import {
 } from "@src/interface";
 import _ from "lodash";
 import { IStatusData } from "./Statuses";
-import { Registry } from "@src/registry";
+import { OpCtx, Registry } from "@src/registry";
 import { LicensedItem } from "./License";
 
 export interface IContentPackManifest {
@@ -99,38 +99,39 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     // because there is no automatic writeback those unresolved refs will still exist in the registry copy
     let d = pack.data;
     let reg = to_registry;
+    let ctx = new OpCtx();
     let licenseables: LicensedItem[] = [];
     for (let m of d.manufacturers) {
-        Manufacturer.unpack(m, reg);
+        Manufacturer.unpack(m, reg, ctx);
     }
     for (let f of d.factions) {
-        Faction.unpack(f, reg);
+        Faction.unpack(f, reg, ctx);
     }
     for (let cb of d.coreBonuses) {
-        CoreBonus.unpack(cb, reg);
+        CoreBonus.unpack(cb, reg, ctx);
     }
     for (let f of d.frames) {
-        licenseables.push(await Frame.unpack(f, reg));
+        licenseables.push(await Frame.unpack(f, reg, ctx));
     }
     for (let mw of d.weapons) {
-        licenseables.push(await MechWeapon.unpack(mw, reg));
+        licenseables.push(await MechWeapon.unpack(mw, reg, ctx));
     }
     for (let ms of d.systems) {
-        licenseables.push(await MechSystem.unpack(ms, reg));
+        licenseables.push(await MechSystem.unpack(ms, reg, ctx));
     }
     for (let wm of d.mods) {
-        licenseables.push(await WeaponMod.unpack(wm, reg));
+        licenseables.push(await WeaponMod.unpack(wm, reg, ctx));
     }
     for (let x of d.pilotGear) {
-        if (x.type == "Armor") await PilotArmor.unpack(x, reg);
-        else if (x.type == "Gear") await PilotGear.unpack(x, reg);
-        else if (x.type == "Weapon") await PilotWeapon.unpack(x, reg);
+        if (x.type == "Armor") await PilotArmor.unpack(x, reg, ctx);
+        else if (x.type == "Gear") await PilotGear.unpack(x, reg, ctx);
+        else if (x.type == "Weapon") await PilotWeapon.unpack(x, reg, ctx);
     }
     for (let x of d.talents) {
-        await Talent.unpack(x, reg);
+        await Talent.unpack(x, reg, ctx);
     }
     for (let x of d.tags) {
-        await TagTemplate.unpack(x, reg);
+        await TagTemplate.unpack(x, reg, ctx);
     }
     /*
     for (let x of d.) {
@@ -144,32 +145,34 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     }
     */
     for (let x of d.environments ?? []) {
-        await Environment.unpack(x, reg);
+        await Environment.unpack(x, reg, ctx);
     }
     for (let x of d.reserves ?? []) {
-        await Reserve.unpack(x, reg);
+        await Reserve.unpack(x, reg, ctx);
     }
     for (let x of d.sitreps ?? []) {
-        await Sitrep.unpack(x, reg);
+        await Sitrep.unpack(x, reg, ctx);
     }
     for (let x of d.skills ?? []) {
-        await Skill.unpack(x, reg);
+        await Skill.unpack(x, reg, ctx);
     }
     for (let x of d.statuses ?? []) {
-        await Status.unpack(x, reg);
+        await Status.unpack(x, reg, ctx);
     }
     for (let x of d.quirks ?? []) {
-        await Quirk.unpack(x, reg);
+        await Quirk.unpack(x, reg, ctx);
     }
 
     // Find licenses
     let unique_license_names: Set<string> = new Set();
     for (let x of licenseables) {
-        unique_license_names.add(x.License);
+        if(x.License) {
+            unique_license_names.add(x.License);
+        }
     }
 
     // Actually create them
     for (let name of unique_license_names) {
-        await License.unpack(name, reg);
+        await License.unpack(name, reg, ctx);
     }
 }

@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
 
 export interface IStatusData {
     name: string;
@@ -29,8 +29,8 @@ export class Status extends RegEntry<EntryType.STATUS, IStatusData> {
         };
     }
 
-    public static async unpack(dep: IStatusData, reg: Registry): Promise<Status> {
-        return reg.get_cat(EntryType.STATUS).create(dep);
+    public static async unpack(dep: IStatusData, reg: Registry, ctx: OpCtx): Promise<Status> {
+        return reg.get_cat(EntryType.STATUS).create(ctx, dep);
     }
 
     public get is_status(): boolean {

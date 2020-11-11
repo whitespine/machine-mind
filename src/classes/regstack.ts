@@ -29,9 +29,9 @@ export class RegStack extends Registry {
         return null;
     }
 
-    public async resolve_wildcard_mmid(mmid: string, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any, any> | null> {
         for (let r of this.stack) {
-            let found = await r.resolve_wildcard_mmid(mmid, ctx);
+            let found = await r.resolve_wildcard_mmid(ctx, mmid);
             if (found) {
                 return found;
             }
@@ -68,9 +68,9 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Delegate to stack
-    async lookup_mmid(mmid: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
+    async lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null> {
         for (let r of this.stack) {
-            let found = await r.lookup_mmid(mmid, ctx);
+            let found = await r.lookup_mmid(ctx, mmid)
             if (found) {
                 return found;
             }
@@ -100,9 +100,9 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Delegate to stack
-    async get_live(id: string, ctx: OpCtx): Promise<LiveEntryTypes<T> | null> {
+    async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null> {
         for (let r of this.stack) {
-            let found = await r.get_live(id, ctx);
+            let found = await r.get_live( ctx, id);
             if (found) {
                 return found;
             }
@@ -126,10 +126,10 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     delete_id(id: string): Promise<RegEntryTypes<T> | null> {
         throw new Error("Undefined behavior on CatStack");
     }
-    create_many(...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
+    create_many(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
         throw new Error("Undefined behavior on CatStack");
     }
-    create_default(): Promise<LiveEntryTypes<T>> {
+    create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>> {
         throw new Error("Undefined behavior on CatStack");
     }
 }

@@ -1,3 +1,4 @@
+import { defaults } from '@src/funcs';
 import { EntryType, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { Manufacturer } from "./Manufacturer";
 
@@ -8,12 +9,14 @@ export type LicensedItemType =
     | EntryType.WEAPON_MOD;
 export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 
+export const UNKNOWN_LICENSE =  "UNKNOWN";
+
 export interface RegLicenseData {
     // Whaat's it called
     name: string;
 
     // Who made it
-    manufacturer: RegRef<EntryType.MANUFACTURER>;
+    manufacturer: RegRef<EntryType.MANUFACTURER> | null;
 
     // What does it unlock? NOTE: These should generally point to "compendium" copies, not user owned. Haven't quite figured out the logistics on that bitty yet
     unlocks: Array<Array<RegRef<LicensedItemType>>>;
@@ -24,15 +27,17 @@ export interface RegLicenseData {
 
 export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
     Name!: string;
-    Manufacturer!: Manufacturer; // This should never really be null, but it is good to be cognizant of the possibility
+    Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     Unlocks!: Array<Array<LicensedItem>>;
     CurrentRank!: number;
 
     public async load(data: RegLicenseData): Promise<void> {
+        data = {...defaults.LICENSE(), ...data};
         this.Name = data.name;
-        this.Manufacturer =
-            (await this.Registry.resolve(data.manufacturer, this.OpCtx)) ??
-            (await this.Registry.get_cat(EntryType.MANUFACTURER).lookup_mmid("GMS", this.OpCtx))!;
+        this.Manufacturer = null;
+        if(data.manufacturer) {
+            this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer);
+        }
         this.CurrentRank = data.rank;
         this.Unlocks = [];
         for (let uarr of data.unlocks) {
@@ -49,15 +54,14 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         }
         return {
             name: this.Name,
-            manufacturer: this.Manufacturer.as_ref(),
+            manufacturer: this.Manufacturer?.as_ref() || null,
             rank: this.CurrentRank,
             unlocks: this.Unlocks.map(uarr => SerUtil.ref_all(uarr)),
         };
     }
 
-    public static async unpack(license_name: string, reg: Registry): Promise<License> {
+    public static async unpack(license_name: string, reg: Registry, ctx: OpCtx): Promise<License> {
         // Get every possibility
-        let ctx = new OpCtx();
         let all_licensed_items: LicensedItem[] = [
             ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx)),
             ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(ctx)),
@@ -90,7 +94,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         }
 
         // Lookup the manufacturer
-        let manufacturer_entry = await reg.get_cat(EntryType.MANUFACTURER).lookup_mmid(manufacturer_name, new OpCtx());
+        let manufacturer_entry = await reg.get_cat(EntryType.MANUFACTURER).lookup_mmid(new OpCtx(), manufacturer_name)
         let manufacturer = manufacturer_entry ? manufacturer_entry.as_ref() : quick_mm_ref(EntryType.MANUFACTURER, "GMS");
 
         let rdata: RegLicenseData = {
@@ -100,7 +104,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
             unlocks: grouped.map(g => SerUtil.ref_all(g)),
         };
 
-        return reg.get_cat(EntryType.LICENSE).create(rdata);
+        return reg.get_cat(EntryType.LICENSE).create(ctx, rdata);
     }
 
     public get UnlockedItems(): LicensedItem[] {

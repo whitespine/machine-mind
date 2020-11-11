@@ -1,6 +1,6 @@
 import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
 import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -32,7 +32,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
         this.Name = data.name;
         this.Description = data.description;
 
-        SerUtil.load_commons(this.Registry, data, this);
+        SerUtil.load_basd(this.Registry, data, this);
         this.Integrated = await this.Registry.resolve_many_rough(data.integrated, this.OpCtx);
         this.Counters = SerUtil.process_counters(data.counters);
     }
@@ -46,7 +46,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
         };
     }
 
-    public static async unpack(raw_quirk: string, reg: Registry): Promise<Quirk> {
+    public static async unpack(raw_quirk: string, reg: Registry, ctx: OpCtx): Promise<Quirk> {
         let qdata: RegQuirkData = {
             name: "Quirk",
             description: raw_quirk,
@@ -58,7 +58,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
             synergies: [],
         };
 
-        return reg.get_cat(EntryType.QUIRK).create(qdata);
+        return reg.get_cat(EntryType.QUIRK).create(ctx, qdata);
     }
 
     public get_child_entries(): RegEntry<any, any>[] {

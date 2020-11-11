@@ -1,5 +1,5 @@
 import { Rules } from "@src/class";
-import { EntryType, RegEntry, Registry, SimSer } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 import { IRankedData } from "../GeneralInterfaces";
 
 /*
@@ -70,9 +70,9 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
     }
 
     // Very simple. reg is kept for consistency
-    public static async unpack(packed_skill: PackedSkillData, reg: Registry): Promise<Skill> {
+    public static async unpack(packed_skill: PackedSkillData, reg: Registry, ctx: OpCtx): Promise<Skill> {
         let rdata = { ...packed_skill, rank: 1 };
-        return reg.get_cat(EntryType.SKILL).create(rdata);
+        return reg.get_cat(EntryType.SKILL).create(ctx, rdata);
     }
 
     /*
@@ -85,7 +85,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         // If found, just make us a copy
         if (found) {
             let cpy = await found.save();
-            return cat.create(cpy);
+            return cat.create(cpy, ctx);
         } else {
             // TODO
             throw new Error("Do not yet support custom skills cuz I am lazy");

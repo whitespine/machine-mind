@@ -1,6 +1,7 @@
 import { CoreSystem, FrameTrait } from "@src/class";
+import { defaults } from "@src/funcs";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
 
@@ -42,9 +43,9 @@ export interface PackedFrameData extends AllFrameData {
     core_system: PackedCoreSystemData;
 }
 
-export interface RegFrameData extends AllFrameData {
+export interface RegFrameData extends Required<AllFrameData> {
     traits: RegRef<EntryType.FRAME_TRAIT>[];
-    core_system?: RegRef<EntryType.CORE_SYSTEM>;
+    core_system: RegRef<EntryType.CORE_SYSTEM> | null;
 }
 
 export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
@@ -60,22 +61,24 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
     CoreSystem!: CoreSystem | null; // For the purposeses of people doing dumb homebrew stuff, we support this
     Stats!: IFrameStats;
     OtherArt!: IArtLocation[];
-    ImageUrl!: string | null;
+    ImageUrl!: string;
 
     public async load(frameData: RegFrameData): Promise<void> {
+        frameData = { ...defaults.FRAME(), ...frameData };
         this.ID = frameData.id;
         this.LicenseLevel = frameData.license_level;
         this.Source = frameData.source;
         this.Name = frameData.name;
+        this.Description = frameData.description;
         this.MechType = frameData.mechtype;
         this.YPosition = frameData.y_pos || 30;
         this.Mounts = frameData.mounts;
         this.Stats = frameData.stats;
         this.Traits = await this.Registry.resolve_many(frameData.traits, this.OpCtx);
         this.CoreSystem = frameData.core_system
-            ? await this.Registry.resolve(frameData.core_system, this.OpCtx)
+            ? await this.Registry.resolve(this.OpCtx, frameData.core_system)
             : null;
-        this.ImageUrl = frameData.image_url || null;
+        this.ImageUrl = frameData.image_url;
         this.OtherArt = frameData.other_art || [];
     }
 
@@ -91,21 +94,23 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
             mounts: this.Mounts,
             stats: this.Stats,
             traits: SerUtil.ref_all(this.Traits),
-            core_system: this.CoreSystem?.as_ref(),
-            image_url: this.ImageUrl ?? undefined,
+            core_system: this.CoreSystem?.as_ref() || null,
+            image_url: this.ImageUrl,
             other_art: this.OtherArt,
         };
     }
 
-    public static async unpack(frame: PackedFrameData, reg: Registry): Promise<Frame> {
-        let traits = await SerUtil.unpack_children(FrameTrait.unpack, reg, frame.traits);
-        let cs = await CoreSystem.unpack(frame.core_system, reg);
+    public static async unpack(frame: PackedFrameData, reg: Registry, ctx: OpCtx): Promise<Frame> {
+        let traits = await SerUtil.unpack_children(FrameTrait.unpack, reg, ctx, frame.traits);
+        let cs = await CoreSystem.unpack(frame.core_system, reg, ctx);
         let fdata: RegFrameData = {
             ...frame,
             traits: SerUtil.ref_all(traits),
             core_system: cs.as_ref(),
+            image_url: frame.image_url ?? "",
+            other_art: frame.other_art ?? [],
         };
-        return reg.get_cat(EntryType.FRAME).create(fdata);
+        return reg.get_cat(EntryType.FRAME).create(ctx, fdata);
     }
 
     public get MechTypeString(): string {

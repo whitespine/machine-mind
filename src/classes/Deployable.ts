@@ -1,4 +1,5 @@
 import { Action, Bonus, Counter, Synergy, TagInstance } from "@src/class";
+import { defaults } from '@src/funcs';
 import {
     IActionData,
     IBonusData,
@@ -8,10 +9,10 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, RegEntry, Registry, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 import { ActivationType } from "./enums";
 
-interface AllDeployableData {
+export interface PackedDeployableData {
     name: string;
     type: string; // this is for UI furnishing only,
     detail: string;
@@ -34,19 +35,37 @@ interface AllDeployableData {
     actions?: IActionData[];
     bonuses?: IBonusData[];
     synergies?: ISynergyData[];
-}
-
-export interface PackedDeployableData extends AllDeployableData {
     counters?: PackedCounterData[];
     tags?: PackedTagInstanceData[];
 }
 
-export interface RegDeployableData extends AllDeployableData {
-    // deployer: ????? // TODO - needed for bonuses. Alternatively, provide a means of injecting bonuses somehow
+export interface RegDeployableData {
+    name: string;
+    type: string; // this is for UI furnishing only,
+    detail: string;
+    activation: ActivationType;
+    deactivation: ActivationType;
+    recall: ActivationType;
+    redeploy: ActivationType;
+    size: number ;
+    cost: number;
+    armor: number ;
+    max_hp: number ;
+    evasion: number ;
+    edef: number ;
+    heatcap: number ;
+    repcap: number ;
+    sensor_range: number ;
+    tech_attack: number ;
+    save: number ;
+    speed: number ;
+    actions: IActionData[];
+    bonuses: IBonusData[];
+    synergies: ISynergyData[];
     counters: RegCounterData[];
     tags: RegTagInstanceData[];
-    overshield?: number;
-    current_hp?: number;
+    overshield: number;
+    current_hp: number;
 }
 
 export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData> {
@@ -60,17 +79,17 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
     Size!: number;
     Cost!: number;
     Armor!: number;
-    CurrentHP!: number | null; // Note: I regret making these all nullable.
-    MaxHP!: number | null;
-    Overshield!: number | null;
-    Evasion!: number | null;
-    EDef!: number | null;
-    HeatCap!: number | null;
-    RepairCap!: number | null;
-    SensorRange!: number | null;
-    TechAttack!: number | null;
-    Save!: number | null;
-    Speed!: number | null;
+    CurrentHP!: number; // Note: I somewhat regret making these all nullable.
+    MaxHP!: number ;
+    Overshield!: number ;
+    Evasion!: number ;
+    EDef!: number ;
+    HeatCap!: number ;
+    RepairCap!: number ;
+    SensorRange!: number ;
+    TechAttack!: number ;
+    Save!: number ;
+    Speed!: number ;
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -78,6 +97,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
     Tags!: TagInstance[];
 
     public async load(data: RegDeployableData): Promise<void> {
+        data = {...defaults.DEPLOYABLE, ...data};
         this.Name = data.name;
         this.DeployableType = data.type;
         this.Detail = data.detail;
@@ -86,19 +106,19 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         this.Recall = data.recall ?? ActivationType.None;
         this.Redeploy = data.redeploy ?? ActivationType.None;
         this.Size = data.size;
-        this.Cost = data.cost ?? 1; // Holdover from compcon - unclear what it actuallly does
-        this.Armor = data.armor ?? 0;
-        this.MaxHP = data.hp ?? null;
+        this.Cost = data.cost; // Cost in resources
+        this.Armor = data.armor;
+        this.MaxHP = data.max_hp;
         this.CurrentHP = data.current_hp ?? this.MaxHP;
-        this.Overshield = data.overshield ?? null;
-        this.Evasion = data.evasion ?? null;
-        this.EDef = data.edef ?? null;
-        this.HeatCap = data.heatcap ?? null;
-        this.RepairCap = data.repcap ?? null;
-        this.SensorRange = data.sensor_range ?? null;
-        this.TechAttack = data.tech_attack ?? null;
-        this.Save = data.save ?? null;
-        this.Speed = data.speed ?? null;
+        this.Overshield = data.overshield ;
+        this.Evasion = data.evasion ;
+        this.EDef = data.edef ;
+        this.HeatCap = data.heatcap ;
+        this.RepairCap = data.repcap ;
+        this.SensorRange = data.sensor_range ;
+        this.TechAttack = data.tech_attack ;
+        this.Save = data.save ;
+        this.Speed = data.speed ;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
@@ -108,8 +128,6 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
         // Make sure tags ready
         await Promise.all(this.Tags.map(x => x.ready()));
     }
-
-    // TODO: Track
 
     public async save(): Promise<RegDeployableData> {
         return {
@@ -123,17 +141,17 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
             size: this.Size,
             cost: this.Cost,
             armor: this.Armor,
-            hp: this.MaxHP ?? undefined,
-            current_hp: this.CurrentHP ?? undefined,
-            overshield: this.Overshield ?? undefined,
-            evasion: this.Evasion ?? undefined,
-            edef: this.EDef ?? undefined,
-            heatcap: this.HeatCap ?? undefined,
-            repcap: this.RepairCap ?? undefined,
-            sensor_range: this.SensorRange ?? undefined,
-            tech_attack: this.TechAttack ?? undefined,
-            save: this.Save ?? undefined,
-            speed: this.Speed ?? undefined,
+            max_hp: this.MaxHP,
+            current_hp: this.CurrentHP,
+            overshield: this.Overshield ,
+            evasion: this.Evasion ,
+            edef: this.EDef ,
+            heatcap: this.HeatCap ,
+            repcap: this.RepairCap ,
+            sensor_range: this.SensorRange ,
+            tech_attack: this.TechAttack ,
+            save: this.Save ,
+            speed: this.Speed ,
             actions: SerUtil.sync_save_all(this.Actions),
             bonuses: SerUtil.sync_save_all(this.Bonuses),
             synergies: SerUtil.sync_save_all(this.Synergies),
@@ -143,14 +161,18 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData
     }
 
     // Loads this item into the registry. Only use as needed (IE once)
-    public static async unpack(dep: PackedDeployableData, reg: Registry): Promise<Deployable> {
+    public static async unpack(dep: PackedDeployableData, reg: Registry, ctx: OpCtx): Promise<Deployable> {
         let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
         let counters = SerUtil.unpack_counters_default(dep.counters);
         let unpacked: RegDeployableData = {
+            ...defaults.DEPLOYABLE(),
             ...dep,
+            max_hp: dep.hp ?? 0,
+            overshield: 0,
+            current_hp: dep.hp ?? 0,
             counters,
             tags
         };
-        return reg.get_cat(EntryType.DEPLOYABLE).create(unpacked);
+        return reg.get_cat(EntryType.DEPLOYABLE).create(ctx, unpacked);
     }
 }

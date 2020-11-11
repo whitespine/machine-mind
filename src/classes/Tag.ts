@@ -1,4 +1,4 @@
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
 
 export interface ITagTemplateData {
     id: string;
@@ -43,8 +43,8 @@ export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
             hidden: this._hidden || undefined,
         };
     }
-    public static async unpack(dep: ITagTemplateData, reg: Registry): Promise<TagTemplate> {
-        return reg.get_cat(EntryType.TAG).create(dep);
+    public static async unpack(dep: ITagTemplateData, reg: Registry, ctx: OpCtx): Promise<TagTemplate> {
+        return reg.get_cat(EntryType.TAG).create(ctx, dep);
     }
 
     // Helpers for quickly checking common tags
@@ -83,7 +83,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     public async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
-        let Tag = await this.Registry.resolve(data.tag, this.OpCtx);
+        let Tag = await this.Registry.resolve(this.OpCtx, data.tag);
         if (!Tag) {
             Tag = new TagTemplate(EntryType.TAG, this.Registry, this.OpCtx, "error", {
                 description: "INVALID",

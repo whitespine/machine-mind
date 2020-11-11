@@ -7,7 +7,7 @@ import {
     PackedCounterData,
     IBonusData,
 } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { RegCounterData } from "../Counter";
 
 // These attrs are shared
@@ -83,9 +83,9 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     }
 
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
-    static async unpack(cor: PackedCoreBonusData, reg: Registry): Promise<CoreBonus> {
+    static async unpack(cor: PackedCoreBonusData, reg: Registry, ctx: OpCtx): Promise<CoreBonus> {
         // Create deployable entries
-        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, cor.deployables);
+        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, cor.deployables);
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
@@ -103,7 +103,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             bonuses: cor.bonuses ?? [],
             synergies: cor.synergies ?? [],
         };
-        return reg.create(EntryType.CORE_BONUS, cbdata);
+        return reg.create(EntryType.CORE_BONUS, ctx, cbdata);
     }
 
     public get_child_entries(): RegEntry<any, any>[] {

@@ -113,16 +113,16 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         this.ID = data.id;
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
-        this.Armor = await Promise.all(data.armor.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null)));
-        this.Gear = await Promise.all(data.gear.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null)));
+        this.Armor = await Promise.all(data.armor.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null)));
+        this.Gear = await Promise.all(data.gear.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null)));
         this.Weapons = await Promise.all(
-            data.weapons.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
+            data.weapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
         );
         this.ExtendedGear = await Promise.all(
-            data.extendedGear.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
+            data.extendedGear.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
         );
         this.ExtendedWeapons = await Promise.all(
-            data.extendedWeapons.map(a => (a ? this.Registry.resolve(a, this.OpCtx) : null))
+            data.extendedWeapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
         );
     }
 
@@ -138,8 +138,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         };
     }
 
-    public static async unpack(data: PackedPilotLoadoutData, reg: Registry): Promise<PilotLoadout> {
-        let ctx = new OpCtx();
+    public static async unpack(data: PackedPilotLoadoutData, reg: Registry, ctx: OpCtx): Promise<PilotLoadout> {
         let armor = await Promise.all(
             data.armor.map(a => PilotLoadout.resolve_state_item(reg, ctx, a, EntryType.PILOT_ARMOR))
         );
@@ -200,7 +199,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             return null;
         }
         // Get the item
-        let item = await reg.get_cat(expect_type).lookup_mmid(item_state.id, ctx);
+        let item = await reg.get_cat(expect_type).lookup_mmid(ctx, item_state.id)
         if (!item) {
             console.warn(`Could not resolve item ${item_state.id}`);
             return null;

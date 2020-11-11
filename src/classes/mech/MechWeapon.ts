@@ -12,7 +12,7 @@ import {
 } from "@src/class";
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
 import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
-import { EntryType, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { RegMechData } from './Mech';
 // TODO:
 // class WeaponAmmo {}
@@ -162,11 +162,11 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     return this.SelectedProfile.Synergies;
   }
 
-  static async unpack(dat: PackedMechWeaponData, reg: Registry): Promise<MechWeapon> {
+  static async unpack(dat: PackedMechWeaponData, reg: Registry, ctx: OpCtx): Promise<MechWeapon> {
     // Get the basics
     // These two arrays we continue to add to as we unpack profiles
     let parent_integrated = SerUtil.unpack_integrated_refs(dat.integrated);
-    let parent_dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, dat.deployables);
+    let parent_dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, dat.deployables);
     let parent_deployables = SerUtil.ref_all(parent_dep_entries);
 
     let unpacked: RegMechWeaponData = {
@@ -198,7 +198,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     for(let p of packed_profiles) {
       // Unpack sub components
       // We pluck out deployables and integrated
-      let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, p.deployables);
+      let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, p.deployables);
       let dep_refs = SerUtil.ref_all(dep_entries);
       let int_refs = SerUtil.unpack_integrated_refs(p.integrated);
       parent_integrated.push(...int_refs);
@@ -226,7 +226,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     }
 
     // And we are done
-    return reg.get_cat(EntryType.MECH_WEAPON).create(unpacked);
+    return reg.get_cat(EntryType.MECH_WEAPON).create(ctx, unpacked);
   }
 
     public get_child_entries(): RegEntry<any, any>[] {

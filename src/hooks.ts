@@ -1,8 +1,6 @@
 // import { Pilot, Npc, Encounter } from "@src/class";
 // import { getVersion } from "jest";
 
-// Interface image management
-export var imageManagement: ImageShim;
 
 export interface ImageShim {
     getImagePath(subdir: ImageTag, fileName: string, defaults?: boolean | null): string;
@@ -11,6 +9,22 @@ export interface ImageShim {
     addImage(subdir: ImageTag, imagePath: string): Promise<void>;
     removeImage(subdir: ImageTag, imagePath: string): Promise<void>;
 }
+
+// Interface image management
+export var imageManagement: ImageShim = {
+    getImagePath: (s, f, d) => `${s}/${f}`,
+    validateImageFolders: async ()=>{
+        console.warn("Image path validation not hooked");
+    },
+    getImagePaths: async (s, d) => {
+        console.warn("Image paths not hooked");
+        return []
+    },
+    addImage: async (s, i) => {console.warn("Adding images not hooked");},
+    removeImage: async (s, i) => {console.warn("Removing images not hooked");},
+
+    
+};
 
 export enum ImageTag {
     Pilot = "pilot",

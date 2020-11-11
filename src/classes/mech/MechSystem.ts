@@ -10,7 +10,7 @@ import {
     RegDeployableData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType } from "../enums";
 
 interface AllMechSystemData {
@@ -86,7 +86,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
         this.Cascading = data.cascading;
         this.Destroyed = data.destroyed;
 
-        await SerUtil.load_commons(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(c => new Counter(c)) || [];
         this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
@@ -114,17 +114,17 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
         };
     }
 
-    public static async unpack(data: PackedMechSystemData, reg: Registry): Promise<MechSystem> {
+    public static async unpack(data: PackedMechSystemData, reg: Registry, ctx: OpCtx): Promise<MechSystem> {
         let rdata: RegMechSystemData = {
             ...data,
-            ...(await SerUtil.unpack_commons_and_tags(data, reg)),
+            ...(await SerUtil.unpack_commons_and_tags(data, reg, ctx)),
             integrated: SerUtil.unpack_integrated_refs(data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
             cascading: false,
             destroyed: false,
         };
 
-        return reg.get_cat(EntryType.MECH_SYSTEM).create(rdata);
+        return reg.get_cat(EntryType.MECH_SYSTEM).create(ctx, rdata);
     }
 
     public get_child_entries(): RegEntry<any, any>[] {

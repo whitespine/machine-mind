@@ -531,7 +531,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     public async load(data: RegMechData): Promise<void> {
         let subreg = await this.get_inventory();
         this.ID = data.id;
-        this.Pilot = data.pilot ? await subreg.resolve(data.pilot, this.OpCtx) : null;
+        this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
         this.Name = data.name;
         this.Notes = data.notes;
         this.GmNote = data.gm_note;
@@ -620,7 +620,7 @@ export async function mech_cloud_sync(
     // These are eeeever so slightly more complicated (read: way more
     let ctx = mech.OpCtx;
     let ofid = mech.Loadout.Frame?.RegistryID
-    mech.Loadout.Frame = await reg_stack.get_cat(EntryType.FRAME).lookup_mmid(data.frame, ctx);
+    mech.Loadout.Frame = await reg_stack.get_cat(EntryType.FRAME).lookup_mmid(ctx, data.frame)
 
     // It's new - add to owned
     if(mech.Frame && ofid != mech.Frame.RegistryID) {

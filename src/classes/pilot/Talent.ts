@@ -7,7 +7,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -142,7 +142,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         };
     }
 
-    public static async unpack(data: PackedTalentData, reg: Registry): Promise<Talent> {
+    public static async unpack(data: PackedTalentData, reg: Registry, ctx: OpCtx): Promise<Talent> {
         // Process talent ranks
         let ranks: RegTalentRank[] = [];
         for (let r of data.ranks) {
@@ -150,7 +150,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                 name: r.name,
                 description: r.description,
                 exclusive: r.exclusive,
-                ...(await SerUtil.unpack_commons_and_tags(r, reg)),
+                ...(await SerUtil.unpack_commons_and_tags(r, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
                 integrated: SerUtil.unpack_integrated_refs(r.integrated),
             });
@@ -162,7 +162,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
             ranks,
             curr_rank: 1,
         };
-        return reg.get_cat(EntryType.TALENT).create(rdata);
+        return reg.get_cat(EntryType.TALENT).create(ctx, rdata);
     }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed
     public Rank(rank: number): TalentRank | null {

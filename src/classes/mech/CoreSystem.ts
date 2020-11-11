@@ -9,7 +9,7 @@ import {
     RegTagInstanceData,
     IBonusData,
 } from "@src/interface";
-import { EntryType, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { ActivationType, FrameEffectUse } from "../enums";
 
 export interface AllCoreSystemData {
@@ -129,7 +129,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         };
     }
 
-    public static async unpack(dep: PackedCoreSystemData, reg: Registry): Promise<CoreSystem> {
+    public static async unpack(dep: PackedCoreSystemData, reg: Registry, ctx: OpCtx): Promise<CoreSystem> {
         // Get tags
         let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
 
@@ -137,7 +137,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         let counters = SerUtil.unpack_counters_default(dep.counters);
 
         // Get the deployables
-        let deployables_ = await SerUtil.unpack_children(Deployable.unpack, reg, dep.deployables);
+        let deployables_ = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, dep.deployables);
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data
@@ -151,13 +151,13 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             integrated,
             activation: dep.activation || ActivationType.None,
             deactivation: dep.deactivation || ActivationType.None,
-            active_actions: dep.active_actions,
-            active_bonuses: dep.active_bonuses,
-            active_effect: dep.active_effect,
-            active_name: dep.active_name,
-            active_synergies: dep.active_synergies,
-            description: dep.description,
-            name: dep.name,
+            active_actions: dep.active_actions || [],
+            active_bonuses: dep.active_bonuses || [],
+            active_effect: dep.active_effect || "",
+            active_name: dep.active_name || "",
+            active_synergies: dep.active_synergies || [],
+            description: dep.description ?? "",
+            name: dep.name ?? "",
             passive_actions: dep.passive_actions ?? [],
             passive_bonuses: dep.passive_bonuses ?? [],
             passive_synergies: dep.passive_synergies ?? [],
@@ -165,7 +165,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             passive_name: dep.passive_name ?? "",
             use: dep.use ?? FrameEffectUse.Unknown,
         };
-        return reg.get_cat(EntryType.CORE_SYSTEM).create(unpacked);
+        return reg.get_cat(EntryType.CORE_SYSTEM).create(ctx, unpacked);
     }
 
     // Checks if any passive fields are present. Its possible sibling, has_active, is unnecessary

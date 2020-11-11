@@ -7,6 +7,8 @@ export { get_base_content_pack } from "@src/io/ContentPackParser";
 export { download_pilot, update_cloud_pilot, upload_new_pilot } from "@src/io/apis/gist";
 export { cloud_sync } from "@src/classes/pilot/Pilot";
 export { mech_cloud_sync } from "@src/classes/mech/Mech";
+export { validate_props } from "@src/classes/fill_test_util";
+export * as defaults from "@src/classes/default_entries";
 
 export function bound_int(x: number, min: number, max: number) {
     if (x < min) {
