@@ -33,8 +33,7 @@ export interface PackedTalentRank {
 export interface PackedTalentData {
     id: string;
     name: string;
-    icon: string; // Used internally
-    icon_url: string; // Must be .svg
+    icon: string; 
     terse: string; // terse text used in short descriptions. The fewer characters the better
     description: string; // v-html
     ranks: PackedTalentRank[];
@@ -56,8 +55,7 @@ export interface RegTalentRank {
 export interface RegTalentData {
     id: string;
     name: string;
-    icon: string; // Used internally
-    icon_url: string; // Must be .svg
+    icon: string; 
     terse: string; // terse text used in short descriptions. The fewer characters the better
     description: string; // v-html
     ranks: RegTalentRank[];
@@ -80,7 +78,6 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
     ID!: string;
     Name!: string;
     Icon!: string;
-    IconURL!: string;
     Terse!: string;
     Description!: string;
 
@@ -91,7 +88,6 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         this.ID = data.id;
         this.Name = data.name;
         this.Icon = data.icon;
-        this.IconURL = data.icon_url;
         this.Terse = data.terse;
         this.Description = data.description;
         this.Ranks = [];
@@ -103,10 +99,10 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                     `TALENT ${r.name} RANK ${this.Ranks.length + 1}`
                 ),
                 Counters: SerUtil.process_counters(r.counters),
-                Deployables: await this.Registry.resolve_many(r.deployables, this.OpCtx),
+                Deployables: await this.Registry.resolve_many(this.OpCtx, r.deployables, ),
                 Description: r.description,
                 Exclusive: r.exclusive,
-                Integrated: await this.Registry.resolve_many_rough(r.integrated, this.OpCtx),
+                Integrated: await this.Registry.resolve_many_rough(this.OpCtx, r.integrated),
                 Name: r.name,
                 Synergies: SerUtil.process_synergies(r.synergies),
             });
@@ -133,7 +129,6 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         return {
             description: this.Description,
             icon: this.Icon,
-            icon_url: this.IconURL,
             id: this.ID,
             name: this.Name,
             terse: this.Terse,
@@ -150,7 +145,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
                 name: r.name,
                 description: r.description,
                 exclusive: r.exclusive,
-                ...(await SerUtil.unpack_commons_and_tags(r, reg, ctx)),
+                ...(await SerUtil.unpack_basdt(r, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
                 integrated: SerUtil.unpack_integrated_refs(r.integrated),
             });

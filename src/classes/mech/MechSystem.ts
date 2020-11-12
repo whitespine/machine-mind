@@ -1,4 +1,5 @@
 import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@src/class";
+import { defaults, tag_util } from '@src/funcs';
 import {
     IActionData,
     IBonusData,
@@ -10,13 +11,13 @@ import {
     RegDeployableData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType } from "../enums";
+import { Manufacturer } from '../Manufacturer';
 
 interface AllMechSystemData {
     id: string;
     name: string;
-    source: string; // must be the same as the Manufacturer ID to sort correctly
     license: string; // reference to the Frame name of the associated license
     license_level: number; // set to zero for this item to be available to a LL0 character
     type?: SystemType;
@@ -33,24 +34,27 @@ export interface PackedMechSystemData extends AllMechSystemData {
     integrated?: string[];
     counters?: PackedCounterData[];
     tags?: PackedTagInstanceData[];
+    source: string; // must be the same as the Manufacturer ID to sort correctly
 }
 
-export interface RegMechSystemData extends AllMechSystemData {
+export interface RegMechSystemData extends Required<AllMechSystemData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     integrated: RegRef<any>[];
     counters: RegCounterData[];
     tags: RegTagInstanceData[];
+    source: RegRef<EntryType.MANUFACTURER> | null;
 
     // We also save the active state
     cascading: boolean;
     destroyed: boolean;
+    uses: number;
 }
 
 export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemData> {
     // System information
     ID!: string;
     Name!: string;
-    Source!: string;
+    Source!: Manufacturer | null;
     SysType!: SystemType;
     License!: string;
     LicenseLevel!: number;
@@ -71,11 +75,41 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
     Destroyed!: boolean;
     Cascading!: boolean;
     // Loaded!: boolean  // is this needed?
+    // Current uses
+    Uses!: number;
+
+
+    // Is this mod an AI?
+    get IsAI(): boolean {
+        return tag_util.is_ai(this);
+    }
+
+    // Is it destructible?
+    get IsIndestructible(): boolean {
+        return tag_util.is_indestructible(this);
+    }
+
+    // Is it loading?
+    get IsLoading(): boolean {
+        return tag_util.is_loading(this);
+    }
+
+    // Is it unique?
+    get IsUnique(): boolean {
+        return tag_util.is_unique(this);
+    }
+
+    // Returns the base max uses
+    get BaseLimit(): number | null{
+        return tag_util.limited_max(this);
+    }
+
 
     public async load(data: RegMechSystemData): Promise<void> {
+        data = {...defaults.MECH_SYSTEM(), ...data};
         this.ID = data.id;
         this.Name = data.name;
-        this.Source = data.source;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.SysType = data.type || SystemType.System;
         this.License = data.license;
         this.LicenseLevel = data.license_level;
@@ -85,11 +119,12 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
 
         this.Cascading = data.cascading;
         this.Destroyed = data.destroyed;
+        this.Uses = data.uses;
 
         await SerUtil.load_basd(this.Registry, data, this);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(c => new Counter(c)) || [];
-        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
 
     public async save(): Promise<RegMechSystemData> {
@@ -98,7 +133,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
             effect: this.Effect,
             id: this.ID,
             name: this.Name,
-            source: this.Source,
+            source: this.Source?.as_ref() ?? null,
             license: this.License,
             license_level: this.LicenseLevel,
             sp: this.SP,
@@ -106,6 +141,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
 
             cascading: this.Cascading,
             destroyed: this.Destroyed,
+            uses: this.Uses,
 
             tags: await SerUtil.save_all(this.Tags),
             counters: SerUtil.sync_save_all(this.Counters),
@@ -116,12 +152,12 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
 
     public static async unpack(data: PackedMechSystemData, reg: Registry, ctx: OpCtx): Promise<MechSystem> {
         let rdata: RegMechSystemData = {
+            ...defaults.MECH_SYSTEM(),
             ...data,
-            ...(await SerUtil.unpack_commons_and_tags(data, reg, ctx)),
+            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            source: quick_mm_ref(EntryType.MANUFACTURER, data.source),
             integrated: SerUtil.unpack_integrated_refs(data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
-            cascading: false,
-            destroyed: false,
         };
 
         return reg.get_cat(EntryType.MECH_SYSTEM).create(ctx, rdata);

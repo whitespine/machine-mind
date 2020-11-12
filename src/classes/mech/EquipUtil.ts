@@ -1,39 +1,43 @@
 import { MechWeapon } from "@src/class";
 import { TagInstance } from "../Tag";
 import { MechSystem } from "./MechSystem";
+import { WeaponMod } from './WeaponMod';
 
-export function is_loading(item: MechSystem | MechWeapon): boolean {
+function tags(item: MechSystem | MechWeapon | WeaponMod): TagInstance[] {
     if (item instanceof MechWeapon) {
-        return !!item.SelectedProfile.Tags.find(t => t.Tag.IsLoading);
-    }
-    return false;
-}
-
-export function is_ai(item: MechSystem | MechWeapon): boolean {
-    let tags: TagInstance[];
-    if (item instanceof MechWeapon) {
-        tags = item.SelectedProfile.Tags;
+        return item.SelectedProfile.Tags;
     } else {
-        tags = item.Tags;
+        return item.Tags;
     }
-    return !!tags.find(t => t.Tag.IsAI);
 }
 
-export function is_smart(item: MechSystem | MechWeapon): boolean {
-    if (item instanceof MechWeapon) {
-        return !!item.SelectedProfile.Tags.find(t => t.Tag.IsSmart);
-    }
-    return false;
+export function is_loading(item: MechSystem | MechWeapon | WeaponMod): boolean {
+    return !!tags(item).find(t => t.Tag.IsLoading);
+}
+
+export function is_ai(item:  MechSystem | MechWeapon | WeaponMod): boolean {
+    return !!tags(item).find(t => t.Tag.IsAI);
+}
+
+export function is_unique(item:  MechSystem | MechWeapon | WeaponMod): boolean {
+    return !!tags(item).find(t => t.Tag.IsUnique);
+}
+
+export function is_indestructible(item:  MechSystem | MechWeapon | WeaponMod): boolean {
+    return !!tags(item).find(t => t.Tag.IsIndestructible );
+}
+
+
+
+export function is_smart(item: MechWeapon): boolean {
+    return !!tags(item).find(t => t.Tag.IsSmart );
 }
 
 // Returns 0 if not limited
-export function limited_max(item: MechSystem | MechWeapon): number {
-    let tags: TagInstance[];
-    if (item instanceof MechWeapon) {
-        tags = item.SelectedProfile.Tags;
-    } else {
-        tags = item.Tags;
+export function limited_max(item: MechSystem | MechWeapon | WeaponMod): number | null {
+    let lim_tag = tags(item).find(t => t.Tag.IsLimited);
+    if(!lim_tag) {
+        return null;
     }
-    let limit = tags.find(t => t.Tag.IsLimited);
-    return Number.parseInt("" + limit?.Value || "0");
+    return Number.parseInt("" + lim_tag.Value || "0");
 }

@@ -51,7 +51,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
         this.Description = data.description;
         this.Use = data.use ?? null;
         await SerUtil.load_basd(this.Registry, data, this);
-        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
         this.Counters = SerUtil.process_counters(data.counters);
     }
 
@@ -68,10 +68,9 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
 
     public static async unpack(data: PackedFrameTraitData, reg: Registry, ctx: OpCtx): Promise<FrameTrait> {
         let rdata: RegFrameTraitData = {
-            name: data.name,
-            description: data.description,
-            use: data.use ?? FrameEffectUse.Unknown,
-            ...(await SerUtil.unpack_commons_and_tags(data, reg, ctx)),
+            ...defaults.FRAME_TRAIT(),
+            ...data,
+            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             counters: SerUtil.unpack_counters_default(data.counters),
             integrated: SerUtil.unpack_integrated_refs(data.integrated),
         };

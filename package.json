@@ -16,7 +16,7 @@
     "build": "ttsc && tscpaths -p ./tsconfig.json -s ./src -o ./dist",
     "build:watch": "ttsc -w --noEmit",
     "link": "npm run build && npm link",
-    "test": "jest --colors test",
+    "test": "jest --colors test --no-cache",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run format"
   },

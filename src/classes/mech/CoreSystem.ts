@@ -1,4 +1,5 @@
 import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@src/class";
+import { defaults } from '@src/funcs';
 import {
     IActionData,
     ISynergyData,
@@ -78,6 +79,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
     Tags!: TagInstance[];
 
     public async load(data: RegCoreSystemData): Promise<void> {
+        data = {...defaults.CORE_SYSTEM(), ...data};
         this.Activation = data.activation;
         this.Description = data.description;
         this.Name = data.name;
@@ -97,8 +99,8 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         this.PassiveName = data.passive_name;
 
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
-        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
@@ -119,8 +121,8 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
             passive_actions: SerUtil.sync_save_all(this.PassiveActions),
             passive_bonuses: SerUtil.sync_save_all(this.PassiveBonuses),
             passive_synergies: SerUtil.sync_save_all(this.PassiveSynergies),
-            passive_effect: this.PassiveEffect ?? undefined,
-            passive_name: this.PassiveName ?? undefined,
+            passive_effect: this.PassiveEffect,
+            passive_name: this.PassiveName,
 
             counters: SerUtil.sync_save_all(this.Counters),
             deployables: SerUtil.ref_all(this.Deployables),
@@ -145,25 +147,12 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {
-            counters,
+            ...defaults.CORE_SYSTEM(),
+            ...dep,
             tags,
+            counters,
             deployables,
             integrated,
-            activation: dep.activation || ActivationType.None,
-            deactivation: dep.deactivation || ActivationType.None,
-            active_actions: dep.active_actions || [],
-            active_bonuses: dep.active_bonuses || [],
-            active_effect: dep.active_effect || "",
-            active_name: dep.active_name || "",
-            active_synergies: dep.active_synergies || [],
-            description: dep.description ?? "",
-            name: dep.name ?? "",
-            passive_actions: dep.passive_actions ?? [],
-            passive_bonuses: dep.passive_bonuses ?? [],
-            passive_synergies: dep.passive_synergies ?? [],
-            passive_effect: dep.passive_effect ?? "",
-            passive_name: dep.passive_name ?? "",
-            use: dep.use ?? FrameEffectUse.Unknown,
         };
         return reg.get_cat(EntryType.CORE_SYSTEM).create(ctx, unpacked);
     }

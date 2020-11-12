@@ -1,4 +1,5 @@
 import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@src/class";
+import { defaults, tag_util } from '@src/funcs';
 import {
     IActionData,
     IBonusData,
@@ -12,22 +13,20 @@ import {
     RegDamageData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../enums";
+import { Manufacturer } from '../Manufacturer';
 import { TagInstance } from "../Tag";
 
 export interface AllWeaponModData {
     id: string;
     name: string;
     sp: number;
-    source: string; // Manufacturer ID
     license: string; // Frame Name
     license_level: number; // set to 0 to be available to all Pilots
     effect: string; // v-html
     allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
     allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
-    restricted_types?: WeaponType[]; // weapon types the mod CAN NOT be applied to
-    restricted_sizes?: WeaponSize[]; // weapon sizes the mod CAN NOT be applied to
     added_range?: IRangeData[]; // damage added to the weapon the mod is installed on, see note
     actions?: IActionData[];
     bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent weapon
@@ -35,46 +34,51 @@ export interface AllWeaponModData {
 }
 
 export interface PackedWeaponModData extends AllWeaponModData {
+    source: string; // Manufacturer ID
     tags: PackedTagInstanceData[]; // tags related to the mod itself
     added_tags?: PackedTagInstanceData[]; // tags propogated to the weapon the mod is installed on
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
     added_damage?: PackedDamageData[]; // damage added to the weapon the mod is installed on, see note
+    restricted_types?: WeaponType[]; // weapon types the mod CAN NOT be applied to
+    restricted_sizes?: WeaponSize[]; // weapon sizes the mod CAN NOT be applied to
 }
 
-export interface RegWeaponModData
-    extends Omit<AllWeaponModData, "restricted_types" | "restricted_sizes"> {
+export interface RegWeaponModData extends Required<AllWeaponModData> {
+    source: RegRef<EntryType.MANUFACTURER> | null;
     tags: RegTagInstanceData[]; // tags related to the mod itself
     added_tags: RegTagInstanceData[]; // tags propogated to the weapon the mod is installed on
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     added_damage: RegDamageData[]; // damage added to the weapon the mod is installed on, see note
+
+    // state info
+    cascading: boolean;
+    destroyed: boolean;
+    loaded: boolean;
+    uses: number;
 }
 
 export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> {
     // General License info
-    Source!: string;
+    Source!: Manufacturer | null;
     LicenseLevel!: number;
     License!: string;
     ID!: string;
     Name!: string;
 
     // Mech equipment
-    // Uses!: number  -- This doesn't seem to still be supported. Leaving it here just in case
-    // Destroyed!: boolean; - can mods?
-    // Cascading!: boolean; - can mods?
-    // Loaded!: boolean; - can mods?
+    Uses!: number;
+    Destroyed!: boolean; // does this even make sense?
+    Cascading!: boolean; // - can mods? Can't hurt I guess
+    Loaded!: boolean; // - can mods?
     // MaxUses!: number
     SP!: number;
     Effect!: string;
-    IsIntegrated!: boolean;
-    IsUnique!: boolean;
-    IsLimited!: boolean;
-    IsLoading!: boolean;
-    IsAI!: boolean;
-    IsIndestructible!: boolean;
+    // bIsIntegrated!: boolean; - no
+    // IsLoading!: boolean;
     Tags!: TagInstance[];
     // Omit these - can just edit the item, no? May make the return trip slightly more difficult but it is beginning to seem unlikely we'll just be able to do a rev id lookup
     // MaxUseOverride!: number
@@ -98,16 +102,46 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
     Counters!: Counter[];
     Integrated!: RegEntry<any, any>[];
 
+    // Is this mod an AI?
+    get IsAI(): boolean {
+        return tag_util.is_ai(this);
+    }
+
+    // Is it destructible?
+    get IsIndestructible(): boolean {
+        return true; // Does this make sense?
+    }
+
+    // Is it loading?
+    get IsLoading(): boolean {
+        return tag_util.is_loading(this);
+    }
+
+    // Is it unique?
+    get IsUnique(): boolean {
+        return tag_util.is_unique(this);
+    }
+
+    // Returns the base max uses
+    get BaseLimit(): number | null{
+        return tag_util.limited_max(this);
+    }
+
     public async save(): Promise<RegWeaponModData> {
         return {
             license: this.License,
             license_level: this.LicenseLevel,
             id: this.ID,
-            source: this.Source,
+            source: this.Source?.as_ref() ?? null,
 
             name: this.Name,
             sp: this.SP,
             effect: this.Effect,
+
+            cascading: this.Cascading,
+            destroyed: this.Destroyed,
+            loaded: this.Loaded,
+            uses: this.Uses,
 
             added_range: SerUtil.sync_save_all(this.AddedRange),
             added_damage: SerUtil.sync_save_all(this.AddedDamage),
@@ -124,10 +158,11 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
     }
 
     public async load(data: RegWeaponModData): Promise<void> {
+        data = {...defaults.WEAPON_MOD(), ...data};
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.ID = data.id;
-        this.Source = data.source;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
 
         this.Name = data.name;
         this.SP = data.sp;
@@ -139,22 +174,30 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
             (this.AllowedSizes = data.allowed_sizes ?? []);
         this.AllowedTypes = data.allowed_types ?? [];
 
+        this.Cascading = data.cascading;
+        this.Destroyed = data.destroyed;
+        this.Cascading = data.cascading;
+        this.Loaded = data.loaded;
+        this.Uses = data.uses;
+
         await SerUtil.load_basd(this.Registry, data, this);
         this.Counters = SerUtil.process_counters(data.counters);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
-        this.Integrated = await this.Registry.resolve_many_rough(data.integrated, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
     }
 
     public static async unpack(data: PackedWeaponModData, reg: Registry, ctx: OpCtx): Promise<WeaponMod> {
         let rdata: RegWeaponModData = {
+            ...defaults.WEAPON_MOD(),
             ...data,
+            source: quick_mm_ref(EntryType.MANUFACTURER, data.source),
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
             added_tags: data.added_tags?.map(TagInstance.unpack_reg) ?? [],
 
             // Boring stuff
             integrated: SerUtil.unpack_integrated_refs(data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
-            ...(await SerUtil.unpack_commons_and_tags(data, reg, ctx)),
+            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
         return reg.get_cat(EntryType.WEAPON_MOD).create(ctx, rdata);
     }

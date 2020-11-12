@@ -546,10 +546,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge || 0;
         this.CurrentCoreEnergy = data.current_core_energy ?? 1;
-        this.StatusesAndConditions = await subreg.resolve_many(
-            data.statuses_and_conditions || [],
-            this.OpCtx
-        );
+        this.StatusesAndConditions = await subreg.resolve_many( this.OpCtx, data.statuses_and_conditions || []);
         this.Resistances = data.resistances || [];
         this.Reactions = data.reactions || [];
         this.Burn = data.burn || 0;
@@ -633,12 +630,12 @@ export async function mech_cloud_sync(
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)
     for(let s of mech.StatusesAndConditions) {
-        await s.destroy();
+        await s.destroy_entry();
     }
     let snc_names = [...data.statuses, ...data.conditions];
 
     // And re-resolve
-    mech.StatusesAndConditions = await reg_stack.resolve_many(snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)), ctx);
+    mech.StatusesAndConditions = await reg_stack.resolve_many(ctx, snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
 
     // We always want to insinuate and writeback to be sure we own all of these items
     await mech.insinuate(mech_inv);

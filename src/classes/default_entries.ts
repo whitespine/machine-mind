@@ -1,9 +1,57 @@
-import { RegDeployableData, RegMechData, RegPilotArmorData, RegPilotData } from "@src/interface";
+import {
+    RegCoreSystemData,
+    RegDeployableData,
+    RegFrameData,
+    RegFrameTraitData,
+    RegLicenseData,
+    RegMechData,
+    RegMechSystemData,
+    RegMechWeaponData,
+    RegPilotArmorData,
+    RegPilotData,
+    RegPilotGearData,
+    RegPilotWeaponData,
+    RegWeaponModData,
+} from "@src/interface";
 import { nanoid } from "nanoid";
-import { ActivationType, CC_VERSION, FrameEffectUse } from "./enums";
-import { RegLicenseData, UNKNOWN_LICENSE } from './License';
-import { RegFrameData } from './mech/Frame';
-import { RegFrameTraitData } from './mech/FrameTrait';
+import {
+    ActivationType,
+    CC_VERSION,
+    DamageType,
+    FrameEffectUse,
+    RangeType,
+    ReserveType,
+    SystemType,
+    WeaponSize,
+    WeaponType,
+} from "./enums";
+import { RegReserveData } from './pilot/reserves/Reserve';
+
+export function CORE_SYSTEM(): RegCoreSystemData {
+    return {
+        name: "New Core Active",
+        description: "",
+        use: FrameEffectUse.Unknown,
+
+        activation: ActivationType.Quick,
+        active_name: "Core Active",
+        active_effect: "effect",
+        active_actions: [],
+        active_bonuses: [],
+        active_synergies: [],
+        deactivation: ActivationType.None,
+
+        counters: [],
+        deployables: [],
+        integrated: [],
+        passive_actions: [],
+        passive_effect: "effect",
+        passive_name: "Core Passive",
+        passive_bonuses: [],
+        passive_synergies: [],
+        tags: [],
+    };
+}
 
 export function DEPLOYABLE(): RegDeployableData {
     return {
@@ -32,17 +80,8 @@ export function DEPLOYABLE(): RegDeployableData {
         size: 0,
         speed: 0,
         tech_attack: 0,
-        type: ""
-    }
-}
-
-export function LICENSE(): RegLicenseData {
-    return {
-        manufacturer: null,
-        name: "New License",
-        rank: 0,
-        unlocks: []
-    }
+        type: "",
+    };
 }
 
 export function FRAME_TRAIT(): RegFrameTraitData {
@@ -56,8 +95,8 @@ export function FRAME_TRAIT(): RegFrameTraitData {
         integrated: [],
         description: "",
         name: "New Fraame Trait",
-        use: FrameEffectUse.Unknown
-    }
+        use: FrameEffectUse.Unknown,
+    };
 }
 
 export function FRAME(): RegFrameData {
@@ -68,7 +107,7 @@ export function FRAME(): RegFrameData {
         mechtype: ["BALANCED"],
         mounts: [],
         name: "New Mech",
-        source: UNKNOWN_LICENSE,
+        source: null,
         stats: {
             armor: 0,
             edef: 8,
@@ -83,27 +122,181 @@ export function FRAME(): RegFrameData {
             speed: 5,
             stress: 4,
             structure: 4,
-            tech_attack: 0
+            tech_attack: 0,
         },
         traits: [],
         y_pos: 0,
         core_system: null,
         image_url: "",
-        other_art: []
-    }
+        other_art: [],
+    };
 }
 
-export function PILOT_ARMOR(): RegPilotArmorData {
+export function LICENSE(): RegLicenseData {
+    return {
+        manufacturer: null,
+        name: "New License",
+        rank: 0,
+        unlocks: [],
+    };
+}
+
+export function MECH(): RegMechData {
+    return {
+        activations: 1,
+        burn: 0,
+        cc_ver: CC_VERSION,
+        cloud_portrait: "",
+        core_active: false,
+        current_core_energy: 1,
+        current_heat: 0,
+        current_hp: 0,
+        current_overcharge: 0,
+        current_repairs: 0,
+        current_stress: 0,
+        current_structure: 0,
+        ejected: false,
+        gm_note: "",
+        id: nanoid(),
+        loadout: {
+            frame: null,
+            system_mounts: [],
+            weapon_mounts: [],
+        },
+        meltdown_imminent: false,
+        name: "New Mech",
+        notes: "",
+        overshield: 0,
+        pilot: null,
+        portrait: "",
+        reactions: [],
+        resistances: [],
+        statuses_and_conditions: [],
+    };
+}
+
+export function MECH_WEAPON(): RegMechWeaponData {
+    return {
+        cascading: false,
+        deployables: [],
+        destroyed: false,
+        id: nanoid(),
+        integrated: [],
+        license: "",
+        license_level: 0,
+        name: "New Mech Weapon",
+        source: null,
+        sp: 0,
+        profiles: [
+            {
+                actions: [],
+                bonuses: [],
+                synergies: [],
+                description: "",
+                type: WeaponType.Rifle,
+                counters: [],
+                damage: [{ type: DamageType.Kinetic, val: "1d6" }],
+                effect: "Shoots enemies",
+                name: "Default Profile",
+                on_attack: "",
+                on_crit: "",
+                on_hit: "",
+                range: [{ type: RangeType.Range, val: 8 }],
+                tags: [],
+            },
+        ],
+        loaded: false,
+        selected_profile: 0,
+        size: WeaponSize.Main,
+    };
+}
+
+export function MECH_SYSTEM(): RegMechSystemData {
+    return {
+        cascading: false,
+        counters: [],
+        deployables: [],
+        destroyed: false,
+        effect: "",
+        id: nanoid(),
+        integrated: [],
+        license: "",
+        license_level: 0,
+        name: "New Mech System",
+        source: null,
+        tags: [],
+        sp: 0,
+        uses: 0,
+        actions: [],
+        bonuses: [],
+        synergies: [],
+        description: "",
+        type: SystemType.System,
+    };
+}
+
+export function PILOT_GEAR(): RegPilotGearData {
     return {
         actions: [],
         bonuses: [],
         deployables: [],
         description: "",
         id: nanoid(),
-        name: "New Armor",
+        name: "New Gear",
         synergies: [],
-        tags: []
-    }
+        tags: [],
+    };
+}
+
+export function PILOT_ARMOR(): RegPilotArmorData {
+    // Provides the basic bonus stat info
+    return {
+        ...PILOT_GEAR(),
+        name: "New Armor",
+        bonuses: [
+            {
+                id: "pilot_hp",
+                val: 3,
+            },
+            {
+                id: "pilot_evasion",
+                val: 8,
+            },
+            {
+                id: "pilot_edef",
+                val: 8,
+            },
+            {
+                id: "pilot_speed",
+                val: 4,
+            },
+            {
+                id: "pilot_armor",
+                val: 1,
+            },
+        ],
+    };
+}
+
+export function PILOT_WEAPON(): RegPilotWeaponData {
+    // Provides the basic bonus stat info
+    return {
+        ...PILOT_GEAR(),
+        name: "New Pilot Weapon",
+        range: [
+            {
+                type: RangeType.Range,
+                val: 5,
+            },
+        ],
+        damage: [
+            {
+                type: DamageType.Kinetic,
+                val: "1d3",
+            },
+        ],
+        effect: "",
+    };
 }
 
 export function PILOT(): RegPilotData {
@@ -154,36 +347,52 @@ export function PILOT(): RegPilotData {
     };
 }
 
-export function MECH(): RegMechData {
+export function RESERVE(): RegReserveData {
     return {
-        activations: 1,
-        burn: 0,
-        cc_ver: CC_VERSION,
-        cloud_portrait: "",
-        core_active: false,
-        current_core_energy: 1,
-        current_heat: 0,
-        current_hp: 0,
-        current_overcharge: 0,
-        current_repairs: 0,
-        current_stress: 0,
-        current_structure: 0,
-        ejected: false,
-        gm_note: "",
+        name: "New Reserve",
+        consumable: true,
+        counters: [],
+        integrated: [],
+        label: "",
+        resource_name: "",
+        resource_note: "",
+        resource_cost: "",
+        type: ReserveType.Resources,
+        used: false,
+        actions: [],
+        bonuses: [],
+        deployables: [],
+        description: "",
         id: nanoid(),
-        loadout: {
-            frame: null,
-            system_mounts: [],
-            weapon_mounts: []
-        },
-        meltdown_imminent: false,
-        name: "New Mech",
-        notes: "",
-        overshield: 0,
-        pilot: null,
-        portrait: "",
-        reactions: [],
-        resistances: [],
-        statuses_and_conditions: []
+        synergies: [],
+    }
+
+}
+
+export function WEAPON_MOD(): RegWeaponModData {
+    return {
+        added_damage: [],
+        added_tags: [],
+        cascading: false,
+        counters: [],
+        deployables: [],
+        destroyed: false,
+        effect: "",
+        id: nanoid(),
+        integrated: [],
+        license: "",
+        license_level: 0,
+        loaded: true,
+        name: "New Weapon Mod",
+        source: null,
+        tags: [],
+        sp: 0,
+        uses: 0,
+        allowed_sizes: [],
+        allowed_types: [],
+        actions: [],
+        added_range: [],
+        bonuses: [],
+        synergies: [],
     };
 }

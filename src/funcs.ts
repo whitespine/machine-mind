@@ -9,6 +9,7 @@ export { cloud_sync } from "@src/classes/pilot/Pilot";
 export { mech_cloud_sync } from "@src/classes/mech/Mech";
 export { validate_props } from "@src/classes/fill_test_util";
 export * as defaults from "@src/classes/default_entries";
+export * as tag_util from "@src/classes/mech/EquipUtil";
 
 export function bound_int(x: number, min: number, max: number) {
     if (x < min) {

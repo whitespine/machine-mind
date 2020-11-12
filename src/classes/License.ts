@@ -9,8 +9,6 @@ export type LicensedItemType =
     | EntryType.WEAPON_MOD;
 export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 
-export const UNKNOWN_LICENSE =  "UNKNOWN";
-
 export interface RegLicenseData {
     // Whaat's it called
     name: string;
@@ -41,7 +39,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         this.CurrentRank = data.rank;
         this.Unlocks = [];
         for (let uarr of data.unlocks) {
-            let resolved = await this.Registry.resolve_many(uarr, this.OpCtx);
+            let resolved = await this.Registry.resolve_many(this.OpCtx, uarr);
             this.Unlocks.push(resolved);
         }
     }
@@ -75,7 +73,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         // Group into ranks
         let grouped: LicensedItem[][] = [];
         let i = 0;
-        let manufacturer_name = "";
+        let manufacturer_entry: Manufacturer | null = null;
         while (all_licensed_items.length) {
             // Collect and remove all items of the current rank (i), then continue
             let of_rank = all_licensed_items.filter(
@@ -85,7 +83,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
 
             // See if we can find a manufacturer
             for (let x of of_rank) {
-                manufacturer_name = manufacturer_name || x.Source;
+                manufacturer_entry = manufacturer_entry ?? x.Source;
             }
 
             // Keep going until you
@@ -94,7 +92,6 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
         }
 
         // Lookup the manufacturer
-        let manufacturer_entry = await reg.get_cat(EntryType.MANUFACTURER).lookup_mmid(new OpCtx(), manufacturer_name)
         let manufacturer = manufacturer_entry ? manufacturer_entry.as_ref() : quick_mm_ref(EntryType.MANUFACTURER, "GMS");
 
         let rdata: RegLicenseData = {

@@ -455,13 +455,13 @@ export abstract class SerUtil {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, target.Name ?? "");
         target.Synergies = SerUtil.process_synergies(src.synergies);
-        target.Deployables = await reg.resolve_many(src.deployables, target.OpCtx);
+        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables);
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
     }
 
     // Hopefully should mitigate a lot of the code duplication I've had floating around
     // Handles the bonuses, actions, synergies, deployables, and tags of an item
-    public static async unpack_commons_and_tags(
+    public static async unpack_basdt(
         src: {
             bonuses?: IBonusData[];
             actions?: IActionData[];
@@ -605,7 +605,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // Convenience function to delete self in registry. Note that you should probably stop using this item afterwards!
     // TODO: Cleanup children? Need some sort of refcounting, maybe.
-    public async destroy(): Promise<void> {
+    public async destroy_entry(): Promise<void> {
         // Remove self from ctx first.
         this.OpCtx.delete(this.Registry, this.RegistryID, (this as any).ID);
 
@@ -958,16 +958,16 @@ export abstract class Registry {
 
     // Similar to resolve above, this is just for type flavoring basically
     public async resolve_many<T extends EntryType>(
+        ctx: OpCtx,
         refs: RegRef<T>[] | undefined,
-        ctx: OpCtx
     ): Promise<Array<LiveEntryTypes<T>>> {
-        return this.resolve_many_rough(refs, ctx) as any; // bro trust me
+        return this.resolve_many_rough(ctx, refs) as any; // bro trust me
     }
 
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
     public async resolve_many_rough(
+        ctx: OpCtx,
         refs: RegRef<EntryType>[] | undefined,
-        ctx: OpCtx
     ): Promise<Array<RegEntry<any, any>>> {
         if (!refs) {
             return [];

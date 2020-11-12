@@ -7,14 +7,14 @@ import {
     PackedCounterData,
     IBonusData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { RegCounterData } from "../Counter";
+import { Manufacturer } from '../Manufacturer';
 
 // These attrs are shared
 interface AllCoreBonusData {
     id: string;
     name: string;
-    source: string; // must be the same as the Manufacturer ID to sort correctly
     effect: string; // v-html
     description: string; // v-html
     mounted_effect?: string;
@@ -26,19 +26,21 @@ export interface PackedCoreBonusData extends AllCoreBonusData {
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
+    source: string; // must be the same as the Manufacturer ID to sort correctly
 }
 
 export interface RegCoreBonusData extends Required<AllCoreBonusData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
+    source: RegRef<EntryType.MANUFACTURER> | null; // _should_ never be null mechanically, but as always we must be error tolerant
 }
 
 export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> {
     // Basic data
     ID!: string;
     Name!: string;
-    Source!: string; // No licensing info is needed other than manufacturer
+    Source!: Manufacturer | null; // No licensing info is needed other than manufacturer
     Description!: string;
     Effect!: string;
     MountedEffect!: string;
@@ -54,16 +56,16 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     public async load(data: RegCoreBonusData): Promise<void> {
         this.ID = data.id;
         this.Name = data.name;
-        this.Source = data.source;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.Description = data.description;
         this.Effect = data.effect;
         this.MountedEffect = data.mounted_effect;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, data.name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
     public async save(): Promise<RegCoreBonusData> {
         return {
@@ -71,7 +73,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             effect: this.Effect,
             id: this.ID,
             name: this.Name,
-            source: this.Source,
+            source: this.Source?.as_ref() ?? null,
             actions: SerUtil.sync_save_all(this.Actions),
             bonuses: SerUtil.sync_save_all(this.Bonuses),
             counters: SerUtil.sync_save_all(this.Counters),
@@ -98,6 +100,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
             integrated,
             deployables,
             counters,
+            source: quick_mm_ref(EntryType.MANUFACTURER, cor.source),
             mounted_effect: cor.mounted_effect ?? "",
             actions: cor.actions ?? [],
             bonuses: cor.bonuses ?? [],

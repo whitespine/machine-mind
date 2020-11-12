@@ -1,9 +1,10 @@
 import { CoreSystem, FrameTrait } from "@src/class";
 import { defaults } from "@src/funcs";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
+import { Manufacturer } from '../Manufacturer';
 
 // The raw stat information
 export interface IFrameStats {
@@ -27,7 +28,6 @@ export interface IFrameStats {
 interface AllFrameData {
     id: string;
     license_level: number; // set to zero for this item to be available to a LL0 character
-    source: string; // must be the same as the Manufacturer ID to sort correctly
     name: string;
     mechtype: string[]; // can be customized
     y_pos: number; // used for vertical alignment of the mech in banner views (like in the new mech selector)
@@ -41,17 +41,19 @@ interface AllFrameData {
 export interface PackedFrameData extends AllFrameData {
     traits: PackedFrameTraitData[];
     core_system: PackedCoreSystemData;
+    source: string;
 }
 
 export interface RegFrameData extends Required<AllFrameData> {
     traits: RegRef<EntryType.FRAME_TRAIT>[];
     core_system: RegRef<EntryType.CORE_SYSTEM> | null;
+    source: RegRef<EntryType.MANUFACTURER> | null;
 }
 
 export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
     ID!: string;
     LicenseLevel!: number;
-    Source!: string;
+    Source!: Manufacturer | null;
     Name!: string;
     MechType!: Array<string | MechType>; // Typically mostly MechType
     YPosition!: number;
@@ -67,14 +69,14 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         frameData = { ...defaults.FRAME(), ...frameData };
         this.ID = frameData.id;
         this.LicenseLevel = frameData.license_level;
-        this.Source = frameData.source;
+        this.Source = frameData.source ? await this.Registry.resolve(this.OpCtx, frameData.source) : null;
         this.Name = frameData.name;
         this.Description = frameData.description;
         this.MechType = frameData.mechtype;
         this.YPosition = frameData.y_pos || 30;
         this.Mounts = frameData.mounts;
         this.Stats = frameData.stats;
-        this.Traits = await this.Registry.resolve_many(frameData.traits, this.OpCtx);
+        this.Traits = await this.Registry.resolve_many(this.OpCtx, frameData.traits);
         this.CoreSystem = frameData.core_system
             ? await this.Registry.resolve(this.OpCtx, frameData.core_system)
             : null;
@@ -87,7 +89,7 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
             id: this.ID,
             description: this.Description,
             license_level: this.LicenseLevel,
-            source: this.Source,
+            source: this.Source?.as_ref() ?? null,
             name: this.Name,
             mechtype: this.MechType,
             y_pos: this.YPosition,
@@ -104,7 +106,9 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         let traits = await SerUtil.unpack_children(FrameTrait.unpack, reg, ctx, frame.traits);
         let cs = await CoreSystem.unpack(frame.core_system, reg, ctx);
         let fdata: RegFrameData = {
+            ...defaults.FRAME(),
             ...frame,
+            source: quick_mm_ref(EntryType.MANUFACTURER, frame.source),
             traits: SerUtil.ref_all(traits),
             core_system: cs.as_ref(),
             image_url: frame.image_url ?? "",

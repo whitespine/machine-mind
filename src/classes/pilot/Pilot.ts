@@ -599,7 +599,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.CloudID = data.cloudID;
         this.CloudOwnerID = data.cloudOwnerID;
         this.CloudPortrait = data.cloud_portrait;
-        this.CoreBonuses = await subreg.resolve_many(data.core_bonuses, this.OpCtx);
+        this.CoreBonuses = await subreg.resolve_many( this.OpCtx, data.core_bonuses);
         this.CurrentHP = data.current_hp;
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Faction = data.faction ? await subreg.resolve(this.OpCtx, data.faction) : null;
@@ -610,21 +610,21 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.Level = data.level;
         this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
-        this.Mechs = await subreg.resolve_many(data.mechs, this.OpCtx);
+        this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
-        this.Orgs = await subreg.resolve_many(data.organizations, this.OpCtx);
-        this.OwnedArmor = await subreg.resolve_many(data.owned_armor, this.OpCtx);
-        this.OwnedWeapons = await subreg.resolve_many(data.owned_weapons, this.OpCtx);
-        this.OwnedGear = await subreg.resolve_many(data.owned_gear, this.OpCtx);
+        this.Orgs = await subreg.resolve_many( this.OpCtx, data.organizations);
+        this.OwnedArmor = await subreg.resolve_many( this.OpCtx, data.owned_armor);
+        this.OwnedWeapons = await subreg.resolve_many( this.OpCtx, data.owned_weapons);
+        this.OwnedGear = await subreg.resolve_many( this.OpCtx, data.owned_gear);
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
         this.Quirk = data.quirk ? await subreg.resolve(this.OpCtx, data.quirk) : null;
-        this.Skills = await subreg.resolve_many(data.skills, this.OpCtx);
+        this.Skills = await subreg.resolve_many( this.OpCtx, data.skills);
         this.SortIndex = data.sort_index;
         this.Status = data.status;
-        this.Talents = await subreg.resolve_many(data.talents, this.OpCtx);
+        this.Talents = await subreg.resolve_many( this.OpCtx, data.talents);
         this.TextAppearance = data.text_appearance;
     }
 
@@ -795,36 +795,36 @@ export async function cloud_sync(
 
     // Get equipment and stuff. These are "guaranteed" to be in the compendium
     pilot.CoreBonuses = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)),
-        pilot.OpCtx
     );
     pilot.CoreBonuses.forEach(cb => untouched_children.delete(cb));
     pilot.Licenses = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.licenses.map(l => quick_mm_ref(EntryType.LICENSE, l.id)),
-        pilot.OpCtx
     );
     pilot.Licenses.forEach(l => untouched_children.delete(l));
     pilot.Talents = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.talents.map(x => quick_mm_ref(EntryType.TALENT, x.id)),
-        pilot.OpCtx
     );
     pilot.Talents.forEach(x => untouched_children.delete(x));
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // TODO: Do what I just described
     pilot.Reserves = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.reserves.map(x => quick_mm_ref(EntryType.RESERVE, x.id)),
-        pilot.OpCtx
     );
     pilot.Reserves.forEach(x => untouched_children.delete(x));
     pilot.Skills = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.skills.map(x => quick_mm_ref(EntryType.SKILL, x.id)),
-        pilot.OpCtx
     );
     pilot.Skills.forEach(x => untouched_children.delete(x));
     pilot.Orgs = await reg_stack.resolve_many(
+        pilot.OpCtx,
         data.orgs.map(x => quick_mm_ref(EntryType.ORGANIZATION, x.name)),
-        pilot.OpCtx
     );
     pilot.Orgs.forEach(x => untouched_children.delete(x));
 

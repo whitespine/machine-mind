@@ -12,8 +12,10 @@ import {
 } from "@src/class";
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
 import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { RegMechData } from './Mech';
+import { defaults, tag_util } from '@src/funcs';
+import { Manufacturer } from '../Manufacturer';
 // TODO:
 // class WeaponAmmo {}
 
@@ -48,7 +50,7 @@ export type PackedMechWeaponProfile  = Omit<PackedMechWeaponData, "profiles" | "
 export interface RegMechWeaponData {
    "id": string,
   "name": string,
-  "source": string, // must be the same as the Manufacturer ID to sort correctly
+  source: RegRef<EntryType.MANUFACTURER> | null,
   "license": string, // reference to the Frame name of the associated license
   "license_level": number, // set to zero for this item to be available to a LL0 character
   "size": WeaponSize,
@@ -57,6 +59,7 @@ export interface RegMechWeaponData {
   integrated: RegRef<any>[];
   "deployables": RegRef<EntryType.DEPLOYABLE>[],
   profiles: RegMechWeaponProfile[];
+  
 
   destroyed: boolean,
   cascading: boolean,
@@ -85,7 +88,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
   // Generic equip info
    ID!: string
   Name!: string
-  Source!: string // must be the same as the Manufacturer ID to sort correctly
+  Source!: Manufacturer | null; // must be the same as the Manufacturer ID to sort correctly
   License!: string // reference to the Frame name of the associated license
   LicenseLevel!: number // set to zero for this item to be available to a LL0 character
 
@@ -105,16 +108,17 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
   Cascading!: boolean; // In case GRAND-UNCLE ever exists
 
   public async load(data: RegMechWeaponData): Promise<void> {
+    data = {...defaults.MECH_WEAPON(), ...data};
     this.ID = data.id;
     this.Name = data.name;
-    this.Source = data.source;
+    this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
     this.License = data.license;
     this.LicenseLevel = data.license_level;
 
     this.Size = data.size;
     this.SP = data.sp;
-    this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
-    this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
+    this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
+    this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
 
     this.Loaded = data.loaded;
     this.Destroyed = data.destroyed;
@@ -123,6 +127,31 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     this.SelectedProfileIndex = data.selected_profile;
     // The big one
     this.Profiles = await Promise.all(data.profiles.map(p => new MechWeaponProfile(this.Registry, this.OpCtx,  p).ready()));
+  }
+
+    // Is this mod an AI?
+    get IsAI(): boolean {
+        return tag_util.is_ai(this);
+    }
+
+    // Is it destructible?
+    get IsIndestructible(): boolean {
+        return true; // Does this make sense?
+    }
+
+    // Is it loading?
+    get IsLoading(): boolean {
+        return tag_util.is_loading(this);
+    }
+
+    // Is it unique?
+    get IsUnique(): boolean {
+        return tag_util.is_unique(this);
+    }
+
+    // Returns the base max uses
+  get BaseLimit(): number | null{
+      return tag_util.limited_max(this);
   }
 
   public async save(): Promise<RegMechWeaponData> {
@@ -136,7 +165,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
       name: this.Name,
       profiles: await SerUtil.save_all(this.Profiles), // await Promise.all(this.Profiles.map(p => p.save())),
       selected_profile: this.SelectedProfileIndex,
-      source: this.Source,
+      source: this.Source?.as_ref() || null,
       sp: this.SP,
       loaded: this.Loaded,
       cascading: this.Cascading,
@@ -170,20 +199,17 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     let parent_deployables = SerUtil.ref_all(parent_dep_entries);
 
     let unpacked: RegMechWeaponData = {
-      id: dat.id,
+      ...defaults.MECH_WEAPON(),
+      ...dat,
       cascading: false,
       destroyed: false,
       loaded: true,
-      license: dat.license,
-      license_level: dat.license_level,
-      size: dat.mount,
       name: dat.name,
       profiles: [],
       integrated: parent_integrated,
       deployables: parent_deployables,
       selected_profile: 0,
-      source: dat.source,
-      sp: dat.sp || 0
+      source: quick_mm_ref(EntryType.MANUFACTURER, dat.source),
     };
 
     // Get profiles - depends on if array is provided, but we tend towards the default 

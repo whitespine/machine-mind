@@ -38,6 +38,7 @@ export function validate_props(v: RegEntry<any, any>) {
     let entry = v.Type;
     for(let key of keyset_map[entry]) {
         if(v[key] === undefined) {
+            let ks = keyset_map[entry];
             console.error(`Error! ${entry} missing key ${key}`);
             throw new Error();
         }

@@ -88,7 +88,7 @@ describe("Static Registry Reference implementation", () => {
         expect(raw!.description).toEqual("small gunz");
 
         // Delete it, make sure it is gone
-        await man.destroy();
+        await man.destroy_entry();
         expect((await c.list_raw()).length).toEqual(0); // 14
     });
 

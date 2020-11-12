@@ -5,6 +5,7 @@ import { IBonusData, Bonus } from "@src/classes/Bonus";
 import { ISynergyData, PackedCounterData, RegCounterData, PackedDeployableData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
 import { ReserveType } from "@src/classes/enums";
+import { defaults } from '@src/funcs';
 
 interface AllReserveData {
     id: string;
@@ -52,6 +53,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
     Used!: boolean;
 
     public async load(data: RegReserveData) {
+        data = {...defaults.RESERVE(), ...data};
         this.ID = data.id;
         this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
@@ -64,9 +66,9 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
         this.Actions = data.actions.map(x => new Action(x));
         this.Bonuses = data.bonuses.map(x => new Bonus(x, `${this.ReserveType} - ${this.Name}`));
         this.Synergies = data.synergies.map(x => new Synergy(x));
-        this.Deployables = await this.Registry.resolve_many(data.deployables, this.OpCtx);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
         this.Counters = data.counters.map(c => new Counter(c));
-        this.Integrated = await this.Registry.resolve_many(data.integrated, this.OpCtx);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
         this.Used = data.used;
     }
 
@@ -127,17 +129,11 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
         // Get the counters
         let counters = SerUtil.unpack_counters_default(res.counters);
         let rdata: RegReserveData = {
+            ...defaults.RESERVE(),
             ...res,
             integrated,
             deployables,
             counters,
-            type: res.type ?? ReserveType.Resources,
-            name: res.name ?? "New Reserve",
-            label: res.label ?? "",
-            description: res.description ?? "",
-            actions: res.actions ?? [],
-            bonuses: res.bonuses ?? [],
-            synergies: res.synergies ?? [],
         };
         return reg.create(EntryType.RESERVE, ctx, rdata);
     }
