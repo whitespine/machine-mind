@@ -37,6 +37,11 @@ export class MechSkills extends SimSer<IMechSkills> {
     }
 
     public load(data: IMechSkills): void {
+        if(!Array.isArray(data)) {
+            data = [0,0,0,0];
+        } else if (data.length != 4) {
+            data.length = 4;
+        }
         [this.Hull, this.Agi, this.Sys, this.Eng] = data;
     }
 

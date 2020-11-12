@@ -4,6 +4,7 @@ import {
     RegFrameData,
     RegFrameTraitData,
     RegLicenseData,
+    RegManufacturerData,
     RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
@@ -11,6 +12,10 @@ import {
     RegPilotData,
     RegPilotGearData,
     RegPilotWeaponData,
+    RegReserveData,
+    RegSkillData,
+    RegTalentData,
+    RegTalentRank,
     RegWeaponModData,
 } from "@src/interface";
 import { nanoid } from "nanoid";
@@ -24,8 +29,8 @@ import {
     SystemType,
     WeaponSize,
     WeaponType,
+    SkillFamily
 } from "./enums";
-import { RegReserveData } from './pilot/reserves/Reserve';
 
 export function CORE_SYSTEM(): RegCoreSystemData {
     return {
@@ -139,6 +144,18 @@ export function LICENSE(): RegLicenseData {
         rank: 0,
         unlocks: [],
     };
+}
+
+export function MANUFACTURER(): RegManufacturerData {
+    return {
+        dark: "#000000",
+        description: "",
+        id: nanoid(),
+        light: "#EEEEEE",
+        logo: "",
+        name: "New Manufacturer",
+        quote: "We sell mechs and mech accessories",
+    }
 }
 
 export function MECH(): RegMechData {
@@ -395,4 +412,41 @@ export function WEAPON_MOD(): RegWeaponModData {
         bonuses: [],
         synergies: [],
     };
+}
+
+export function SKILL(): RegSkillData {
+    return {
+        id: nanoid(),
+        description: "can sing the dk rap really well",
+        detail: "",
+        family: SkillFamily.cha,
+        name: "New Skill",
+        rank: 1
+    }
+}
+
+export function TALENT(): RegTalentData {
+    return {
+        curr_rank: 1,
+        description: "",
+        icon: "",
+        id: nanoid(),
+        name: "New Talent",
+        ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
+        terse: ""
+    }
+}
+
+export function TALENT_RANK(): RegTalentRank {
+    return {
+        actions: [],
+        bonuses: [],
+        synergies: [],
+        counters: [],
+        deployables: [],
+        description: "",
+        exclusive: false,
+        integrated: [],
+        name: "Rank X"
+    }
 }

@@ -1,7 +1,8 @@
+import { defaults } from '@src/funcs';
 import { imageManagement, ImageTag } from "@src/hooks";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
-export interface IManufacturerData {
+export interface PackedManufacturerData {
     id: string;
     name: string;
     logo: string;
@@ -12,32 +13,32 @@ export interface IManufacturerData {
     quote: string;
 }
 
-export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturerData> {
+export type RegManufacturerData = Omit<PackedManufacturerData, "logo_url">;
+
+export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, RegManufacturerData> {
     ID!: string;
     Name!: string;
     Description!: string;
-    private _logo!: string;
-    LogoURL!: string | null;
+    Logo!: string;
     Light!: string;
     Dark!: string;
     Quote!: string;
 
-    public async load(data: IManufacturerData): Promise<void> {
+    public async load(data: RegManufacturerData): Promise<void> {
+        data = {...defaults.MANUFACTURER(), ...data};
         this.ID = data.id;
         this.Name = data.name;
-        this._logo = data.logo;
-        this.LogoURL = data.logo_url || null;
         this.Light = data.light;
         this.Dark = data.dark;
         this.Quote = data.quote;
         this.Description = data.description;
+        this.Logo = data.logo;
     }
-    public async save(): Promise<IManufacturerData> {
+    public async save(): Promise<RegManufacturerData> {
         return {
             id: this.ID,
             name: this.Name,
-            logo: this._logo,
-            logo_url: this.LogoURL || undefined,
+            logo: this.Logo,
             light: this.Light,
             dark: this.Dark,
             quote: this.Quote,
@@ -45,22 +46,11 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, IManufacturer
         };
     }
 
-    public static async unpack(dep: IManufacturerData, reg: Registry, ctx: OpCtx): Promise<Manufacturer> {
+    public static async unpack(dep: PackedManufacturerData, reg: Registry, ctx: OpCtx): Promise<Manufacturer> {
         return reg.get_cat(EntryType.MANUFACTURER).create(ctx, dep);
     }
 
     public GetColor(dark?: boolean): string {
         return dark ? this.Dark : this.Light;
-    }
-
-    public get LogoIsExternal(): boolean {
-        return !!this.LogoURL;
-    }
-
-    public get Logo(): string {
-        if (this.LogoURL) return this.LogoURL;
-        else if (this._logo)
-            return imageManagement.getImagePath(ImageTag.Logo, `${this._logo}.svg`, true);
-        else return ""; // TODO: placeholder logo?
     }
 }

@@ -192,3 +192,6 @@ export enum EncounterSide {
     Ally = "Ally",
     Neutral = "Neutral",
 }
+
+
+export {SkillFamily} from "@src/classes/pilot/Skill";

@@ -1,4 +1,5 @@
 import { Rules } from "@src/class";
+import { defaults } from '@src/funcs';
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 import { IRankedData } from "../GeneralInterfaces";
 
@@ -38,7 +39,9 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
     CurrentRank!: number;
 
     public async load(data: RegSkillData): Promise<void> {
-        (this.ID = data.id), (this.Name = data.name);
+        data = {...defaults.SKILL(), ...data};
+        this.ID = data.id; 
+        this.Name = data.name;
         this.Description = data.description;
         this.Detail = data.detail;
         this.Family = data.family;
@@ -71,7 +74,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
 
     // Very simple. reg is kept for consistency
     public static async unpack(packed_skill: PackedSkillData, reg: Registry, ctx: OpCtx): Promise<Skill> {
-        let rdata = { ...packed_skill, rank: 1 };
+        let rdata = { ...defaults.SKILL(), ...packed_skill, rank: 1 };
         return reg.get_cat(EntryType.SKILL).create(ctx, rdata);
     }
 

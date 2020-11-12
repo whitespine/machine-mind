@@ -75,6 +75,6 @@ export { IStatusData } from "./classes/Statuses";
 export { ISitrepData } from "./classes/encounter/Sitrep";
 export { IEnvironmentData } from "./classes/encounter/Environment";
 export { PackedTagInstanceData, RegTagInstanceData, ITagTemplateData } from "./classes/Tag";
-export { IManufacturerData } from "./classes/Manufacturer";
+export { RegManufacturerData, PackedManufacturerData } from "./classes/Manufacturer";
 // export { DataStoreOptions } from "./store/store_module";
 export * from "./classes/GeneralInterfaces";

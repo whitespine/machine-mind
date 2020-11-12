@@ -5,7 +5,6 @@ import {
     IContentPackManifest,
     IContentPack,
     // ICompendiumItemData,
-    IManufacturerData,
     IFactionData,
     PackedCoreBonusData,
     PackedFrameData,
@@ -14,6 +13,7 @@ import {
     PackedWeaponModData,
     PackedPilotEquipmentData,
     PackedTalentData,
+    PackedManufacturerData,
     // PackedTagCompendiumData,
     // PackedNpcClassData,
     // PackedNpcFeatureData,
@@ -86,7 +86,7 @@ export async function parseContentPack(binString: string): Promise<IContentPack>
         return data;
     }
 
-    const manufacturers = await getZipData<IManufacturerData>(zip, "manufacturers.json");
+    const manufacturers = await getZipData<PackedManufacturerData>(zip, "manufacturers.json");
     const factions = await getZipData<IFactionData>(zip, "factions.json");
     const coreBonuses = generateIDs(
         await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"),

@@ -34,7 +34,6 @@ import {
     PackedSkillData,
     PackedFrameData,
     IFactionData,
-    IManufacturerData,
     PackedWeaponModData,
     // PackedNpcClassData,
     // PackedNpcFeatureData,
@@ -46,6 +45,7 @@ import {
     IEnvironmentData,
     IActionData,
     PackedPilotEquipmentData,
+    PackedManufacturerData,
 } from "@src/interface";
 import { Rules } from "@src/class";
 
@@ -70,7 +70,7 @@ export const info = _info as {
     website: string;
     active: true;
 };
-export const manufacturers = _manufacturers as IManufacturerData[];
+export const manufacturers = _manufacturers as PackedManufacturerData[];
 export const mods = _mods as PackedWeaponModData[];
 // export const npc_classes = _npc_classes as PackedNpcClassData[];
 // export const npc_features = _npc_features as PackedNpcFeatureData[];

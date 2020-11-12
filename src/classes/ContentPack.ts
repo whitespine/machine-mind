@@ -29,7 +29,6 @@ import {
     Quirk,
 } from "@src/class";
 import {
-    IManufacturerData,
     IFactionData,
     IEnvironmentData,
     ISitrepData,
@@ -43,6 +42,7 @@ import {
     PackedReserveData,
     ITagTemplateData,
     PackedSkillData,
+    PackedManufacturerData,
 } from "@src/interface";
 import _ from "lodash";
 import { IStatusData } from "./Statuses";
@@ -59,7 +59,7 @@ export interface IContentPackManifest {
     image_url?: string;
 }
 export interface IContentPackData {
-    manufacturers: IManufacturerData[];
+    manufacturers: PackedManufacturerData[];
     factions: IFactionData[];
     coreBonuses: PackedCoreBonusData[];
     frames: PackedFrameData[];

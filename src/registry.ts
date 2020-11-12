@@ -73,7 +73,6 @@ import {
     IBonusData,
     IEnvironmentData,
     IFactionData,
-    IManufacturerData,
     IRangeData,
     // INpcClassData,
     // INpcFeatureData,
@@ -88,6 +87,7 @@ import {
     PackedDeployableData,
     PackedFrameData,
     PackedFrameTraitData,
+    PackedManufacturerData,
     PackedMechData,
     PackedMechSystemData,
     PackedMechWeaponData,
@@ -108,6 +108,7 @@ import {
     RegFrameData,
     RegFrameTraitData,
     RegLicenseData,
+    RegManufacturerData,
     RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
@@ -176,7 +177,7 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.FRAME]: RegFrameData;
     [EntryType.FRAME_TRAIT]: RegFrameTraitData;
     [EntryType.LICENSE]: RegLicenseData;
-    [EntryType.MANUFACTURER]: IManufacturerData;
+    [EntryType.MANUFACTURER]: RegManufacturerData;
     [EntryType.MECH]: RegMechData;
     [EntryType.MECH_SYSTEM]: RegMechSystemData;
     [EntryType.MECH_WEAPON]: RegMechWeaponData;
@@ -214,7 +215,7 @@ interface FixedPackedEntryTypes {
     [EntryType.FRAME]: PackedFrameData;
     [EntryType.FRAME_TRAIT]: PackedFrameTraitData;
     [EntryType.LICENSE]: null;
-    [EntryType.MANUFACTURER]: IManufacturerData;
+    [EntryType.MANUFACTURER]: PackedManufacturerData;
     [EntryType.MECH]: PackedMechData;
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
     [EntryType.MECH_WEAPON]: PackedMechWeaponData;

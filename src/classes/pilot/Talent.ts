@@ -1,4 +1,5 @@
 import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@src/class";
+import { defaults } from '@src/funcs';
 import {
     IActionData,
     IBonusData,
@@ -85,6 +86,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
     CurrentRank!: number;
 
     public async load(data: RegTalentData): Promise<void> {
+        data = {...defaults.TALENT, ...data};
         this.ID = data.id;
         this.Name = data.name;
         this.Icon = data.icon;
@@ -92,6 +94,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         this.Description = data.description;
         this.Ranks = [];
         for (let r of data.ranks) {
+            r = {...defaults.TALENT_RANK(), ...r};
             this.Ranks.push({
                 Actions: SerUtil.process_actions(r.actions),
                 Bonuses: SerUtil.process_bonuses(
@@ -142,9 +145,8 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         let ranks: RegTalentRank[] = [];
         for (let r of data.ranks) {
             ranks.push({
-                name: r.name,
-                description: r.description,
-                exclusive: r.exclusive,
+                ...defaults.TALENT_RANK(),
+                ...r,
                 ...(await SerUtil.unpack_basdt(r, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
                 integrated: SerUtil.unpack_integrated_refs(r.integrated),
@@ -153,6 +155,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
 
         // Finish with entire reg
         let rdata: RegTalentData = {
+            ...defaults.TALENT(),
             ...data,
             ranks,
             curr_rank: 1,
