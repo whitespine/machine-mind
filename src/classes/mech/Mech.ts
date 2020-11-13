@@ -16,9 +16,9 @@ import {
 } from "@src/class";
 import { bound_int } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
-import { EntryType, InventoriedRegEntry, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { CC_VERSION, DamageType } from "../enums";
-import { RegStack } from '../regstack';
+// import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
 interface AllMechData {
@@ -100,10 +100,26 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     // These are posessed systems/weapons/etc of the frame that are not necessarily equipped.
     // Good for if your players like to reflavor their items.
     // Everything in MechLoadout should just be reffing to these items (avoid making duplicates - an easy mistake to make but one that will ultimately become very annoying)
-    OwnedWeapons!: MechWeapon[];
-    OwnedSystems!: MechSystem[];
-    OwnedWeaponMods!: WeaponMod[];
-    OwnedFrames!: Frame[];
+
+    private _owned_weapons!: MechWeapon[];
+    public get OwnedWeapons(): MechWeapon[] {
+        return [...this._owned_weapons];
+    }
+
+    private _owned_systems!: MechSystem[];
+    public get OwnedSystems(): MechSystem[] {
+        return this._owned_systems;
+    }
+
+    private _owned_weapon_mods!: WeaponMod[];
+    public get OwnedWeaponMods(): WeaponMod[] {
+        return this._owned_weapon_mods;
+    }
+
+    private _owned_frames!: Frame[];
+    public get OwnedFrames(): Frame[] {
+        return this._owned_frames;
+    }
 
     // Per turn data
     TurnActions!: number;
@@ -529,7 +545,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
     }
 
     public async load(data: RegMechData): Promise<void> {
-        let subreg = await this.get_inventory();
+        let subreg = this.get_inventory();
         this.ID = data.id;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
         this.Name = data.name;
@@ -554,6 +570,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         this.Activations = data.activations || 1;
         this.MeltdownImminent = data.meltdown_imminent || false;
         this.CoreActive = data.core_active || false;
+
+        // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
+        // They will be two separate items. This is a bit odd, but for the most part the pilot-items are more of a "shop" for the mechs to insinuate from.
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
+        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
+        this._owned_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
@@ -587,10 +610,10 @@ export async function mech_cloud_sync(
     compendium_reg: Registry
 ): Promise<void> {
     // Reg stuff
-    let mech_inv = await mech.get_inventory();
-    let reg_stack = new RegStack([mech_inv, compendium_reg]);
+    let mech_inv = mech.get_inventory();
+    let pilot_inv = mech.Pilot?.get_inventory();
 
-    // All of this
+    // All of this is trivial
     mech.ID = data.id;
     mech.Name = data.name;
     mech.Notes = data.notes;
@@ -614,7 +637,44 @@ export async function mech_cloud_sync(
     mech.Resistances = data.resistances as DamageType[];
     mech.Reactions = data.reactions;
 
-    // These are eeeever so slightly more complicated (read: way more
+    // Insinuates the item if it is not in the mechs inventory. Use to cache fallback items from reg_stack and bring them over
+    async function get_owned<T extends EntryType>(item: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
+        // resolve it from our own inv
+        let from_mech = await mech_inv.resolve(mech.OpCtx, item);
+
+        // Failing that try resolve from the pilot, save to mech
+        if(!from_mech && pilot_inv) {
+            let from_pilot = await pilot_inv.resolve(new OpCtx(), item);
+            if(from_pilot) {
+                from_mech = await from_pilot.insinuate(mech_inv) as LiveEntryTypes<T>;
+            }
+        }
+
+        // Failing that resolve from the compendium, save to mech
+        if(!from_mech) {
+            let from_compendium = await compendium_reg.resolve(new OpCtx(), item);
+            if(!from_compendium) return null;
+            from_mech = await from_compendium.insinuate(mech_inv) as LiveEntryTypes<T>;
+        }
+        return from_mech;
+    }
+
+    async function get_many_owned<T extends EntryType>(items: RegRef<T>[]): Promise<LiveEntryTypes<T>[]> {
+        let result: LiveEntryTypes<T>[] = [];
+        for(let i of items) {
+            let v = await get_owned(i);
+            if(v) result.push(v);
+        }
+        return result;
+    }
+
+    // We only take one loadout - whichever is active
+    let packed_loadout = data.loadouts[data.active_loadout_index];
+
+    // Resolve the frame and set it
+
+
+    // Get the loadout frame, and set it in our loadout
     let ctx = mech.OpCtx;
     let ofid = mech.Loadout.Frame?.RegistryID
     mech.Loadout.Frame = await reg_stack.get_cat(EntryType.FRAME).lookup_mmid(ctx, data.frame)
@@ -625,7 +685,6 @@ export async function mech_cloud_sync(
     }
 
     // We only keep one loadout
-    let packed_loadout = data.loadouts[data.active_loadout_index];
     //todo
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)

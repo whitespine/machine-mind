@@ -1,4 +1,5 @@
 import {
+    RegCoreBonusData,
     RegCoreSystemData,
     RegDeployableData,
     RegFrameData,
@@ -31,6 +32,24 @@ import {
     WeaponType,
     SkillFamily
 } from "./enums";
+
+export function CORE_BONUS(): RegCoreBonusData {
+    return {
+        actions: [],
+        bonuses: [],
+        synergies: [],
+        counters: [],
+        deployables: [],
+        description: "",
+        integrated: [],
+        name: "New Core Bonus",
+        effect: "",
+        id: nanoid(),
+        mounted_effect: "",
+        source: null
+    }
+
+}
 
 export function CORE_SYSTEM(): RegCoreSystemData {
     return {
@@ -327,10 +346,8 @@ export function PILOT(): RegPilotData {
         cloudID: "",
         cloudOwnerID: "",
         cloud_portrait: "",
-        core_bonuses: [],
         current_hp: 0,
         custom_counters: [],
-        faction: null,
         group: "",
         history: "",
         id: nanoid(),
@@ -349,17 +366,10 @@ export function PILOT(): RegPilotData {
         mechs: [],
         mounted: false,
         notes: "",
-        organizations: [],
-        owned_armor: [],
-        owned_gear: [],
-        owned_weapons: [],
         player_name: "",
         portrait: "",
-        quirk: null,
-        skills: [],
         sort_index: 0,
         status: "",
-        talents: [],
         text_appearance: "",
     };
 }

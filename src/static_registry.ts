@@ -107,32 +107,32 @@ export class StaticReg extends Registry {
     constructor(env: RegEnv) {
         super();
         this.env = env;
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus));
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem));
+        this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus, defaults.CORE_BONUS));
+        this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem, defaults.CORE_SYSTEM));
         this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
         this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
-        this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait));
-        this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame));
-        this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License));
-        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait, defaults.FRAME_TRAIT));
+        this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame, defaults.FRAME));
+        this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License, defaults.LICENSE));
+        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer, defaults.MANUFACTURER));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem, defaults.MECH_SYSTEM));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON));
         this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
         this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, defaults.PILOT_ARMOR));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear, defaults.PILOT_GEAR));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon, defaults.PILOT_WEAPON));
         this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));
-        this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve));
+        this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve, defaults.RESERVE));
         this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep));
-        this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill));
+        this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill, defaults.SKILL));
         this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status));
         this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate));
-        this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent));
-        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
+        this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent, defaults.TALENT));
+        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, defaults.WEAPON_MOD));
 
         // The inventoried things (actors!)
         this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, defaults.PILOT, env.pilot_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, undefined, env.dep_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, defaults.DEPLOYABLE, env.dep_cat));
         this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, defaults.MECH, env.mech_cat));
         // to be done
         // NpcClasses: null as any,
@@ -140,6 +140,11 @@ export class StaticReg extends Registry {
         // NpcTemplates: null as any,
 
         this.init_finalize();
+    }
+
+    is(reg: Registry): boolean {
+        // Really no other way this is possible
+        return this == reg;
     }
 }
 
@@ -238,6 +243,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         this.reg_data.set(id, saved);
         return v;
     }
+
 }
 
 // Eventually remove this. A short term sanity not-null/undef checker, until we get around to adding defaults

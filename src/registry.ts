@@ -615,6 +615,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
+    // Generates a new opctx
     public async refreshed(): Promise<LiveEntryTypes<T> | null> {
         return this.Registry.get_cat(this.Type).get_live(new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
     }
@@ -654,22 +655,28 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
         // TODO
     }
 
-    // The public expore of insinuate, which ensures it is safe by refreshing first
+    // Create a copy self in the target DB, bringing along all child items with properly reconstructed links. 
+    // Returns said copy
     public async insinuate(to_new_reg: Registry): Promise<LiveEntryTypes<T>> {
+        // The public expore of insinuate, which ensures it is safe by refreshing before and after all operations
         let fresh = await this.refreshed();
         // If not fresh, implying deleted  while we try to insinuate, we abort the operation
         if(!fresh) {
             throw new Error("Cannot insinuate a deleted item: undefined behavior");
         }
-        await (fresh as RegEntry<any, any>).insinuate_imp(to_new_reg, new OpCtx());
-        return fresh;
+
+        // After refresh, destroy the opctx cache to be reconstructed as we build below
+        await (fresh as RegEntry<any, any>).insinuate_imp(to_new_reg, true);
+
+        // We do not want fresh itself. Instead, re-fetch fresh from the new registry
+        let fresher = await fresh.refreshed() as LiveEntryTypes<T>;
+        return fresher;
     }
 
-    // Create self in a new DB, in-place. This is the only situation in which the Registry or RegistryID of a live object can change
     // Note that since a live copy is always a mere reflection of the underlying reg data, this has no effect on the original reg
     // In order to properly resettle children, we require valid implementations of get_child_entries
     private is_insinuating = false;
-    protected async insinuate_imp(to_new_reg: Registry, using_ctx: OpCtx, root_call: boolean = true): Promise<void> {
+    protected async insinuate_imp(to_new_reg: Registry, root_call: boolean): Promise<void> {
         // Check if we've been hit to avoid spurious copying
         if (this.is_insinuating) {
             return;
@@ -678,35 +685,20 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
         // Ask all of our live children to insinuate themselves. They shall insinuate recursively
         for (let child of this.get_child_entries()) {
-            await child.insinuate_imp(to_new_reg, using_ctx, false); // Ensure that they don't get root call true. This prevents dumb save-thrashing
+            await child.insinuate_imp(to_new_reg, false); // Ensure that they don't get root call true. This prevents dumb save-thrashing
         }
-
-        // Bail out here if we actually already live in the specified reg. Easiest way to check is equality, but for global/stack regs we had better be more specific
-        /*
-        if (
-            this.Registry == to_new_reg ||
-            (await to_new_reg.get_cat(this.Type).get_raw(this.RegistryID)) != null
-        ) {
-            if (root_call) {
-                this.is_insinuating = false;
-            }
-            return;
-        }
-        */
-       // ^ Actually, insinuating to self reg is a fairly easy/straightforward way to copy, so we'll stick with that
 
         // To do ourself is quite simple once this is done. Now that all of our child data is in the new registry, we simply transfer ourself via save/load
         // We change our registry before saving, in order to more reliably catch weird saving reg interaactions
-        (this as any).OpCtx = using_ctx;
+        // This is the only situation in which the Registry or RegistryID of a live object can change
         (this as any).Registry = to_new_reg;
         let saved = (await this.save()) as unknown as RegEntryTypes<T>;
 
         // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
-        let new_entry = await to_new_reg.create(this.Type, using_ctx, saved);
-        (this as any).RegistryID = new_entry.RegistryID;
-        this.OpCtx.add(this);
+        let new_entry = await to_new_reg.create(this.Type, this.OpCtx, saved);
 
-        // We just dismiss the new entry, as we are still it (in theory) but with probably more reliably maintained refs.
+        // Update our ID now as well, since it has been decided by the registry. This only really matters to make the outer _refreshed()_ call work better
+        (this as any).RegistryID = new_entry.RegistryID;
 
         // In cases of Non-DAG heirarchies (the only example of which I can think of being Mechs knowing their Pilot and perhaps deployables knowing their deployer),
         // this simplistic approach will unfortunately leave us with some possibly unmaintained references... A possible solution is to re-propagate the update function back through the chain
@@ -902,7 +894,7 @@ export abstract class Registry {
     }
 
     // Fetch the specified category or error if it doesn't exist
-    public try_get_cat(cat: string): RegCat<any> | null {
+    private try_get_cat(cat: string): RegCat<any> | null {
         let v = this.cat_map.get(cat as EntryType);
         if (!v) {
             console.error(`Error: Category "${cat}" does not exist`);
@@ -937,11 +929,11 @@ export abstract class Registry {
     // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
     // Find the item corresponding to this ref
     public async resolve<T extends EntryType>(ctx: OpCtx, ref: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
-        return this.resolve_rough(ref, ctx) as any; // Trust me bro
+        return this.resolve_rough(ctx, ref) as any; // Trust me bro
     }
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
-    public async resolve_rough(ref: RegRef<EntryType>, ctx: OpCtx): Promise<RegEntry<any, any> | null> {
+    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<RegEntry<any, any> | null> {
         // Haven't resolved this yet
         let result: RegEntry<any, any> | null;
         if (ref.is_unresolved_mmid) {
@@ -973,13 +965,16 @@ export abstract class Registry {
         if (!refs) {
             return [];
         }
-        let resolves = await Promise.all(refs.map(r => this.resolve_rough(r, ctx)));
+        let resolves = await Promise.all(refs.map(r => this.resolve_rough(ctx, r)));
         resolves = resolves.filter(d => d != null);
         return resolves as RegEntry<any, any>[]; // We filtered the nulls
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
     public abstract get_inventory(for_item_id: string): Registry | null;
+
+    // Return true if this registry is the same as the specified. Useful in case the registry is simply a thin visor which we might end up with multiple copies of
+    public abstract is(other: Registry): boolean;
 
     // Creates an inventory for the specified id.
     // public abstract get_inventory(for_item_id: string): Promise<Registry | null>;

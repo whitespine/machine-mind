@@ -24,9 +24,18 @@ export interface PackedSkillData {
     description: string; // terse, prefer fewest chars
     detail: string; // v-html
     family: SkillFamily;
+    rank?: number,
+    custom?: true,
+    custom_desc?: string,
+    custom_detail?: string
 }
 
-export interface RegSkillData extends PackedSkillData {
+export interface RegSkillData {
+    id: string;
+    name: string;
+    description: string; // terse, prefer fewest chars
+    detail: string; // v-html
+    family: SkillFamily;
     rank: number;
 }
 
@@ -74,7 +83,7 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
 
     // Very simple. reg is kept for consistency
     public static async unpack(packed_skill: PackedSkillData, reg: Registry, ctx: OpCtx): Promise<Skill> {
-        let rdata = { ...defaults.SKILL(), ...packed_skill, rank: 1 };
+        let rdata = { ...defaults.SKILL(), ...packed_skill };
         return reg.get_cat(EntryType.SKILL).create(ctx, rdata);
     }
 

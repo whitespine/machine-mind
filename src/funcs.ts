@@ -4,7 +4,7 @@ import { Bonus, Mech } from "./class";
 export { parseContentPack } from "@src/io/ContentPackParser";
 export { intake_pack } from "@src/classes/ContentPack";
 export { get_base_content_pack } from "@src/io/ContentPackParser";
-export { download_pilot, update_cloud_pilot, upload_new_pilot } from "@src/io/apis/gist";
+export * as gist_io from "@src/io/apis/gist";
 export { cloud_sync } from "@src/classes/pilot/Pilot";
 export { mech_cloud_sync } from "@src/classes/mech/Mech";
 export { validate_props } from "@src/classes/fill_test_util";

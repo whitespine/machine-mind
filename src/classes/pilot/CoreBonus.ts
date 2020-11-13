@@ -1,4 +1,5 @@
 import { Synergy, Bonus, Action, Counter, Deployable } from "@src/class";
+import { defaults } from '@src/funcs';
 
 import {
     IActionData,
@@ -54,6 +55,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     Integrated!: RegEntry<any, any>[];
 
     public async load(data: RegCoreBonusData): Promise<void> {
+        data = {...defaults.CORE_BONUS(), ...data};
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -96,6 +98,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(cor.counters);
         let cbdata: RegCoreBonusData = {
+            ...defaults.CORE_BONUS(),
             ...cor,
             integrated,
             deployables,

@@ -26,11 +26,13 @@ import {
     IMechState,
     PackedPilotLoadoutData,
     RegCounterData,
+    PackedSkillData,
 } from "@src/interface";
 import {
     EntryType,
     InventoriedRegEntry,
     LiveEntryTypes,
+    OpCtx,
     quick_mm_ref,
     RegEntry,
     Registry,
@@ -39,11 +41,12 @@ import {
     SerUtil,
 } from "@src/registry";
 import { PackedPilotEquipmentState, RegPilotLoadoutData } from "./PilotLoadout";
-import { bound_int, mech_cloud_sync } from "@src/funcs";
+import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
-import { RegStack } from "../regstack";
 import { CC_VERSION } from '../enums';
+import { skills } from 'lancer-data';
+import { SSL_OP_SINGLE_DH_USE } from 'constants';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -74,7 +77,7 @@ interface BothPilotData {
 // The compcon export format. This stuff just gets converted into owned items.
 export interface PackedPilotData extends BothPilotData {
     licenses: IRankedData[];
-    skills: IRankedData[];
+    skills: Array<IRankedData | (PackedSkillData & {custom: true})>;
     talents: IRankedData[];
     reserves: PackedReserveData[];
     orgs: IOrganizationData[];
@@ -94,26 +97,28 @@ export interface PackedPilotData extends BothPilotData {
 export interface RegPilotData extends Required<BothPilotData> {
     active_mech: RegRef<EntryType.MECH> | null;
 
-    faction: RegRef<EntryType.FACTION> | null; // I mostly made these first-class entities because I thought faction-membership bonuses/reserves would be kinda cool...
-    organizations: RegRef<EntryType.ORGANIZATION>[];
-    quirk: RegRef<EntryType.QUIRK> | null;
+    // factions: RegRef<EntryType.FACTION>[]; // I mostly made these first-class entities because I thought faction-membership bonuses/reserves would be kinda cool...
+    // organizations: RegRef<EntryType.ORGANIZATION>[];
+    // quirks: RegRef<EntryType.QUIRK>[];
 
     // Since mechs are themselves actors we don't need to cascade item ownership - just actor ownership
+    // We DO actually need a ref to these as ownership amidst the mech category is generally ambiguous
     mechs: RegRef<EntryType.MECH>[];
 
     // We do own these, though
-    skills: RegRef<EntryType.SKILL>[];
-    talents: RegRef<EntryType.TALENT>[];
-    core_bonuses: RegRef<EntryType.CORE_BONUS>[];
+    // skills: RegRef<EntryType.SKILL>[];
+    // talents: RegRef<EntryType.TALENT>[];
+    // core_bonuses: RegRef<EntryType.CORE_BONUS>[];
     custom_counters: RegCounterData[];
 
     // Contains refs to our equpment, which we still own independently
     loadout: RegPilotLoadoutData;
 
     // the equip on our pilot
-    owned_weapons: RegRef<EntryType.PILOT_WEAPON>[];
-    owned_armor: RegRef<EntryType.PILOT_ARMOR>[];
-    owned_gear: RegRef<EntryType.PILOT_GEAR>[];
+    // licenses: RegRef<EntryType.LICENSE>[];
+    // owned_weapons: RegRef<EntryType.PILOT_WEAPON>[];
+    // owned_armor: RegRef<EntryType.PILOT_ARMOR>[];
+    // owned_gear: RegRef<EntryType.PILOT_GEAR>[];
 
     // We don't really track active state much here. We do at least track mounted state
     mounted: boolean;
@@ -135,8 +140,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
     SortIndex!: number;
 
     Campaign!: string;
-    Faction!: Faction | null;
-    Quirk!: Quirk | null;
 
     CloudID!: string;
     CloudOwnerID!: string;
@@ -152,25 +155,71 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
     // State!: ActiveState;
 
     MechSkills!: MechSkills;
-    Skills!: Skill[];
-    Talents!: Talent[];
-    Licenses!: License[];
-    CoreBonuses!: CoreBonus[];
+
 
     Mechs!: Mech[];
     CustomCounters!: Counter[];
-
-    Reserves!: Reserve[];
-    Orgs!: Organization[];
-
-    // These are the weapons and stuff that we _own_, not necessarily that is currently in our loudout
-    // However, our loadout should exclusively refer to items held herein
-    OwnedWeapons!: PilotWeapon[];
-    OwnedArmor!: PilotArmor[];
-    OwnedGear!: PilotGear[];
-
     // The version of compcon that produced this
     CCVersion!: string;
+
+    // All the below fields are read only, derived from the contents of the pilot reg. To add or remove to these, you need to create/insinuate/destroy entries of the pilot reg
+    // These are the weapons and stuff that we _own_, not necessarily that is currently in our loudout
+    private _owned_armor!: PilotArmor[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get OwnedArmor(): PilotArmor[] {
+        return [...this._owned_armor];
+    }
+
+    private _owned_gear!: PilotGear[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get OwnedGear(): PilotGear[] {
+        return [...this._owned_gear];
+    }
+
+    private _owned_weapons!: PilotWeapon[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get OwnedWeapons(): PilotWeapon[] {
+        return [...this._owned_weapons];
+    }
+
+    private _core_bonuses!: CoreBonus[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get CoreBonuses(): CoreBonus[] {
+        return [...this._core_bonuses];
+    }
+
+    private _factions!: Faction[];
+    public get Factions(): Faction[] {
+        return [...this._factions];
+    }
+
+    private _reserves!: Reserve[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get Reserves(): Reserve[] {
+        return [...this._reserves];
+    }
+
+    private _orgs!: Organization[];
+    public get Orgs(): Organization[] {
+        return [...this._orgs];
+    }
+    
+    private _skills!: Skill[];
+    public get Skills(): Skill[] {
+        return [...this._skills];
+    }
+
+    private _talents!: Talent[];
+    public get Talents(): Talent[] {
+        return [...this._talents];
+    }
+
+    private _licenses!: License[];
+    public get Licenses(): License[] {
+        return [...this._licenses];
+    }
+
+   private _quirks!: Quirk[];
+    public get Quirks(): Quirk[] {
+        return [...this._quirks];
+    }
+
+
 
     // TODO: Create a more formalized method of tracking brew ids or something. Right now we just drop it when parsing, but it should really be an additional value on regentry creation
     public get Brews(): string[] {
@@ -577,8 +626,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
             ...this.Talents.flatMap(t => t.Bonuses),
             ...this.CoreBonuses.flatMap(cb => cb.Bonuses),
             ...this.Loadout.Items.flatMap(i => i.Bonuses),
-            ...(this.Quirk ? this.Quirk.Bonuses : []),
-            // ...(this.Faction ? this.Faction.Bonuses : []),
+            ...this.Quirks.flatMap(q => q.Bonuses),
+            ...this.Factions.flatMap(f => []), // TODO - flesh out factions
             ...this.Reserves.flatMap(r => r.Bonuses),
             ...this.MechSkills.AllBonuses,
         ];
@@ -590,7 +639,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
     }
 
     public async load(data: RegPilotData): Promise<void> {
-        let subreg = await this.get_inventory();
+        // let data = {...defaults.PILOT(), ...
+        let subreg = this.get_inventory();
         this.ActiveMech = data.active_mech ? await subreg.resolve(this.OpCtx, data.active_mech) : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
@@ -599,10 +649,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.CloudID = data.cloudID;
         this.CloudOwnerID = data.cloudOwnerID;
         this.CloudPortrait = data.cloud_portrait;
-        this.CoreBonuses = await subreg.resolve_many( this.OpCtx, data.core_bonuses);
         this.CurrentHP = data.current_hp;
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
-        this.Faction = data.faction ? await subreg.resolve(this.OpCtx, data.faction) : null;
         this.Group = data.group;
         this.History = data.history;
         this.ID = data.id;
@@ -614,18 +662,22 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
-        this.Orgs = await subreg.resolve_many( this.OpCtx, data.organizations);
-        this.OwnedArmor = await subreg.resolve_many( this.OpCtx, data.owned_armor);
-        this.OwnedWeapons = await subreg.resolve_many( this.OpCtx, data.owned_weapons);
-        this.OwnedGear = await subreg.resolve_many( this.OpCtx, data.owned_gear);
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
-        this.Quirk = data.quirk ? await subreg.resolve(this.OpCtx, data.quirk) : null;
-        this.Skills = await subreg.resolve_many( this.OpCtx, data.skills);
         this.SortIndex = data.sort_index;
         this.Status = data.status;
-        this.Talents = await subreg.resolve_many( this.OpCtx, data.talents);
         this.TextAppearance = data.text_appearance;
+
+        this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx);
+        this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx);
+        this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx);
+        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx);
+        this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx);
+        this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx);
+        this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx);
+        this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx);
+        this._owned_weapons =await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx); 
+        this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
     }
 
     public async save(): Promise<RegPilotData> {
@@ -638,10 +690,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
             cloudID: this.CloudID,
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,
-            core_bonuses: SerUtil.ref_all(this.CoreBonuses),
             current_hp: this.CurrentHP,
             custom_counters: SerUtil.sync_save_all(this.CustomCounters),
-            faction: this.Faction?.as_ref() ?? null,
             group: this.Group,
             history: this.History,
             id: this.ID,
@@ -653,17 +703,10 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
             mounted: this.Mounted,
             name: this.Name,
             notes: this.Notes,
-            organizations: SerUtil.ref_all(this.Orgs),
-            owned_armor: SerUtil.ref_all(this.OwnedArmor),
-            owned_gear: SerUtil.ref_all(this.OwnedGear),
-            owned_weapons: SerUtil.ref_all(this.OwnedWeapons),
             player_name: this.PlayerName,
             portrait: this.Portrait,
-            quirk: this.Quirk?.as_ref() ?? null,
-            skills: SerUtil.ref_all(this.Skills),
             sort_index: this.SortIndex,
             status: this.Status,
-            talents: SerUtil.ref_all(this.Talents),
             text_appearance: this.TextAppearance,
         };
     }
@@ -681,8 +724,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
             ...this.OwnedWeapons,
             ...this.OwnedGear,
         ];
-        if (this.Quirk) result.push(this.Quirk);
-        if (this.Faction) result.push(this.Faction);
         return result;
     }
 }
@@ -690,18 +731,46 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
 // Due to the nature of pilot data, and the fact that we generally desire to use this for synchronization of an existing pilot rather than as a one off compendium import,
 // we define this separately. compendium_reg is where we look if we can't find an item in the pilot that we expected
 // TODO: Figure out a way to handle cases where the pilot has multiple copies of the same system by mmid (e.g. "lefty" and "righty" on knives or something)- in this case it will always just pick the first it finds
+// TODO: Don't just nuke reserves, do something fancier
 export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
     compendium_reg: Registry
 ): Promise<void> {
+    // Refresh the pilot
+    let tmp_pilot = await pilot.refreshed();
+    if(!tmp_pilot) {
+        return;
+    }
+    pilot = tmp_pilot;
+
     // The simplest way to do this is to, for each entry, just look in a regstack and insinuate to the pilot inventory.
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
     let pilot_inv = pilot.get_inventory();
-    let reg_stack = new RegStack([pilot_inv, compendium_reg]);
+    // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
 
-    // Track all items that we hit
-    let untouched_children = new Set(pilot.get_child_entries());
+    // Insinuates the item if it is not in the pilots inventory. Use to cache fallback items from reg_stack and bring them over
+    async function get_owned<T extends EntryType>(item: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
+        // resolve it from our own inv
+        let from_pilot = await pilot_inv.resolve(pilot.OpCtx, item);
+
+        // Failing that resolve from the compendium, save to pilot, and return
+        if(!from_pilot) {
+            let from_compendium = await compendium_reg.resolve(new OpCtx(), item);
+            if(!from_compendium) return null;
+            from_pilot = await from_compendium.insinuate(pilot_inv) as LiveEntryTypes<T>;
+        }
+        return from_pilot;
+    }
+
+    async function get_many_owned<T extends EntryType>(items: RegRef<T>[]): Promise<LiveEntryTypes<T>[]> {
+        let result: LiveEntryTypes<T>[] = [];
+        for(let i of items) {
+            let v = await get_owned(i);
+            if(v) result.push(v);
+        }
+        return result;
+    }
 
     // Identity
     pilot.ID = data.id;
@@ -722,9 +791,6 @@ export async function cloud_sync(
             corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(pilot.OpCtx);
             // Add it to the pilot
             pilot.Mechs.push(corr_mech);
-        } else {
-            // We had found it - mark that it's still there
-            untouched_children.delete(corr_mech);
         }
         // Apply
         await mech_cloud_sync(md, corr_mech, compendium_reg);
@@ -733,16 +799,9 @@ export async function cloud_sync(
     // Try to find a quirk that matches, or create if not present
     // TODO: this is weird. compcon doesn't really do quirks. For now we just make new quirk if the quirk descriptions don't match?
     if (data.quirk) {
-        if (pilot.Quirk) {
-            // Quirk still there - mark
-            untouched_children.delete(pilot.Quirk);
-
-            // Update the description if need be
-            pilot.Quirk.Description = data.quirk;
-        } else {
-            //Make new quirk
-            let new_quirk = await Quirk.unpack(data.quirk, pilot_inv, pilot.OpCtx);
-            pilot.Quirk = new_quirk;
+        if(!pilot.Quirks.find(q => q.Description  == data.quirk)) {
+            Quirk.unpack(data.quirk, pilot_inv, pilot.OpCtx);
+            // Nothing else needs to be done
         }
     }
 
@@ -753,27 +812,10 @@ export async function cloud_sync(
 
     // Look for faction. Create if not present
     if (data.factionID) {
-        if (pilot.Faction) {
-            untouched_children.delete(pilot.Faction);
-
-            // For the time being all we have is the faction id. We cannot transfer any other information
-            pilot.Faction.ID = pilot.ID;
-        }
-        // If they don't match/don't exist, break out
-        if (!pilot.Faction || pilot.Faction.ID != data.factionID) {
-            // Gotta make a new faction
-            // Delete if no match??? Generally not a fan of deleting lore items as they're unlikely to really bloat things much and tend to take a lot of player work to fill in to be cool
-            pilot.Faction = await Faction.unpack(
-                {
-                    color: "grey",
-                    description: "",
-                    id: data.factionID,
-                    logo: "",
-                    name: data.factionID,
-                    logo_url: "",
-                },
-                pilot_inv
-            , pilot.OpCtx);
+        if(!pilot.Factions.find(f => f.ID == data.factionID)) {
+            let new_faction = await pilot_inv.create(EntryType.FACTION, pilot.OpCtx);
+            new_faction.ID = data.factionID;
+            new_faction.writeback();
         }
     }
 
@@ -793,59 +835,85 @@ export async function cloud_sync(
         SerUtil.unpack_counters_default(data.custom_counters)
     );
 
-    // Get equipment and stuff. These are "guaranteed" to be in the compendium
-    pilot.CoreBonuses = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)),
-    );
-    pilot.CoreBonuses.forEach(cb => untouched_children.delete(cb));
-    pilot.Licenses = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.licenses.map(l => quick_mm_ref(EntryType.LICENSE, l.id)),
-    );
-    pilot.Licenses.forEach(l => untouched_children.delete(l));
-    pilot.Talents = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.talents.map(x => quick_mm_ref(EntryType.TALENT, x.id)),
-    );
-    pilot.Talents.forEach(x => untouched_children.delete(x));
+    // Core bonuses. Does not delete. All we care about is that we have them
+    await get_many_owned(data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)));
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
-    // TODO: Do what I just described
-    pilot.Reserves = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.reserves.map(x => quick_mm_ref(EntryType.RESERVE, x.id)),
-    );
-    pilot.Reserves.forEach(x => untouched_children.delete(x));
-    pilot.Skills = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.skills.map(x => quick_mm_ref(EntryType.SKILL, x.id)),
-    );
-    pilot.Skills.forEach(x => untouched_children.delete(x));
-    pilot.Orgs = await reg_stack.resolve_many(
-        pilot.OpCtx,
-        data.orgs.map(x => quick_mm_ref(EntryType.ORGANIZATION, x.name)),
-    );
-    pilot.Orgs.forEach(x => untouched_children.delete(x));
+    // For reserves, as they lack a meaningful way of identification we just clobber.
+    for(let r of data.reserves) {
+        // Though we could ref, almost always better to unpack due to custom data
+        // TODO - don't clobber?
+        for(let ur of pilot.Reserves) {
+            ur.destroy_entry();
+        }
+        await Reserve.unpack(r, pilot_inv, pilot.OpCtx);
+    }
 
-    // Fixup ranks in ranked item
-    for (let rank of data.skills) {
-        let corr = pilot.Skills.find(x => x.ID == rank.id);
-        if (corr) {
-            corr.CurrentRank = rank.rank;
+    // Skills, we try to find and if not create
+    for(let s of data.skills) {
+        // Try to get/fetch pre-existing
+        let found = await get_owned(quick_mm_ref(EntryType.SKILL, s.id));
+        if(!found) {
+            // Make if we can
+            if((s as PackedSkillData).custom) {
+                found = await Skill.unpack(s as PackedSkillData, pilot_inv, pilot.OpCtx);
+            } else {
+                // Nothing we can do for this one - ignore
+                console.warn("Unrecognized skill: " + s.id);
+                continue;
+            }
+        }
+
+        // Can set rank regardless
+        found.CurrentRank = s.rank ?? found.CurrentRank;
+
+        // Details require custom
+        if((s as PackedSkillData).custom) {
+            let ss = s as PackedSkillData;
+            found.Description = ss.custom_desc ?? found.Description ;
+            found.Detail = ss.custom_detail ?? found.Detail;
+        }
+
+        // Save
+        await found.writeback();
+    }
+
+    // Fetch talents. Also need to update rank. Due nothing to missing
+    for(let t of data.talents) {
+        let found = await get_owned(quick_mm_ref(EntryType.TALENT, t.id));
+        if(found) {
+            // Update rank
+            found.CurrentRank= t.rank;
+            found.writeback();
         }
     }
-    for (let rank of data.talents) {
-        let corr = pilot.Talents.find(x => x.ID == rank.id);
-        if (corr) {
-            corr.CurrentRank = rank.rank;
+
+    // Fetch licenses. Also need to update rank Does not delete
+    for(let t of data.licenses) {
+        let found = await get_owned(quick_mm_ref(EntryType.LICENSE, t.id));
+        if(found) {
+            // Update rank
+            found.CurrentRank= t.rank;
+            found.writeback();
         }
     }
-    for (let rank of data.licenses) {
-        let corr = pilot.Licenses.find(x => x.Name == rank.id);
-        if (corr) {
-            corr.CurrentRank = rank.rank;
-        }
+
+    // Look for org matching existing orgs. Create if not present. Do nothing to unmatched
+    for(let org of data.orgs) {
+        let corr_org = pilot.Orgs.find(o => o.Name == org.name);
+        if (!corr_org) {
+            // Make a new one
+            corr_org = await pilot_inv.get_cat(EntryType.ORGANIZATION).create_default(pilot.OpCtx);
+        } 
+
+        // Update / init
+        corr_org.Actions ??= org.actions;
+        corr_org.Description ??= org.description;
+        corr_org.Efficiency ??= org.efficiency;
+        corr_org.Influence ??= org.influence;
+        corr_org.Name ??= org.name;
+        corr_org.Purpose ??= org.purpose;
+        corr_org.writeback();
     }
 
     // Sync counters
@@ -853,35 +921,18 @@ export async function cloud_sync(
         c.sync_state_from(data.counter_data);
     }
 
+    // Get all weapons we will need
+    let armor_refs = data.loadout.armor.filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_ARMOR, a!.id));
+    let weapon_refs = [...data.loadout.weapons, ...data.loadout.extendedWeapons].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_WEAPON, a!.id));
+    let gear_refs = [...data.loadout.gear, ...data.loadout.extendedGear].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_GEAR, a!.id));
+    await get_many_owned(armor_refs);
+    await get_many_owned(weapon_refs);
+    await get_many_owned(gear_refs);
+
     // Do loadout stuff
     pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(pilot.OpCtx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
-    pilot.Loadout = await PilotLoadout.unpack(data.loadout, reg_stack, pilot.OpCtx); // Using reg stack here guarantees we'll grab stuff if we don't have it
+    pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, pilot.OpCtx); // Using reg stack here guarantees we'll grab stuff if we don't have it
 
-    // We don't remove old owned pilot equipment, but we do update our loadout and ensure that everything in it is also marked as an owned item
-    async function loadout_resolver<
-        T extends EntryType.PILOT_ARMOR | EntryType.PILOT_GEAR | EntryType.PILOT_WEAPON
-    >(loadout_array: Array<LiveEntryTypes<T> | null>, owned_list: LiveEntryTypes<T>[]) {
-        for (let x of loadout_array) {
-            if (x) {
-                untouched_children.delete(x);
-                if (!owned_list.includes(x)) {
-                    owned_list.push(x);
-                }
-            }
-        }
-    }
-    loadout_resolver(pilot.Loadout.Armor, pilot.OwnedArmor);
-    loadout_resolver(pilot.Loadout.Gear, pilot.OwnedGear);
-    loadout_resolver(pilot.Loadout.Weapons, pilot.OwnedWeapons);
-    loadout_resolver(pilot.Loadout.ExtendedWeapons, pilot.OwnedWeapons);
-    loadout_resolver(pilot.Loadout.ExtendedGear, pilot.OwnedGear);
-
-    //  TODO: Decide what we want to do with untouched children
-    for (let x of untouched_children) {
-        console.log(`${x.Type}:${x.RegistryID}:${(x as any).Name} seems to no longer be needed.`);
-    }
-
-    // We always want to insinuate and writeback to be sure we own all of these items
-    await pilot.insinuate(pilot_inv);
+    // We writeback. We should still be in a stable state though
     await pilot.writeback();
 }
