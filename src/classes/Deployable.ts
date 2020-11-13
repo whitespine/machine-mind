@@ -68,7 +68,7 @@ export interface RegDeployableData {
     current_hp: number;
 }
 
-export class Deployable extends RegEntry<EntryType.DEPLOYABLE, RegDeployableData> {
+export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;

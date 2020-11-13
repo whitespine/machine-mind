@@ -39,7 +39,7 @@ export interface RegSkillData {
     rank: number;
 }
 
-export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
+export class Skill extends RegEntry<EntryType.SKILL> {
     ID!: string;
     Name!: string; // The trigger name
     Description!: string;
@@ -81,9 +81,11 @@ export class Skill extends RegEntry<EntryType.SKILL, RegSkillData> {
         return false;
     }
 
-    // Very simple. reg is kept for consistency
+    // Very simple. 
     public static async unpack(packed_skill: PackedSkillData, reg: Registry, ctx: OpCtx): Promise<Skill> {
         let rdata = { ...defaults.SKILL(), ...packed_skill };
+        // Default the name
+        rdata.name = packed_skill.name ?? rdata.id;
         return reg.get_cat(EntryType.SKILL).create(ctx, rdata);
     }
 

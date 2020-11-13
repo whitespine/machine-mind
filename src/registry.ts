@@ -66,7 +66,6 @@ import {
     TagInstance,
     License,
 } from "@src/class";
-import { Op } from 'parsemath/dist/Types';
 import { IOrganizationData, Organization } from "./classes/pilot/reserves/Organization";
 import {
     IActionData,
@@ -276,7 +275,7 @@ type FixedLiveEntryTypes = {
 
 export type LiveEntryTypes<T extends EntryType> = T extends keyof FixedLiveEntryTypes
     ? FixedLiveEntryTypes[T]
-    : RegEntry<T, any>;
+    : RegEntry<T>;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -324,7 +323,7 @@ export abstract class SerUtil {
 
     // Pack up references. This helper allows us to handle the awkward integrated = null cases
     public static ref_all<T extends EntryType>(
-        items: Array<T extends EntryType ? LiveEntryTypes<T> : RegEntry<any, any>>
+        items: Array<T extends EntryType ? LiveEntryTypes<T> : RegEntry<any>>
     ): RegRef<T>[] {
         return items.map(
             i =>
@@ -337,7 +336,7 @@ export abstract class SerUtil {
     }
 
     // Makes our save code look more consistent
-    public static async save_all<S>(items: Array<RegEntry<any, S> | RegSer<S>>): Promise<S[]> {
+    public static async save_all<S>(items: Array<RegEntry<any> | RegSer<S>>): Promise<S[]> {
         return Promise.all(items.map(i => i.save()));
     }
 
@@ -513,7 +512,7 @@ export abstract class SerUtil {
     }
 
     // Awaitable for all items to be ready
-    public static async all_ready(items: Array<RegSer<any> | RegEntry<any, any>>): Promise<void> {
+    public static async all_ready(items: Array<RegSer<any> | RegEntry<any>>): Promise<void> {
         await Promise.all(items.map(i => i.ready() as Promise<any>)); // Since these promises self return we need to basically just ignore their type to avoid clashes.
     }
 }
@@ -560,7 +559,7 @@ export abstract class RegSer<SourceType> {
 
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
-export abstract class RegEntry<T extends EntryType, SourceType> {
+export abstract class RegEntry<T extends EntryType> {
     public readonly Type: T;
     public readonly RegistryID: string;
     public readonly Registry: Registry;
@@ -569,7 +568,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
 
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
-    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: SourceType) {
+    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>) {
         this.Type = type;
         this.Registry = registry;
         this.RegistryID = id;
@@ -594,10 +593,10 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 
     // Populate this item with stuff
-    protected abstract async load(data: SourceType): Promise<void>;
+    protected abstract async load(data: RegEntryTypes<T>): Promise<void>;
 
     // Export this item for registry saving back to registry
-    public abstract async save(): Promise<SourceType>;
+    public abstract async save(): Promise<RegEntryTypes<T>>;
 
     // Convenience function to update self in registry. Note that this doesn't read first!
     public async writeback(): Promise<void> {
@@ -621,14 +620,14 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 
     // List all child items of this item. We assume none by default
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [];
     }
 
     // List all child items recursively via simple bfs
-    public get_child_entries_recursive(): RegEntry<any, any>[] {
-        let all: RegEntry<any, any>[] = [];
-        let frontier: RegEntry<any, any>[] = [this];
+    public get_child_entries_recursive(): RegEntry<any>[] {
+        let all: RegEntry<any>[] = [];
+        let frontier: RegEntry<any>[] = [this];
         while (frontier.length) {
             // Fetch and store next item
             let next = frontier.pop()!;
@@ -666,7 +665,7 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
         }
 
         // After refresh, destroy the opctx cache to be reconstructed as we build below
-        await (fresh as RegEntry<any, any>).insinuate_imp(to_new_reg, true);
+        await (fresh as RegEntry<any>).insinuate_imp(to_new_reg, true);
 
         // We do not want fresh itself. Instead, re-fetch fresh from the new registry
         let fresher = await fresh.refreshed() as LiveEntryTypes<T>;
@@ -714,12 +713,11 @@ export abstract class RegEntry<T extends EntryType, SourceType> {
     }
 }
 
-export abstract class InventoriedRegEntry<T extends EntryType, SourceType> extends RegEntry<
-    T,
-    SourceType
+export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
+    T
 > {
     // Pretty simple
-    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: SourceType) {
+    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>) {
         super(type, registry, ctx, id, reg_data);
     }
 
@@ -759,7 +757,7 @@ export class OpCtx {
     // We do not disambiguate by mmid and regid due to the frankly-astronomically low chance of collision
     private resolved: Map<Registry, Map<string, any>> = new Map(); // Maps lookups with a key in a specified registry to their results
 
-    get(reg: Registry, ref: string | RegRef<any>): RegEntry<any, any> | null{
+    get(reg: Registry, ref: string | RegRef<any>): RegEntry<any> | null{
         if(typeof ref == "string") {
             return this.resolved.get(reg)?.get(ref) ?? null;
         } else {
@@ -768,7 +766,7 @@ export class OpCtx {
     }
 
     // Tell the ctx that we resolved <ref> as <val>
-    set(reg: Registry, ref: string, val: RegEntry<any, any>) {
+    set(reg: Registry, ref: string, val: RegEntry<any>) {
         // Make the reg entry if not there
         let reg_resolved = this.resolved.get(reg);
         if(!reg_resolved) {
@@ -779,7 +777,7 @@ export class OpCtx {
     }
 
     // A helper on set. Has finicky behavior on mmid resolution. Doesn't overwrite
-    add(item: RegEntry<any, any>) {
+    add(item: RegEntry<any>) {
         this.set(item.Registry, item.RegistryID, item);
     }
 
@@ -906,7 +904,7 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
         // Pre-Check ctx for a hit. Saves time given the laborious nature of this search
         let pre = ctx.get(this, mmid);
         if(pre) {
@@ -933,9 +931,9 @@ export abstract class Registry {
     }
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
-    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<RegEntry<any, any> | null> {
+    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<RegEntry<any> | null> {
         // Haven't resolved this yet
-        let result: RegEntry<any, any> | null;
+        let result: RegEntry<any> | null;
         if (ref.is_unresolved_mmid) {
             if (ref.type) {
                 result = await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.id)
@@ -961,13 +959,13 @@ export abstract class Registry {
     public async resolve_many_rough(
         ctx: OpCtx,
         refs: RegRef<EntryType>[] | undefined,
-    ): Promise<Array<RegEntry<any, any>>> {
+    ): Promise<Array<RegEntry<any>>> {
         if (!refs) {
             return [];
         }
         let resolves = await Promise.all(refs.map(r => this.resolve_rough(ctx, r)));
         resolves = resolves.filter(d => d != null);
-        return resolves as RegEntry<any, any>[]; // We filtered the nulls
+        return resolves as RegEntry<any>[]; // We filtered the nulls
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really

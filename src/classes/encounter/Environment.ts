@@ -6,7 +6,7 @@ export interface IEnvironmentData {
 }
 
 // Seems overkill but whatever
-export class Environment extends RegEntry<EntryType.ENVIRONMENT, IEnvironmentData> {
+export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
     ID!: string;
     Name!: string;
     Description!: string;

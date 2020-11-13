@@ -22,7 +22,7 @@ export interface RegNpcClassData extends AllNpcClassData {
     optional_features: RegRef<EntryType.NPC_FEATURE>[];
 }
 
-export class NpcClass extends RegEntry<EntryType.NPC_CLASS, RegNpcClassData> {
+export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     Id!: string;
     Name!: string;
     Role!: string;

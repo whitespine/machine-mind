@@ -37,7 +37,7 @@ export interface RegCoreBonusData extends Required<AllCoreBonusData> {
     source: RegRef<EntryType.MANUFACTURER> | null; // _should_ never be null mechanically, but as always we must be error tolerant
 }
 
-export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> {
+export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     // Basic data
     ID!: string;
     Name!: string;
@@ -52,7 +52,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
     Synergies!: Synergy[];
     Deployables!: Deployable[];
     Counters!: Counter[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
 
     public async load(data: RegCoreBonusData): Promise<void> {
         data = {...defaults.CORE_BONUS(), ...data};
@@ -112,7 +112,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS, RegCoreBonusData> 
         return reg.create(EntryType.CORE_BONUS, ctx, cbdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

@@ -34,7 +34,7 @@ export interface RegReserveData extends Required<AllReserveData> {
     integrated: RegRef<any>[];
 }
 
-export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
+export class Reserve extends RegEntry<EntryType.RESERVE> {
     ID!: string;
     ResourceLabel!: string;
     Consumable!: boolean;
@@ -49,7 +49,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE, RegReserveData> {
     ResourceNote!: string;
     ResourceCost!: string;
     Description!: string;
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
     Used!: boolean;
 
     public async load(data: RegReserveData) {

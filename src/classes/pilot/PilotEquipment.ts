@@ -75,7 +75,7 @@ export interface RegPilotGearData extends AllRegData {}
 // Classes
 /////////////////////////////////////////////////////////
 
-export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorData> {
+export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     ID!: string;
     Name!: string;
     Description!: string;
@@ -114,12 +114,12 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR, RegPilotArmorDat
         return reg.get_cat(EntryType.PILOT_ARMOR).create(ctx, rdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables];
     }
 }
 
-export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> {
+export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     ID!: string;
     Name!: string;
     Description!: string;
@@ -158,12 +158,12 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR, RegPilotGearData> 
         return reg.get_cat(EntryType.PILOT_GEAR).create(ctx, rdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables];
     }
 }
 
-export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeaponData> {
+export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Name!: string;
     ID!: string;
     Description!: string;
@@ -211,7 +211,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON, RegPilotWeapon
         return reg.get_cat(EntryType.PILOT_WEAPON).create(ctx, rdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables];
     }
 }

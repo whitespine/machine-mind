@@ -22,11 +22,11 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "filtrex": "^2.1.0",
     "jszip": "^3.5.0",
     "lancer-data": "^3.0.4",
     "lodash": "^4.17.11",
     "nanoid": "^3.1.12",
-    "parsemath": "^0.5.1",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.0.0"
   },

@@ -34,7 +34,7 @@ export interface RegFrameTraitData extends Required<AllFrameTraitData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
 }
 
-export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitData> {
+export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
     Name!: string;
     Description!: string;
     Use!: FrameEffectUse;
@@ -43,7 +43,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
     Synergies!: Synergy[];
     Deployables!: Deployable[];
     Counters!: Counter[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
 
     public async load(data: RegFrameTraitData): Promise<void> {
         data = {...defaults.FRAME_TRAIT(), ...data}
@@ -76,7 +76,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT, RegFrameTraitDat
         };
         return reg.get_cat(EntryType.FRAME_TRAIT).create(ctx, rdata);
     }
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

@@ -23,7 +23,7 @@ export interface RegLicenseData {
     rank: number;
 }
 
-export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
+export class License extends RegEntry<EntryType.LICENSE> {
     Name!: string;
     Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     Unlocks!: Array<Array<LicensedItem>>;
@@ -115,7 +115,7 @@ export class License extends RegEntry<EntryType.LICENSE, RegLicenseData> {
     }
 
     // TODO: This might lead to double-reffing
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return this.Unlocks.flat();
     }
 }

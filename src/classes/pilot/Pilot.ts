@@ -124,7 +124,7 @@ export interface RegPilotData extends Required<BothPilotData> {
     mounted: boolean;
 }
 
-export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
+export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // Identity
     ID!: string; // As with all ids
     Name!: string;
@@ -671,8 +671,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx);
         this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx);
         this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx);
-        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx);
         this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx);
+        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx);
+        this._reserves = await subreg.get_cat(EntryType.RESERVE).list_live(this.OpCtx);
         this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx);
         this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx);
         this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx);
@@ -711,8 +712,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT, RegPilotData> {
         };
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
-        let result: RegEntry<any, any>[] = [
+    public get_child_entries(): RegEntry<any>[] {
+        let result: RegEntry<any>[] = [
             ...this.CoreBonuses,
             ...this.Licenses,
             ...this.Reserves,

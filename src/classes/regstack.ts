@@ -20,7 +20,7 @@ export class RegStack extends Registry {
         this.stack = registry_stack;
     }
 
-    async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+    async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any> | null> {
         for (let r of this.stack) {
             let found = await r.resolve_rough(ctx, ref);
             if (found) {
@@ -30,7 +30,7 @@ export class RegStack extends Registry {
         return null;
     }
 
-    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
         for (let r of this.stack) {
             let found = await r.resolve_wildcard_mmid(ctx, mmid);
             if (found) {
@@ -151,7 +151,7 @@ export class CovetousReg extends Registry {
         this.fallback = fallback;
     }
 
-    async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any, any> | null> {
+    async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_rough(ctx, ref);
         if(!d) {
             d = await this.fallback.resolve_rough(ctx, ref);
@@ -162,7 +162,7 @@ export class CovetousReg extends Registry {
         return d;
     }
 
-    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any, any> | null> {
+    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_wildcard_mmid(ctx, mmid);
         if(!d) {
             d = await this.fallback.resolve_wildcard_mmid(ctx, mmid);

@@ -50,7 +50,7 @@ export interface RegFrameData extends Required<AllFrameData> {
     source: RegRef<EntryType.MANUFACTURER> | null;
 }
 
-export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
+export class Frame extends RegEntry<EntryType.FRAME> {
     ID!: string;
     LicenseLevel!: number;
     Source!: Manufacturer | null;
@@ -137,7 +137,7 @@ export class Frame extends RegEntry<EntryType.FRAME, RegFrameData> {
         return this.Name;
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Traits, ...(this.CoreSystem ? [this.CoreSystem] : [])];
     }
 }

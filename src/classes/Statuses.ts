@@ -7,7 +7,7 @@ export interface IStatusData {
     effects: string[];
 }
 
-export class Status extends RegEntry<EntryType.STATUS, IStatusData> {
+export class Status extends RegEntry<EntryType.STATUS> {
     public Name!: string;
     public Icon!: string;
     public Effects!: string[];

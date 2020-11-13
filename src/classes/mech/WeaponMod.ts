@@ -61,7 +61,7 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     uses: number;
 }
 
-export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> {
+export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     // General License info
     Source!: Manufacturer | null;
     LicenseLevel!: number;
@@ -100,7 +100,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
     Synergies!: Synergy[];
     Deployables!: Deployable[];
     Counters!: Counter[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
 
     // Is this mod an AI?
     get IsAI(): boolean {
@@ -202,7 +202,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD, RegWeaponModData> 
         return reg.get_cat(EntryType.WEAPON_MOD).create(ctx, rdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

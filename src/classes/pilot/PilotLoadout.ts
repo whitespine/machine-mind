@@ -73,7 +73,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     // }
 
     // These commented items aren't usually needed
-    // public get Integrated(): RegEntry<any, any>[] {
+    // public get Integrated(): RegEntry<any>[] {
     // return this.UnlockedRanks.flatMap(x => x.integrated);
     // }
 

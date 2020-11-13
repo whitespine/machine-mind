@@ -72,10 +72,10 @@ export interface TalentRank {
     Synergies: Synergy[];
     Deployables: Deployable[];
     Counters: Counter[];
-    Integrated: RegEntry<any, any>[];
+    Integrated: RegEntry<any>[];
 }
 
-export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
+export class Talent extends RegEntry<EntryType.TALENT> {
     ID!: string;
     Name!: string;
     Icon!: string;
@@ -181,7 +181,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         return this.UnlockedRanks.flatMap(x => x.Counters);
     }
 
-    public get Integrated(): RegEntry<any, any>[] {
+    public get Integrated(): RegEntry<any>[] {
         return this.UnlockedRanks.flatMap(x => x.Integrated);
     }
 
@@ -201,7 +201,7 @@ export class Talent extends RegEntry<EntryType.TALENT, RegTalentData> {
         return this.UnlockedRanks.flatMap(x => x.Synergies);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 

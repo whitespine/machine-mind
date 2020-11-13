@@ -48,13 +48,14 @@ describe("Pilots", () => {
         let dk: Pilot = await s.reg.create(EntryType.PILOT, ctx);
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
         await cloud_sync(dk_data, dk, s.reg);
+        dk = await dk.refreshed();
 
         // Some basics
         expect(dk.Name).toEqual("Kong");
         expect(dk.Callsign).toEqual("King");
         expect(dk.Background).toEqual("Jungle");
-        expect(dk.History).toEqual("The leader of the bunch");
-        expect(dk.Description).toEqual("You know him well"); // 5
+        expect(dk.History).toEqual("<p>The leader of the bunch</p>");
+        expect(dk.TextAppearance).toEqual("<p>You know him well</p>"); // 5
 
         // Skills
         let skill_names = dk.Skills.map((s: string) => s.Name.toLowerCase());
@@ -73,9 +74,9 @@ describe("Pilots", () => {
 
         // Mech skills
         expect(dk.MechSkills.Hull).toEqual(1);
-        expect(dk.MechSkills.Agility).toEqual(0);
-        expect(dk.MechSkills.Systems).toEqual(1);
-        expect(dk.MechSkills.Engineering).toEqual(0); // 18
+        expect(dk.MechSkills.Agi).toEqual(0);
+        expect(dk.MechSkills.Sys).toEqual(1);
+        expect(dk.MechSkills.Eng).toEqual(0); // 18
 
 
         // Loadout
@@ -99,12 +100,9 @@ describe("Pilots", () => {
         // Mechs
         expect(dk.Mechs.length).toEqual(3);
         let mech_names = dk.Mechs.map(c => c.Name.toLowerCase());
-        expect(mech_names).toContain("RETSACNAL");
-        expect(mech_names).toContain("GENGAR");
-        expect(mech_names).toContain("THE FOOL"); // 34
+        expect(mech_names).toContain("retsacnal");
+        expect(mech_names).toContain("gengar");
+        expect(mech_names).toContain("the fool"); // 34
         // We don't peer too much deeper - leave that to other tests
-
-        // Licenses.... we do not yet handle
-        // TODO
     });
 });

@@ -18,7 +18,7 @@ export interface RegQuirkData {
     integrated: RegRef<any>[];
 }
 
-export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
+export class Quirk extends RegEntry<EntryType.QUIRK> {
     Name!: string;
     Description!: string;
     Actions!: Action[];
@@ -26,7 +26,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
     Synergies!: Synergy[];
     Counters!: Counter[];
     Deployables!: Deployable[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
 
     public async load(data: RegQuirkData): Promise<void> {
         this.Name = data.name;
@@ -61,7 +61,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK, RegQuirkData> {
         return reg.get_cat(EntryType.QUIRK).create(ctx, qdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

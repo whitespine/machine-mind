@@ -19,7 +19,7 @@ export interface RegTagInstanceData {
 }
 
 // TODO: I decided how to do these very early on, while still holding closely to compcons patterns. It should maybe be different (perhaps a single object)
-export class TagTemplate extends RegEntry<EntryType.TAG, ITagTemplateData> {
+export class TagTemplate extends RegEntry<EntryType.TAG> {
     ID!: string;
     Name!: string;
     Description!: string;

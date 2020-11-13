@@ -1,5 +1,4 @@
 import { SerUtil, SimSer } from "@src/registry";
-import * as pmath from "parsemath";
 import { DamageType } from "./enums";
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses

@@ -13,7 +13,7 @@ export interface ISitrepData {
     extraction?: string;
 }
 
-export class Sitrep extends RegEntry<EntryType.SITREP, ISitrepData> {
+export class Sitrep extends RegEntry<EntryType.SITREP> {
     ID!: string;
     Name!: string;
     Description!: string;

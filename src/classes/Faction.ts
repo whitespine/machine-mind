@@ -9,7 +9,7 @@ export interface IFactionData {
     logo_url?: string;
 }
 
-export class Faction extends RegEntry<EntryType.FACTION, IFactionData> {
+export class Faction extends RegEntry<EntryType.FACTION> {
     ID!: string;
     Name!: string;
     Description!: string;

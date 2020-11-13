@@ -53,7 +53,7 @@ export interface RegCoreSystemData extends Required<AllCoreSystemData> {
     passive_bonuses?: IBonusData[];
 }
 
-export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemData> {
+export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
     Name!: string;
     Description!: string;
 
@@ -75,7 +75,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
 
     Deployables!: Deployable[];
     Counters!: Counter[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
     Tags!: TagInstance[];
 
     public async load(data: RegCoreSystemData): Promise<void> {
@@ -173,7 +173,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM, RegCoreSystemDat
         return this.Integrated.filter(r => r instanceof MechWeapon) as MechWeapon[];
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Integrated, ...this.Deployables];
     }
 }

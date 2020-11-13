@@ -15,7 +15,7 @@ export interface PackedManufacturerData {
 
 export type RegManufacturerData = Omit<PackedManufacturerData, "logo_url">;
 
-export class Manufacturer extends RegEntry<EntryType.MANUFACTURER, RegManufacturerData> {
+export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     ID!: string;
     Name!: string;
     Description!: string;

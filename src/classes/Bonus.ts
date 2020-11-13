@@ -2,7 +2,7 @@ import { Mech, Pilot } from "@src/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "./enums";
 import { SerUtil, SimSer } from "@src/registry";
-import * as pmath from "parsemath";
+import * as filtrex from "filtrex";
 
 export interface IBonusData {
     id: string;
@@ -16,13 +16,14 @@ export interface IBonusData {
 export class Bonus {
     // We don't extend simser {
     ID!: string;
-    Value!: string | number;
     Title!: string | number;
     Detail!: string | number;
     DamageTypes!: DamageType[];
     RangeTypes!: RangeType[];
     WeaponTypes!: WeaponType[];
     WeaponSizes!: WeaponSize[];
+    _value!: string | number;
+    _value_func!: (v: any) => any;
 
     // A transient value used for further display information
     Source: string;
@@ -42,6 +43,25 @@ export class Bonus {
         const entry = BonusDict.get(data.id);
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
+    }
+    
+    // Compile the expression
+    public set Value(new_val: string | number) {
+        this._value = new_val;
+
+        // Replace ll and bonus
+        let val = "" + this.Value;
+        val = val.replace(/\{ll\}/g, "ll");
+        val = val.replace(/\{grit\}/g, "grit");
+        try {
+            this._value_func = filtrex.compileExpression(val);
+        } catch (e) {
+            this._value_func = (x) => 666;
+        }
+    }
+
+    public get Value(): string | number {
+        return this._value;
     }
 
     // Just a more convenient constructor
@@ -86,11 +106,12 @@ export class Bonus {
 
     // Returns this bonus as a numerical value
     public evaluate(pilot: Pilot | null): number {
-        if (typeof this.Value === "number") return this.Value;
-        let val = this.Value;
-        val = val.replaceAll(`{ll}`, pilot?.Level.toString() || "0");
-        val = val.replaceAll(`{grit}`, pilot?.Grit.toString() || "0");
-        return pmath.parse(val);
+        let vals = {ll: 0, grit: 0};
+        if(pilot) {
+            vals.ll = pilot.Level;
+            vals.grit = pilot.Grit;
+        }
+        return this._value_func(vals);
     }
 
     // Sums all bonuses on the specific id, for the specified pilot
@@ -103,99 +124,8 @@ export class Bonus {
     /*
      */
     // Lists contributors for just the mech
-    /*
-    private static MechContributors(m: Mech, id: string): { name: string; val: number }[] {
-        const output: Array<{name: string, val: number}> = [];
-            m.Loadout.Equipment.filter(x => x && !x.Destroyed && !x.Cascading).forEach(
-                e => {
-                    e.Bonuses.forEach(b => {
-                        if (b.ID === id)
-                            output.push({
-                                name: `${e.Source} ${e.Name} (Mech Loadout)`,
-                                val: b.evaluate(m.Pilot),
-                            });
-                    });
-                }
-            );
-
-        m.Frame.Traits.forEach(t => {
-            t.Bonuses.forEach(b => {
-                if (b.ID === id)
-                    output.push({
-                        name: `${t.Name} (${m.Frame.Source} ${m.Frame.Name} Trait)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        });
-
-        m.Frame.CoreSystem?.PassiveBonuses?.forEach(b => {
-            if (b.ID === id)
-                output.push({
-                    name: `${m.Frame.CoreSystem?.PassiveName ?? ""} (${m.Frame.Source} ${m.Frame.Name} CORE System Passive)`,
-                    val: b.evaluate(m.Pilot),
-                });
-        });
-
-        if (m.CoreActive) {
-            m.Frame.CoreSystem?.ActiveBonuses.forEach(b => {
-                if (b.ID === id)
-                    output.push({
-                        name: `${m.Frame.CoreSystem?.ActiveName || ""} (${m.Frame.Source} ${m.Frame.Name} CORE System Active)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        }
-        return output;
-    }
-    */
-
-    // Includes pilot contributors. Returns all contributors for bonus <id> for the given mech
-    /*
-    public static Contributors(id: string, m: Mech): { name: string; val: number }[] {
-        const output = Bonus.MechContributors(m, id);
-        m.Pilot.Loadout.Items.forEach(i => {
-            i.Bonuses.forEach(b => {
-                if (b.ID === id)
-                    output.push({
-                        name: `${i.Name} (Pilot Equipment)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        });
-
-        m.Pilot.CoreBonuses.forEach(cb => {
-            cb.Bonuses.forEach(b => {
-                if (b.ID === id)
-                    output.push({
-                        name: `${cb.Name} (${cb.Source} CORE Bonus)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        });
-
-        m.Pilot.Reserves.forEach(r => {
-            r.Bonuses.forEach(b => {
-                if (b.ID === id && !r.Used)
-                    output.push({
-                        name: `${r.Name} (Reserve)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        });
-
-        m.Pilot.Talents.flatMap(x => x.UnlockedRanks).forEach(t => {
-            t.Bonuses.forEach(b => {
-                if (b.ID === id)
-                    output.push({
-                        name: `${t.Name} (Pilot Talent)`,
-                        val: b.evaluate(m.Pilot),
-                    });
-            });
-        });
-        return output;
-    }
-    */
 }
+
 
 /*
 export enum BonusType {
@@ -259,12 +189,3 @@ export enum BonusType {
     Unrecognized = "unrecognized",
 }
 */
-
-export function Evaluate(bonus: Bonus, pilot: Pilot): number {
-    if (typeof bonus.Value === "number") return Math.ceil(bonus.Value);
-    let valStr = bonus.Value;
-    valStr = valStr.replaceAll(`{ll}`, pilot.Level.toString());
-    valStr = valStr.replaceAll(`{grit}`, pilot.Grit.toString());
-
-    return Math.ceil(pmath.parse(valStr));
-} // integer

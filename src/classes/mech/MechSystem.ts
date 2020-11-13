@@ -50,7 +50,7 @@ export interface RegMechSystemData extends Required<AllMechSystemData> {
     uses: number;
 }
 
-export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemData> {
+export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     // System information
     ID!: string;
     Name!: string;
@@ -69,7 +69,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
     Counters!: Counter[];
     Synergies!: Synergy[];
     Deployables!: Deployable[];
-    Integrated!: RegEntry<any, any>[];
+    Integrated!: RegEntry<any>[];
 
     // More system specific stuff
     Destroyed!: boolean;
@@ -163,7 +163,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM, RegMechSystemDat
         return reg.get_cat(EntryType.MECH_SYSTEM).create(ctx, rdata);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

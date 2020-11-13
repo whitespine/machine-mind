@@ -11,7 +11,7 @@ export interface IOrganizationData {
     actions: string;
 }
 
-export class Organization extends RegEntry<EntryType.ORGANIZATION, IOrganizationData> {
+export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     public Purpose!: OrgType;
     public Name!: string;
     public Description!: string;

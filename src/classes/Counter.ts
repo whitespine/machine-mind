@@ -17,7 +17,12 @@ export interface PackedCounterSaveData {
     val: number;
 }
 
-export interface RegCounterData extends PackedCounterData {
+export interface RegCounterData {
+    id: string;
+    name: string;
+    min: number;
+    max: number | null;
+    default_value: number;
     val: number;
 }
 
@@ -26,7 +31,7 @@ export interface RegCounterData extends PackedCounterData {
 export class Counter extends SimSer<RegCounterData> {
     public ID!: string;
     public Name!: string;
-    public Level!: number | null;
+    // public Level!: number | null;
     public Min!: number;
     public Max!: number | null;
     public Default!: number;
@@ -35,14 +40,21 @@ export class Counter extends SimSer<RegCounterData> {
     public load(data: RegCounterData) {
         this.ID = data.id;
         this.Name = data.name;
-        this.Level = data.level || null;
+        // this.Level = data.level || null;
         this.Min = data.min || 0;
         this.Max = data.max || null;
         this._value = data.val;
     }
 
     public save(): RegCounterData {
-        throw new Error("Method not implemented.");
+        return {
+            id: this.ID,
+            name: this.Name,
+            val: this.Value,
+            max: this.Max,
+            min: this.Min,
+            default_value: this.Default
+        }
     }
 
     // Bound on set
@@ -70,8 +82,12 @@ export class Counter extends SimSer<RegCounterData> {
     static unpack(packed_counter: PackedCounterData): RegCounterData {
         // Init
         let out: RegCounterData = {
-            ...packed_counter,
-            val: packed_counter.default_value || packed_counter.min || 0,
+            default_value: packed_counter.default_value ?? packed_counter.min ?? 0,
+            id: packed_counter.id,
+            max: packed_counter.max ?? null,
+            min: packed_counter.min ?? 0,
+            name: packed_counter.name,
+            val: packed_counter.default_value ?? packed_counter.min ?? 0,
         };
 
         return out;

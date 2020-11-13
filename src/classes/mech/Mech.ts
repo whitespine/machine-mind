@@ -69,7 +69,7 @@ export interface RegMechData extends AllMechData {
     loadout: RegMechLoadoutData; // We only support one, for now
 }
 
-export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
+export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     ID!: string;
     Name!: string;
     Notes!: string;
@@ -593,7 +593,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH, RegMechData> {
         return Bonus.SumPilotBonuses(this.Pilot, this.AllBonuses, id);
     }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
         return [
             ...this.OwnedSystems,
             ...this.OwnedWeapons,
@@ -674,16 +674,6 @@ export async function mech_cloud_sync(
     // Resolve the frame and set it
 
 
-    // Get the loadout frame, and set it in our loadout
-    let ctx = mech.OpCtx;
-    let ofid = mech.Loadout.Frame?.RegistryID
-    mech.Loadout.Frame = await reg_stack.get_cat(EntryType.FRAME).lookup_mmid(ctx, data.frame)
-
-    // It's new - add to owned
-    if(mech.Frame && ofid != mech.Frame.RegistryID) {
-        mech.OwnedFrames.push(mech.Frame);
-    }
-
     // We only keep one loadout
     //todo
 
@@ -694,9 +684,8 @@ export async function mech_cloud_sync(
     let snc_names = [...data.statuses, ...data.conditions];
 
     // And re-resolve
-    mech.StatusesAndConditions = await reg_stack.resolve_many(ctx, snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
+    await get_many_owned(snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
 
     // We always want to insinuate and writeback to be sure we own all of these items
-    await mech.insinuate(mech_inv);
     await mech.writeback();
 }

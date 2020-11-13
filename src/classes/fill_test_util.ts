@@ -34,7 +34,7 @@ export const keyset_map: any = {
     [EntryType.QUIRK]: keys<Quirk>(),
 }
 
-export function validate_props(v: RegEntry<any, any>) {
+export function validate_props(v: RegEntry<any>) {
     let entry = v.Type;
     for(let key of keyset_map[entry]) {
         if(v[key] === undefined) {

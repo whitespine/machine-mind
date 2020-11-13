@@ -2891,6 +2891,11 @@ fill-range@^7.0.1:
   dependencies:
     to-regex-range "^5.0.1"
 
+filtrex@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/filtrex/-/filtrex-2.1.0.tgz#1b57e01e8ba18a0e57ddb9c11cef569176697cae"
+  integrity sha512-iP/mJEwLPmxPhIK9uK1XGAgUoKYc+lnkWkDHBcTS6XH2z7KZrTY1hz1tMzCOoTHNyYZozlcz/wXcsXPJoSUwbg==
+
 find-cache-dir@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/find-cache-dir/-/find-cache-dir-0.1.1.tgz#c8defae57c8a52a8a784f9e31c57c742e993a0b9"
@@ -5057,11 +5062,6 @@ parse5@5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/parse5/-/parse5-5.1.1.tgz#f68e4e5ba1852ac2cadc00f4555fff6c2abb6178"
   integrity sha512-ugq4DFI0Ptb+WWjAdOK16+u/nHfiIrcE+sh8kZMaM0WllQKLI9rOUq6c2b7cwPkXdzfQESqvoqK6ug7U/Yyzug==
-
-parsemath@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/parsemath/-/parsemath-0.5.1.tgz#9387797b844206c84b8b582898243657fab8a22a"
-  integrity sha512-pHtUuRp//vcKH/WaLOujzd4G9EMl83H4/EiaQxnL1rzgytHsoIgfiBKabwAwi2rldjGesdKNpnuzDw1O6Xt05Q==
 
 pascalcase@^0.1.1:
   version "0.1.1"

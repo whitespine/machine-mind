@@ -84,7 +84,7 @@ export interface RegMechWeaponProfile   {
 }
 
 
-export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponData>{
+export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
   // Generic equip info
    ID!: string
   Name!: string
@@ -95,7 +95,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
   // These are common between all profiles
   Size!:  WeaponSize
   SP!: number
-  Integrated!: RegEntry<any, any>[];
+  Integrated!: RegEntry<any>[];
   Deployables!: Deployable[];
 
   // Individual profiles determine our weapon stats
@@ -255,7 +255,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON, RegMechWeaponDat
     return reg.get_cat(EntryType.MECH_WEAPON).create(ctx, unpacked);
   }
 
-    public get_child_entries(): RegEntry<any, any>[] {
+    public get_child_entries(): RegEntry<any>[] {
       return [...this.Deployables, ...this.Integrated];
     }
 }
