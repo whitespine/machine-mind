@@ -51,4 +51,23 @@ describe("Content pack handling", () => {
         expect(frame_names).toContain("GAIUS"); // 5
 
     });
+
+    it("Plays nice with existing data", async () => {
+        // Same as above, but with base frames as well
+        expect.assertions(5);
+        let s = await init_basic_setup(true);
+        let ctx = new OpCtx();
+
+        // Add it in
+        let pack = await get_cp();
+        await intake_pack(pack, s.reg);
+        
+        let frames = await s.reg.get_cat("Frame").list_live(ctx);
+        expect(frames.length).toEqual(29 + 4);
+        let frame_names = frames.map(f => f.Name);
+        expect(frame_names).toContain("NORFOLK");
+        expect(frame_names).toContain("LUNAMOTH");
+        expect(frame_names).toContain("DJINN");
+        expect(frame_names).toContain("GAIUS"); // 5
+    });
 });
