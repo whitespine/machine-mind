@@ -41,9 +41,7 @@ const readZipJSON = async function<T>(zip: JSZip, filename: string): Promise<T |
 
 const getPackID = async function(manifest: IContentPackManifest): Promise<string> {
     const enc = new TextEncoder();
-    const signature = `${manifest.author}/${manifest.name}`;
-    const hash = await crypto.subtle.digest("SHA-1", enc.encode(signature));
-    return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))));
+    return `${manifest.author}/${manifest.name}`;
 };
 
 async function getZipData<T>(zip: JSZip, filename: string): Promise<T[]> {
@@ -58,7 +56,7 @@ async function getZipData<T>(zip: JSZip, filename: string): Promise<T[]> {
     return readResult || [];
 }
 
-export async function parseContentPack(binString: string): Promise<IContentPack> {
+export async function parseContentPack(binString: Buffer | string): Promise<IContentPack> {
     const zip = await JSZip.loadAsync(binString);
 
     const manifest = await readZipJSON<IContentPackManifest>(zip, "lcp_manifest.json");
