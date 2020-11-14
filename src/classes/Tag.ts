@@ -43,7 +43,11 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
             hidden: this._hidden || undefined,
         };
     }
-    public static async unpack(dep: ITagTemplateData, reg: Registry, ctx: OpCtx): Promise<TagTemplate> {
+    public static async unpack(
+        dep: ITagTemplateData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<TagTemplate> {
         return reg.get_cat(EntryType.TAG).create(ctx, dep);
     }
 
@@ -106,7 +110,8 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     // Unpacks this tag instance, forming a proper reg ref instead of the old shoddy id lookup based thing
     // we don't instantiate to avoid a farily common race condition
-    public static unpack_reg(inst: PackedTagInstanceData): RegTagInstanceData {        // Just create an unresolved ref
+    public static unpack_reg(inst: PackedTagInstanceData): RegTagInstanceData {
+        // Just create an unresolved ref
         let dat: RegTagInstanceData = {
             tag: {
                 id: inst.id,

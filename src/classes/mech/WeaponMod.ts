@@ -1,5 +1,15 @@
-import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter, MechWeapon } from "@src/class";
-import { defaults, tag_util } from '@src/funcs';
+import {
+    Damage,
+    Range,
+    MechEquipment,
+    Action,
+    Bonus,
+    Synergy,
+    Deployable,
+    Counter,
+    MechWeapon,
+} from "@src/class";
+import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
@@ -15,7 +25,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../enums";
-import { Manufacturer } from '../Manufacturer';
+import { Manufacturer } from "../Manufacturer";
 import { TagInstance } from "../Tag";
 
 export interface AllWeaponModData {
@@ -113,7 +123,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
 
     // Is it loading?
     // get IsLoading(): boolean {
-        // return tag_util.is_loading(this);
+    // return tag_util.is_loading(this);
     // }
 
     // Is it unique?
@@ -122,18 +132,21 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     // Returns the base max uses
-    get BaseLimit(): number | null{
+    get BaseLimit(): number | null {
         return tag_util.limited_max(this);
     }
 
     public accepts(weapon: MechWeapon): boolean {
         // (current) size matches?
-        if(this.AllowedSizes.length && !this.AllowedSizes.includes(weapon.Size)) {
+        if (this.AllowedSizes.length && !this.AllowedSizes.includes(weapon.Size)) {
             return false;
         }
 
         // (current) type matches?
-        if(this.AllowedTypes.length && !this.AllowedTypes.includes(weapon.SelectedProfile.WepType)) {
+        if (
+            this.AllowedTypes.length &&
+            !this.AllowedTypes.includes(weapon.SelectedProfile.WepType)
+        ) {
             return false;
         }
 
@@ -170,7 +183,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     public async load(data: RegWeaponModData): Promise<void> {
-        data = {...defaults.WEAPON_MOD(), ...data};
+        data = { ...defaults.WEAPON_MOD(), ...data };
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.ID = data.id;
@@ -182,7 +195,11 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
 
         (this.AddedRange = SerUtil.process_ranges(data.added_range)),
             (this.AddedDamage = SerUtil.process_damages(data.added_damage)),
-            (this.AddedTags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.added_tags)),
+            (this.AddedTags = await SerUtil.process_tags(
+                this.Registry,
+                this.OpCtx,
+                data.added_tags
+            )),
             (this.AllowedSizes = data.allowed_sizes ?? []);
         this.AllowedTypes = data.allowed_types ?? [];
 
@@ -197,22 +214,38 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
     }
 
-    public static async unpack(data: PackedWeaponModData, reg: Registry, ctx: OpCtx): Promise<WeaponMod> {
+    public static async unpack(
+        data: PackedWeaponModData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<WeaponMod> {
         // Figure allowed sizes / types
-        let allowed_sizes = [WeaponSize.Aux, WeaponSize.Main, WeaponSize.Heavy, WeaponSize.Superheavy];
-        let allowed_types = [WeaponType.CQB, WeaponType.Cannon, WeaponType.Launcher, WeaponType.Melee, WeaponType.Nexus, WeaponType.Rifle];
+        let allowed_sizes = [
+            WeaponSize.Aux,
+            WeaponSize.Main,
+            WeaponSize.Heavy,
+            WeaponSize.Superheavy,
+        ];
+        let allowed_types = [
+            WeaponType.CQB,
+            WeaponType.Cannon,
+            WeaponType.Launcher,
+            WeaponType.Melee,
+            WeaponType.Nexus,
+            WeaponType.Rifle,
+        ];
 
         // Cull to the not restricted and allowed
-        if(data.restricted_types) {
+        if (data.restricted_types) {
             allowed_types = allowed_types.filter(x => !data.restricted_types?.includes(x));
         }
-        if(data.allowed_types && data.allowed_types.length) {
+        if (data.allowed_types && data.allowed_types.length) {
             allowed_types = allowed_types.filter(x => data.allowed_types?.includes(x));
         }
-        if(data.restricted_sizes) {
+        if (data.restricted_sizes) {
             allowed_sizes = allowed_sizes.filter(x => !data.restricted_sizes?.includes(x));
         }
-        if(data.allowed_sizes && data.allowed_sizes.length) {
+        if (data.allowed_sizes && data.allowed_sizes.length) {
             allowed_sizes = allowed_sizes.filter(x => data.allowed_sizes?.includes(x));
         }
 

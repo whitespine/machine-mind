@@ -71,13 +71,19 @@ function simple_cat_builder<T extends EntryType>(
             // Our actual builder function shared between all cats.
             // First check for existing item in ctx
             let pre = ctx.get(reg, id);
-            if(pre){
+            if (pre) {
                 await pre.ready();
                 return pre as LiveEntryTypes<T>;
             }
 
             // Otherwise create
-            let new_item = new clazz(type, reg, ctx, id, nodef(raw ?? (template ? template() : undefined)));
+            let new_item = new clazz(
+                type,
+                reg,
+                ctx,
+                id,
+                nodef(raw ?? (template ? template() : undefined))
+            );
             ctx.set(reg, id, new_item);
             await new_item.ready();
 
@@ -96,7 +102,7 @@ export class StaticReg extends Registry {
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
     get_inventory(for_actor_id: string): Registry | null {
         let result = this.env.inventories.get(for_actor_id);
-        if(!result) {
+        if (!result) {
             result = new StaticReg(this.env);
             this.env.inventories.set(for_actor_id, result);
         }
@@ -107,20 +113,38 @@ export class StaticReg extends Registry {
     constructor(env: RegEnv) {
         super();
         this.env = env;
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus, defaults.CORE_BONUS));
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem, defaults.CORE_SYSTEM));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus, defaults.CORE_BONUS)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem, defaults.CORE_SYSTEM)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
         this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
-        this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait, defaults.FRAME_TRAIT));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait, defaults.FRAME_TRAIT)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame, defaults.FRAME));
         this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License, defaults.LICENSE));
-        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer, defaults.MANUFACTURER));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem, defaults.MECH_SYSTEM));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer, defaults.MANUFACTURER)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem, defaults.MECH_SYSTEM)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, defaults.PILOT_ARMOR));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear, defaults.PILOT_GEAR));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon, defaults.PILOT_WEAPON));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, defaults.PILOT_ARMOR)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear, defaults.PILOT_GEAR)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon, defaults.PILOT_WEAPON)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));
         this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve, defaults.RESERVE));
         this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep));
@@ -128,12 +152,26 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status));
         this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate));
         this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent, defaults.TALENT));
-        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, defaults.WEAPON_MOD));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, defaults.WEAPON_MOD)
+        );
 
         // The inventoried things (actors!)
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, defaults.PILOT, env.pilot_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, defaults.DEPLOYABLE, env.dep_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, defaults.MECH, env.mech_cat));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.PILOT, this, Pilot, defaults.PILOT, env.pilot_cat)
+        );
+        this.init_set_cat(
+            simple_cat_builder(
+                EntryType.DEPLOYABLE,
+                this,
+                Deployable,
+                defaults.DEPLOYABLE,
+                env.dep_cat
+            )
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.MECH, this, Mech, defaults.MECH, env.mech_cat)
+        );
         // to be done
         // NpcClasses: null as any,
         // NpcFeatures: null as any,
@@ -222,7 +260,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     // a bit tricky in terms of what side effects this could have, actually.
     async update(...items: LiveEntryTypes<T>[]): Promise<void> {
         for (let i of items) {
-            if(!this.reg_data.has(i.RegistryID)) {
+            if (!this.reg_data.has(i.RegistryID)) {
                 console.warn("Tried to update a destroyed/nonexistant/non-owned item");
             }
             let saved = (await i.save()) as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
@@ -243,7 +281,6 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         this.reg_data.set(id, saved);
         return v;
     }
-
 }
 
 // Eventually remove this. A short term sanity not-null/undef checker, until we get around to adding defaults

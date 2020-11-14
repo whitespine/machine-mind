@@ -44,7 +44,7 @@ export class Bonus {
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
     }
-    
+
     // Compile the expression
     public set Value(new_val: string | number) {
         this._value = new_val;
@@ -56,7 +56,7 @@ export class Bonus {
         try {
             this._value_func = filtrex.compileExpression(val);
         } catch (e) {
-            this._value_func = (x) => 666;
+            this._value_func = x => 666;
         }
     }
 
@@ -106,8 +106,8 @@ export class Bonus {
 
     // Returns this bonus as a numerical value
     public evaluate(pilot: Pilot | null): number {
-        let vals = {ll: 0, grit: 0};
-        if(pilot) {
+        let vals = { ll: 0, grit: 0 };
+        if (pilot) {
             vals.ll = pilot.Level;
             vals.grit = pilot.Grit;
         }
@@ -115,7 +115,11 @@ export class Bonus {
     }
 
     // Sums all bonuses on the specific id, for the specified pilot
-    public static SumPilotBonuses(pilot: Pilot | null, bonuses: Bonus[], bonus_type: string): number {
+    public static SumPilotBonuses(
+        pilot: Pilot | null,
+        bonuses: Bonus[],
+        bonus_type: string
+    ): number {
         return bonuses
             .filter(x => x.ID === bonus_type)
             .reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
@@ -125,7 +129,6 @@ export class Bonus {
      */
     // Lists contributors for just the mech
 }
-
 
 /*
 export enum BonusType {

@@ -53,8 +53,8 @@ export class Counter extends SimSer<RegCounterData> {
             val: this.Value,
             max: this.Max,
             min: this.Min,
-            default_value: this.Default
-        }
+            default_value: this.Default,
+        };
     }
 
     // Bound on set

@@ -1,5 +1,5 @@
 import { Action, Bonus, Counter, Deployable, Synergy } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
@@ -46,7 +46,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegFrameTraitData): Promise<void> {
-        data = {...defaults.FRAME_TRAIT(), ...data}
+        data = { ...defaults.FRAME_TRAIT(), ...data };
         this.Name = data.name;
         this.Description = data.description;
         this.Use = data.use ?? null;
@@ -66,7 +66,11 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
         };
     }
 
-    public static async unpack(data: PackedFrameTraitData, reg: Registry, ctx: OpCtx): Promise<FrameTrait> {
+    public static async unpack(
+        data: PackedFrameTraitData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<FrameTrait> {
         let rdata: RegFrameTraitData = {
             ...defaults.FRAME_TRAIT(),
             ...data,

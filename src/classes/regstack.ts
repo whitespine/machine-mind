@@ -141,7 +141,6 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
 
 */
 
-
 // Provides a more agressive version of the regstack - this one will actively make copies of anything it cant immediately find
 export class CovetousReg extends Registry {
     private fallbacks: Registry[];
@@ -155,11 +154,11 @@ export class CovetousReg extends Registry {
 
     async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_rough(ctx, ref);
-        if(!d) {
+        if (!d) {
             // Try all fallbacks
-            for(let f of this.fallbacks){
+            for (let f of this.fallbacks) {
                 d = await f.resolve_rough(ctx, ref);
-                if(d) {
+                if (d) {
                     d = await d.insinuate(this.base);
                     break;
                 }
@@ -170,11 +169,11 @@ export class CovetousReg extends Registry {
 
     public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_wildcard_mmid(ctx, mmid);
-        if(!d) {
+        if (!d) {
             // Try all fallbacks
-            for(let f of this.fallbacks){
+            for (let f of this.fallbacks) {
                 d = await f.resolve_wildcard_mmid(ctx, mmid);
-                if(d) {
+                if (d) {
                     d = await d.insinuate(this.base);
                     break;
                 }
@@ -212,9 +211,7 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
 
     constructor(parent: Registry, cat: T, base: RegCat<T>, fallbacks: RegCat<T>[]) {
         super(parent, cat, () => {
-            throw new Error(
-                "Something went wrong in a covetous cat"
-            );
+            throw new Error("Something went wrong in a covetous cat");
         });
         this.base = base;
         this.fallbacks = fallbacks;
@@ -223,11 +220,11 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     // Delegate to stack
     async lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null> {
         let d = await this.base.lookup_mmid(ctx, mmid);
-        if(!d) {
-            for(let f of this.fallbacks) {
+        if (!d) {
+            for (let f of this.fallbacks) {
                 d = await f.lookup_mmid(ctx, mmid);
-                if(d) {
-                    d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+                if (d) {
+                    d = (await d.insinuate(this.base.parent)) as LiveEntryTypes<T> | null;
                     break;
                 }
             }
@@ -238,10 +235,10 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     // Delegate to stack
     async get_raw(id: string): Promise<RegEntryTypes<T> | null> {
         let d = await this.base.get_raw(id);
-        if(!d) {
-            for(let f of this.fallbacks){
+        if (!d) {
+            for (let f of this.fallbacks) {
                 d = await f.get_raw(id);
-                if(d) break;
+                if (d) break;
             }
         }
         // We don't want to insinuate - if the user gets live we will do that then
@@ -256,11 +253,11 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     // Delegate to stack
     async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null> {
         let d = await this.base.get_live(ctx, id);
-        if(!d) {
-            for(let f of this.fallbacks) {
+        if (!d) {
+            for (let f of this.fallbacks) {
                 d = await f.get_live(ctx, id);
-                if(d) {
-                    d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+                if (d) {
+                    d = (await d.insinuate(this.base.parent)) as LiveEntryTypes<T> | null;
                     break;
                 }
             }

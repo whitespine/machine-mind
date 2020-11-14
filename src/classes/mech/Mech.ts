@@ -16,9 +16,19 @@ import {
 } from "@src/class";
 import { bound_int } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
-import { EntryType, InventoriedRegEntry, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    InventoriedRegEntry,
+    LiveEntryTypes,
+    OpCtx,
+    quick_mm_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { CC_VERSION, DamageType } from "../enums";
-import { CovetousCatStack, CovetousReg } from '../regstack';
+import { CovetousCatStack, CovetousReg } from "../regstack";
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
@@ -174,27 +184,27 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public get Size(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("size");
         const size = Math.ceil(this.Frame.Stats.size + bonus);
         return bound_int(size, 0.5, Rules.MaxFrameSize);
     }
 
     public get Armor(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("armor");
         const armor = this.Frame.Stats.armor + bonus;
         return bound_int(armor, 0, Rules.MaxMechArmor);
     }
 
     public get SaveTarget(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("save");
         return this.Frame.Stats.save + bonus;
     }
 
     public get Evasion(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         // if (this.IsStunned) return 5;
         // TODO - allow status bonuses to override somehow
         const bonus = this.sum_bonuses("evade");
@@ -202,55 +212,55 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public get Speed(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("speed");
         return this.Frame.Stats.speed + bonus;
     }
 
     public get SensorRange(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("sensor");
         return this.Frame.Stats.sensor_range + bonus;
     }
 
     public get EDefense(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("edef");
         return this.Frame.Stats.edef + bonus;
     }
 
     public get LimitedBonus(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("limited_bonus");
         return bonus;
     }
 
     public get AttackBonus(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("attack");
         return bonus;
     }
 
     public get TechAttack(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("tech_attack");
         return this.Frame.Stats.tech_attack + bonus;
     }
 
     public get Grapple(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("grapple");
         return Rules.BaseGrapple + bonus;
     }
 
     public get Ram(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("ram");
         return Rules.BaseRam + bonus;
     }
 
     public get SaveBonus(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("save");
         return bonus;
     }
@@ -282,7 +292,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public get MaxStructure(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("structure");
         return this.Frame.Stats.structure + bonus;
     }
@@ -298,23 +308,23 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     */
 
     public get MaxHP(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         const bonus = this.sum_bonuses("hp");
         return this.Frame.Stats.hp + bonus;
     }
 
     public get CurrentSP(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.Loadout.TotalSP;
     }
 
     public get MaxSP(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.Frame.Stats.sp + this.sum_bonuses("sp");
     }
 
     public get FreeSP(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.MaxSP - this.CurrentSP;
     }
 
@@ -341,17 +351,17 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     */
 
     public get IsInDangerZone(): boolean {
-        if(!this.Frame) return false;
+        if (!this.Frame) return false;
         return this.CurrentHeat >= Math.ceil(this.HeatCapacity / 2);
     }
 
     public get HeatCapacity(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.Frame.Stats.heatcap + this.sum_bonuses("heatcap");
     }
 
     public get CurrentStress(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this._current_stress;
     }
 
@@ -360,12 +370,12 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public get MaxStress(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.Frame.Stats.stress + this.sum_bonuses("stress");
     }
 
     public get RepairCapacity(): number {
-        if(!this.Frame) return 0;
+        if (!this.Frame) return 0;
         return this.Frame.Stats.repcap + this.sum_bonuses("repcap");
     }
 
@@ -454,7 +464,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         Deployables?: Deployable[];
         Counters?: Counter[];
     }> {
-        if(!this.Frame) return [];
+        if (!this.Frame) return [];
         let output: Array<{
             Bonuses?: Bonus[];
             Actions?: Action[];
@@ -462,7 +472,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             Deployaables?: Deployable[];
             Counters?: Counter[];
         }> = [];
-
 
         // Get from equipment
         for (let item of this.Loadout.Equipment) {
@@ -563,7 +572,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge || 0;
         this.CurrentCoreEnergy = data.current_core_energy ?? 1;
-        this.StatusesAndConditions = await subreg.resolve_many( this.OpCtx, data.statuses_and_conditions || []);
+        this.StatusesAndConditions = await subreg.resolve_many(
+            this.OpCtx,
+            data.statuses_and_conditions || []
+        );
         this.Resistances = data.resistances || [];
         this.Reactions = data.reactions || [];
         this.Burn = data.burn || 0;
@@ -614,7 +626,7 @@ export async function mech_cloud_sync(
     let mech_inv = mech.get_inventory();
     let ctx = mech.OpCtx;
     let covetous: CovetousReg;
-    if(mech.Pilot) {
+    if (mech.Pilot) {
         covetous = new CovetousReg(mech_inv, [mech.Pilot.get_inventory(), compendium_reg]);
     } else {
         covetous = new CovetousReg(mech_inv, [compendium_reg]);
@@ -650,17 +662,19 @@ export async function mech_cloud_sync(
     // The unpacking process does basically everything we need, including insinuation (thank you covetous ref!)
     await mech.Loadout.sync(data.frame, packed_loadout, covetous);
     // Resolve the frame and set it
-    // mech.Loadout.unpack(packed_loadout, 
-
+    // mech.Loadout.unpack(packed_loadout,
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)
-    for(let s of mech.StatusesAndConditions) {
+    for (let s of mech.StatusesAndConditions) {
         await s.destroy_entry();
     }
     let snc_names = [...data.statuses, ...data.conditions];
 
     // And re-resolve
-    await covetous.resolve_many(ctx, snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
+    await covetous.resolve_many(
+        ctx,
+        snc_names.map(n => quick_mm_ref(EntryType.STATUS, n))
+    );
 
     // We always want to insinuate and writeback to be sure we own all of these items
     await mech.writeback();

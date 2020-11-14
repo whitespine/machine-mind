@@ -1,5 +1,5 @@
 import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import {
     IActionData,
     ISynergyData,
@@ -79,7 +79,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
     Tags!: TagInstance[];
 
     public async load(data: RegCoreSystemData): Promise<void> {
-        data = {...defaults.CORE_SYSTEM(), ...data};
+        data = { ...defaults.CORE_SYSTEM(), ...data };
         this.Activation = data.activation;
         this.Description = data.description;
         this.Name = data.name;
@@ -131,7 +131,11 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         };
     }
 
-    public static async unpack(dep: PackedCoreSystemData, reg: Registry, ctx: OpCtx): Promise<CoreSystem> {
+    public static async unpack(
+        dep: PackedCoreSystemData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<CoreSystem> {
         // Get tags
         let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
 
@@ -139,7 +143,12 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         let counters = SerUtil.unpack_counters_default(dep.counters);
 
         // Get the deployables
-        let deployables_ = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, dep.deployables);
+        let deployables_ = await SerUtil.unpack_children(
+            Deployable.unpack,
+            reg,
+            ctx,
+            dep.deployables
+        );
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data

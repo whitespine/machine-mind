@@ -1,7 +1,32 @@
-import { CoreBonus, CoreSystem, Deployable, Environment, Faction, Frame, FrameTrait, License, Manufacturer, Mech, MechSystem, MechWeapon, Organization, Pilot, PilotArmor, PilotGear, PilotWeapon, Quirk, Reserve, Sitrep, Skill, Status, TagTemplate, Talent, WeaponMod } from '@src/class';
-import { EntryType, RegEntry } from '@src/registry';
-import { keys } from 'ts-transformer-keys';
-
+import {
+    CoreBonus,
+    CoreSystem,
+    Deployable,
+    Environment,
+    Faction,
+    Frame,
+    FrameTrait,
+    License,
+    Manufacturer,
+    Mech,
+    MechSystem,
+    MechWeapon,
+    Organization,
+    Pilot,
+    PilotArmor,
+    PilotGear,
+    PilotWeapon,
+    Quirk,
+    Reserve,
+    Sitrep,
+    Skill,
+    Status,
+    TagTemplate,
+    Talent,
+    WeaponMod,
+} from "@src/class";
+import { EntryType, RegEntry } from "@src/registry";
+import { keys } from "ts-transformer-keys";
 
 export const keyset_map: any = {
     [EntryType.CORE_BONUS]: keys<CoreBonus>(),
@@ -32,12 +57,12 @@ export const keyset_map: any = {
     [EntryType.TAG]: keys<TagTemplate>(),
     [EntryType.TALENT]: keys<Talent>(),
     [EntryType.QUIRK]: keys<Quirk>(),
-}
+};
 
 export function validate_props(v: RegEntry<any>) {
     let entry = v.Type;
-    for(let key of keyset_map[entry]) {
-        if(v[key] === undefined) {
+    for (let key of keyset_map[entry]) {
+        if (v[key] === undefined) {
             let ks = keyset_map[entry];
             console.error(`Error! ${entry} missing key ${key}`);
             throw new Error();

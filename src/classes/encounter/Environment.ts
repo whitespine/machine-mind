@@ -25,7 +25,11 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         };
     }
 
-    public static async unpack(dep: IEnvironmentData, reg: Registry, ctx: OpCtx): Promise<Environment> {
+    public static async unpack(
+        dep: IEnvironmentData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<Environment> {
         return reg.get_cat(EntryType.ENVIRONMENT).create(ctx, dep);
     }
 }

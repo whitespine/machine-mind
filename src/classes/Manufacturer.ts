@@ -1,4 +1,4 @@
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { imageManagement, ImageTag } from "@src/hooks";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
@@ -25,7 +25,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     Quote!: string;
 
     public async load(data: RegManufacturerData): Promise<void> {
-        data = {...defaults.MANUFACTURER(), ...data};
+        data = { ...defaults.MANUFACTURER(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Light = data.light;
@@ -46,7 +46,11 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         };
     }
 
-    public static async unpack(dep: PackedManufacturerData, reg: Registry, ctx: OpCtx): Promise<Manufacturer> {
+    public static async unpack(
+        dep: PackedManufacturerData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<Manufacturer> {
         return reg.get_cat(EntryType.MANUFACTURER).create(ctx, dep);
     }
 

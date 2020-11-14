@@ -1,5 +1,5 @@
 import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
@@ -34,7 +34,7 @@ export interface PackedTalentRank {
 export interface PackedTalentData {
     id: string;
     name: string;
-    icon: string; 
+    icon: string;
     terse: string; // terse text used in short descriptions. The fewer characters the better
     description: string; // v-html
     ranks: PackedTalentRank[];
@@ -56,7 +56,7 @@ export interface RegTalentRank {
 export interface RegTalentData {
     id: string;
     name: string;
-    icon: string; 
+    icon: string;
     terse: string; // terse text used in short descriptions. The fewer characters the better
     description: string; // v-html
     ranks: RegTalentRank[];
@@ -86,7 +86,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
     CurrentRank!: number;
 
     public async load(data: RegTalentData): Promise<void> {
-        data = {...defaults.TALENT, ...data};
+        data = { ...defaults.TALENT, ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Icon = data.icon;
@@ -94,7 +94,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         this.Description = data.description;
         this.Ranks = [];
         for (let r of data.ranks) {
-            r = {...defaults.TALENT_RANK(), ...r};
+            r = { ...defaults.TALENT_RANK(), ...r };
             this.Ranks.push({
                 Actions: SerUtil.process_actions(r.actions),
                 Bonuses: SerUtil.process_bonuses(
@@ -102,7 +102,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
                     `TALENT ${r.name} RANK ${this.Ranks.length + 1}`
                 ),
                 Counters: SerUtil.process_counters(r.counters),
-                Deployables: await this.Registry.resolve_many(this.OpCtx, r.deployables, ),
+                Deployables: await this.Registry.resolve_many(this.OpCtx, r.deployables),
                 Description: r.description,
                 Exclusive: r.exclusive,
                 Integrated: await this.Registry.resolve_many_rough(this.OpCtx, r.integrated),

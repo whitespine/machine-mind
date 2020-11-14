@@ -42,7 +42,9 @@ export class Synergy extends SimSer<ISynergyData> {
     WeaponSizes!: WeaponSize[] | null;
 
     public load(data: ISynergyData): void {
-        function resolver<T extends string>(data: T | Array<T | "any"> | "any" | undefined): T[] | null {
+        function resolver<T extends string>(
+            data: T | Array<T | "any"> | "any" | undefined
+        ): T[] | null {
             if (!data) {
                 return null; // All we need
             } else if (Array.isArray(data)) {

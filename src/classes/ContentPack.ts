@@ -93,7 +93,7 @@ export interface IContentPack {
 export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     // Let us begin. Unpacking automatically adds the item to the registry in most cases
 
-    // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise! 
+    // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise!
     // However, their reg data will be totally fine, as the reg's will still have the unresolved refs
     // This is do to a peculiarity of our setup in that even if you load an item and its refs fail to resolve,
     // because there is no automatic writeback those unresolved refs will still exist in the registry copy
@@ -166,7 +166,7 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     // Find licenses
     let unique_license_names: Set<string> = new Set();
     for (let x of licenseables) {
-        if(x.License) {
+        if (x.License) {
             unique_license_names.add(x.License);
         }
     }

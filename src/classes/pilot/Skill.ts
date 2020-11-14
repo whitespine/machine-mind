@@ -1,5 +1,5 @@
 import { Rules } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 import { IRankedData } from "../GeneralInterfaces";
 
@@ -24,10 +24,10 @@ export interface PackedSkillData {
     description: string; // terse, prefer fewest chars
     detail: string; // v-html
     family: SkillFamily;
-    rank?: number,
-    custom?: true,
-    custom_desc?: string,
-    custom_detail?: string
+    rank?: number;
+    custom?: true;
+    custom_desc?: string;
+    custom_detail?: string;
 }
 
 export interface RegSkillData {
@@ -48,8 +48,8 @@ export class Skill extends RegEntry<EntryType.SKILL> {
     CurrentRank!: number;
 
     public async load(data: RegSkillData): Promise<void> {
-        data = {...defaults.SKILL(), ...data};
-        this.ID = data.id; 
+        data = { ...defaults.SKILL(), ...data };
+        this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
         this.Detail = data.detail;
@@ -81,8 +81,12 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         return false;
     }
 
-    // Very simple. 
-    public static async unpack(packed_skill: PackedSkillData, reg: Registry, ctx: OpCtx): Promise<Skill> {
+    // Very simple.
+    public static async unpack(
+        packed_skill: PackedSkillData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<Skill> {
         let rdata = { ...defaults.SKILL(), ...packed_skill };
         // Default the name
         rdata.name = packed_skill.name ?? rdata.id;

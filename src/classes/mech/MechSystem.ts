@@ -1,5 +1,5 @@
 import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@src/class";
-import { defaults, tag_util } from '@src/funcs';
+import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
@@ -13,7 +13,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType } from "../enums";
-import { Manufacturer } from '../Manufacturer';
+import { Manufacturer } from "../Manufacturer";
 
 interface AllMechSystemData {
     id: string;
@@ -78,7 +78,6 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     // Current uses
     Uses!: number;
 
-
     // Is this mod an AI?
     get IsAI(): boolean {
         return tag_util.is_ai(this);
@@ -100,13 +99,12 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     }
 
     // Returns the base max uses
-    get BaseLimit(): number | null{
+    get BaseLimit(): number | null {
         return tag_util.limited_max(this);
     }
 
-
     public async load(data: RegMechSystemData): Promise<void> {
-        data = {...defaults.MECH_SYSTEM(), ...data};
+        data = { ...defaults.MECH_SYSTEM(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -150,7 +148,11 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         };
     }
 
-    public static async unpack(data: PackedMechSystemData, reg: Registry, ctx: OpCtx): Promise<MechSystem> {
+    public static async unpack(
+        data: PackedMechSystemData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<MechSystem> {
         let rdata: RegMechSystemData = {
             ...defaults.MECH_SYSTEM(),
             ...data,

@@ -1,5 +1,5 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
@@ -86,7 +86,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     Deployables!: Deployable[];
 
     public async load(data: RegPilotArmorData): Promise<void> {
-        data ={ ...defaults.PILOT_ARMOR(), ...data};
+        data = { ...defaults.PILOT_ARMOR(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
@@ -105,7 +105,11 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         };
     }
 
-    public static async unpack(data: PackedPilotArmorData, reg: Registry, ctx: OpCtx): Promise<PilotArmor> {
+    public static async unpack(
+        data: PackedPilotArmorData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<PilotArmor> {
         let rdata: RegPilotArmorData = {
             ...defaults.PILOT_ARMOR(),
             ...data,
@@ -130,7 +134,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
     public async load(data: RegPilotGearData): Promise<void> {
-        data = {...defaults.PILOT_GEAR(), ...data};
+        data = { ...defaults.PILOT_GEAR(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
@@ -149,7 +153,11 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         };
     }
 
-    public static async unpack(data: PackedPilotGearData, reg: Registry, ctx: OpCtx): Promise<PilotGear> {
+    public static async unpack(
+        data: PackedPilotGearData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<PilotGear> {
         let rdata: RegPilotGearData = {
             ...defaults.PILOT_GEAR(),
             ...data,
@@ -177,7 +185,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
     public async load(data: RegPilotWeaponData): Promise<void> {
-        data = {...defaults.PILOT_WEAPON(), ...data};
+        data = { ...defaults.PILOT_WEAPON(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
@@ -201,7 +209,11 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         };
     }
 
-    public static async unpack(data: PackedPilotWeaponData, reg: Registry, ctx: OpCtx): Promise<PilotWeapon> {
+    public static async unpack(
+        data: PackedPilotWeaponData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<PilotWeapon> {
         let rdata: RegPilotWeaponData = {
             ...defaults.PILOT_WEAPON(),
             ...data,

@@ -30,7 +30,7 @@ import {
     SystemType,
     WeaponSize,
     WeaponType,
-    SkillFamily
+    SkillFamily,
 } from "./enums";
 
 export function CORE_BONUS(): RegCoreBonusData {
@@ -46,9 +46,8 @@ export function CORE_BONUS(): RegCoreBonusData {
         effect: "",
         id: nanoid(),
         mounted_effect: "",
-        source: null
-    }
-
+        source: null,
+    };
 }
 
 export function CORE_SYSTEM(): RegCoreSystemData {
@@ -174,7 +173,7 @@ export function MANUFACTURER(): RegManufacturerData {
         logo: "",
         name: "New Manufacturer",
         quote: "We sell mechs and mech accessories",
-    }
+    };
 }
 
 export function MECH(): RegMechData {
@@ -393,8 +392,7 @@ export function RESERVE(): RegReserveData {
         description: "",
         id: nanoid(),
         synergies: [],
-    }
-
+    };
 }
 
 export function WEAPON_MOD(): RegWeaponModData {
@@ -431,8 +429,8 @@ export function SKILL(): RegSkillData {
         detail: "",
         family: SkillFamily.cha,
         name: "New Skill",
-        rank: 1
-    }
+        rank: 1,
+    };
 }
 
 export function TALENT(): RegTalentData {
@@ -443,8 +441,8 @@ export function TALENT(): RegTalentData {
         id: nanoid(),
         name: "New Talent",
         ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
-        terse: ""
-    }
+        terse: "",
+    };
 }
 
 export function TALENT_RANK(): RegTalentRank {
@@ -457,6 +455,6 @@ export function TALENT_RANK(): RegTalentRank {
         description: "",
         exclusive: false,
         integrated: [],
-        name: "Rank X"
-    }
+        name: "Rank X",
+    };
 }

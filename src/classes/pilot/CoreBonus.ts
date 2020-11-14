@@ -1,5 +1,5 @@
 import { Synergy, Bonus, Action, Counter, Deployable } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 
 import {
     IActionData,
@@ -8,9 +8,18 @@ import {
     PackedCounterData,
     IBonusData,
 } from "@src/interface";
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_mm_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    RegSer,
+    SerUtil,
+} from "@src/registry";
 import { RegCounterData } from "../Counter";
-import { Manufacturer } from '../Manufacturer';
+import { Manufacturer } from "../Manufacturer";
 
 // These attrs are shared
 interface AllCoreBonusData {
@@ -55,7 +64,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegCoreBonusData): Promise<void> {
-        data = {...defaults.CORE_BONUS(), ...data};
+        data = { ...defaults.CORE_BONUS(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -89,7 +98,12 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
     static async unpack(cor: PackedCoreBonusData, reg: Registry, ctx: OpCtx): Promise<CoreBonus> {
         // Create deployable entries
-        let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, cor.deployables);
+        let dep_entries = await SerUtil.unpack_children(
+            Deployable.unpack,
+            reg,
+            ctx,
+            cor.deployables
+        );
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs

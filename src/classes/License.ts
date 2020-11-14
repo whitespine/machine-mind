@@ -1,8 +1,18 @@
-import { defaults } from '@src/funcs';
-import { EntryType, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
-import { createDecipher } from 'crypto';
+import { defaults } from "@src/funcs";
+import {
+    EntryType,
+    LiveEntryTypes,
+    OpCtx,
+    quick_mm_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    RegSer,
+    SerUtil,
+} from "@src/registry";
+import { createDecipher } from "crypto";
 import { Manufacturer } from "./Manufacturer";
-import { Frame } from './mech/Frame';
+import { Frame } from "./mech/Frame";
 
 export type LicensedItemType =
     | EntryType.FRAME
@@ -36,10 +46,10 @@ export class License extends RegEntry<EntryType.LICENSE> {
     }
 
     public async load(data: RegLicenseData): Promise<void> {
-        data = {...defaults.LICENSE(), ...data};
+        data = { ...defaults.LICENSE(), ...data };
         this.Name = data.name;
         this.Manufacturer = null;
-        if(data.manufacturer) {
+        if (data.manufacturer) {
             this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer);
         }
         this.CurrentRank = data.rank;
@@ -64,9 +74,12 @@ export class License extends RegEntry<EntryType.LICENSE> {
         };
     }
 
-
     // TODO: this remains to be clarified once beef decides on how to handle alt frames
-    public static async unpack(license_name: string, reg: Registry, ctx: OpCtx): Promise<License[]> {
+    public static async unpack(
+        license_name: string,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<License[]> {
         // Get every possibility
         let all_licensed_items: LicensedItem[] = [
             ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx)),
@@ -79,17 +92,21 @@ export class License extends RegEntry<EntryType.LICENSE> {
         all_licensed_items = all_licensed_items.filter(i => i.License == license_name);
 
         // Get the individual frames - this handles the alt frame case
-        let frames: Array<Frame | null> = all_licensed_items.filter(x => x instanceof Frame) as Frame[];
-        if(frames.length == 0) {
+        let frames: Array<Frame | null> = all_licensed_items.filter(
+            x => x instanceof Frame
+        ) as Frame[];
+        if (frames.length == 0) {
             frames = [null]; // Default to license name for mechless licenses
         }
 
         // Make a unique license for each frame
         let licenses: License[] = [];
-        for(let frame of frames) {
+        for (let frame of frames) {
             // Copy items, filtering out "bad" mechs
             let frame_id = frame?.ID ?? license_name;
-            let sub_licensed_items = all_licensed_items.filter(f => f instanceof Frame ? f.ID == frame_id : true);
+            let sub_licensed_items = all_licensed_items.filter(f =>
+                f instanceof Frame ? f.ID == frame_id : true
+            );
 
             // Group into ranks
             let grouped: LicensedItem[][] = [];

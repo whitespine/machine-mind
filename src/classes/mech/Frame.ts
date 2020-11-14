@@ -4,7 +4,7 @@ import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../enums";
-import { Manufacturer } from '../Manufacturer';
+import { Manufacturer } from "../Manufacturer";
 
 // The raw stat information
 export interface IFrameStats {
@@ -69,7 +69,9 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         frameData = { ...defaults.FRAME(), ...frameData };
         this.ID = frameData.id;
         this.LicenseLevel = frameData.license_level;
-        this.Source = frameData.source ? await this.Registry.resolve(this.OpCtx, frameData.source) : null;
+        this.Source = frameData.source
+            ? await this.Registry.resolve(this.OpCtx, frameData.source)
+            : null;
         this.Name = frameData.name;
         this.Description = frameData.description;
         this.MechType = frameData.mechtype;
