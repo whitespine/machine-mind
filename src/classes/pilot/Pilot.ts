@@ -890,12 +890,31 @@ export async function cloud_sync(
     }
 
     // Fetch licenses. Also need to update rank Does not delete
+    let license_ctx = new OpCtx();
     for(let t of data.licenses) {
-        let found = await get_owned(quick_mm_ref(EntryType.LICENSE, t.id));
-        if(found) {
-            // Update rank
-            found.CurrentRank= t.rank;
-            found.writeback();
+        // Find the corresponding mech
+        let found_mech = await compendium_reg.get_cat(EntryType.FRAME).lookup_mmid(license_ctx, t.id);
+
+        if(found_mech) {
+            // Get the pilot licenses
+            let owned_licenses = await pilot_inv.get_cat(EntryType.LICENSE).list_live(pilot.OpCtx);
+
+            // We use the mech name as the license names
+            let found_license = owned_licenses.find(l => l.Name == found_mech?.Name);
+
+            // If we did not find, we attempt to look in the compendium
+            if(!found_license) {
+                let all_licenses = await compendium_reg.get_cat(EntryType.LICENSE).list_live(license_ctx);
+                found_license = all_licenses.find(l => l.Name == found_mech?.Name);
+                found_license = await found_license?.insinuate(pilot_inv);
+            }
+
+            // If we have at this point found, update rank and writeback
+            if(found_license) {
+                // Update rank
+                found_license.CurrentRank= t.rank;
+                await found_license.writeback();
+            }
         }
     }
 

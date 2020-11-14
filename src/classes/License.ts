@@ -1,6 +1,8 @@
 import { defaults } from '@src/funcs';
 import { EntryType, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
+import { createDecipher } from 'crypto';
 import { Manufacturer } from "./Manufacturer";
+import { Frame } from './mech/Frame';
 
 export type LicensedItemType =
     | EntryType.FRAME
@@ -10,7 +12,7 @@ export type LicensedItemType =
 export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 
 export interface RegLicenseData {
-    // Whaat's it called
+    // What's it called
     name: string;
 
     // Who made it
@@ -28,6 +30,10 @@ export class License extends RegEntry<EntryType.LICENSE> {
     Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     Unlocks!: Array<Array<LicensedItem>>;
     CurrentRank!: number;
+
+    public get AllUnlocks(): LicensedItem[] {
+        return this.Unlocks.flat();
+    }
 
     public async load(data: RegLicenseData): Promise<void> {
         data = {...defaults.LICENSE(), ...data};
@@ -58,7 +64,9 @@ export class License extends RegEntry<EntryType.LICENSE> {
         };
     }
 
-    public static async unpack(license_name: string, reg: Registry, ctx: OpCtx): Promise<License> {
+
+    // TODO: this remains to be clarified once beef decides on how to handle alt frames
+    public static async unpack(license_name: string, reg: Registry, ctx: OpCtx): Promise<License[]> {
         // Get every possibility
         let all_licensed_items: LicensedItem[] = [
             ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx)),
@@ -70,38 +78,45 @@ export class License extends RegEntry<EntryType.LICENSE> {
         // Cull to those with the desired license name
         all_licensed_items = all_licensed_items.filter(i => i.License == license_name);
 
-        // Group into ranks
-        let grouped: LicensedItem[][] = [];
-        let i = 0;
-        let manufacturer_entry: Manufacturer | null = null;
-        while (all_licensed_items.length) {
-            // Collect and remove all items of the current rank (i), then continue
-            let of_rank = all_licensed_items.filter(
-                x => x.LicenseLevel <= i || Number.isNaN(x.LicenseLevel)
-            ); // A stupid edge case but better to nip it here
-            all_licensed_items = all_licensed_items.filter(x => x.LicenseLevel > i);
-
-            // See if we can find a manufacturer
-            for (let x of of_rank) {
-                manufacturer_entry = manufacturer_entry ?? x.Source;
-            }
-
-            // Keep going until you
-            grouped.push(of_rank);
-            i++;
+        // Get the individual frames - this handles the alt frame case
+        let frames: Array<Frame | null> = all_licensed_items.filter(x => x instanceof Frame) as Frame[];
+        if(frames.length == 0) {
+            frames = [null]; // Default to license name for mechless licenses
         }
 
-        // Lookup the manufacturer
-        let manufacturer = manufacturer_entry ? manufacturer_entry.as_ref() : quick_mm_ref(EntryType.MANUFACTURER, "GMS");
+        // Make a unique license for each frame
+        let licenses: License[] = [];
+        for(let frame of frames) {
+            // Copy items, filtering out "bad" mechs
+            let frame_id = frame?.ID ?? license_name;
+            let sub_licensed_items = all_licensed_items.filter(f => f instanceof Frame ? f.ID == frame_id : true);
 
-        let rdata: RegLicenseData = {
-            name: license_name,
-            manufacturer,
-            rank: 1,
-            unlocks: grouped.map(g => SerUtil.ref_all(g)),
-        };
+            // Group into ranks
+            let grouped: LicensedItem[][] = [];
+            let i = 0;
+            while (sub_licensed_items.length) {
+                // Collect and remove all items of the current rank (i), then continue
+                let of_rank = sub_licensed_items.filter(
+                    x => x.LicenseLevel <= i || Number.isNaN(x.LicenseLevel)
+                ); // A stupid edge case but better to nip it here
+                sub_licensed_items = sub_licensed_items.filter(x => x.LicenseLevel > i);
 
-        return reg.get_cat(EntryType.LICENSE).create(ctx, rdata);
+                // Keep going until out of items
+                grouped.push(of_rank);
+                i++;
+            }
+
+            let rdata: RegLicenseData = {
+                name: frame?.Name ?? license_name,
+                manufacturer: frame?.Source?.as_ref() ?? null,
+                rank: 1,
+                unlocks: grouped.map(g => SerUtil.ref_all(g)),
+            };
+            let created = await reg.get_cat(EntryType.LICENSE).create(ctx, rdata);
+            licenses.push(created);
+        }
+
+        return licenses;
     }
 
     public get UnlockedItems(): LicensedItem[] {

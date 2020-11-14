@@ -40,7 +40,7 @@ describe("Pilots", () => {
     });
 
     it("Can import a fully-detailed pilot", async () => {
-        expect.assertions(34);
+        expect.assertions(39);
         let s = await init_basic_setup(true);
 
         // Load the king
@@ -104,5 +104,14 @@ describe("Pilots", () => {
         expect(mech_names).toContain("gengar");
         expect(mech_names).toContain("the fool"); // 34
         // We don't peer too much deeper - leave that to other tests
+        
+        // Licenses
+        expect(dk.Licenses.length).toEqual(2);
+        let lan = dk.Licenses.find(f => f.Name == "LANCASTER");
+        let geng = dk.Licenses.find(f => f.Name == "GENGHIS");
+        expect(lan).toBeTruthy();
+        expect(lan.CurrentRank).toEqual(2);
+        expect(geng).toBeTruthy();
+        expect(geng.CurrentRank).toEqual(3); // 39
     });
 });
