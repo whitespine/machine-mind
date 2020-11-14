@@ -1,4 +1,4 @@
-import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter } from "@src/class";
+import { Damage, Range, MechEquipment, Action, Bonus, Synergy, Deployable, Counter, MechWeapon } from "@src/class";
 import { defaults, tag_util } from '@src/funcs';
 import {
     IActionData,
@@ -57,7 +57,7 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     // state info
     cascading: boolean;
     destroyed: boolean;
-    loaded: boolean;
+    // loaded: boolean;
     uses: number;
 }
 
@@ -73,7 +73,6 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     Uses!: number;
     Destroyed!: boolean; // does this even make sense?
     Cascading!: boolean; // - can mods? Can't hurt I guess
-    Loaded!: boolean; // - can mods?
     // MaxUses!: number
     SP!: number;
     Effect!: string;
@@ -113,9 +112,9 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     // Is it loading?
-    get IsLoading(): boolean {
-        return tag_util.is_loading(this);
-    }
+    // get IsLoading(): boolean {
+        // return tag_util.is_loading(this);
+    // }
 
     // Is it unique?
     get IsUnique(): boolean {
@@ -125,6 +124,20 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     // Returns the base max uses
     get BaseLimit(): number | null{
         return tag_util.limited_max(this);
+    }
+
+    public accepts(weapon: MechWeapon): boolean {
+        // (current) size matches?
+        if(this.AllowedSizes.length && !this.AllowedSizes.includes(weapon.Size)) {
+            return false;
+        }
+
+        // (current) type matches?
+        if(this.AllowedTypes.length && !this.AllowedTypes.includes(weapon.SelectedProfile.WepType)) {
+            return false;
+        }
+
+        return true;
     }
 
     public async save(): Promise<RegWeaponModData> {
@@ -140,7 +153,6 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
 
             cascading: this.Cascading,
             destroyed: this.Destroyed,
-            loaded: this.Loaded,
             uses: this.Uses,
 
             added_range: SerUtil.sync_save_all(this.AddedRange),
@@ -177,7 +189,6 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.Cascading = data.cascading;
         this.Destroyed = data.destroyed;
         this.Cascading = data.cascading;
-        this.Loaded = data.loaded;
         this.Uses = data.uses;
 
         await SerUtil.load_basd(this.Registry, data, this);
@@ -187,12 +198,32 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     public static async unpack(data: PackedWeaponModData, reg: Registry, ctx: OpCtx): Promise<WeaponMod> {
+        // Figure allowed sizes / types
+        let allowed_sizes = [WeaponSize.Aux, WeaponSize.Main, WeaponSize.Heavy, WeaponSize.Superheavy];
+        let allowed_types = [WeaponType.CQB, WeaponType.Cannon, WeaponType.Launcher, WeaponType.Melee, WeaponType.Nexus, WeaponType.Rifle];
+
+        // Cull to the not restricted and allowed
+        if(data.restricted_types) {
+            allowed_types = allowed_types.filter(x => !data.restricted_types?.includes(x));
+        }
+        if(data.allowed_types && data.allowed_types.length) {
+            allowed_types = allowed_types.filter(x => data.allowed_types?.includes(x));
+        }
+        if(data.restricted_sizes) {
+            allowed_sizes = allowed_sizes.filter(x => !data.restricted_sizes?.includes(x));
+        }
+        if(data.allowed_sizes && data.allowed_sizes.length) {
+            allowed_sizes = allowed_sizes.filter(x => data.allowed_sizes?.includes(x));
+        }
+
         let rdata: RegWeaponModData = {
             ...defaults.WEAPON_MOD(),
             ...data,
             source: quick_mm_ref(EntryType.MANUFACTURER, data.source),
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
             added_tags: data.added_tags?.map(TagInstance.unpack_reg) ?? [],
+            allowed_sizes,
+            allowed_types,
 
             // Boring stuff
             integrated: SerUtil.unpack_integrated_refs(data.integrated),

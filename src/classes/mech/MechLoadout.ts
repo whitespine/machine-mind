@@ -1,7 +1,9 @@
-import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment } from "@src/class";
-import { EntryType, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
-import { FittingSize, WeaponSize } from "../enums";
-import { Frame } from "./Frame";
+import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment, Frame } from "@src/class";
+import { defaults } from '@src/funcs';
+import { EntryType, OpCtx, quick_mm_ref, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
+import { weapons } from 'lancer-data';
+import { basename } from 'path';
+import { FittingSize, MountType, WeaponSize } from "../enums";
 
 //////////////////////// PACKED INFO ////////////////////////
 interface PackedEquipmentData {
@@ -61,11 +63,11 @@ export interface RegSysMountData {
 
 // Has a number of slots, each with a capacity for a mod
 export interface RegWepMountData {
-    fitting: FittingSize;
+    mount_type: MountType;
     slots: Array<{
         weapon: RegRef<EntryType.MECH_WEAPON> | null;
         mod: RegRef<EntryType.WEAPON_MOD> | null;
-        size: WeaponSize;
+        size: FittingSize;
     }>;
 }
 
@@ -135,11 +137,112 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         }
         return false;
     }
+
+    public static async unpack(mech_frame_id: string, mech_loadout:  PackedMechLoadoutData, reg: Registry, ctx: OpCtx): Promise<MechLoadout> {
+        let base = new MechLoadout(reg, ctx, {frame: null, system_mounts: [], weapon_mounts: []});
+        await base.ready();
+        await base.sync(mech_frame_id, mech_loadout, reg);
+        return base;
+    }
+
+    // We do this quite often
+    private async _new_mount(type: MountType): Promise<WeaponMount> {
+        let mount = new WeaponMount(this.Registry, this.OpCtx, {mount_type: type, slots: []});
+        await mount.ready();
+        return mount;
+    }
+
+    // There's no real reason to restrict this logic just to unpacking. Having it be a method allows us to avoid replicating work
+    public async sync(mech_frame_id: string, mech_loadout: PackedMechLoadoutData, override_reg: Registry): Promise<void> {
+        // Find the frame
+        let frame = await override_reg.resolve(this.OpCtx, quick_mm_ref(EntryType.FRAME, mech_frame_id));
+
+        // Reconstruct the mount setup
+        let weps: WeaponMount[] = [];
+        let syss: SystemMount[] = [];
+
+        // Get all of our mount data
+        let to_be_rendered: PackedMountData[] = [];
+        // let mount_index = 0; // used for re-using weapons
+        for(let integrated_wep of mech_loadout.integratedMounts) {
+            // Coerce into the normal packed form, for our sanity's sake
+            let coerced: PackedMountData = {
+                bonus_effects: [],
+                extra: [],
+                lock: true,
+                mount_type: MountType.Integrated,
+                slots: [{
+                    size: FittingSize.Integrated,
+                    weapon: integrated_wep.weapon
+                }]
+            }
+            to_be_rendered.push(coerced);
+        }
+
+        // This can be improved once beef makes that possible
+        // if(mech_loadout.integratedWeapon) {
+        if(false) {
+            to_be_rendered.push(mech_loadout.integratedWeapon);
+        }
+        // if(mech_loadout.improved_armament) {
+        if(false) {
+            to_be_rendered.push(mech_loadout.improved_armament);
+        }
+
+        to_be_rendered.push(...mech_loadout.mounts);
+
+        for(let tbr of to_be_rendered) {
+            let mount = new WeaponMount(this.Registry, this.OpCtx, {slots: [], mount_type: tbr.mount_type as MountType});
+            await mount.ready();
+            await mount.sync(tbr, override_reg);
+            weps.push(mount);
+        }
+
+        // Now systems. We check if they are in the same position to preserve typedness/customization, but otherwise make no especial effort
+        // That will be handled later if we can convince beef to litter more UIDs
+        for(let i=0; i<mech_loadout.systems.length; i++) {
+            // Get the mech loadout system entry
+            let mls = mech_loadout.systems[i]; 
+
+            // Create a mount and check the corresponding
+            let nm = new SystemMount(this.Registry, this.OpCtx, {system: null});
+            await nm.ready();
+
+            // If system already exists no need to fetch
+            let sys: MechSystem | null = null;
+            let corr = this.SysMounts[i];
+            if(corr?.System?.ID ==  mls.id) {
+                sys = corr.System;
+            } else {
+                // Look it up
+                sys = await override_reg.resolve(this.OpCtx, quick_mm_ref(EntryType.MECH_SYSTEM, mls.id));
+            }
+
+            // Update state
+            if(sys) {
+                sys.Destroyed = mls.destroyed ?? sys.Destroyed;
+                sys.Cascading = mls.cascading ?? sys.Cascading;
+                sys.Uses = mls.uses ?? sys.Uses;
+                await sys.writeback();
+            }
+
+            // Append the new mount
+            nm.System = sys;
+            syss.push(nm);
+        }
+
+        // Save
+        this.Frame = frame;
+        this.WepMounts = weps;
+        this.SysMounts = syss;
+    }
 }
 
 // Just wraps a system (slot can be empty)
 export class SystemMount extends RegSer<RegSysMountData> {
-    System!: MechSystem | null;
+    System!: MechSystem | null; // The system
+    Integrated!: boolean; // Is it integrated?
+
 
     public async load(data: RegSysMountData): Promise<void> {
         if (data.system) {
@@ -157,87 +260,239 @@ export class SystemMount extends RegSer<RegSysMountData> {
 }
 
 // Holds weapons/their mods. We don't support reshaping mounts very well as of yet
-export type WeaponSlot = {
+export class WeaponSlot {
     Weapon: MechWeapon | null;
     Mod: WeaponMod | null;
-    Size: WeaponSize; // The size of this individual slot
+    Size: FittingSize; // The size of this individual slot
+    Mount: WeaponMount;
+
+    // Simple constructor
+    constructor(weapon: MechWeapon | null, mod: WeaponMod | null, size: FittingSize, mount: WeaponMount) {
+        this.Weapon = weapon;
+        this.Mod = mod;
+        this.Size = size;
+        this.Mount = mount;
+    }
+
+    // Return error string if this slot cant take the specified item (with or without replacement)
+    check_can_take(item: MechWeapon | WeaponMod, replace: boolean = false): string | null {
+        if(item instanceof MechWeapon) {
+            // Checkem
+            if(this.Weapon && !replace) {
+                return "Slot is full"; // Already full
+            }
+
+            // Delegate
+            return this._check_pair(item, this.Mod);
+        } else {
+            // we full
+            if(this.Mod && !replace) {
+                return "Mod already exists";
+            }
+
+            // Delegate
+            return this._check_pair(this.Weapon, item);
+        }
+    }
+
+    // Sub validator
+    private _check_pair(wep: MechWeapon | null, mod: WeaponMod | null): string | null {
+        if(!wep && mod) {
+            return "Mod without weapon";
+        } else if(!wep) {
+            return null; // Empty is fine
+        } else if(size_num(wep.Size) > size_num(this.Size)) {
+            return "Weapon too large to fit";
+        } else if(this.Mount.Integrated && mod) {
+            return "Cannot mod integrated weapons"
+        } else if(mod && !mod.accepts(wep)) {
+            return "Mod cannot be applied to this weapon";
+        }
+        return null;
+    }
+
+    // Clear slots
+    clear() {
+        this.Weapon = null;
+        this.Mod = null;
+    }
+
+    // Check that we're still good. String indicates error
+    validate(): string | null {
+        return this._check_pair(this.Weapon, this.Mod);
+    }
+
+    // Attempts to copy this slot to the newly provided one, only proceeding if check_can_take passes without complaint
+    copy_to(other: WeaponSlot) {
+        if(this.Weapon) {
+            if(other.check_can_take(this.Weapon) === null) {
+                other.Weapon = this.Weapon;
+            }
+
+            if(this.Mod) {
+                if(other.check_can_take(this.Mod)) {
+                    other.Mod = this.Mod;
+                }
+            }
+        }
+    }
+
+    // Take in the specified data
+    async sync(dat: PackedWeaponSlotData, reg: Registry, ctx: OpCtx): Promise<void> {
+        // First we resolve the weapon
+        if(dat.weapon) {
+            // See if we already have that weapon mounted
+            if(this.Weapon && dat.weapon.id == this.Weapon.ID) {
+                // Do nothing. Weapon is unchanged
+            } else {
+                // Otherwise attempt to resolve from the provided reg
+                this.Weapon = await reg.resolve(ctx, quick_mm_ref(EntryType.MECH_WEAPON, dat.weapon.id));
+            }
+
+            // We have resolved the weapon. Now update state
+            if(this.Weapon) {
+                this.Weapon.Uses = dat.weapon.uses ?? this.Weapon.Uses;
+                this.Weapon.Destroyed = dat.weapon.destroyed ?? this.Weapon.Destroyed;
+                this.Weapon.Cascading = dat.weapon.cascading ?? this.Weapon.Cascading;
+                this.Weapon.Loaded = dat.weapon.loaded ?? this.Weapon.Loaded;
+                await this.Weapon.writeback();
+
+                // Proceed with modding
+                if(dat.weapon.mod) {
+                    let mod = dat.weapon.mod;
+
+                    // See if we already have that mod mounted
+                    if(this.Mod && mod.id == this.Mod.ID) {
+                        // Do nothing. Mod is unchanged
+                    } else {
+                        // Attempt to resolve mod
+                        this.Mod = await reg.resolve(ctx, quick_mm_ref(EntryType.WEAPON_MOD, mod.id));
+                    }
+
+                    // We have resolved the mod. Now update state
+                    if(this.Mod) {
+                        this.Mod.Uses = mod.uses ?? this.Mod.Uses;
+                        this.Mod.Destroyed = mod.destroyed ?? this.Mod.Destroyed;
+                        this.Mod.Cascading = mod.cascading ?? this.Mod.Cascading;
+                        await this.Mod.writeback();
+                    }
+                }
+            }
+        }
+
+    }
 };
+
 export class WeaponMount extends RegSer<RegWepMountData> {
     // The size of the mount
-    Fitting!: FittingSize;
+    MountType!: MountType;
 
     // The slots of the mount
     Slots!: WeaponSlot[];
 
-    // Is it integrated? (forbids mods)
+    // Is it integrated? (forbids mods). Separate from mounttype integrated, which is strictly for frame-integrated mounts
     Integrated!: boolean;
 
     // Is it from a core bonus
     // from_cb..... how we do this?
 
-    Bracing!: boolean; // True if this mount is being used as bracing
+    Bracing!: boolean; // True if this mount is being used as bracing. Forbids use of anything else
 
-    private validate_slot(slot: WeaponSlot, weapon: MechWeapon): string | null {
-        // string error if something is amiss
-        if (slot.Mod && !slot.Weapon) {
-            return "Mod on empty weapon slot";
+    // Validate the provided slots based on this mounts current configuration
+    private _validate_slots(slots: WeaponSlot[]): string | null {
+        // Check slots
+        let sub_errors = slots.map(s => s.validate()).filter(s => s) as string[];
+        if(sub_errors.length) {
+            return sub_errors.join("; ");
+        }
+        
+        // Check that if we are flex, they aren't trying to main-aux
+        if(this.MountType == MountType.Flex && this.Slots[1].Weapon !== null) {
+            return "Flex cannot have Main & Aux. Acceptable configurations are Aux/Aux and Main";
         }
 
-        if (this.Integrated && slot.Mod) {
-            return "Mods are forbidden on integrated mounts";
+        // Check that if we are bracing, all slots are empty
+        if(this.Bracing && this.Slots.some(s => s.Weapon)) {
+            return "Superheavy bracing must be empty of weapons";
         }
 
-        // Otherwise size is the main concern
-        switch (slot.Size) {
-            case WeaponSize.Aux:
-                return weapon.Size === WeaponSize.Aux
-                    ? null
-                    : "Only Aux weapons can fit in aux slots";
-            case WeaponSize.Main:
-                return weapon.Size === WeaponSize.Aux || weapon.Size === WeaponSize.Main
-                    ? null
-                    : "Only Aux/Main weapons can fit in Main slots";
-            default:
-                break; // rest are fine
-        }
-
-        // TODO: Check mod is valid
         return null;
     }
 
     // Makes sure everything is as we expect it
-    public validate(): boolean {
-        return true;
-        // Todo: check all slots, check that slot+sizes are correct
+    public validate(): string | null {
+        return this._validate_slots(this.Slots);
+    }
+
+    // Adds weapon to next available fitting, if possible. If not, returns a string stating an error
+    public try_add_weapon(wep: MechWeapon) {
+        for(let s of this.Slots) {
+            if(s.check_can_take(wep) === null) {
+                // Put it
+                s.Weapon = wep;
+            }
+        }
+    }
+
+    // Clear all slots
+    public reset() {
+        this.Slots = this._slots_for_mount(this.MountType);
+    }
+
+    // Pre-populate slots for a mount
+    private _slots_for_mount(mount: MountType): WeaponSlot[] {
+        switch(mount) {
+            case MountType.Main:
+                return [new WeaponSlot(null, null, FittingSize.Main, this)];
+            case MountType.Aux:
+                return [new WeaponSlot(null, null, FittingSize.Auxiliary, this)];
+            case MountType.Flex:
+            case MountType.MainAux: // Differ only in acceptable configurations
+                return [new WeaponSlot(null, null, FittingSize.Main, this), new WeaponSlot(null, null, FittingSize.Auxiliary, this)];
+            case MountType.AuxAux:
+                return [new WeaponSlot(null, null, FittingSize.Auxiliary, this), new WeaponSlot(null, null, FittingSize.Auxiliary, this)];
+            case MountType.Heavy: 
+                return [new WeaponSlot(null, null, FittingSize.Heavy, this)];
+            case MountType.Integrated:
+                return [new WeaponSlot(null, null, FittingSize.Integrated, this)];
+            default:
+                return [];
+        }
+    }
+
+    // Match the provided mount data. Use the provided reg to facillitate lookup of required items from outside of mech
+    public async sync(mnt: PackedMountData, override_reg: Registry) {
+        // Init slots based on our size
+        this.MountType = mnt.mount_type as MountType;
+        this.Slots = this._slots_for_mount(this.MountType);
+
+        // Prepare to map them out
+        let packed_slots = [...mnt.slots, ...mnt.extra];
+
+        // Sync step through them. Stop if we are main + flex. Important that we don't just clobber for loading and other information preservation (I think? it is late...)
+        for(let i = 0; i < this.Slots.length; i++) {
+            let s = this.Slots[i];
+            let cw = packed_slots[i];
+            if(cw) {
+                await s.sync(cw, override_reg, this.OpCtx);
+            }
+        }
     }
 
     public async load(data: RegWepMountData): Promise<void> {
-        this.Fitting = data.fitting;
-        this.Slots = [];
-        for (let s of data.slots) {
-            let wep = s.weapon ? await this.Registry.resolve(this.OpCtx, s.weapon) : null;
-            if (!wep) {
-                // It has been removed, in all likelihood
-                this.Slots.push({
-                    Weapon: null,
-                    Mod: null,
-                    Size: s.size,
-                });
-            } else {
-                // Now look for mod
-                let mod = s.mod ? await this.Registry.resolve(this.OpCtx, s.mod) : null;
-                this.Slots.push({
-                    Weapon: wep,
-                    Mod: mod,
-                    Size: s.size,
-                });
-            }
+        this.MountType = data.mount_type;
+        this.Slots = this._slots_for_mount(this.MountType);
+
+        for (let i=0; i<data.slots.length && i < this.Slots.length; i++) {
+            let s = data.slots[i];
+            this.Slots[i].Weapon = s.weapon ? await this.Registry.resolve(this.OpCtx, s.weapon) : null;
+            this.Slots[i].Mod = s.mod ? await this.Registry.resolve(this.OpCtx, s.mod) : null;
         }
     }
 
     public async save(): Promise<RegWepMountData> {
         return {
-            fitting: this.Fitting,
+            mount_type: this.MountType,
             slots: this.Slots.map(s => {
                 return {
                     mod: s.Mod?.as_ref() ?? null,
@@ -249,201 +504,25 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 }
 
-/*
-export class MechLoadout {
-    IntegratedMounts!: IntegratedMount[];
-    EquippableMounts!: EquippableMount[];
-    ImprovedArmament!: EquippableMount;
-    IntegratedWeapon!: EquippableMount;
-    Systems!: MechSystem[];
-    IntegratedSystems!: MechSystem[];
+function size_num(size: WeaponSize | FittingSize) {
+    switch(size) {
+        case WeaponSize.Aux:
+        case FittingSize.Auxiliary:
+            return 1;
 
-    public constructor(mech: Mech) {
-        super(mech.Loadouts ? mech.Loadouts.length : 0);
-        this._integratedMounts = [...mech.IntegratedMounts];
-        this._equippableMounts = mech.Frame.Mounts.map(x => new EquippableMount(x));
-        this._systems = [];
-        this._integratedSystems = mech.IntegratedSystems;
-        this._improvedArmament = new EquippableMount(MountType.Flex);
-        this._integratedWeapon = new EquippableMount(MountType.Aux);
-    }
+        case WeaponSize.Main:
+        case FittingSize.Main:
+        case FittingSize.Flex:
+            return 2;
 
-    public UpdateIntegrated(mech: Mech): void {
-        this._integratedSystems.splice(0, this._integratedSystems.length);
+        case WeaponSize.Heavy:
+        case FittingSize.Heavy:
+            return 3;
 
-        mech.IntegratedSystems.forEach(s => {
-            this._integratedSystems.push(s);
-        });
+        case WeaponSize.Superheavy:
+            return 4;
 
-        this._integratedMounts.splice(0, this._integratedMounts.length);
-
-        mech.IntegratedMounts.forEach(s => {
-            this._integratedMounts.push(s);
-        });
-
-        console.log(this._integratedMounts);
-
-        this.save();
-    }
-
-    public AllMounts(improved?: boolean | null, integrated?: boolean | null): Mount[] {
-        let ms: Mount[] = [];
-        if (integrated) ms.push(this._integratedWeapon);
-        if (improved && this._equippableMounts.length < 3) ms.push(this._improvedArmament);
-        ms = ms.concat(this._equippableMounts).concat(this._integratedMounts);
-        return ms;
-    }
-
-    public AllEquippableMounts(
-        improved?: boolean | null,
-        integrated?: boolean | null
-    ): EquippableMount[] {
-        let ms: EquippableMount[] = [];
-        if (integrated) ms.push(this.IntegratedWeapon);
-        if (improved && this.EquippableMounts.length < 3) ms.push(this.ImprovedArmament);
-        ms = ms.concat(this.EquippableMounts);
-        return ms;
-    }
-
-    public get Mounts(): Mount[] {
-        return (this._integratedMounts as Mount[]).concat(this._equippableMounts);
-    }
-
-    public get HasEmptyMounts(): boolean {
-        return this._equippableMounts
-            .filter(x => !x.IsLocked)
-            .flatMap(x => x.Slots)
-            .some(y => y.Weapon === null);
-    }
-
-    public RemoveRetrofitting(): void {
-        this.AllEquippableMounts(true, true).forEach(x => {
-            if (x.Bonuses.some(x => x.ID === "cb_mount_retrofitting")) x.ClearBonuses();
-        });
-    }
-
-    public get Equipment(): MechEquipment[] {
-        const mods = this.Weapons.map(x => x.Mod).filter(x => x != null);
-        const equip = (this.Weapons as MechEquipment[])
-            .concat(this.Systems as MechEquipment[])
-            .concat(this.IntegratedSystems as MechEquipment[]);
-        if (mods.length > 0) return equip.concat(mods as MechEquipment[]);
-        else return equip;
-    }
-
-    public get Weapons(): MechWeapon[] {
-        return this.AllMounts(true, true)
-            .filter(x => !x.IsLocked)
-            .flatMap(x => x.Weapons)
-            .filter(x => x != null);
-    }
-
-    public ReloadAll(): void {
-        this.Weapons.forEach(w => {
-            if (w.IsLoading) w.Loaded = true;
-        });
-    }
-
-    public UnequipSuperheavy(): void {
-        this.AllEquippableMounts(true, true).forEach(x => x.Unlock());
-    }
-
-    public get IntegratedSystems(): MechSystem[] {
-        return this._integratedSystems;
-    }
-
-    public get Systems(): MechSystem[] {
-        return this._systems;
-    }
-
-    public set Systems(systems: MechSystem[]) {
-        this._systems = systems;
-        this.save();
-    }
-
-    public HasSystem(systemID: string): boolean {
-        return this.Systems.some(x => x.ID === systemID);
-    }
-
-    public GetSystem(systemID: string): MechSystem | null {
-        return this.Systems.find(x => x.ID === systemID) || null;
-    }
-
-    public AddSystem(system: MechSystem): void {
-        const sys = _.cloneDeep(system);
-        this._systems.push(sys);
-        this.save();
-    }
-
-    public ChangeSystem(index: number, system: MechSystem): void {
-        this._systems.splice(index, 1, _.cloneDeep(system));
-        this.save();
-    }
-
-    public RemoveSystem(system: MechSystem): void {
-        const index = this._systems.findIndex(x => _.isEqual(x, system));
-        if (index > -1) this._systems.splice(index, 1);
-        this.save();
-    }
-
-    // Returns a list of requirements to provide every system, mod, and weapon used in
-    // this mech loadout. Does not include the fraame itself
-    public RequiredLicenses(): LicensedRequirementBuilder {
-        // Init list
-        const requirements = new LicensedRequirementBuilder();
-
-        // Collect all required items
-        const equippedWeapons = this.Weapons as LicensedItem[];
-        const equippedMods = this.Weapons.map(x => x.Mod).filter(x => x !== null) as LicensedItem[];
-        const equippedSystems = this._systems as LicensedItem[];
-        const all_equipped = _.concat(equippedWeapons, equippedMods, equippedSystems);
-
-        // add each and return
-        for (let item of all_equipped) {
-            requirements.add_item(item);
-        }
-        return requirements;
-    }
-
-    public get TotalSP(): number {
-        const mountSP = [...this._equippableMounts, this._improvedArmament, this._integratedWeapon]
-            .flatMap(x => x.Weapons)
-            .reduce(function(a, b) {
-                return a + (b ? b.TotalSP : 0);
-            }, 0);
-
-        const systemSP = this._systems.reduce(function(a, b) {
-            return a + b.SP;
-        }, 0);
-        return mountSP + systemSP;
-    }
-
-    /*
-    public get UniqueWeapons(): MechWeapon[] {
-        return this.Weapons.filter(x => x.IsUnique);
-    }
-
-    public get UniqueSystems(): MechSystem[] {
-        return this.Systems.filter(x => x.IsUnique);
-    }
-
-    public get UniqueMods(): WeaponMod[] {
-        return this.Weapons.map(x => x.Mod).filter(y => y && y.IsUnique) as WeaponMod[]; // filter omits null
-    }
-
-    public get UniqueItems(): MechEquipment[] {
-        return (this.UniqueWeapons as MechEquipment[])
-            .concat(this.UniqueSystems as MechEquipment[])
-            .concat(this.UniqueMods as MechEquipment[]);
-    }
-
-    public get AICount(): number {
-        return this.Equipment.filter(x => x.).length;
-    }
-
-    public get Color(): string {
-        return "mech-system";
+        case FittingSize.Integrated:
+            return 5; // can hold anything
     }
 }
-
-    */

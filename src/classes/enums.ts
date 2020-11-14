@@ -41,7 +41,7 @@ export enum FittingSize {
     Main = "Main",
     Flex = "Flex",
     Heavy = "Heavy",
-    Integrated = "Integrated",
+    Integrated = "Integrated", // wildcard basically
 }
 
 export function getFittingSize(raw: string): FittingSize {

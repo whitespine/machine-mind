@@ -223,6 +223,7 @@ export function MECH_WEAPON(): RegMechWeaponData {
         name: "New Mech Weapon",
         source: null,
         sp: 0,
+        uses: 0,
         profiles: [
             {
                 actions: [],
@@ -409,7 +410,6 @@ export function WEAPON_MOD(): RegWeaponModData {
         integrated: [],
         license: "",
         license_level: 0,
-        loaded: true,
         name: "New Weapon Mod",
         source: null,
         tags: [],

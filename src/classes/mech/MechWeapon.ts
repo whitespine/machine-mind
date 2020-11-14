@@ -58,6 +58,7 @@ export interface RegMechWeaponData {
   selected_profile: number;
   integrated: RegRef<any>[];
   "deployables": RegRef<EntryType.DEPLOYABLE>[],
+  "uses": number,
   profiles: RegMechWeaponProfile[];
   
 
@@ -86,7 +87,7 @@ export interface RegMechWeaponProfile   {
 
 export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
   // Generic equip info
-   ID!: string
+  ID!: string
   Name!: string
   Source!: Manufacturer | null; // must be the same as the Manufacturer ID to sort correctly
   License!: string // reference to the Frame name of the associated license
@@ -106,6 +107,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
   Loaded!: boolean;
   Destroyed!: boolean;
   Cascading!: boolean; // In case GRAND-UNCLE ever exists
+  Uses!: number;
 
   public async load(data: RegMechWeaponData): Promise<void> {
     data = {...defaults.MECH_WEAPON(), ...data};
@@ -123,6 +125,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
     this.Loaded = data.loaded;
     this.Destroyed = data.destroyed;
     this.Cascading = data.cascading;
+    this.Uses = data.uses;
 
     this.SelectedProfileIndex = data.selected_profile;
     // The big one
@@ -169,7 +172,8 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       sp: this.SP,
       loaded: this.Loaded,
       cascading: this.Cascading,
-      destroyed: this.Destroyed
+      destroyed: this.Destroyed,
+      uses: this.Uses
     }
   }
 

@@ -750,7 +750,7 @@ export async function cloud_sync(
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
     let pilot_inv = pilot.get_inventory();
     // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
-    let covetous = new CovetousReg(pilot_inv, compendium_reg);
+    let covetous = new CovetousReg(pilot_inv, [compendium_reg]);
     let ctx = pilot.OpCtx;
     // Identity
     pilot.ID = data.id;

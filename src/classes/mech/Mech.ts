@@ -18,6 +18,7 @@ import { bound_int } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
 import { EntryType, InventoriedRegEntry, LiveEntryTypes, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { CC_VERSION, DamageType } from "../enums";
+import { CovetousCatStack, CovetousReg } from '../regstack';
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
@@ -611,7 +612,13 @@ export async function mech_cloud_sync(
 ): Promise<void> {
     // Reg stuff
     let mech_inv = mech.get_inventory();
-    let pilot_inv = mech.Pilot?.get_inventory();
+    let ctx = mech.OpCtx;
+    let covetous: CovetousReg;
+    if(mech.Pilot) {
+        covetous = new CovetousReg(mech_inv, [mech.Pilot.get_inventory(), compendium_reg]);
+    } else {
+        covetous = new CovetousReg(mech_inv, [compendium_reg]);
+    }
 
     // All of this is trivial
     mech.ID = data.id;
@@ -637,45 +644,14 @@ export async function mech_cloud_sync(
     mech.Resistances = data.resistances as DamageType[];
     mech.Reactions = data.reactions;
 
-    // Insinuates the item if it is not in the mechs inventory. Use to cache fallback items from reg_stack and bring them over
-    async function get_owned<T extends EntryType>(item: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
-        // resolve it from our own inv
-        let from_mech = await mech_inv.resolve(mech.OpCtx, item);
-
-        // Failing that try resolve from the pilot, save to mech
-        if(!from_mech && pilot_inv) {
-            let from_pilot = await pilot_inv.resolve(new OpCtx(), item);
-            if(from_pilot) {
-                from_mech = await from_pilot.insinuate(mech_inv) as LiveEntryTypes<T>;
-            }
-        }
-
-        // Failing that resolve from the compendium, save to mech
-        if(!from_mech) {
-            let from_compendium = await compendium_reg.resolve(new OpCtx(), item);
-            if(!from_compendium) return null;
-            from_mech = await from_compendium.insinuate(mech_inv) as LiveEntryTypes<T>;
-        }
-        return from_mech;
-    }
-
-    async function get_many_owned<T extends EntryType>(items: RegRef<T>[]): Promise<LiveEntryTypes<T>[]> {
-        let result: LiveEntryTypes<T>[] = [];
-        for(let i of items) {
-            let v = await get_owned(i);
-            if(v) result.push(v);
-        }
-        return result;
-    }
-
     // We only take one loadout - whichever is active
     let packed_loadout = data.loadouts[data.active_loadout_index];
 
+    // The unpacking process does basically everything we need, including insinuation (thank you covetous ref!)
+    await mech.Loadout.sync(data.frame, packed_loadout, covetous);
     // Resolve the frame and set it
+    // mech.Loadout.unpack(packed_loadout, 
 
-
-    // We only keep one loadout
-    //todo
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)
     for(let s of mech.StatusesAndConditions) {
@@ -684,7 +660,7 @@ export async function mech_cloud_sync(
     let snc_names = [...data.statuses, ...data.conditions];
 
     // And re-resolve
-    await get_many_owned(snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
+    await covetous.resolve_many(ctx, snc_names.map(n => quick_mm_ref(EntryType.STATUS, n)));
 
     // We always want to insinuate and writeback to be sure we own all of these items
     await mech.writeback();

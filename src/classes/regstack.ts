@@ -144,21 +144,25 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
 
 // Provides a more agressive version of the regstack - this one will actively make copies of anything it cant immediately find
 export class CovetousReg extends Registry {
-    private fallback: Registry;
+    private fallbacks: Registry[];
     private base: Registry; // We try to read from here. If we cannot, but find what we desire in fallback, we make a local copy and return that.
 
-    constructor(base: Registry, fallback: Registry) {
+    constructor(base: Registry, fallbacks: Registry[]) {
         super();
         this.base = base;
-        this.fallback = fallback;
+        this.fallbacks = fallbacks;
     }
 
     async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_rough(ctx, ref);
         if(!d) {
-            d = await this.fallback.resolve_rough(ctx, ref);
-            if(d) {
-                d = await d.insinuate(this.base);
+            // Try all fallbacks
+            for(let f of this.fallbacks){
+                d = await f.resolve_rough(ctx, ref);
+                if(d) {
+                    d = await d.insinuate(this.base);
+                    break;
+                }
             }
         }
         return d;
@@ -167,9 +171,13 @@ export class CovetousReg extends Registry {
     public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
         let d = await this.base.resolve_wildcard_mmid(ctx, mmid);
         if(!d) {
-            d = await this.fallback.resolve_wildcard_mmid(ctx, mmid);
-            if(d) {
-                d = await d.insinuate(this.base);
+            // Try all fallbacks
+            for(let f of this.fallbacks){
+                d = await f.resolve_wildcard_mmid(ctx, mmid);
+                if(d) {
+                    d = await d.insinuate(this.base);
+                    break;
+                }
             }
         }
         return d;
@@ -179,17 +187,18 @@ export class CovetousReg extends Registry {
         throw new Error("Getting inventory of a regstack is undefined behavior");
     }
 
-    async delete(...args: any) {
-        throw new Error("Cannot delete in regstack");
+    // Delete from base
+    public async delete(cat: EntryType, id: string) {
+        return this.base.delete(cat, id);
     }
 
     get_cat<T extends EntryType>(cat: T): RegCat<T> {
         // Get our two
         let base = this.base.get_cat(cat);
-        let fallback = this.fallback.get_cat(cat);
+        let fallbacks = this.fallbacks.map(f => f.get_cat(cat));
 
         // Make a temporary stack
-        return new CovetousCatStack(this, cat, base, fallback);
+        return new CovetousCatStack(this, cat, base, fallbacks);
     }
 
     is(other: Registry) {
@@ -199,25 +208,28 @@ export class CovetousReg extends Registry {
 
 export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     base: RegCat<T>;
-    fallback: RegCat<T>;
+    fallbacks: RegCat<T>[];
 
-    constructor(parent: Registry, cat: T, base: RegCat<T>, fallback: RegCat<T>) {
+    constructor(parent: Registry, cat: T, base: RegCat<T>, fallbacks: RegCat<T>[]) {
         super(parent, cat, () => {
             throw new Error(
-                "Whatever you just tried to do? don't do that. Creating an item is undefined behavior on a CovetousCatStack"
+                "Something went wrong in a covetous cat"
             );
         });
         this.base = base;
-        this.fallback = fallback;
+        this.fallbacks = fallbacks;
     }
 
     // Delegate to stack
     async lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null> {
         let d = await this.base.lookup_mmid(ctx, mmid);
         if(!d) {
-            d = await this.fallback.lookup_mmid(ctx, mmid);
-            if(d) {
-                d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+            for(let f of this.fallbacks) {
+                d = await f.lookup_mmid(ctx, mmid);
+                if(d) {
+                    d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+                    break;
+                }
             }
         }
         return d;
@@ -227,7 +239,10 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     async get_raw(id: string): Promise<RegEntryTypes<T> | null> {
         let d = await this.base.get_raw(id);
         if(!d) {
-            d = await this.fallback.get_raw(id);
+            for(let f of this.fallbacks){
+                d = await f.get_raw(id);
+                if(d) break;
+            }
         }
         // We don't want to insinuate - if the user gets live we will do that then
         return d;
@@ -242,35 +257,38 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null> {
         let d = await this.base.get_live(ctx, id);
         if(!d) {
-            d = await this.fallback.get_live(ctx, id);
-            if(d) {
-                d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+            for(let f of this.fallbacks) {
+                d = await f.get_live(ctx, id);
+                if(d) {
+                    d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
+                    break;
+                }
             }
         }
         return d;
     }
 
-    // Combine stack
+    // Use base
     async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
         return this.base.list_live(ctx);
     }
 
-    // Delegate to base
+    // Use base
     update(...items: LiveEntryTypes<T>[]): Promise<void> {
         return this.base.update(...items);
     }
 
-    // Delegate to base
+    // Use base
     delete_id(id: string): Promise<RegEntryTypes<T> | null> {
         return this.base.delete_id(id);
     }
 
-    // Delegate to base
+    // Use base
     create_many(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
         return this.base.create_many(ctx, ...vals);
     }
 
-    // Delegate to base
+    // Use base
     create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>> {
         return this.base.create_default(ctx);
     }
