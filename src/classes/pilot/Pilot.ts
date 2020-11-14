@@ -47,6 +47,7 @@ import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from '../enums';
 import { skills } from 'lancer-data';
 import { SSL_OP_SINGLE_DH_USE } from 'constants';
+import { CovetousReg } from '../regstack';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -749,30 +750,8 @@ export async function cloud_sync(
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
     let pilot_inv = pilot.get_inventory();
     // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
-
-    // Insinuates the item if it is not in the pilots inventory. Use to cache fallback items from reg_stack and bring them over
-    async function get_owned<T extends EntryType>(item: RegRef<T>): Promise<LiveEntryTypes<T> | null> {
-        // resolve it from our own inv
-        let from_pilot = await pilot_inv.resolve(pilot.OpCtx, item);
-
-        // Failing that resolve from the compendium, save to pilot, and return
-        if(!from_pilot) {
-            let from_compendium = await compendium_reg.resolve(new OpCtx(), item);
-            if(!from_compendium) return null;
-            from_pilot = await from_compendium.insinuate(pilot_inv) as LiveEntryTypes<T>;
-        }
-        return from_pilot;
-    }
-
-    async function get_many_owned<T extends EntryType>(items: RegRef<T>[]): Promise<LiveEntryTypes<T>[]> {
-        let result: LiveEntryTypes<T>[] = [];
-        for(let i of items) {
-            let v = await get_owned(i);
-            if(v) result.push(v);
-        }
-        return result;
-    }
-
+    let covetous = new CovetousReg(pilot_inv, compendium_reg);
+    let ctx = pilot.OpCtx;
     // Identity
     pilot.ID = data.id;
     pilot.Name = data.name;
@@ -784,12 +763,42 @@ export async function cloud_sync(
     pilot.Portrait = data.portrait; // Should this be a link or something? Mayabe just not sync it?
     pilot.TextAppearance = data.text_appearance;
 
-    // Do mechs first.
+    // Fetch licenses. Need to do before mech or else itll fail to get its equipment from the pilot. Also need to update rank 
+    let license_ctx = new OpCtx();
+    for(let t of data.licenses) {
+        // Find the corresponding mech
+        let found_mech = await compendium_reg.get_cat(EntryType.FRAME).lookup_mmid(license_ctx, t.id);
+
+        if(found_mech) {
+            // Get the pilot licenses
+            let owned_licenses = await pilot_inv.get_cat(EntryType.LICENSE).list_live(ctx);
+
+            // We use the mech name as the license names
+            let found_license = owned_licenses.find(l => l.Name == found_mech?.Name);
+
+            // If we did not find, we attempt to look in the compendium
+            if(!found_license) {
+                let all_licenses = await compendium_reg.get_cat(EntryType.LICENSE).list_live(license_ctx);
+                found_license = all_licenses.find(l => l.Name == found_mech?.Name);
+                found_license = await found_license?.insinuate(pilot_inv);
+            }
+
+            // If we have at this point found, update rank and writeback
+            if(found_license) {
+                // Update rank
+                found_license.CurrentRank= t.rank;
+                await found_license.writeback();
+            }
+        }
+    }
+
+
+    // Then do mechs
     for (let md of data.mechs) {
         let corr_mech = pilot.Mechs.find(m => m.ID == md.id);
         if (!corr_mech) {
             // Make a new one
-            corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(pilot.OpCtx);
+            corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
             // Add it to the pilot
             pilot.Mechs.push(corr_mech);
         }
@@ -801,7 +810,7 @@ export async function cloud_sync(
     // TODO: this is weird. compcon doesn't really do quirks. For now we just make new quirk if the quirk descriptions don't match?
     if (data.quirk) {
         if(!pilot.Quirks.find(q => q.Description  == data.quirk)) {
-            Quirk.unpack(data.quirk, pilot_inv, pilot.OpCtx);
+            Quirk.unpack(data.quirk, pilot_inv, ctx);
             // Nothing else needs to be done
         }
     }
@@ -814,7 +823,7 @@ export async function cloud_sync(
     // Look for faction. Create if not present
     if (data.factionID) {
         if(!pilot.Factions.find(f => f.ID == data.factionID)) {
-            let new_faction = await pilot_inv.create(EntryType.FACTION, pilot.OpCtx);
+            let new_faction = await pilot_inv.create(EntryType.FACTION, ctx);
             new_faction.ID = data.factionID;
             new_faction.writeback();
         }
@@ -837,7 +846,7 @@ export async function cloud_sync(
     );
 
     // Core bonuses. Does not delete. All we care about is that we have them
-    await get_many_owned(data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)));
+    await covetous.resolve_many(ctx, data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)));
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // For reserves, as they lack a meaningful way of identification we just clobber.
@@ -847,17 +856,17 @@ export async function cloud_sync(
         for(let ur of pilot.Reserves) {
             ur.destroy_entry();
         }
-        await Reserve.unpack(r, pilot_inv, pilot.OpCtx);
+        await Reserve.unpack(r, pilot_inv, ctx);
     }
 
     // Skills, we try to find and if not create
     for(let s of data.skills) {
         // Try to get/fetch pre-existing
-        let found = await get_owned(quick_mm_ref(EntryType.SKILL, s.id));
+        let found = await covetous.resolve(ctx, quick_mm_ref(EntryType.SKILL, s.id));
         if(!found) {
             // Make if we can
             if((s as PackedSkillData).custom) {
-                found = await Skill.unpack(s as PackedSkillData, pilot_inv, pilot.OpCtx);
+                found = await Skill.unpack(s as PackedSkillData, pilot_inv, ctx);
             } else {
                 // Nothing we can do for this one - ignore
                 console.warn("Unrecognized skill: " + s.id);
@@ -881,40 +890,11 @@ export async function cloud_sync(
 
     // Fetch talents. Also need to update rank. Due nothing to missing
     for(let t of data.talents) {
-        let found = await get_owned(quick_mm_ref(EntryType.TALENT, t.id));
+        let found = await covetous.resolve(ctx, quick_mm_ref(EntryType.TALENT, t.id));
         if(found) {
             // Update rank
             found.CurrentRank= t.rank;
             found.writeback();
-        }
-    }
-
-    // Fetch licenses. Also need to update rank Does not delete
-    let license_ctx = new OpCtx();
-    for(let t of data.licenses) {
-        // Find the corresponding mech
-        let found_mech = await compendium_reg.get_cat(EntryType.FRAME).lookup_mmid(license_ctx, t.id);
-
-        if(found_mech) {
-            // Get the pilot licenses
-            let owned_licenses = await pilot_inv.get_cat(EntryType.LICENSE).list_live(pilot.OpCtx);
-
-            // We use the mech name as the license names
-            let found_license = owned_licenses.find(l => l.Name == found_mech?.Name);
-
-            // If we did not find, we attempt to look in the compendium
-            if(!found_license) {
-                let all_licenses = await compendium_reg.get_cat(EntryType.LICENSE).list_live(license_ctx);
-                found_license = all_licenses.find(l => l.Name == found_mech?.Name);
-                found_license = await found_license?.insinuate(pilot_inv);
-            }
-
-            // If we have at this point found, update rank and writeback
-            if(found_license) {
-                // Update rank
-                found_license.CurrentRank= t.rank;
-                await found_license.writeback();
-            }
         }
     }
 
@@ -923,7 +903,7 @@ export async function cloud_sync(
         let corr_org = pilot.Orgs.find(o => o.Name == org.name);
         if (!corr_org) {
             // Make a new one
-            corr_org = await pilot_inv.get_cat(EntryType.ORGANIZATION).create_default(pilot.OpCtx);
+            corr_org = await pilot_inv.get_cat(EntryType.ORGANIZATION).create_default(ctx);
         } 
 
         // Update / init
@@ -945,13 +925,13 @@ export async function cloud_sync(
     let armor_refs = data.loadout.armor.filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_ARMOR, a!.id));
     let weapon_refs = [...data.loadout.weapons, ...data.loadout.extendedWeapons].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_WEAPON, a!.id));
     let gear_refs = [...data.loadout.gear, ...data.loadout.extendedGear].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_GEAR, a!.id));
-    await get_many_owned(armor_refs);
-    await get_many_owned(weapon_refs);
-    await get_many_owned(gear_refs);
+    await covetous.resolve_many(ctx, armor_refs);
+    await covetous.resolve_many(ctx, weapon_refs);
+    await covetous.resolve_many(ctx, gear_refs);
 
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(pilot.OpCtx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
-    pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, pilot.OpCtx); // Using reg stack here guarantees we'll grab stuff if we don't have it
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
 
     // We writeback. We should still be in a stable state though
     await pilot.writeback();

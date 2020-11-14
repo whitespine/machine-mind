@@ -1,4 +1,3 @@
-/*
 import {
     EntryType,
     LiveEntryTypes,
@@ -10,6 +9,7 @@ import {
     RegRef,
 } from "@src/registry";
 
+/*
 // Provides a mechanism for fallback regs
 export class RegStack extends Registry {
     // An array of registries to look in, in-order.
@@ -139,6 +139,8 @@ export class CatStack<T extends EntryType> extends RegCat<T> {
     }
 }
 
+*/
+
 
 // Provides a more agressive version of the regstack - this one will actively make copies of anything it cant immediately find
 export class CovetousReg extends Registry {
@@ -223,9 +225,24 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
 
     // Delegate to stack
     async get_raw(id: string): Promise<RegEntryTypes<T> | null> {
-        let d = await this.base.ge(ctx, mmid);
+        let d = await this.base.get_raw(id);
         if(!d) {
-            d = await this.fallback.lookup_mmid(ctx, mmid);
+            d = await this.fallback.get_raw(id);
+        }
+        // We don't want to insinuate - if the user gets live we will do that then
+        return d;
+    }
+
+    // Just give the base
+    async list_raw(): Promise<RegEntryTypes<T>[]> {
+        return this.base.list_raw();
+    }
+
+    // Delegate to stack
+    async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null> {
+        let d = await this.base.get_live(ctx, id);
+        if(!d) {
+            d = await this.fallback.get_live(ctx, id);
             if(d) {
                 d = await d.insinuate(this.base.parent) as LiveEntryTypes<T> | null;
             }
@@ -234,47 +251,27 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Combine stack
-    async list_raw(): Promise<RegEntryTypes<T>[]> {
-        // Be aware thate this will have duplicate entries
-        let result: RegEntryTypes<T>[] = [];
-        for (let r of this.stack) {
-            result.push(...(await r.list_raw()));
-        }
-        return result;
-    }
-
-    // Delegate to stack
-    async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null> {
-        for (let r of this.stack) {
-            let found = await r.get_live( ctx, id);
-            if (found) {
-                return found;
-            }
-        }
-        return null;
-    }
-
-    // Combine stack
     async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
-        // Be aware thate this will have duplicate entries
-        let result: LiveEntryTypes<T>[] = [];
-        for (let r of this.stack) {
-            result.push(...(await r.list_live(ctx)));
-        }
-        return result;
+        return this.base.list_live(ctx);
     }
 
+    // Delegate to base
     update(...items: LiveEntryTypes<T>[]): Promise<void> {
-        throw new Error("Undefined behavior on CatStack");
+        return this.base.update(...items);
     }
+
+    // Delegate to base
     delete_id(id: string): Promise<RegEntryTypes<T> | null> {
-        throw new Error("Undefined behavior on CatStack");
+        return this.base.delete_id(id);
     }
+
+    // Delegate to base
     create_many(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
-        throw new Error("Undefined behavior on CatStack");
+        return this.base.create_many(ctx, ...vals);
     }
+
+    // Delegate to base
     create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>> {
-        throw new Error("Undefined behavior on CatStack");
+        return this.base.create_default(ctx);
     }
 }
-*/
