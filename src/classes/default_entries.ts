@@ -1,4 +1,9 @@
+import { defaults } from '@src/funcs';
 import {
+    IEnvironmentData,
+    IFactionData,
+    IOrganizationData,
+    IStatusData,
     RegCoreBonusData,
     RegCoreSystemData,
     RegDeployableData,
@@ -19,7 +24,9 @@ import {
     RegTalentRank,
     RegWeaponModData,
 } from "@src/interface";
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 import { nanoid } from "nanoid";
+import { ISitrepData } from './encounter/Sitrep';
 import {
     ActivationType,
     CC_VERSION,
@@ -31,7 +38,16 @@ import {
     WeaponSize,
     WeaponType,
     SkillFamily,
+    OrgType,
 } from "./enums";
+import { RegQuirkData } from './pilot/Quirk';
+import { ITagTemplateData } from './Tag';
+
+// Some general defaults
+const description = "No description";
+const color = "#777777";
+const icon = "";
+const logo = icon;
 
 export function CORE_BONUS(): RegCoreBonusData {
     return {
@@ -40,7 +56,7 @@ export function CORE_BONUS(): RegCoreBonusData {
         synergies: [],
         counters: [],
         deployables: [],
-        description: "",
+        description,
         integrated: [],
         name: "New Core Bonus",
         effect: "",
@@ -53,7 +69,7 @@ export function CORE_BONUS(): RegCoreBonusData {
 export function CORE_SYSTEM(): RegCoreSystemData {
     return {
         name: "New Core Active",
-        description: "",
+        description,
         use: FrameEffectUse.Unknown,
 
         activation: ActivationType.Quick,
@@ -107,6 +123,27 @@ export function DEPLOYABLE(): RegDeployableData {
     };
 }
 
+export function ENVIRONMENT(): IEnvironmentData {
+    return {
+        description,
+        id: nanoid(),
+        name: "New Environment"
+    }
+}
+
+export function FACTION(): IFactionData {
+    return {
+        color,
+        description,
+        id: nanoid(),
+        logo,
+        name: "New Faction",
+        logo_url: ""
+    }
+}
+
+
+
 export function FRAME_TRAIT(): RegFrameTraitData {
     return {
         actions: [],
@@ -116,7 +153,7 @@ export function FRAME_TRAIT(): RegFrameTraitData {
         // tags: [],
         deployables: [],
         integrated: [],
-        description: "",
+        description,
         name: "New Fraame Trait",
         use: FrameEffectUse.Unknown,
     };
@@ -124,7 +161,7 @@ export function FRAME_TRAIT(): RegFrameTraitData {
 
 export function FRAME(): RegFrameData {
     return {
-        description: "",
+        description,
         id: nanoid(),
         license_level: 2,
         mechtype: ["BALANCED"],
@@ -167,10 +204,10 @@ export function LICENSE(): RegLicenseData {
 export function MANUFACTURER(): RegManufacturerData {
     return {
         dark: "#000000",
-        description: "",
+        description,
         id: nanoid(),
         light: "#EEEEEE",
-        logo: "",
+        logo,
         name: "New Manufacturer",
         quote: "We sell mechs and mech accessories",
     };
@@ -228,7 +265,7 @@ export function MECH_WEAPON(): RegMechWeaponData {
                 actions: [],
                 bonuses: [],
                 synergies: [],
-                description: "",
+                description,
                 type: WeaponType.Rifle,
                 counters: [],
                 damage: [{ type: DamageType.Kinetic, val: "1d6" }],
@@ -266,9 +303,20 @@ export function MECH_SYSTEM(): RegMechSystemData {
         actions: [],
         bonuses: [],
         synergies: [],
-        description: "",
+        description,
         type: SystemType.System,
     };
+}
+
+export function ORGANIZATION(): IOrganizationData {
+    return {
+        actions: "",
+        description,
+        efficiency: 0 ,
+        influence: 0,
+        name: "New Organization",
+        purpose:  OrgType.Academic // Just the alphabetic first
+    }
 }
 
 export function PILOT_GEAR(): RegPilotGearData {
@@ -276,7 +324,7 @@ export function PILOT_GEAR(): RegPilotGearData {
         actions: [],
         bonuses: [],
         deployables: [],
-        description: "",
+        description,
         id: nanoid(),
         name: "New Gear",
         synergies: [],
@@ -389,10 +437,89 @@ export function RESERVE(): RegReserveData {
         actions: [],
         bonuses: [],
         deployables: [],
-        description: "",
+        description,
         id: nanoid(),
         synergies: [],
     };
+}
+
+export function SITREP(): ISitrepData {
+    return {
+        description,
+        enemyVictory: "The enemy wins when ___",
+        id: nanoid(),
+        name: "New Sitrep",
+        pcVictory: "The PCs win when ___",
+    }
+}
+
+export function SKILL(): RegSkillData {
+    return {
+        id: nanoid(),
+        description: "can sing the dk rap really well",
+        detail: "",
+        family: SkillFamily.cha,
+        name: "New Skill",
+        rank: 1,
+    };
+}
+
+export function STATUS(): IStatusData {
+        return {
+            effects: [],
+            icon,
+            name: "New Status/Condition",
+            type: "Status"
+        }
+
+}
+
+export function TAG_TEMPLATE(): ITagTemplateData {
+    return {
+        description,
+        id: "tg_"+nanoid(),
+        name: "New Tag",
+        hidden: false
+    }
+}
+
+export function TALENT(): RegTalentData {
+    return {
+        curr_rank: 1,
+        description,
+        icon,
+        id: nanoid(),
+        name: "New Talent",
+        ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
+        terse: "",
+    };
+}
+
+export function TALENT_RANK(): RegTalentRank {
+    return {
+        actions: [],
+        bonuses: [],
+        synergies: [],
+        counters: [],
+        deployables: [],
+        description,
+        exclusive: false,
+        integrated: [],
+        name: "Rank X",
+    };
+}
+
+export function QUIRK(): RegQuirkData {
+    return {
+        actions: [],
+        bonuses: [],
+        counters: [],
+        deployables: [],
+        description,
+        integrated: [],
+        name: "New Quirk",
+        synergies: []
+    }
 }
 
 export function WEAPON_MOD(): RegWeaponModData {
@@ -419,42 +546,5 @@ export function WEAPON_MOD(): RegWeaponModData {
         added_range: [],
         bonuses: [],
         synergies: [],
-    };
-}
-
-export function SKILL(): RegSkillData {
-    return {
-        id: nanoid(),
-        description: "can sing the dk rap really well",
-        detail: "",
-        family: SkillFamily.cha,
-        name: "New Skill",
-        rank: 1,
-    };
-}
-
-export function TALENT(): RegTalentData {
-    return {
-        curr_rank: 1,
-        description: "",
-        icon: "",
-        id: nanoid(),
-        name: "New Talent",
-        ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
-        terse: "",
-    };
-}
-
-export function TALENT_RANK(): RegTalentRank {
-    return {
-        actions: [],
-        bonuses: [],
-        synergies: [],
-        counters: [],
-        deployables: [],
-        description: "",
-        exclusive: false,
-        integrated: [],
-        name: "Rank X",
     };
 }
