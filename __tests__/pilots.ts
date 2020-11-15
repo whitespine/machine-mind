@@ -73,10 +73,10 @@ describe("Pilots", () => {
         expect(talent_names).toContain("grease monkey"); // 14
 
         // Mech skills
-        expect(dk.MechSkills.Hull).toEqual(1);
-        expect(dk.MechSkills.Agi).toEqual(0);
-        expect(dk.MechSkills.Sys).toEqual(1);
-        expect(dk.MechSkills.Eng).toEqual(0); // 18
+        expect(dk.MechSkills.Hull).toEqual(2);
+        expect(dk.MechSkills.Agi).toEqual(4);
+        expect(dk.MechSkills.Sys).toEqual(2);
+        expect(dk.MechSkills.Eng).toEqual(6); // 18
 
 
         // Loadout
