@@ -89,8 +89,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     CloudPortrait!: string;
     BuiltInImg!: string;
     Loadout!: MechLoadout;
-    private _current_structure!: number; // Get set elsewhere to bound
-    private _current_stress!: number;
+    CurrentStructure!: number; // Get set elsewhere to bound
+    CurrentStress!: number;
     Overshield!: number;
     CurrentHeat!: number;
     CurrentHP!: number;
@@ -283,13 +283,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // -- Stats -------------------------------------------------------------------------------------
-    public get CurrentStructure(): number {
-        return this._current_structure;
-    }
-
-    public set CurrentStructure(structure: number) {
-        this._current_structure = bound_int(structure, 0, this.MaxStructure);
-    }
 
     public get MaxStructure(): number {
         if (!this.Frame) return 0;
@@ -358,15 +351,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public get HeatCapacity(): number {
         if (!this.Frame) return 0;
         return this.Frame.Stats.heatcap + this.sum_bonuses("heatcap");
-    }
-
-    public get CurrentStress(): number {
-        if (!this.Frame) return 0;
-        return this._current_stress;
-    }
-
-    public set CurrentStress(stress: number) {
-        this._current_stress = bound_int(stress, 0, this.MaxStress);
     }
 
     public get MaxStress(): number {
@@ -536,7 +520,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             current_structure: this.CurrentStructure,
             current_hp: this.CurrentHP,
             overshield: this.Overshield,
-            current_stress: this._current_stress,
+            current_stress: this.CurrentStress,
             current_heat: this.CurrentHeat,
             current_repairs: this.CurrentRepairs,
             current_overcharge: this.CurrentOvercharge,
@@ -567,7 +551,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
         this.Overshield = data.overshield || 0;
-        this._current_stress = data.current_stress;
+        this.CurrentStress = data.current_stress;
         this.CurrentHeat = data.current_heat;
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge || 0;
