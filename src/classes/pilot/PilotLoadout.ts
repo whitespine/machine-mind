@@ -202,9 +202,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             extendedGear: reffer(extended_gear),
             extendedWeapons: reffer(extended_weapons),
         };
-        let final_v = new PilotLoadout(reg, ctx, reg_dat);
-        await final_v.ready();
-        return final_v;
+        return new PilotLoadout(reg, ctx, reg_dat);
     }
 
     private static async resolve_state_item<T extends EntryType>(

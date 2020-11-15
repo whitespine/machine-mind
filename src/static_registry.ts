@@ -69,7 +69,7 @@ function simple_cat_builder<T extends EntryType>(
         reg,
         type,
         template,
-        (reg, ctx, id, raw) => {
+        async (reg, ctx, id, raw) => {
             // Our actual builder function shared between all cats.
             // First check for existing item in ctx
             let pre = ctx.get(id);
@@ -223,15 +223,15 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
 
     async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
         // We don't really need async, but we would in a normal situation like foundry
-        let result: LiveEntryTypes<T>[] = [];
+        let result: Promise<LiveEntryTypes<T>>[] = [];
         for (let [id, val] of this.reg_data.entries()) {
             result.push(this.revive_func(this.parent, ctx, id, val));
         }
-        return result;
+        return Promise.all(result);
     }
 
     async create_many_live(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
-        let revived: LiveEntryTypes<T>[] = [];
+        let revived: Promise<LiveEntryTypes<T>>[] = [];
 
         // Set and revive all
         for (let raw of vals) {
@@ -241,7 +241,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             revived.push(viv);
         }
 
-        return revived;
+        return Promise.all(revived);
     }
 
     async create_many_raw(...vals: RegEntryTypes<T>[]): Promise<RegRef<T>[]> {

@@ -145,6 +145,6 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
             deployables,
             counters,
         };
-        return reg.create(EntryType.RESERVE, ctx, rdata);
+        return reg.create_live(EntryType.RESERVE, ctx, rdata);
     }
 }

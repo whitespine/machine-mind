@@ -44,7 +44,7 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
 
-        let man = await c.create(ctx, {
+        let man = await c.create_live(ctx, {
             id: "bmw",
             name: "Big Mech Weapons",
             dark: "black",
@@ -227,8 +227,8 @@ describe("Static Registry Reference implementation", () => {
 
         let ctx = new OpCtx();
         // Make our pilot and mech
-        let pilot = await env.reg.create(EntryType.PILOT, ctx);
-        let mech = await env.reg.create(EntryType.MECH, ctx);
+        let pilot = await env.reg.create_live(EntryType.PILOT, ctx);
+        let mech = await env.reg.create_live(EntryType.MECH, ctx);
 
         // Make them friends
         pilot.Mechs.push(mech);

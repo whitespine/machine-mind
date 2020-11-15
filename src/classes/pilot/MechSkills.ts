@@ -52,7 +52,7 @@ export class MechSkills extends SimSer<IMechSkills> {
     // Get the bonuses imparted by these skills to mechs
     public get SkillBonuses(): Bonus[] {
         return [
-            Bonus.generate("hp", this.Hull, "HULL"),
+            Bonus.generate("hp", this.Hull * 2, "HULL"),
             Bonus.generate("repcap", Math.floor(this.Hull / 2), "HULL"),
             Bonus.generate("evasion", this.Agi, "AGI"),
             Bonus.generate("speed", Math.floor(this.Agi / 2), "AGI"),
@@ -79,7 +79,7 @@ export class MechSkills extends SimSer<IMechSkills> {
     ];
 
     public static BaseBonuses: Bonus[] = [
-        Bonus.generate("hp", Rules.BasePilotHP, "Base HP"),
+        Bonus.generate("pilot_hp", Rules.BasePilotHP, "Base HP"),
         Bonus.generate("skill_point", Rules.MinimumPilotSkills, "Base Points"),
         Bonus.generate("mech_skill_point", Rules.MinimumMechSkills, "Base Points"),
         Bonus.generate("talent_point", Rules.MinimumPilotTalents, "Base Points"),

@@ -207,7 +207,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         if (!this.Frame) return 0;
         // if (this.IsStunned) return 5;
         // TODO - allow status bonuses to override somehow
-        const bonus = this.sum_bonuses("evade");
+        const bonus = this.sum_bonuses("evasion");
         return this.Frame.Stats.evasion + bonus;
     }
 
@@ -570,10 +570,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
         // They will be two separate items. This is a bit odd, but for the most part the pilot-items are more of a "shop" for the mechs to insinuate from.
-        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
-        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
-        this._owned_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
-        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
+         subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx).then(d => this._owned_frames = d);
+         subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx).then(d => this._owned_systems = d);
+         subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx).then(d => this._owned_weapons = d);
+         subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx).then(d => this._owned_weapon_mods = d);
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects

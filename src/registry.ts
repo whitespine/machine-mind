@@ -552,7 +552,10 @@ export abstract class RegSer<SourceType> {
     constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
         this.Registry = registry;
         this.OpCtx = ctx;
-        this._load_promise = this.load(data);
+        ctx.enter(this);
+
+        // Load, and when done remove our pending entry
+        this._load_promise = this.load(data).then(() => ctx.exit(this));
     }
 
     // Async ready check
@@ -584,9 +587,11 @@ export abstract class RegEntry<T extends EntryType> {
         this.Registry = registry;
         this.RegistryID = id;
         this.OpCtx = ctx;
+        ctx.enter(this);
+        ctx.set(id, this);
 
-        // Load
-        this._load_promise = this.load(reg_data);
+        // Load, and when done remove our pending entry
+        this._load_promise = this.load(reg_data).then(() => ctx.exit(this));
     }
     // Async ready check
     public async ready(): Promise<this> {
@@ -705,7 +710,7 @@ export abstract class RegEntry<T extends EntryType> {
         let saved = ((await this.save()) as unknown) as RegEntryTypes<T>;
 
         // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
-        let new_entry = await to_new_reg.create(this.Type, this.OpCtx, saved);
+        let new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
 
         // Update our ID now as well, since it has been decided by the registry. This only really matters to make the outer _refreshed()_ call work better
         (this as any).RegistryID = new_entry.RegistryID;
@@ -759,7 +764,7 @@ export type ReviveFunc<T extends EntryType> = (
     ctx: OpCtx,
     id: string,
     raw: RegEntryTypes<T>
-) => LiveEntryTypes<T>;
+) => Promise<LiveEntryTypes<T>>;
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
 export class OpCtx {
@@ -770,13 +775,13 @@ export class OpCtx {
 
     get(id: string): RegEntry<any> | null {
         return this.resolved.get(id) ?? null;
-        }
+    }
 
     // Tell the ctx that we resolved <ref> as <val>
     set(id: string, val: RegEntry<any>) {
         // Make the reg entry if not there
         this.resolved.set(id, val);
-        }
+    }
 
     // A helper on set. Has finicky behavior on mmid resolution. Doesn't overwrite
     add(item: RegEntry<any>) {
@@ -787,9 +792,33 @@ export class OpCtx {
     delete(id: string) {
         this.resolved.delete(id);
     }
+
+    // Readyness
+    private pending_waiters: Array<() => any> = [];
+    enter(for_item: RegEntry<any> | RegSer<any>) {
+        this.pending++;
+        // console.log("Incrementing: " + this.pending + " for item " + (for_item as any).constructor?.name + (for_item as any).ID);
+    }
+
+    exit(for_item: RegEntry<any> | RegSer<any>) {
+        this.pending--;
+        // console.log("Decrementing: " + this.pending + " for item " + (for_item as any).constructor?.name + (for_item as any).ID);
+        /*
+        if(this.pending <= 0) {
+            this.pending = 0;
+            for(let succ of this.pending_waiters) {
+                succ(); // Tell it to keep going
             }
         }
+        */
     }
+    /*
+    settled(): Promise<void> {
+         return new Promise((succ, fail) => {
+            this.pending_waiters.push(succ);
+         });
+    }
+    */
 }
 
 export abstract class RegCat<T extends EntryType> {
@@ -882,7 +911,7 @@ export abstract class Registry {
     }
 
     // Create a live item. Shorthand for get cat and create
-    public async create<T extends EntryType>(
+    public async create_live<T extends EntryType>(
         type: T,
         ctx: OpCtx,
         val?: RegEntryTypes<T>
@@ -918,12 +947,6 @@ export abstract class Registry {
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
     public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
-        // Pre-Check ctx for a hit. Saves time given the laborious nature of this search
-        let pre = ctx.get(this, mmid);
-        if (pre) {
-            return pre;
-        }
-
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_mmid(ctx, mmid);

@@ -103,7 +103,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         // If found, just make us a copy
         if (found) {
             let cpy = await found.save();
-            return cat.create(cpy, ctx);
+            return cat.create_live(cpy, ctx);
         } else {
             // TODO
             throw new Error("Do not yet support custom skills cuz I am lazy");

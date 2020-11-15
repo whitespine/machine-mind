@@ -640,7 +640,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public async load(data: RegPilotData): Promise<void> {
-        // let data = {...defaults.PILOT(), ...
+        data = {...defaults.PILOT(), ...data};
         let subreg = this.get_inventory();
         this.ActiveMech = data.active_mech ? await subreg.resolve(this.OpCtx, data.active_mech) : null;
         this.Background = data.background;
@@ -657,7 +657,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.ID = data.id;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
-        this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
+        this.Loadout = await (new PilotLoadout(subreg, this.OpCtx, data.loadout)).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
         this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
         this.Mounted = data.mounted;
@@ -678,7 +678,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx);
         this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx);
         this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx);
-        this._owned_weapons =await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx); 
+        this._owned_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx);
         this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
     }
 
@@ -795,13 +795,19 @@ export async function cloud_sync(
 
     // Then do mechs
     for (let md of data.mechs) {
+        // Look up one the a matching compcon id
         let corr_mech = pilot.Mechs.find(m => m.ID == md.id);
+
         if (!corr_mech) {
             // Make a new one
             corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
             // Add it to the pilot
             pilot.Mechs.push(corr_mech);
         }
+
+        // Tell it we own it
+        corr_mech.Pilot = pilot;
+
         // Apply
         await mech_cloud_sync(md, corr_mech, compendium_reg);
     }
@@ -823,7 +829,7 @@ export async function cloud_sync(
     // Look for faction. Create if not present
     if (data.factionID) {
         if(!pilot.Factions.find(f => f.ID == data.factionID)) {
-            let new_faction = await pilot_inv.create(EntryType.FACTION, ctx);
+            let new_faction = await pilot_inv.create_live(EntryType.FACTION, ctx);
             new_faction.ID = data.factionID;
             new_faction.writeback();
         }
@@ -932,6 +938,7 @@ export async function cloud_sync(
     // Do loadout stuff
     pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
+    await pilot.Loadout.ready();
 
     // We writeback. We should still be in a stable state though
     await pilot.writeback();

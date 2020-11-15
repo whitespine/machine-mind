@@ -129,7 +129,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
 
     this.SelectedProfileIndex = data.selected_profile;
     // The big one
-    this.Profiles = data.profiles.map(p => new MechWeaponProfile(this.Registry, this.OpCtx,  p));
+    this.Profiles = await Promise.all(data.profiles.map(p => new MechWeaponProfile(this.Registry, this.OpCtx,  p).ready()));
   }
 
     // Is this mod an AI?

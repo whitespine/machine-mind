@@ -33,7 +33,7 @@ describe("Pilots", () => {
         let s = await init_basic_setup(true);
 
         let ctx = new OpCtx();
-        let p = await s.reg.create(EntryType.PILOT, ctx);
+        let p = await s.reg.create_live(EntryType.PILOT, ctx);
         validate_props(p);
         expect(true).toBeTruthy();
 
@@ -45,7 +45,7 @@ describe("Pilots", () => {
 
         // Load the king
         let ctx = new OpCtx();
-        let dk: Pilot = await s.reg.create(EntryType.PILOT, ctx);
+        let dk: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
         await cloud_sync(dk_data, dk, s.reg);
         dk = await dk.refreshed();
