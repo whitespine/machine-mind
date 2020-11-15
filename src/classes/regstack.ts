@@ -151,8 +151,8 @@ export class CovetousReg extends Registry {
         this.base = base;
         this.fallbacks = fallbacks;
 
-        for(let f of fallbacks) {
-            if(f instanceof CovetousReg) {
+        for (let f of fallbacks) {
+            if (f instanceof CovetousReg) {
                 throw new Error("cannot stack covetous reg");
             }
         }

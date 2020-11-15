@@ -1,4 +1,4 @@
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import {
     IEnvironmentData,
     IFactionData,
@@ -24,9 +24,9 @@ import {
     RegTalentRank,
     RegWeaponModData,
 } from "@src/interface";
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 import { nanoid } from "nanoid";
-import { ISitrepData } from './encounter/Sitrep';
+import { ISitrepData } from "./encounter/Sitrep";
 import {
     ActivationType,
     CC_VERSION,
@@ -40,8 +40,8 @@ import {
     SkillFamily,
     OrgType,
 } from "./enums";
-import { RegQuirkData } from './pilot/Quirk';
-import { ITagTemplateData } from './Tag';
+import { RegQuirkData } from "./pilot/Quirk";
+import { ITagTemplateData } from "./Tag";
 
 // Some general defaults
 const description = "No description";
@@ -127,8 +127,8 @@ export function ENVIRONMENT(): IEnvironmentData {
     return {
         description,
         id: nanoid(),
-        name: "New Environment"
-    }
+        name: "New Environment",
+    };
 }
 
 export function FACTION(): IFactionData {
@@ -138,11 +138,9 @@ export function FACTION(): IFactionData {
         id: nanoid(),
         logo,
         name: "New Faction",
-        logo_url: ""
-    }
+        logo_url: "",
+    };
 }
-
-
 
 export function FRAME_TRAIT(): RegFrameTraitData {
     return {
@@ -312,11 +310,11 @@ export function ORGANIZATION(): IOrganizationData {
     return {
         actions: "",
         description,
-        efficiency: 0 ,
+        efficiency: 0,
         influence: 0,
         name: "New Organization",
-        purpose:  OrgType.Academic // Just the alphabetic first
-    }
+        purpose: OrgType.Academic, // Just the alphabetic first
+    };
 }
 
 export function PILOT_GEAR(): RegPilotGearData {
@@ -450,7 +448,7 @@ export function SITREP(): ISitrepData {
         id: nanoid(),
         name: "New Sitrep",
         pcVictory: "The PCs win when ___",
-    }
+    };
 }
 
 export function SKILL(): RegSkillData {
@@ -465,22 +463,21 @@ export function SKILL(): RegSkillData {
 }
 
 export function STATUS(): IStatusData {
-        return {
-            effects: [],
-            icon,
-            name: "New Status/Condition",
-            type: "Status"
-        }
-
+    return {
+        effects: [],
+        icon,
+        name: "New Status/Condition",
+        type: "Status",
+    };
 }
 
 export function TAG_TEMPLATE(): ITagTemplateData {
     return {
         description,
-        id: "tg_"+nanoid(),
+        id: "tg_" + nanoid(),
         name: "New Tag",
-        hidden: false
-    }
+        hidden: false,
+    };
 }
 
 export function TALENT(): RegTalentData {
@@ -518,8 +515,8 @@ export function QUIRK(): RegQuirkData {
         description,
         integrated: [],
         name: "New Quirk",
-        synergies: []
-    }
+        synergies: [],
+    };
 }
 
 export function WEAPON_MOD(): RegWeaponModData {

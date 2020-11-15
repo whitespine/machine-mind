@@ -78,13 +78,7 @@ function simple_cat_builder<T extends EntryType>(
             }
 
             // Otherwise create
-            let new_item = new clazz(
-                type,
-                reg,
-                ctx,
-                id,
-                raw
-            );
+            let new_item = new clazz(type, reg, ctx, id, raw);
             ctx.set(id, new_item);
             await new_item.ready();
 
@@ -120,7 +114,9 @@ export class StaticReg extends Registry {
         this.init_set_cat(
             simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem, defaults.CORE_SYSTEM)
         );
-        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment, defaults.ENVIRONMENT));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.ENVIRONMENT, this, Environment, defaults.ENVIRONMENT)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction, defaults.FACTION));
         this.init_set_cat(
             simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait, defaults.FRAME_TRAIT)
@@ -136,7 +132,9 @@ export class StaticReg extends Registry {
         this.init_set_cat(
             simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON)
         );
-        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization, defaults.ORGANIZATION));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.ORGANIZATION, this, Organization, defaults.ORGANIZATION)
+        );
         this.init_set_cat(
             simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, defaults.PILOT_ARMOR)
         );
@@ -151,7 +149,9 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep, defaults.SITREP));
         this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill, defaults.SKILL));
         this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status, defaults.STATUS));
-        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate, defaults.TAG_TEMPLATE));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.TAG, this, TagTemplate, defaults.TAG_TEMPLATE)
+        );
         this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent, defaults.TALENT));
         this.init_set_cat(
             simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, defaults.WEAPON_MOD)
@@ -254,7 +254,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             refs.push({
                 id: new_id,
                 is_unresolved_mmid: false,
-                type: this.cat
+                type: this.cat,
             });
         }
 
