@@ -2,7 +2,7 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { Counter, Frame, MechWeapon, Pilot, Talent } from "../src/class";
+import { Counter, Frame, Mech, MechWeapon, Pilot, Talent } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { gist_io, cloud_sync } from "../src/funcs";
@@ -75,5 +75,44 @@ describe("Mechs", () => {
         expect(mech.Loadout.Systems[1].Destroyed).toBeTruthy();
         expect(mech.Loadout.Systems[2].Name).toEqual("PATTERN-B HEX CHARGES");
         expect(mech.Loadout.Systems[2].Uses).toEqual(2); // 16
+    });
+
+    it("Computes stats with bonuses appropriately", async () => {
+       expect.assertions(16);
+        let s = await init_basic_setup(true);
+
+        // Load the king
+        let ctx = new OpCtx();
+        let dk: Pilot = await s.reg.create(EntryType.PILOT, ctx);
+        let dk_data = await gist_io.download_pilot(DONKEY_KONG);
+        await cloud_sync(dk_data, dk, s.reg);
+        dk = await dk.refreshed();
+
+        // Get his active mech, which should be the lanny
+        let mech: Mech = dk.Mechs[0];
+
+
+        expect(mech.CurrentStructure).toEqual(4);
+        expect(mech.CurrentStress).toEqual(4);
+        expect(mech.MaxSP).toEqual(15);
+        expect(mech.MaxHP).toEqual(18);
+        expect(mech.HeatCapacity).toEqual(12); // 5
+
+        expect(mech.CurrentHP).toEqual(14);
+        expect(mech.CurrentHeat).toEqual(0);
+        expect(mech.Armor).toEqual(1);
+        expect(mech.AttackBonus).toEqual(6);
+        expect(mech.TechAttack).toEqual(3); // 10
+
+        expect(mech.SaveTarget).toEqual(16);
+        expect(mech.Evasion).toEqual(12);
+        expect(mech.Speed).toEqual(8);
+        expect(mech.RepairCapacity).toEqual(11);
+        expect(mech.SensorRange).toEqual(8); // 15
+
+        expect(mech.Size).toEqual(2); // 16
+
+
+
     });
 });
