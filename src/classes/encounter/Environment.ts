@@ -30,6 +30,6 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Environment> {
-        return reg.get_cat(EntryType.ENVIRONMENT).create(ctx, dep);
+        return reg.get_cat(EntryType.ENVIRONMENT).create_live(ctx, dep);
     }
 }

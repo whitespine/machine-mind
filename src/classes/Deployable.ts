@@ -124,9 +124,6 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
         this.Synergies = SerUtil.process_synergies(data.synergies);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
-
-        // Make sure tags ready
-        await Promise.all(this.Tags.map(x => x.ready()));
     }
 
     public async save(): Promise<RegDeployableData> {
@@ -177,6 +174,6 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
             counters,
             tags,
         };
-        return reg.get_cat(EntryType.DEPLOYABLE).create(ctx, unpacked);
+        return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
     }
 }

@@ -154,7 +154,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         ctx: OpCtx
     ): Promise<MechLoadout> {
         let base = new MechLoadout(reg, ctx, { frame: null, system_mounts: [], weapon_mounts: [] });
-        await base.ready();
+        await base.ready(); // Eff no-op to make sure it doesn't override our stuff
         await base.sync(mech_frame_id, mech_loadout, reg);
         return base;
     }
@@ -162,7 +162,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // We do this quite often
     private async _new_mount(type: MountType): Promise<WeaponMount> {
         let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] });
-        await mount.ready();
+        await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
         return mount;
     }
 
@@ -219,7 +219,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 slots: [],
                 mount_type: tbr.mount_type as MountType,
             });
-            await mount.ready();
+            await mount.ready(); // no-op
             await mount.sync(tbr, override_reg);
             weps.push(mount);
         }
@@ -232,7 +232,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
             // Create a mount and check the corresponding
             let nm = new SystemMount(this.Registry, this.OpCtx, { system: null });
-            await nm.ready();
+            await nm.ready(); // Should be basically instant
 
             // If system already exists no need to fetch
             let sys: MechSystem | null = null;

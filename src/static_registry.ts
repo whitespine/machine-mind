@@ -37,6 +37,7 @@ import {
     RegEntry,
     RegEntryTypes,
     Registry,
+    RegRef,
     ReviveFunc,
 } from "@src/registry";
 import { RegDeployableData, RegMechData, RegPilotData } from "@src/interface";
@@ -60,19 +61,19 @@ function simple_cat_builder<T extends EntryType>(
     type: T,
     reg: StaticReg,
     clazz: EntryConstructor<T>,
-    template?: () => RegEntryTypes<T>,
+    template: () => RegEntryTypes<T>,
     data_source_override?: Map<string, RegEntryTypes<T>>
 ): StaticRegCat<T> {
     // Our outer builder, which is used during
     return new StaticRegCat(
         reg,
         type,
-        async (reg, ctx, id, raw?) => {
+        template,
+        (reg, ctx, id, raw) => {
             // Our actual builder function shared between all cats.
             // First check for existing item in ctx
-            let pre = ctx.get(reg, id);
+            let pre = ctx.get(id);
             if (pre) {
-                await pre.ready();
                 return pre as LiveEntryTypes<T>;
             }
 
@@ -82,9 +83,9 @@ function simple_cat_builder<T extends EntryType>(
                 reg,
                 ctx,
                 id,
-                nodef(raw ?? (template ? template() : undefined))
+                raw
             );
-            ctx.set(reg, id, new_item);
+            ctx.set(id, new_item);
             await new_item.ready();
 
             // And we're done
@@ -119,8 +120,8 @@ export class StaticReg extends Registry {
         this.init_set_cat(
             simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem, defaults.CORE_SYSTEM)
         );
-        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
-        this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
+        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment, defaults.ENVIRONMENT));
+        this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction, defaults.FACTION));
         this.init_set_cat(
             simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait, defaults.FRAME_TRAIT)
         );
@@ -135,7 +136,7 @@ export class StaticReg extends Registry {
         this.init_set_cat(
             simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON)
         );
-        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
+        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization, defaults.ORGANIZATION));
         this.init_set_cat(
             simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, defaults.PILOT_ARMOR)
         );
@@ -145,12 +146,12 @@ export class StaticReg extends Registry {
         this.init_set_cat(
             simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon, defaults.PILOT_WEAPON)
         );
-        this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));
+        this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk, defaults.QUIRK));
         this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve, defaults.RESERVE));
-        this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep));
+        this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep, defaults.SITREP));
         this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill, defaults.SKILL));
-        this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status));
-        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate));
+        this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status, defaults.STATUS));
+        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate, defaults.TAG_TEMPLATE));
         this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent, defaults.TALENT));
         this.init_set_cat(
             simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, defaults.WEAPON_MOD)
@@ -189,17 +190,21 @@ export class StaticReg extends Registry {
 // This implements the regcat interface with a very simple Map
 export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     private reg_data: Map<string, RegEntryTypes<T>> = new Map();
+    private template: () => RegEntryTypes<T>;
 
     constructor(
         parent: Registry,
         cat: T,
+        default_template: () => RegEntryTypes<T>,
         creator: ReviveFunc<T>,
         data_source_override?: Map<string, RegEntryTypes<T>>
     ) {
         super(parent, cat, creator);
         this.cat = cat;
         this.revive_func = creator;
+        this.template = default_template;
 
+        // Use this for shared data pools
         if (data_source_override) {
             this.reg_data = data_source_override;
         }
@@ -217,15 +222,16 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     async list_live(ctx: OpCtx): Promise<LiveEntryTypes<T>[]> {
-        let result: Promise<LiveEntryTypes<T>>[] = [];
+        // We don't really need async, but we would in a normal situation like foundry
+        let result: LiveEntryTypes<T>[] = [];
         for (let [id, val] of this.reg_data.entries()) {
             result.push(this.revive_func(this.parent, ctx, id, val));
         }
-        return Promise.all(result);
+        return result;
     }
 
-    async create_many(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
-        let revived: Promise<LiveEntryTypes<T>>[] = [];
+    async create_many_live(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
+        let revived: LiveEntryTypes<T>[] = [];
 
         // Set and revive all
         for (let raw of vals) {
@@ -235,7 +241,24 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             revived.push(viv);
         }
 
-        return Promise.all(revived);
+        return revived;
+    }
+
+    async create_many_raw(...vals: RegEntryTypes<T>[]): Promise<RegRef<T>[]> {
+        let refs: RegRef<T>[] = [];
+
+        // Set and revive all
+        for (let raw of vals) {
+            let new_id = nanoid();
+            this.reg_data.set(new_id, raw); // It's just that easy!
+            refs.push({
+                id: new_id,
+                is_unresolved_mmid: false,
+                type: this.cat
+            });
+        }
+
+        return refs;
     }
 
     // ez
@@ -275,11 +298,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     async create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>> {
-        let id = nanoid();
-        let v = await this.revive_func(this.parent, ctx, id);
-        let saved = (await v.save()) as RegEntryTypes<T>;
-        this.reg_data.set(id, saved);
-        return v;
+        return this.create_live(ctx, this.template());
     }
 }
 

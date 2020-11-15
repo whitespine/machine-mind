@@ -48,7 +48,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<TagTemplate> {
-        return reg.get_cat(EntryType.TAG).create(ctx, dep);
+        return reg.get_cat(EntryType.TAG).create_live(ctx, dep);
     }
 
     // Helpers for quickly checking common tags
@@ -96,7 +96,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
                 filter_ignore: true,
                 hidden: false, // Want it to be seen so it can be fixed
             });
-            await Tag.ready();
+            await Tag.load_complete();
         }
         this.Tag = Tag;
     }

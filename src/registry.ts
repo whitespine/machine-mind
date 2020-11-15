@@ -618,7 +618,7 @@ export abstract class RegEntry<T extends EntryType> {
     // TODO: Cleanup children? Need some sort of refcounting, maybe.
     public async destroy_entry(): Promise<void> {
         // Remove self from ctx first.
-        this.OpCtx.delete(this.Registry, this.RegistryID, (this as any).ID);
+        this.OpCtx.delete(this.RegistryID);
 
         // Then actually destroy
         await this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
@@ -753,50 +753,40 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
 
 // Reg is for looking up other values. ID is the id that this item will/already has in the reg
 // If raw is supplied as undefined, produce a desired default value (e.g. to create a new default value)
-// IT IS THE SOLE RESPONSIBILITY OF THE REVIVE FUNC TO PROPERLY ADD ITEMS TO AND CHECK THE OpCtx
+// IT IS THE SOLE RESPONSIBILITY OF THE REVIVE FUNC TO CHECK THE OPCTX FOR PRE-FETCHED ITEMS!!!!!
 export type ReviveFunc<T extends EntryType> = (
     reg: Registry,
     ctx: OpCtx,
     id: string,
-    raw?: RegEntryTypes<T>
-) => Promise<LiveEntryTypes<T>>;
+    raw: RegEntryTypes<T>
+) => LiveEntryTypes<T>;
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
 export class OpCtx {
-    // We do not disambiguate by mmid and regid due to the frankly-astronomically low chance of collision
-    private resolved: Map<Registry, Map<string, any>> = new Map(); // Maps lookups with a key in a specified registry to their results
+    // We rely entirely on no collisions here
+    private resolved: Map<string, any> = new Map(); // Maps lookups with a key in a specified registry to their results
+    // private pending: {[key: number]: Array<() => any>} = {};
+    private pending = 0;
 
-    get(reg: Registry, ref: string | RegRef<any>): RegEntry<any> | null {
-        if (typeof ref == "string") {
-            return this.resolved.get(reg)?.get(ref) ?? null;
-        } else {
-            return this.resolved.get(reg)?.get(ref.id) ?? null;
+    get(id: string): RegEntry<any> | null {
+        return this.resolved.get(id) ?? null;
         }
-    }
 
     // Tell the ctx that we resolved <ref> as <val>
-    set(reg: Registry, ref: string, val: RegEntry<any>) {
+    set(id: string, val: RegEntry<any>) {
         // Make the reg entry if not there
-        let reg_resolved = this.resolved.get(reg);
-        if (!reg_resolved) {
-            reg_resolved = new Map();
-            this.resolved.set(reg, reg_resolved);
+        this.resolved.set(id, val);
         }
-        return reg_resolved.set(ref, val);
-    }
 
     // A helper on set. Has finicky behavior on mmid resolution. Doesn't overwrite
     add(item: RegEntry<any>) {
-        this.set(item.Registry, item.RegistryID, item);
+        this.set(item.RegistryID, item);
     }
 
     // Removes a quantity from a ctx, e.g. in case of deletion or migration (? not sure on migration. they maybe need to re-create selves????)
-    delete(reg: Registry, id: string, mmid: string | undefined) {
-        let reg_resolved = this.resolved.get(reg);
-        if (reg_resolved) {
-            reg_resolved.delete(id);
-            if (mmid) {
-                reg_resolved.delete(mmid);
+    delete(id: string) {
+        this.resolved.delete(id);
+    }
             }
         }
     }
@@ -842,16 +832,23 @@ export abstract class RegCat<T extends EntryType> {
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
     // The awaited item should be .,ready
-    abstract async create_many(
+    abstract async create_many_live(
         ctx: OpCtx,
         ...vals: Array<RegEntryTypes<T>>
     ): Promise<LiveEntryTypes<T>[]>;
 
     // A simple singular form if you don't want to mess with arrays
     // The awaited item should be .ready
-    async create(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
-        let vs = await this.create_many(ctx, val);
+    async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
+        let vs = await this.create_many_live(ctx, val);
         return vs[0];
+    }
+
+    // For when you don't need a live
+    abstract async create_many_raw(...vals: Array<RegEntryTypes<T>>): Promise<RegRef<T>[]>;
+
+    async create_raw(val: RegEntryTypes<T>): Promise<RegRef<T>> {
+        return (await this.create_many_raw(val))[0];
     }
 
     // Create a new entry in the database with the creation func's default data. Generally, you cannot control the output ID
@@ -891,7 +888,7 @@ export abstract class Registry {
         val?: RegEntryTypes<T>
     ): Promise<LiveEntryTypes<T>> {
         if (val) {
-            return this.get_cat(type).create(ctx, val);
+            return this.get_cat(type).create_live(ctx, val);
         } else {
             return this.get_cat(type).create_default(ctx);
         }

@@ -51,7 +51,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Manufacturer> {
-        return reg.get_cat(EntryType.MANUFACTURER).create(ctx, dep);
+        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, dep);
     }
 
     public GetColor(dark?: boolean): string {

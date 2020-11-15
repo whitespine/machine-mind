@@ -150,6 +150,12 @@ export class CovetousReg extends Registry {
         super();
         this.base = base;
         this.fallbacks = fallbacks;
+
+        for(let f of fallbacks) {
+            if(f instanceof CovetousReg) {
+                throw new Error("cannot stack covetous reg");
+            }
+        }
     }
 
     async resolve_rough(ctx: OpCtx, ref: RegRef<EntryType>): Promise<RegEntry<any> | null> {
@@ -281,8 +287,13 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Use base
-    create_many(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
-        return this.base.create_many(ctx, ...vals);
+    create_many_live(ctx: OpCtx, ...vals: RegEntryTypes<T>[]): Promise<LiveEntryTypes<T>[]> {
+        return this.base.create_many_live(ctx, ...vals);
+    }
+
+    // Use base
+    create_many_raw(...vals: RegEntryTypes<T>[]): Promise<RegRef<T>[]> {
+        return this.base.create_many_raw(...vals);
     }
 
     // Use base

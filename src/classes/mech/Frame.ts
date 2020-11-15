@@ -116,7 +116,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             image_url: frame.image_url ?? "",
             other_art: frame.other_art ?? [],
         };
-        return reg.get_cat(EntryType.FRAME).create(ctx, fdata);
+        return reg.get_cat(EntryType.FRAME).create_live(ctx, fdata);
     }
 
     public get MechTypeString(): string {

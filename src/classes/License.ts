@@ -129,7 +129,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
                 rank: 1,
                 unlocks: grouped.map(g => SerUtil.ref_all(g)),
             };
-            let created = await reg.get_cat(EntryType.LICENSE).create(ctx, rdata);
+            let created = await reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
             licenses.push(created);
         }
 

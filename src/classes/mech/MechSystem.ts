@@ -162,7 +162,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
             counters: SerUtil.unpack_counters_default(data.counters),
         };
 
-        return reg.get_cat(EntryType.MECH_SYSTEM).create(ctx, rdata);
+        return reg.get_cat(EntryType.MECH_SYSTEM).create_live(ctx, rdata);
     }
 
     public get_child_entries(): RegEntry<any>[] {
