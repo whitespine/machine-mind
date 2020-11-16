@@ -1,62 +1,66 @@
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
-import { store } from "@src/hooks";
 import { NpcFeature } from "@src/class";
-import { EntryType, RegEntry, RegRef } from '@src/new_meta';
-import { CORE_BREW_ID, USER_BREW_ID } from '../enums';
+import { EntryType, RegEntry, RegRef, SerUtil } from "@src/registry";
 
 interface AllNpcClassData {
     id: string;
     name: string;
     role: string;
     info: { flavor: string; tactics: string };
-    stats: INpcClassStats;
     power: number;
 }
 export interface PackedNpcClassData extends AllNpcClassData {
     base_features: string[];
     optional_features: string[];
+    stats: INpcClassStats;
 }
 
 export interface RegNpcClassData extends AllNpcClassData {
     base_features: RegRef<EntryType.NPC_FEATURE>[];
     optional_features: RegRef<EntryType.NPC_FEATURE>[];
+    base_stats: INpcClassStats;
 }
 
 export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
-    Id!: string;
+    ID!: string;
     Name!: string;
     Role!: string;
     Info!: {
         flavor: string;
         tactics: string;
     };
-    Stats!: NpcClassStats;
+    Stats!: INpcClassStats;
     BaseFeatures!: NpcFeature[];
     OptionalFeatures!: NpcFeature[];
     Power!: number;
     Brew!: string;
 
     public async load(data: RegNpcClassData): Promise<void> {
-        this.Id = data.id;
+        this.ID = data.id;
         this.Name = data.name;
         this.Role = data.role;
         this.Info = data.info;
-        this.Stats = new NpcClassStats(data.stats);
+        this.Stats = data.base_stats; // new NpcClassStats(data.base_stats);
         this.Power = data.power;
-        this.BaseFeatures = await this.Registry.resolve_many(data.base_features);
-        this.OptionalFeatures = await this.Registry.resolve_many(data.optional_features);
+        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features);
+        this.OptionalFeatures = await this.Registry.resolve_many(
+            this.OpCtx,
+            data.optional_features
+        );
     }
 
     public async save(): Promise<RegNpcClassData> {
         return {
-            base_features: this.BaseFeatures.map(b => b.as_ref()),
-
-
-
-
-        }
+            base_features: SerUtil.ref_all(this.BaseFeatures),
+            optional_features: SerUtil.ref_all(this.BaseFeatures),
+            id: this.ID,
+            info: this.Info,
+            name: this.Name,
+            power: this.Power,
+            role: this.Role,
+            base_stats: this.Stats,
+        };
     }
-
 
     public get RoleIcon(): string {
         if (this.Role.toLowerCase() === "biological") return "mdi-heart-pulse";

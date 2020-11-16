@@ -3,15 +3,6 @@
 import { store } from "@src/hooks";
 import { NpcFeature } from "@src/class";
 
-export interface INpcItemSaveData {
-    itemID: string;
-    tier: number;
-    flavorName: string;
-    description: string;
-    destroyed: boolean;
-    charged: boolean;
-    uses: number;
-}
 
 export class NpcItem {
     private _feature: NpcFeature;

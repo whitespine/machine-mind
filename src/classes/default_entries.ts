@@ -2,8 +2,11 @@ import { defaults } from "@src/funcs";
 import {
     IEnvironmentData,
     IFactionData,
+    INpcClassStats,
     IOrganizationData,
+    ISitrepData,
     IStatusData,
+    ITagTemplateData,
     RegCoreBonusData,
     RegCoreSystemData,
     RegDeployableData,
@@ -14,19 +17,22 @@ import {
     RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
+    RegNpcClassData,
+    RegNpcData,
+    RegNpcFeatureData,
+    RegNpcTemplateData,
     RegPilotArmorData,
     RegPilotData,
     RegPilotGearData,
     RegPilotWeaponData,
+    RegQuirkData,
     RegReserveData,
     RegSkillData,
     RegTalentData,
     RegTalentRank,
     RegWeaponModData,
 } from "@src/interface";
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 import { nanoid } from "nanoid";
-import { ISitrepData } from "./encounter/Sitrep";
 import {
     ActivationType,
     CC_VERSION,
@@ -39,9 +45,8 @@ import {
     WeaponType,
     SkillFamily,
     OrgType,
+    NpcFeatureType,
 } from "../enums";
-import { RegQuirkData } from "./pilot/Quirk";
-import { ITagTemplateData } from "./Tag";
 
 // Some general defaults
 const description = "No description";
@@ -241,7 +246,6 @@ export function MECH(): RegMechData {
         portrait: "",
         reactions: [],
         resistances: [],
-        statuses_and_conditions: [],
     };
 }
 
@@ -303,6 +307,89 @@ export function MECH_SYSTEM(): RegMechSystemData {
         synergies: [],
         description,
         type: SystemType.System,
+    };
+}
+
+export function NPC(): RegNpcData {
+    return {
+        burn: 0,
+        campaign: "",
+        cloudImage: "",
+        custom_counters: [],
+        defeat: "",
+        destroyed: false,
+        id: nanoid(),
+        labels: [],
+        localImage: "",
+        name: "New Npc",
+        note: "",
+        overshield: 0,
+        resistances: [],
+        side: "Enemy",
+        subtitle: "",
+        tag: "",
+        tier: 1,
+    };
+}
+
+export function NPC_CLASS(): RegNpcClassData {
+    return {
+        id: nanoid(),
+        name: "New Npc Class",
+        base_features: [],
+        base_stats: NPC_CLASS_STATS(),
+        info: {
+            tactics: "No tactics provided",
+            flavor: "No flavor provided",
+        },
+        optional_features: [],
+        power: 0,
+        role: "UNKNOWN",
+    };
+}
+
+export function NPC_FEATURE(): RegNpcFeatureData {
+    return {
+        id: nanoid(),
+        name: "New Npc Feature",
+        origin: {
+            base: false,
+            name: "UNKNOWN",
+            type: "Class", // just guess
+        },
+        tags: [],
+        type: NpcFeatureType.Trait,
+    };
+}
+
+export function NPC_TEMPLATE(): RegNpcTemplateData {
+    return {
+        base_features: [],
+        description,
+        name: "New Npc Template",
+        optional_features: [],
+        power: 0,
+    };
+}
+
+export function NPC_CLASS_STATS(): INpcClassStats {
+    return {
+        activations: [1, 1, 1],
+        agility: [0, 0, 0],
+        armor: [0, 0, 0],
+        edef: [0, 0, 0],
+        engineering: [0, 0, 0],
+        evade: [5, 5, 5],
+        heatcap: [5, 5, 5],
+        hp: [10, 10, 10],
+        hull: [0, 0, 0],
+        save: [0, 0, 0],
+        sensor: [10, 10, 10],
+        size: [[1], [1], [1]],
+        speed: [5, 5, 5],
+        systems: [0, 0, 0],
+        stress: [1, 1, 1],
+        structure: [1, 1, 1],
     };
 }
 

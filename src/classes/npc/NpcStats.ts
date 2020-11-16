@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { store } from "@src/hooks";
 import { NpcClass } from "@src/class";
+import { RegSer } from "@src/registry";
 
 export interface INpcStats {
     activations: number;
@@ -25,7 +25,9 @@ export interface INpcStats {
     overrides?: INpcStats;
 }
 
-export class NpcStats {
+/*
+export class NpcStats extends RegSer<INpcStats> {
+
     private _stats: INpcStats;
     private _bonuses: INpcStats;
     private _overrides: INpcStats;
@@ -320,21 +322,12 @@ export class NpcStats {
         return (this._stats.structure || 1) + (this._bonuses.structure || 0);
     }
 
-    public set Structure(val: number) {
-        this._stats.structure = val;
-        this.save();
-    }
-
     public get Stress(): number {
         if (this._overrides.stress) return this._overrides.stress;
-        return (this._stats.stress || 1) + (this._bonuses.stress || 0);
+        return (this._stats.stress ?? 1) + (this._bonuses.stress || 0);
     }
 
-    public set Stress(val: number) {
-        this._stats.stress = val;
-        this.save();
-    }
-
+    /*
     public get Reactions(): string[] {
         return this._stats.reactions || [];
     }
@@ -354,34 +347,32 @@ export class NpcStats {
         if (idx > -1) this._stats.reactions!.splice(idx, 1);
         this.save();
     }
+    * /
 
-    public static Serialize(item: NpcStats): INpcStats {
+    public async save(): Promise<INpcStats> {
         return {
-            activations: item.Stats.activations,
-            armor: item.Stats.armor,
-            structure: item.Stats.structure,
-            stress: item.Stats.stress,
-            hp: item.Stats.hp,
-            evade: item.Stats.evade,
-            edef: item.Stats.edef,
-            heatcap: item.Stats.heatcap,
-            speed: item.Stats.speed,
-            sensor: item.Stats.sensor,
-            save: item.Stats.save,
-            hull: item.Stats.hull,
-            agility: item.Stats.agility,
-            systems: item.Stats.systems,
-            engineering: item.Stats.engineering,
-            sizes: item.Stats.sizes,
-            size: item.Stats.size,
-            reactions: item.Stats.reactions,
-            bonuses: item.Bonuses,
-            overrides: item.Overrides,
+            activations: this.Stats.activations,
+            armor: this.Stats.armor,
+            structure: this.Stats.structure,
+            stress: this.Stats.stress,
+            hp: this.Stats.hp,
+            evade: this.Stats.evade,
+            edef: this.Stats.edef,
+            heatcap: this.Stats.heatcap,
+            speed: this.Stats.speed,
+            sensor: this.Stats.sensor,
+            save: this.Stats.save,
+            hull: this.Stats.hull,
+            agility: this.Stats.agility,
+            systems: this.Stats.systems,
+            engineering: this.Stats.engineering,
+            sizes: this.Stats.sizes,
+            size: this.Stats.size,
+            reactions: this.Stats.reactions,
+            bonuses: this.Bonuses,
+            overrides: this.Overrides,
         };
     }
-
-    public static Deserialize(data: INpcStats): NpcStats {
-        if (!data.reactions) data.reactions = ["Overwatch"];
-        return new NpcStats(_.clone(data));
-    }
 }
+
+*/

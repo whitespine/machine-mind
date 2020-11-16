@@ -1,4 +1,4 @@
-import { Mech, Pilot } from "@src/class";
+import { Mech, Npc, Pilot } from "@src/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
 import { SerUtil, SimSer } from "@src/registry";
@@ -114,6 +114,11 @@ export class Bonus {
         return this._value_func(vals);
     }
 
+    // For npcs
+    public evaluate_tier(number: number): number {
+        return 0;
+    }
+
     // Sums all bonuses on the specific id, for the specified pilot
     public static SumPilotBonuses(
         pilot: Pilot | null,
@@ -129,66 +134,3 @@ export class Bonus {
      */
     // Lists contributors for just the mech
 }
-
-/*
-export enum BonusType {
-    SkillPoint = "skill_point", // integer
-    MechSkillPoint = "mech_skill_point", // integer
-    TalentPoint = "talent_point", // integer
-    LicensePoint = "license_point", // integer
-    CoreBonusPoint = "cb_point", // integer
-
-    Range = "range", // integer
-    Threat = "threat", // integer
-    Damage = "damage", // integer
-
-    HP = "hp", // integer
-    Armor = "armor", // integer
-    Structure = "structure", // integer
-    Stress = "stress", // integer
-    Heatcap = "heatcap", // integer
-    Repcap = "repcap", // integer
-    CorePower = "core_power", // integer
-    Speed = "speed", // integer
-    Evasion = "evasion", // integer
-    EDef = "edef", // integer
-    Sensor = "sensor", // integer
-
-    Attack = "attack", // integer
-    TechAttack = "tech_attack", // integer
-
-    Grapple = "grapple", // integer
-    Ram = "ram", // integer
-    Save = "save", // integer
-    SP = "sp", // integer
-    Size = "size", // integer
-    AICap = "ai_cap", // integer
-    CheapStruct = "cheap_struct", // boolean
-    CheapStress = "cheap_stress", // boolean
-    Overcharge = "overcharge", //Overcharge Track 	DieRoll[] as string[]
-    LimitedBonus = "limited_bonus", // integer
-    PilotHP = "pilot_hp", // integer
-    PilotArmor = "pilot_armor", // integer
-    PilotEvasion = "pilot_evasion", // integer
-    PilotEDef = "pilot_edef", // integer
-    PilotSpeed = "pilot_speed", // integer
-
-    PilotGearCap = "pilot_gear_cap", // integer
-    PilotWeaponCap = "pilot_weapon_cap", // integer
-
-    DeployableHP = "deployable_hp", // integer
-    DeployableSize = "deployable_size", // integer
-    DeployableCharges = "deployable_charges", // integer
-    DeployableArmor = "deployable_armor", // integer
-    DeployableEvasion = "deployable_evasion", // integer
-    DeployableEDef = "deployable_edef", // integer
-    DeployableHeatCap = "deployable_heatcap", // integer
-    DeployableRepairCap = "deployable_repcap", // integer
-    DeployableSensorRange = "deployable_sensor_range", // integer
-    DeployableTechAttack = "deployable_tech_attack", // integer
-    DeployableSave = "deployable_save", // integer
-    DeployableSpeed = "deployable_speed", //
-    Placeholder = "placeholder",
-    Unrecognized = "unrecognized",
-}
-*/

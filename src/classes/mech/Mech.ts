@@ -73,7 +73,6 @@ export interface PackedMechData extends AllMechData {
 
 export interface RegMechData extends AllMechData {
     pilot: RegRef<EntryType.PILOT> | null;
-    statuses_and_conditions: RegRef<EntryType.STATUS>[]; // Also includes conditions
     resistances: DamageType[];
     //reactions: RegRef<EntryType.ACTION>[]
     reactions: string[];
@@ -100,7 +99,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     Activations!: number;
     Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
-    StatusesAndConditions!: Status[];
     Resistances!: DamageType[];
     Reactions!: string[]; // I haven't decided what I want to do with this yet. for now just names?
     Ejected!: boolean;
@@ -130,6 +128,11 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     private _owned_frames!: Frame[];
     public get OwnedFrames(): Frame[] {
         return this._owned_frames;
+    }
+
+    private _statuses_and_conditions!: Status[];
+    public get StatusesAndConditions(): Status[] {
+        return [...this._statuses_and_conditions];
     }
 
     // Per turn data
@@ -404,16 +407,25 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // Repair from destroyed
-    public RepairDestroyed(): void {
+    public repair_destroyed(): void {
         this.MeltdownImminent = false;
-        this.StatusesAndConditions = [];
+        this.clear_statuses();
         this.CurrentStress = 1;
         this.CurrentStructure = 1;
         this.CurrentHP = this.MaxHP;
     }
 
+    // Just deletes all status items
+    public clear_statuses(): void {
+        let tmp = this.StatusesAndConditions;
+        this._statuses_and_conditions = [];
+        for (let s of tmp) {
+            s.destroy_entry();
+        }
+    }
+
     // -- Active Mode Utilities ---------------------------------------------------------------------
-    public FullRepair(): void {
+    public full_repair(): void {
         this.CurrentStructure = this.MaxStructure;
         this.CurrentHP = this.MaxHP;
         this.CurrentStress = this.MaxStress;
@@ -427,7 +439,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             // if (y.IsLimited) y.Uses = y.getTotalUses(this.LimitedBonus);
             // TODO
         });
-        this.StatusesAndConditions = [];
+        this.clear_statuses();
         this.Resistances = [];
         this.Burn = 0;
         this.MeltdownImminent = false;
@@ -526,7 +538,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             current_overcharge: this.CurrentOvercharge,
             current_core_energy: this.CurrentCoreEnergy,
             core_active: this.CoreActive,
-            statuses_and_conditions: SerUtil.ref_all(this.StatusesAndConditions),
             resistances: this.Resistances,
             reactions: this.Reactions,
             burn: this.Burn,
@@ -556,10 +567,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge || 0;
         this.CurrentCoreEnergy = data.current_core_energy ?? 1;
-        this.StatusesAndConditions = await subreg.resolve_many(
-            this.OpCtx,
-            data.statuses_and_conditions || []
-        );
         this.Resistances = data.resistances || [];
         this.Reactions = data.reactions || [];
         this.Burn = data.burn || 0;
@@ -570,22 +577,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
         // They will be two separate items. This is a bit odd, but for the most part the pilot-items are more of a "shop" for the mechs to insinuate from.
-        subreg
-            .get_cat(EntryType.FRAME)
-            .list_live(this.OpCtx)
-            .then(d => (this._owned_frames = d));
-        subreg
-            .get_cat(EntryType.MECH_SYSTEM)
-            .list_live(this.OpCtx)
-            .then(d => (this._owned_systems = d));
-        subreg
-            .get_cat(EntryType.MECH_WEAPON)
-            .list_live(this.OpCtx)
-            .then(d => (this._owned_weapons = d));
-        subreg
-            .get_cat(EntryType.WEAPON_MOD)
-            .list_live(this.OpCtx)
-            .then(d => (this._owned_weapon_mods = d));
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
+        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
+        this._owned_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
+        this._statuses_and_conditions = await subreg
+            .get_cat(EntryType.STATUS)
+            .list_live(this.OpCtx);
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects

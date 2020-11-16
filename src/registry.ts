@@ -65,17 +65,19 @@ import {
     Counter,
     TagInstance,
     License,
+    NpcClass,
+    Npc,
+    NpcFeature,
+    NpcTemplate,
+    Organization,
 } from "@src/class";
-import { IOrganizationData, Organization } from "./classes/pilot/reserves/Organization";
 import {
     IActionData,
     IBonusData,
     IEnvironmentData,
     IFactionData,
+    IOrganizationData,
     IRangeData,
-    // INpcClassData,
-    // INpcFeatureData,
-    // INpcTemplateData,
     ISitrepData,
     IStatusData,
     ISynergyData,
@@ -90,6 +92,9 @@ import {
     PackedMechData,
     PackedMechSystemData,
     PackedMechWeaponData,
+    PackedNpcClassData,
+    PackedNpcFeatureData,
+    PackedNpcTemplateData,
     PackedPilotArmorData,
     PackedPilotData,
     PackedPilotGearData,
@@ -111,6 +116,10 @@ import {
     RegMechData,
     RegMechSystemData,
     RegMechWeaponData,
+    RegNpcClassData,
+    RegNpcData,
+    RegNpcFeatureData,
+    RegNpcTemplateData,
     RegPilotArmorData,
     RegPilotData,
     RegPilotGearData,
@@ -143,9 +152,11 @@ export enum EntryType {
     MECH = "Mech", // Mech actors
     LICENSE = "License",
     MANUFACTURER = "Manufacturer",
-    // NPC_CLASS = "NpcClasse",
-    // NPC_TEMPLATE = "NpcTemplate",
-    // NPC_FEATURE = "NpcFeature",
+    NPC = "Npc",
+    NPC_CLASS = "NpcClass",
+    NPC_TEMPLATE = "Npc Template",
+    NPC_FEATURE = "Npc Feature",
+    // NPC_WEAPON = "Npc Weapon",
     WEAPON_MOD = "Weapon Mod",
     MECH_SYSTEM = "Mech System",
     MECH_WEAPON = "Mech Weapon",
@@ -180,9 +191,10 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.MECH]: RegMechData;
     [EntryType.MECH_SYSTEM]: RegMechSystemData;
     [EntryType.MECH_WEAPON]: RegMechWeaponData;
-    // [EntryType.NPC_CLASS]: INpcClassData;
-    // [EntryType.NPC_FEATURE]: INpcFeatureData;
-    // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.NPC]: RegNpcData;
+    [EntryType.NPC_CLASS]: RegNpcClassData;
+    [EntryType.NPC_FEATURE]: RegNpcFeatureData;
+    [EntryType.NPC_TEMPLATE]: RegNpcTemplateData;
     [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: RegPilotArmorData;
     [EntryType.PILOT_GEAR]: RegPilotGearData;
@@ -218,9 +230,9 @@ interface FixedPackedEntryTypes {
     [EntryType.MECH]: PackedMechData;
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
     [EntryType.MECH_WEAPON]: PackedMechWeaponData;
-    // [EntryType.NPC_CLASS]: INpcClassData;
-    // [EntryType.NPC_FEATURE]: INpcFeatureData;
-    // [EntryType.NPC_TEMPLATE]: INpcTemplateData;
+    [EntryType.NPC_CLASS]: PackedNpcClassData;
+    [EntryType.NPC_FEATURE]: PackedNpcFeatureData;
+    [EntryType.NPC_TEMPLATE]: PackedNpcTemplateData;
     [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
     [EntryType.PILOT_GEAR]: PackedPilotGearData;
@@ -256,9 +268,10 @@ type FixedLiveEntryTypes = {
     [EntryType.MECH]: Mech;
     [EntryType.MECH_SYSTEM]: MechSystem;
     [EntryType.MECH_WEAPON]: MechWeapon;
-    // [EntryType.NPC_CLASS]: NpcClass;
-    // [EntryType.NPC_FEATURE]: NpcFeature;
-    // [EntryType.NPC_TEMPLATE]: NpcTemplate;
+    [EntryType.NPC]: Npc;
+    [EntryType.NPC_CLASS]: NpcClass;
+    [EntryType.NPC_FEATURE]: NpcFeature;
+    [EntryType.NPC_TEMPLATE]: NpcTemplate;
     [EntryType.ORGANIZATION]: Organization;
     [EntryType.PILOT_ARMOR]: PilotArmor;
     [EntryType.PILOT_GEAR]: PilotGear;

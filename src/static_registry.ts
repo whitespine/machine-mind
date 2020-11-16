@@ -27,6 +27,10 @@ import {
     License,
     Organization,
     Deployable,
+    Npc,
+    NpcTemplate,
+    NpcFeature,
+    NpcClass,
 } from "@src/class";
 import {
     EntryConstructor,
@@ -131,6 +135,16 @@ export class StaticReg extends Registry {
         );
         this.init_set_cat(
             simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, defaults.MECH_WEAPON)
+        );
+        this.init_set_cat(simple_cat_builder(EntryType.NPC, this, Npc, defaults.NPC));
+        this.init_set_cat(
+            simple_cat_builder(EntryType.NPC_CLASS, this, NpcClass, defaults.NPC_CLASS)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.NPC_FEATURE, this, NpcFeature, defaults.NPC_FEATURE)
+        );
+        this.init_set_cat(
+            simple_cat_builder(EntryType.NPC_TEMPLATE, this, NpcTemplate, defaults.NPC_TEMPLATE)
         );
         this.init_set_cat(
             simple_cat_builder(EntryType.ORGANIZATION, this, Organization, defaults.ORGANIZATION)
