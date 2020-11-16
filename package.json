@@ -1,6 +1,6 @@
 {
   "name": "machine-mind",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0-beta.2",
   "description": "Backing data processing types for compcon - modification of existing code from the official project",
   "license": "GPL-3.0-or-later",
   "author": "whitespine",
@@ -15,10 +15,10 @@
     "format": "prettier --write --config .prettierrc.json 'src/**/*.ts'",
     "build": "ttsc && tscpaths -p ./tsconfig.json -s ./src -o ./dist",
     "build:watch": "ttsc -w --noEmit",
-    "link": "npm run build && npm link",
+    "link": "yarn build && yarn link",
     "test": "jest --colors test --no-cache",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run format"
+    "prepare": "yarn run build",
+    "prepublishOnly": "yarn test"
   },
   "dependencies": {
     "axios": "^0.19.2",
