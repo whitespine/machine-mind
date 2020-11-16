@@ -11,7 +11,7 @@ import {
     IBonusData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { ActivationType, FrameEffectUse } from "../enums";
+import { ActivationType, FrameEffectUse } from "../../enums";
 
 export interface AllCoreSystemData {
     name: string;

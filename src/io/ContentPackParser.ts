@@ -1,6 +1,6 @@
 import JSZip, { JSZipObject } from "jszip";
 import * as lancerData from "@src/classes/utility/typed_lancerdata";
-import { CORE_BREW_ID } from "@src/classes/enums";
+import { CORE_BREW_ID } from "@src/enums";
 import {
     IContentPackManifest,
     IContentPack,

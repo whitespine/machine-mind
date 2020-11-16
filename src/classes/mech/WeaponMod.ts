@@ -24,7 +24,7 @@ import {
     RegTagInstanceData,
 } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { SystemType, WeaponSize, WeaponType } from "../enums";
+import { SystemType, WeaponSize, WeaponType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 import { TagInstance } from "../Tag";
 

@@ -3,7 +3,7 @@ import { defaults } from "@src/funcs";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
-import { MechType, MountType } from "../enums";
+import { MechType, MountType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 
 // The raw stat information

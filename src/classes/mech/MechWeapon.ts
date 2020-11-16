@@ -11,7 +11,7 @@ import {
     WeaponMod,
 } from "@src/class";
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
-import { MountType, RangeType, WeaponSize, WeaponType } from '../enums';
+import { MountType, RangeType, WeaponSize, WeaponType } from '../../enums';
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { RegMechData } from './Mech';
 import { defaults, tag_util } from '@src/funcs';

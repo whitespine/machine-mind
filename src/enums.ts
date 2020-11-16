@@ -11,6 +11,14 @@ export enum MountType {
     Integrated = "Integrated",
 }
 
+export enum NpcFeatureType {
+    Trait = "Trait",
+    System = "System",
+    Reaction = "Reaction",
+    Weapon = "Weapon",
+    Tech = "Tech",
+}
+
 // Defaults to main
 export function getMountType(raw: string): MountType {
     switch (raw.toLowerCase()) {

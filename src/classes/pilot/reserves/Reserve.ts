@@ -9,7 +9,7 @@ import {
     PackedDeployableData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
-import { ReserveType } from "@src/classes/enums";
+import { ReserveType } from "@src/enums";
 import { defaults } from "@src/funcs";
 
 interface AllReserveData {

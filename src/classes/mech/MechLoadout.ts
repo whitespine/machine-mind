@@ -12,7 +12,7 @@ import {
 } from "@src/registry";
 import { weapons } from "lancer-data";
 import { basename } from "path";
-import { FittingSize, MountType, WeaponSize } from "../enums";
+import { FittingSize, MountType, WeaponSize } from "../../enums";
 
 //////////////////////// PACKED INFO ////////////////////////
 interface PackedEquipmentData {

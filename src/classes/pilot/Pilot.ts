@@ -44,7 +44,7 @@ import { PackedPilotEquipmentState, RegPilotLoadoutData } from "./PilotLoadout";
 import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
-import { CC_VERSION } from '../enums';
+import { CC_VERSION } from '../../enums';
 import { skills } from 'lancer-data';
 import { SSL_OP_SINGLE_DH_USE } from 'constants';
 import { CovetousReg } from '../regstack';

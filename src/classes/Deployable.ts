@@ -10,7 +10,7 @@ import {
     RegCounterData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
-import { ActivationType } from "./enums";
+import { ActivationType } from "../enums";
 
 export interface PackedDeployableData {
     name: string;

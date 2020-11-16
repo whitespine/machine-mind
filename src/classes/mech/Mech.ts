@@ -27,7 +27,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { CC_VERSION, DamageType } from "../enums";
+import { CC_VERSION, DamageType } from "../../enums";
 import { CovetousCatStack, CovetousReg } from "../regstack";
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";

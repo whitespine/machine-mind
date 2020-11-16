@@ -12,7 +12,7 @@ import {
     RegTagInstanceData,
 } from "@src/interface";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { SystemType } from "../enums";
+import { SystemType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 
 interface AllMechSystemData {

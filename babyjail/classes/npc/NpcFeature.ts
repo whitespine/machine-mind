@@ -1,12 +1,6 @@
 import { PackedTagInstanceData } from '@src/interface';
 
-export enum NpcFeatureType {
-    Trait = "Trait",
-    System = "System",
-    Reaction = "Reaction",
-    Weapon = "Weapon",
-    Tech = "Tech",
-}
+
 
 export interface IOriginData {
     type: string;

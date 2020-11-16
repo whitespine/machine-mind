@@ -39,7 +39,7 @@ import {
     WeaponType,
     SkillFamily,
     OrgType,
-} from "./enums";
+} from "../enums";
 import { RegQuirkData } from "./pilot/Quirk";
 import { ITagTemplateData } from "./Tag";
 

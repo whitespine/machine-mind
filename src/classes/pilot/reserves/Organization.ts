@@ -1,4 +1,4 @@
-import { OrgType } from "@src/classes/enums";
+import { OrgType } from "@src/enums";
 import { bound_int } from "@src/funcs";
 import { EntryType, RegEntry, SimSer } from "@src/registry";
 

@@ -1,5 +1,5 @@
 import { SerUtil, SimSer } from "@src/registry";
-import { DamageType } from "./enums";
+import { DamageType } from "../enums";
 
 //TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 

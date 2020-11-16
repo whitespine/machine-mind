@@ -1,5 +1,5 @@
 import { SerUtil, SimSer } from "@src/registry";
-import { ActivationType } from "./enums";
+import { ActivationType } from "../enums";
 
 export interface IActionData {
     id?: string; // For synergies and stuff like that
