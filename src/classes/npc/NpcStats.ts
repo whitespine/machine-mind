@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { NpcClass } from "@src/class";
 import { RegSer } from "@src/registry";
 
