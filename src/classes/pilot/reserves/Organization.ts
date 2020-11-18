@@ -45,7 +45,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
         this.Description = data.description;
         this.Actions = data.actions;
     }
-    public async save(): Promise<IOrganizationData> {
+    public save(): IOrganizationData {
         return {
             name: this.Name,
             purpose: this.Purpose,

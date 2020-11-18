@@ -60,7 +60,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
         }
     }
 
-    public async save(): Promise<RegLicenseData> {
+    public save(): RegLicenseData {
         let unlocks: RegRef<LicensedItemType>[][] = [];
         for (let uarr of this.Unlocks) {
             let urow = SerUtil.ref_all(uarr);

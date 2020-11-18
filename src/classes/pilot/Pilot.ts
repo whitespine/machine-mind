@@ -682,7 +682,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
     }
 
-    public async save(): Promise<RegPilotData> {
+    public save(): RegPilotData {
         return {
             active_mech: this.ActiveMech?.as_ref() ?? null,
             background: this.Background,
@@ -693,13 +693,13 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,
             current_hp: this.CurrentHP,
-            custom_counters: SerUtil.sync_save_all(this.CustomCounters),
+            custom_counters: SerUtil.save_all(this.CustomCounters),
             group: this.Group,
             history: this.History,
             id: this.ID,
             lastCloudUpdate: this.LastCloudUpdate,
             level: this.Level,
-            loadout: await this.Loadout.save(),
+            loadout: this.Loadout.save(),
             mechSkills: this.MechSkills.save(),
             mechs: SerUtil.ref_all(this.Mechs),
             mounted: this.Mounted,

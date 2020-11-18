@@ -36,13 +36,13 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
         this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
         this.Counters = SerUtil.process_counters(data.counters);
     }
-    public async save(): Promise<RegQuirkData> {
+    public save(): RegQuirkData {
         return {
-            ...(await SerUtil.save_commons(this)),
+            ...SerUtil.save_commons(this),
             name: this.Name,
             description: this.Description,
             integrated: SerUtil.ref_all(this.Integrated),
-            counters: SerUtil.sync_save_all(this.Counters),
+            counters: SerUtil.save_all(this.Counters),
         };
     }
 

@@ -183,9 +183,9 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         throw new Error("Method not implemented.");
     }
 
-    public async save(): Promise<RegNpcData> {
+    public save(): RegNpcData {
         return {
-            custom_counters: SerUtil.sync_save_all(this.CustomCounters),
+            custom_counters: SerUtil.save_all(this.CustomCounters),
             tier: this.Tier,
             burn: this.Burn,
             campaign: this.Campaign,

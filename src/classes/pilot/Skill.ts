@@ -57,7 +57,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         this.CurrentRank = data.rank;
     }
 
-    public async save(): Promise<RegSkillData> {
+    public save(): RegSkillData {
         return {
             description: this.Description,
             detail: this.Description,

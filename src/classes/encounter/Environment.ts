@@ -17,7 +17,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         this.Name = data.name;
     }
 
-    public async save(): Promise<IEnvironmentData> {
+    public save(): IEnvironmentData {
         return {
             description: this.Description,
             id: this.ID,

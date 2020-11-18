@@ -34,7 +34,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         this.Description = data.description;
         this.Logo = data.logo;
     }
-    public async save(): Promise<RegManufacturerData> {
+    public save(): RegManufacturerData {
         return {
             id: this.ID,
             name: this.Name,

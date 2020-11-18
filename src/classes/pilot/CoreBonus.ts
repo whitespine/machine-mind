@@ -78,20 +78,20 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         this.Counters = SerUtil.process_counters(data.counters);
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
-    public async save(): Promise<RegCoreBonusData> {
+    public save(): RegCoreBonusData {
         return {
             description: this.Description,
             effect: this.Effect,
             id: this.ID,
             name: this.Name,
             source: this.Source?.as_ref() ?? null,
-            actions: SerUtil.sync_save_all(this.Actions),
-            bonuses: SerUtil.sync_save_all(this.Bonuses),
-            counters: SerUtil.sync_save_all(this.Counters),
+            actions: SerUtil.save_all(this.Actions),
+            bonuses: SerUtil.save_all(this.Bonuses),
+            counters: SerUtil.save_all(this.Counters),
             deployables: SerUtil.ref_all(this.Deployables),
             integrated: SerUtil.ref_all(this.Integrated),
             mounted_effect: this.MountedEffect,
-            synergies: SerUtil.sync_save_all(this.Synergies),
+            synergies: SerUtil.save_all(this.Synergies),
         };
     }
 

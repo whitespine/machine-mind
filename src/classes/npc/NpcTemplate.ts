@@ -35,7 +35,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         );
     }
 
-    public async save(): Promise<RegNpcTemplateData> {
+    public save(): RegNpcTemplateData {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.OptionalFeatures),

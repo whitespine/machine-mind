@@ -153,7 +153,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         return true;
     }
 
-    public async save(): Promise<RegWeaponModData> {
+    public save(): RegWeaponModData {
         return {
             license: this.License,
             license_level: this.LicenseLevel,
@@ -168,16 +168,16 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             destroyed: this.Destroyed,
             uses: this.Uses,
 
-            added_range: SerUtil.sync_save_all(this.AddedRange),
-            added_damage: SerUtil.sync_save_all(this.AddedDamage),
-            added_tags: await SerUtil.save_all(this.AddedTags),
+            added_range: SerUtil.save_all(this.AddedRange),
+            added_damage: SerUtil.save_all(this.AddedDamage),
+            added_tags: SerUtil.save_all(this.AddedTags),
 
             allowed_sizes: this.AllowedSizes,
             allowed_types: this.AllowedTypes,
 
-            ...(await SerUtil.save_commons(this)),
-            counters: SerUtil.sync_save_all(this.Counters),
-            tags: await SerUtil.save_all(this.Tags),
+            ...SerUtil.save_commons(this),
+            counters: SerUtil.save_all(this.Counters),
+            tags: SerUtil.save_all(this.Tags),
             integrated: SerUtil.ref_all(this.Integrated),
         };
     }

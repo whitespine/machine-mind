@@ -520,7 +520,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // -- I/O ---------------------------------------------------------------------------------------
-    public async save(): Promise<RegMechData> {
+    public save(): RegMechData {
         return {
             id: this.ID,
             pilot: this.Pilot?.as_ref() ?? null,
@@ -545,7 +545,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             activations: this.Activations,
             meltdown_imminent: this.MeltdownImminent,
             cc_ver: CC_VERSION,
-            loadout: await this.Loadout.save(),
+            loadout: this.Loadout.save(),
         };
     }
 

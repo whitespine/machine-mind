@@ -113,18 +113,18 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         this.CurrentRank = data.curr_rank;
     }
 
-    public async save(): Promise<RegTalentData> {
+    public save(): RegTalentData {
         let ranks: RegTalentRank[] = [];
         for (let r of this.Ranks) {
             ranks.push({
                 description: r.Description,
                 exclusive: r.Exclusive,
                 name: r.Name,
-                actions: SerUtil.sync_save_all(r.Actions),
-                bonuses: SerUtil.sync_save_all(r.Bonuses),
+                actions: SerUtil.save_all(r.Actions),
+                bonuses: SerUtil.save_all(r.Bonuses),
                 integrated: SerUtil.ref_all(r.Integrated),
-                counters: SerUtil.sync_save_all(r.Counters),
-                synergies: SerUtil.sync_save_all(r.Synergies),
+                counters: SerUtil.save_all(r.Counters),
+                synergies: SerUtil.save_all(r.Synergies),
                 deployables: SerUtil.ref_all(r.Deployables),
             });
         }

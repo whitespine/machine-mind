@@ -25,7 +25,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     ControlZone!: string;
     Extraction!: string;
 
-    public async save(): Promise<ISitrepData> {
+    public save(): ISitrepData {
         return {
             id: this.ID,
             name: this.Name,

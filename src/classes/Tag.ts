@@ -34,7 +34,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         this._hidden = data.hidden || null; // Whether to show this tag
     }
 
-    public async save(): Promise<ITagTemplateData> {
+    public save(): ITagTemplateData {
         return {
             id: this.ID,
             name: this.Name,
@@ -101,7 +101,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
         this.Tag = Tag;
     }
 
-    public async save(): Promise<RegTagInstanceData> {
+    public save(): RegTagInstanceData {
         return {
             val: this.Value ?? undefined,
             tag: this.Tag.as_ref(),

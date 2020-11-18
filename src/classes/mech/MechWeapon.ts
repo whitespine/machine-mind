@@ -156,7 +156,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       return tag_util.limited_max(this);
   }
 
-  public async save(): Promise<RegMechWeaponData> {
+  public save(): RegMechWeaponData {
     return {
       id: this.ID,
       license: this.License,
@@ -165,7 +165,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       license_level: this.LicenseLevel,
       size: this.Size,
       name: this.Name,
-      profiles: await SerUtil.save_all(this.Profiles), // await Promise.all(this.Profiles.map(p => p.save())),
+      profiles: SerUtil.save_all(this.Profiles), // await Promise.all(this.Profiles.map(p => p.save())),
       selected_profile: this.SelectedProfileIndex,
       source: this.Source?.as_ref() || null,
       sp: this.SP,
@@ -298,7 +298,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
       this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
-    public async save(): Promise<RegMechWeaponProfile> {
+    public save(): RegMechWeaponProfile {
       return {
             name: this.Name,
             type: this.WepType,
@@ -307,13 +307,13 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
             on_attack: this.OnAttack,
             on_hit: this.OnHit,
             on_crit: this.OnCrit,
-            damage: SerUtil.sync_save_all(this.BaseDamage),
-            range: SerUtil.sync_save_all(this.BaseRange),
-            actions: SerUtil.sync_save_all(this.Actions),
-            bonuses: SerUtil.sync_save_all(this.Bonuses),
-            synergies: SerUtil.sync_save_all(this.Synergies),
-            counters: SerUtil.sync_save_all(this.Counters),
-            tags: await SerUtil.save_all(this.Tags),
+            damage: SerUtil.save_all(this.BaseDamage),
+            range: SerUtil.save_all(this.BaseRange),
+            actions: SerUtil.save_all(this.Actions),
+            bonuses: SerUtil.save_all(this.Bonuses),
+            synergies: SerUtil.save_all(this.Synergies),
+            counters: SerUtil.save_all(this.Counters),
+            tags: SerUtil.save_all(this.Tags),
       }
     }
 }

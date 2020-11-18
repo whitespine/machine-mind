@@ -125,7 +125,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
 
-    public async save(): Promise<RegMechSystemData> {
+    public save(): RegMechSystemData {
         return {
             description: this.Description,
             effect: this.Effect,
@@ -141,10 +141,10 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
             destroyed: this.Destroyed,
             uses: this.Uses,
 
-            tags: await SerUtil.save_all(this.Tags),
-            counters: SerUtil.sync_save_all(this.Counters),
+            tags: SerUtil.save_all(this.Tags),
+            counters: SerUtil.save_all(this.Counters),
             integrated: SerUtil.ref_all(this.Integrated),
-            ...(await SerUtil.save_commons(this)),
+            ...SerUtil.save_commons(this),
         };
     }
 

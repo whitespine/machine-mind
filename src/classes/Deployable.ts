@@ -126,7 +126,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
     }
 
-    public async save(): Promise<RegDeployableData> {
+    public save(): RegDeployableData {
         return {
             name: this.Name,
             type: this.Type,
@@ -149,10 +149,10 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
             tech_attack: this.TechAttack,
             save: this.Save,
             speed: this.Speed,
-            actions: SerUtil.sync_save_all(this.Actions),
-            bonuses: SerUtil.sync_save_all(this.Bonuses),
-            synergies: SerUtil.sync_save_all(this.Synergies),
-            tags: await SerUtil.save_all(this.Tags),
+            actions: SerUtil.save_all(this.Actions),
+            bonuses: SerUtil.save_all(this.Bonuses),
+            synergies: SerUtil.save_all(this.Synergies),
+            tags: SerUtil.save_all(this.Tags),
             counters: this.Counters.map(c => c.save()),
         };
     }

@@ -26,7 +26,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
         this.Color = data.color;
     }
 
-    public async save(): Promise<IFactionData> {
+    public save(): IFactionData {
         return {
             id: this.ID,
             name: this.Name,

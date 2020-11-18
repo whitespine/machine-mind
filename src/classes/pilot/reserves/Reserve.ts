@@ -101,7 +101,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         return this.Used ? "grey darken-1" : `reserve--${this.Type.toLowerCase()}`;
     }
 
-    public async save(): Promise<RegReserveData> {
+    public save(): RegReserveData {
         return {
             id: this.ID,
             type: this.Type,

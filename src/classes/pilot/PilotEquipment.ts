@@ -95,13 +95,13 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public async save(): Promise<RegPilotArmorData> {
+    public save(): RegPilotArmorData {
         return {
             description: this.Description,
             id: this.ID,
             name: this.Name,
-            tags: await SerUtil.save_all(this.Tags),
-            ...(await SerUtil.save_commons(this)),
+            tags: SerUtil.save_all(this.Tags),
+            ...SerUtil.save_commons(this),
         };
     }
 
@@ -143,13 +143,13 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public async save(): Promise<RegPilotGearData> {
+    public save(): RegPilotGearData {
         return {
             description: this.Description,
             id: this.ID,
             name: this.Name,
-            tags: await SerUtil.save_all(this.Tags),
-            ...(await SerUtil.save_commons(this)),
+            tags: SerUtil.save_all(this.Tags),
+            ...SerUtil.save_commons(this),
         };
     }
 
@@ -196,16 +196,16 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public async save(): Promise<RegPilotWeaponData> {
+    public save(): RegPilotWeaponData {
         return {
             id: this.ID,
             description: this.Description,
             name: this.Name,
             effect: this.Effect,
-            damage: SerUtil.sync_save_all(this.Damage),
-            range: SerUtil.sync_save_all(this.Range),
-            tags: await SerUtil.save_all(this.Tags),
-            ...(await SerUtil.save_commons(this)),
+            damage: SerUtil.save_all(this.Damage),
+            range: SerUtil.save_all(this.Range),
+            tags: SerUtil.save_all(this.Tags),
+            ...SerUtil.save_commons(this),
         };
     }
 

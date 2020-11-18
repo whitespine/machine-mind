@@ -348,7 +348,7 @@ export class NpcStats extends RegSer<INpcStats> {
     }
     * /
 
-    public async save(): Promise<INpcStats> {
+    public save(): INpcStats {
         return {
             activations: this.Stats.activations,
             armor: this.Stats.armor,

@@ -55,14 +55,14 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
         this.Counters = SerUtil.process_counters(data.counters);
     }
 
-    public async save(): Promise<RegFrameTraitData> {
+    public save(): RegFrameTraitData {
         return {
             name: this.Name,
             description: this.Description,
             use: this.Use,
-            ...(await SerUtil.save_commons(this)),
+            ...SerUtil.save_commons(this),
             integrated: SerUtil.ref_all(this.Integrated),
-            counters: SerUtil.sync_save_all(this.Counters),
+            counters: SerUtil.save_all(this.Counters),
         };
     }
 

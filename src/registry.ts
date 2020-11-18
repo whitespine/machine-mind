@@ -355,19 +355,12 @@ export abstract class SerUtil {
     }
 
     // Makes our save code look more consistent
-    public static async save_all<S>(items: Array<RegEntry<any> | RegSer<S>>): Promise<S[]> {
-        return Promise.all(items.map(i => i.save()));
-    }
-
-    // Makes our save code look more consistent, and this one avoids async calls
-    public static sync_save_all<S, T extends { save(): S }>(items: T[]): S[] {
+    public static save_all<S, T extends { save(): S }>(items: T[]): S[] {
         return items.map(i => i.save());
     }
 
     // Handle null -> undef convrsion
-    public static sync_save_all_opt<S, T extends { save(): S }>(
-        items: T[] | null
-    ): S[] | undefined {
+    public static save_all_opt<S, T extends { save(): S }>(items: T[] | null): S[] | undefined {
         return items?.map(i => i.save());
     }
 
@@ -431,24 +424,24 @@ export abstract class SerUtil {
     }
 
     // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
-    public static async save_commons(x: {
+    public static save_commons(x: {
         Bonuses: Bonus[];
         Actions: Action[];
         Synergies: Synergy[];
         Deployables: Deployable[] /*Tags: TagInstance[]*/;
-    }): Promise<{
+    }): {
         bonuses: IBonusData[];
         actions: IActionData[];
         synergies: ISynergyData[];
         deployables: RegRef<EntryType.DEPLOYABLE>[];
         /*tags: RegTagInstanceData[] */
-    }> {
+    } {
         return {
-            actions: SerUtil.sync_save_all(x.Actions),
-            bonuses: SerUtil.sync_save_all(x.Bonuses),
-            synergies: SerUtil.sync_save_all(x.Synergies),
+            actions: SerUtil.save_all(x.Actions),
+            bonuses: SerUtil.save_all(x.Bonuses),
+            synergies: SerUtil.save_all(x.Synergies),
             deployables: SerUtil.ref_all(x.Deployables),
-            /* tags: await SerUtil.save_all(x.Tags),*/
+            /* tags: SerUtil.save_all(x.Tags),*/
         };
     }
 
@@ -581,7 +574,7 @@ export abstract class RegSer<SourceType> {
     protected abstract async load(data: SourceType): Promise<void>;
 
     // Export this item for registry saving back to registry
-    public abstract async save(): Promise<SourceType>;
+    public abstract save(): SourceType;
 }
 
 // Serialization and deserialization requires a registry
@@ -625,7 +618,7 @@ export abstract class RegEntry<T extends EntryType> {
     protected abstract async load(data: RegEntryTypes<T>): Promise<void>;
 
     // Export this item for registry saving back to registry
-    public abstract async save(): Promise<RegEntryTypes<T>>;
+    public abstract save(): RegEntryTypes<T>;
 
     // Convenience function to update self in registry. Note that this doesn't read first!
     public async writeback(): Promise<void> {

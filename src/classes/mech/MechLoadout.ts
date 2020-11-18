@@ -95,10 +95,10 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         this.Frame = data.frame ? await this.Registry.resolve(this.OpCtx, data.frame) : null;
     }
 
-    public async save(): Promise<RegMechLoadoutData> {
+    public save(): RegMechLoadoutData {
         return {
-            system_mounts: await SerUtil.save_all(this.SysMounts),
-            weapon_mounts: await SerUtil.save_all(this.WepMounts),
+            system_mounts: SerUtil.save_all(this.SysMounts),
+            weapon_mounts: SerUtil.save_all(this.WepMounts),
             frame: this.Frame?.as_ref() ?? null,
         };
     }
@@ -280,7 +280,7 @@ export class SystemMount extends RegSer<RegSysMountData> {
         }
     }
 
-    public async save(): Promise<RegSysMountData> {
+    public save(): RegSysMountData {
         return {
             system: this.System?.as_ref() ?? null,
         };
@@ -536,7 +536,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         }
     }
 
-    public async save(): Promise<RegWepMountData> {
+    public save(): RegWepMountData {
         return {
             mount_type: this.MountType,
             slots: this.Slots.map(s => {

@@ -104,7 +104,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
-    public async save(): Promise<RegCoreSystemData> {
+    public save(): RegCoreSystemData {
         return {
             activation: this.Activation,
             description: this.Description,
@@ -112,22 +112,22 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
             deactivation: this.Deactivation,
             use: this.Use,
 
-            active_actions: SerUtil.sync_save_all(this.ActiveActions),
-            active_bonuses: SerUtil.sync_save_all(this.ActiveBonuses),
-            active_synergies: SerUtil.sync_save_all(this.ActiveSynergies),
+            active_actions: SerUtil.save_all(this.ActiveActions),
+            active_bonuses: SerUtil.save_all(this.ActiveBonuses),
+            active_synergies: SerUtil.save_all(this.ActiveSynergies),
             active_effect: this.ActiveEffect,
             active_name: this.ActiveName,
 
-            passive_actions: SerUtil.sync_save_all(this.PassiveActions),
-            passive_bonuses: SerUtil.sync_save_all(this.PassiveBonuses),
-            passive_synergies: SerUtil.sync_save_all(this.PassiveSynergies),
+            passive_actions: SerUtil.save_all(this.PassiveActions),
+            passive_bonuses: SerUtil.save_all(this.PassiveBonuses),
+            passive_synergies: SerUtil.save_all(this.PassiveSynergies),
             passive_effect: this.PassiveEffect,
             passive_name: this.PassiveName,
 
-            counters: SerUtil.sync_save_all(this.Counters),
+            counters: SerUtil.save_all(this.Counters),
             deployables: SerUtil.ref_all(this.Deployables),
             integrated: SerUtil.ref_all(this.Integrated),
-            tags: await SerUtil.save_all(this.Tags),
+            tags: SerUtil.save_all(this.Tags),
         };
     }
 

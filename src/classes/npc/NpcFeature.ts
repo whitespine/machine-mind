@@ -84,7 +84,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.FeatureType = data.type;
     }
 
-    public async save(): Promise<RegNpcFeatureData> {
+    public save(): RegNpcFeatureData {
         return {
             id: this.ID,
             name: this.Name,
@@ -92,7 +92,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             effect: this.Effect,
             bonus: this.Bonus,
             override: this.Override,
-            tags: await SerUtil.save_all(this.Tags),
+            tags: SerUtil.save_all(this.Tags),
             type: this.FeatureType,
         };
     }

@@ -139,7 +139,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         );
     }
 
-    public async save(): Promise<RegPilotLoadoutData> {
+    public save(): RegPilotLoadoutData {
         return {
             id: this.ID,
             name: this.Name,
