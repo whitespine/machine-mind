@@ -194,11 +194,6 @@ export class StaticReg extends Registry {
 
         this.init_finalize();
     }
-
-    is(reg: Registry): boolean {
-        // Really no other way this is possible
-        return this == reg;
-    }
 }
 
 // This implements the regcat interface with a very simple Map

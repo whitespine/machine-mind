@@ -571,7 +571,7 @@ export abstract class RegSer<SourceType> {
     }
 
     // Populate this item with stuff
-    protected abstract async load(data: SourceType): Promise<void>;
+    protected abstract load(data: SourceType): Promise<void>;
 
     // Export this item for registry saving back to registry
     public abstract save(): SourceType;
@@ -615,7 +615,7 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Populate this item with stuff
-    protected abstract async load(data: RegEntryTypes<T>): Promise<void>;
+    protected abstract load(data: RegEntryTypes<T>): Promise<void>;
 
     // Export this item for registry saving back to registry
     public abstract save(): RegEntryTypes<T>;
@@ -844,30 +844,30 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Find a value by mmid
-    abstract async lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null>;
+    abstract lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches the specific raw item of a category by its ID
-    abstract async get_raw(id: string): Promise<RegEntryTypes<T> | null>;
+    abstract get_raw(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Fetches all raw items of a category
-    abstract async list_raw(): Promise<Array<RegEntryTypes<T>>>;
+    abstract list_raw(): Promise<Array<RegEntryTypes<T>>>;
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract async get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null>;
+    abstract get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
-    abstract async list_live(ctx: OpCtx): Promise<Array<LiveEntryTypes<T>>>;
+    abstract list_live(ctx: OpCtx): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
     // Do NOT attempt to feed this items foreign to this cat
-    abstract async update(...items: LiveEntryTypes<T>[]): Promise<void>;
+    abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
-    abstract async delete_id(id: string): Promise<RegEntryTypes<T> | null>;
+    abstract delete_id(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
     // The awaited item should be .,ready
-    abstract async create_many_live(
+    abstract create_many_live(
         ctx: OpCtx,
         ...vals: Array<RegEntryTypes<T>>
     ): Promise<LiveEntryTypes<T>[]>;
@@ -880,14 +880,14 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // For when you don't need a live
-    abstract async create_many_raw(...vals: Array<RegEntryTypes<T>>): Promise<RegRef<T>[]>;
+    abstract create_many_raw(...vals: Array<RegEntryTypes<T>>): Promise<RegRef<T>[]>;
 
     async create_raw(val: RegEntryTypes<T>): Promise<RegRef<T>> {
         return (await this.create_many_raw(val))[0];
     }
 
     // Create a new entry in the database with the creation func's default data. Generally, you cannot control the output ID
-    abstract async create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>>;
+    abstract create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>>;
 }
 
 export abstract class Registry {
@@ -1015,9 +1015,6 @@ export abstract class Registry {
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
     public abstract get_inventory(for_item_id: string): Registry | null;
-
-    // Return true if this registry is the same as the specified. Useful in case the registry is simply a thin visor which we might end up with multiple copies of
-    public abstract is(other: Registry): boolean;
 
     // Creates an inventory for the specified id.
     // public abstract get_inventory(for_item_id: string): Promise<Registry | null>;

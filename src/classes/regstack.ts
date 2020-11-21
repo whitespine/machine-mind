@@ -55,9 +55,6 @@ export class RegStack extends Registry {
         return new CatStack(this, cat, cats);
     }
 
-    is(other: Registry) {
-        return false;
-    }
 }
 
 export class CatStack<T extends EntryType> extends RegCat<T> {
@@ -204,10 +201,6 @@ export class CovetousReg extends Registry {
 
         // Make a temporary stack
         return new CovetousCatStack(this, cat, base, fallbacks);
-    }
-
-    is(other: Registry) {
-        return false;
     }
 }
 
