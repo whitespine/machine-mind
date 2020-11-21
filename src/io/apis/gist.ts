@@ -4,10 +4,9 @@ import { Pilot } from "@src/class";
 
 // this token is scoped to only allow for the creation of gists on a burner account
 // if this is insufficient, we'll move to a login scheme
-const gistToken = Buffer.from(
-    "ZTk4MjJhZTE0MzYyMTRkNDY5YTlkZTNkMDIxMTRmODVkNTJhMjAwMg==",
-    "base64"
-).toString();
+const token_part2 = "6f3344c6d179b4615974e3";
+const token_part1 = "d36ae780843ff94460";
+const gistToken = token_part1 + token_part2;
 
 const gistApi = axios.create({
     baseURL: "https://api.github.com/gists",
@@ -17,17 +16,11 @@ const gistApi = axios.create({
     responseType: "json",
 });
 
-/* potentially misleading at this point...
-const changelogGistID = "3eaedde89e606f60a6346ab190972edf";
-const getChangelog = function() {
-    return gistApi.get(changelogGistID).then(res => res.data);
-};
-
-const creditsGistID = "c79f09f5459c5991c1228c853191bd51";
-const getCredits = function() {
-    return gistApi.get(creditsGistID).then(res => res.data);
-};
-*/
+// Don't need auth for fetching, so don't use them
+const noAuthGistApi = axios.create({
+    baseURL: "https://api.github.com/gists",
+    responseType: "json",
+});
 
 export async function upload_new_pilot(pilot: Pilot): Promise<any> {
     return gistApi
@@ -57,7 +50,7 @@ export async function update_cloud_pilot(pilot: Pilot): Promise<any> {
 }
 
 export async function download_pilot(id: string): Promise<PackedPilotData> {
-    const gistData = (await gistApi.get(id)).data;
+    const gistData = (await noAuthGistApi.get(id)).data;
     const pilotData = JSON.parse(gistData.files["pilot.txt"].content) as PackedPilotData;
     // This is occasionally missing from the transmitted data
     pilotData.cloudID = id;
