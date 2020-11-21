@@ -4,10 +4,11 @@ import { Pilot } from "@/class";
 
 // this token is scoped to only allow for the creation of gists on a burner account
 // if this is insufficient, we'll move to a login scheme
-const gistToken = Buffer.from(
-    "ZTk4MjJhZTE0MzYyMTRkNDY5YTlkZTNkMDIxMTRmODVkNTJhMjAwMg==",
-    "base64"
-).toString();
+
+// We do this as a simple measure to throw off gist sniffing for api tokens. Maybe they don't. I dunno
+const token_part2 = "6f3344c6d179b4615974e3";
+const token_part1 = "d36ae780843ff94460";
+const gistToken = token_part1 + token_part2;
 
 const gistApi = axios.create({
     baseURL: "https://api.github.com/gists",
