@@ -42,7 +42,7 @@ describe("Content pack handling", () => {
         let pack = await get_cp();
         await intake_pack(pack, s.reg);
         
-        let frames = await s.reg.get_cat("Frame").list_live(ctx);
+        let frames = await s.reg.get_cat("frame").list_live(ctx);
         expect(frames.length).toEqual(4);
         let frame_names = frames.map(f => f.Name);
         expect(frame_names).toContain("NORFOLK");
@@ -62,7 +62,7 @@ describe("Content pack handling", () => {
         let pack = await get_cp();
         await intake_pack(pack, s.reg);
         
-        let frames = await s.reg.get_cat("Frame").list_live(ctx);
+        let frames = await s.reg.get_cat("frame").list_live(ctx);
         expect(frames.length).toEqual(29 + 4);
         let frame_names = frames.map(f => f.Name);
         expect(frame_names).toContain("NORFOLK");
