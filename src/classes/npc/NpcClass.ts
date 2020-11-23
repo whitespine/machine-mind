@@ -1,6 +1,7 @@
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { NpcFeature } from "@src/class";
-import { EntryType, RegEntry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { defaults } from '@src/funcs';
 
 interface AllNpcClassData {
     id: string;
@@ -60,6 +61,26 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
             role: this.Role,
             base_stats: this.Stats,
         };
+    }
+
+    public static async unpack(
+        data: PackedNpcClassData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<NpcClass> {
+        let rdata: RegNpcClassData = {
+            ...defaults.NPC_CLASS(),
+            id: data.id,
+            name: data.name,
+            info: data.info,
+            role: data.role,
+            base_stats: data.stats,
+            power: data.power,
+
+            base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
+            optional_features: data.optional_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f))
+        };
+        return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata);
     }
 
     public get RoleIcon(): string {

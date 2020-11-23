@@ -11,9 +11,9 @@ import {
     PilotGear,
     Talent,
     TagTemplate,
-    // NpcClass,
-    // NpcTemplate,
-    // NpcFeature,
+    NpcClass,
+    NpcTemplate,
+    NpcFeature,
     // NpcWeapon,
     // NpcReaction,
     // NpcTrait,
@@ -43,6 +43,9 @@ import {
     ITagTemplateData,
     PackedSkillData,
     PackedManufacturerData,
+    PackedNpcClassData,
+    PackedNpcFeatureData,
+    PackedNpcTemplateData,
 } from "@src/interface";
 import { IStatusData } from "./Statuses";
 import { OpCtx, Registry } from "@src/registry";
@@ -69,9 +72,9 @@ export interface IContentPackData {
     talents: PackedTalentData[];
     tags: ITagTemplateData[];
 
-    // npcClasses: INpcClassData[];
-    // npcFeatures: INpcFeatureData[];
-    // npcTemplates: INpcTemplateData[];
+    npcClasses: PackedNpcClassData[];
+    npcFeatures: PackedNpcFeatureData[];
+    npcTemplates: PackedNpcTemplateData[];
 
     // New additions courtesy of whitespine
     skills?: PackedSkillData[];
@@ -132,17 +135,16 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     for (let x of d.tags) {
         await TagTemplate.unpack(x, reg, ctx);
     }
-    /*
-    for (let x of d.) {
-        NpcClasses.unpack(x, reg);
+    for (let x of d.npcClasses) {
+        NpcClass.unpack(x, reg, ctx);
     }
-    for (let x of d.NpcTemplates) {
-        NpcTemplates.unpack(x, reg);
+    for (let x of d.npcTemplates) {
+        NpcTemplate.unpack(x, reg, ctx);
     }
-    for (let x of d.NpcFeatures) {
-        NpcFeatures.unpack(x, reg);
+    for (let x of d.npcFeatures) {
+        NpcFeature.unpack(x, reg, ctx);
     }
-    */
+
     for (let x of d.environments ?? []) {
         await Environment.unpack(x, reg, ctx);
     }

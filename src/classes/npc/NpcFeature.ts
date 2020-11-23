@@ -1,7 +1,7 @@
 import { TagInstance } from "@src/class";
 import { NpcFeatureType } from "@src/enums";
 import { PackedTagInstanceData, RegTagInstanceData } from "@src/interface";
-import { EntryType, RegEntry, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 
 // Tracks where the feature comes from
 interface IOriginData {
@@ -95,5 +95,24 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             tags: SerUtil.save_all(this.Tags),
             type: this.FeatureType,
         };
+    }
+    public static async unpack(
+        data: PackedNpcFeatureData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<NpcFeature> {
+        let tags = data.tags.map(TagInstance.unpack_reg) ?? [];
+        let rdata: RegNpcFeatureData = {
+            // ...defaults.NPC_CLASS(),
+            id: data.id,
+            name: data.name,
+            origin: data.origin,
+            tags,
+            type: data.type,
+            bonus: data.bonus,
+            effect: data.effect,
+            override: data.override
+        };
+        return reg.get_cat(EntryType.NPC_FEATURE).create_live(ctx, rdata);
     }
 }

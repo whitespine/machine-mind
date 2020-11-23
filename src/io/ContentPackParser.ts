@@ -14,6 +14,9 @@ import {
     PackedPilotEquipmentData,
     PackedTalentData,
     PackedManufacturerData,
+    PackedNpcTemplateData,
+    PackedNpcFeatureData,
+    PackedNpcClassData,
     // PackedTagCompendiumData,
     // PackedNpcClassData,
     // PackedNpcFeatureData,
@@ -101,9 +104,9 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
     const talents = generateIDs(await getZipData<PackedTalentData>(zip, "talents.json"), "t");
     const tags = generateIDs(await getZipData<ITagTemplateData>(zip, "tags.json"), "tg");
 
-    // const npcClasses = (await readZipJSON<INpcClassData[]>(zip, "npc_classes.json")) || [];
-    // const npcFeatures = (await readZipJSON<INpcFeatureData[]>(zip, "npc_features.json")) || [];
-    // const npcTemplates = (await readZipJSON<INpcTemplateData[]>(zip, "npc_templates.json")) || [];
+    const npcClasses = (await readZipJSON<PackedNpcClassData[]>(zip, "npc_classes.json")) || [];
+    const npcFeatures = (await readZipJSON<PackedNpcFeatureData[]>(zip, "npc_features.json")) || [];
+    const npcTemplates = (await readZipJSON<PackedNpcTemplateData[]>(zip, "npc_templates.json")) || [];
 
     const id = await getPackID(manifest);
 
@@ -122,9 +125,9 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
             pilotGear,
             talents,
             tags,
-            // npcClasses,
-            // npcFeatures,
-            // npcTemplates,
+            npcClasses,
+            npcFeatures,
+            npcTemplates,
         },
     };
 }
@@ -147,9 +150,9 @@ export function get_base_content_pack(): IContentPack {
             frames: lancerData.frames,
             manufacturers: lancerData.manufacturers,
             mods: lancerData.mods,
-            // npcClasses: lancerData.npc_classes,
-            // npcFeatures: lancerData.npc_features,
-            // npcTemplates: lancerData.npc_templates,
+            npcClasses: lancerData.npc_classes,
+            npcFeatures: lancerData.npc_features,
+            npcTemplates: lancerData.npc_templates,
             pilotGear: lancerData.pilot_gear,
             systems: lancerData.systems,
             tags: lancerData.tags,

@@ -1,5 +1,6 @@
 import { NpcFeature } from "@src/class";
-import { EntryType, RegEntry, RegRef, SerUtil } from "@src/registry";
+import { defaults } from '@src/funcs';
+import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 interface AllNpcTemplateData {
     name: string;
@@ -43,5 +44,22 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
             name: this.Name,
             power: this.Power,
         };
+    }
+
+    public static async unpack(
+        data: PackedNpcTemplateData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<NpcTemplate> {
+        let rdata: RegNpcTemplateData = {
+            ...defaults.NPC_TEMPLATE(),
+            name: data.name,
+            description: data.description,
+            power: data.power,
+
+            base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
+            optional_features: data.optional_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f))
+        };
+        return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }
 }
