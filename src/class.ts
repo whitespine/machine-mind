@@ -64,7 +64,7 @@ export { Counter } from "./classes/Counter";
 export { Npc } from "@src/classes/npc/Npc";
 export { NpcFeature } from "@src/classes/npc/NpcFeature";
 export { NpcClass } from "@src/classes/npc/NpcClass";
-export { NpcTemplate } from "@src/classes/npc/NpcTemplate.ts";
+export { NpcTemplate } from "@src/classes/npc/NpcTemplate";
 // export { NpcItem } from "@src/classes/npc/NpcItem";
 // export { NpcReaction } from "@src/classes/npc/NpcReaction";
 // export { NpcSystem } from "@src/classes/npc/NpcSystem";
