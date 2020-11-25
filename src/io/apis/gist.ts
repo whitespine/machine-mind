@@ -27,7 +27,7 @@ export async function upload_new_pilot(pilot: Pilot): Promise<any> {
         .post("", {
             files: {
                 "pilot.txt": {
-                    content: JSON.stringify(await pilot.save()),
+                    content: JSON.stringify(pilot.save()),
                 },
             },
             description: `${pilot.Callsign} - ${pilot.Name} (LL:${pilot.Level})`,
@@ -41,7 +41,7 @@ export async function update_cloud_pilot(pilot: Pilot): Promise<any> {
         .patch(pilot.CloudID, {
             files: {
                 "pilot.txt": {
-                    content: JSON.stringify(await pilot.save()),
+                    content: JSON.stringify(pilot.save()),
                 },
             },
             description: `${pilot.Callsign} - ${pilot.Name} (LL:${pilot.Level})`,
