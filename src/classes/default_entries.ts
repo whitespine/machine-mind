@@ -35,6 +35,7 @@ import {
     RegWeaponModData,
     RegWepMountData,
 } from "@src/interface";
+import { EntryType, RegEntryTypes } from '@src/registry';
 import { nanoid } from "nanoid";
 import {
     ActivationType,
@@ -132,7 +133,7 @@ export function DEPLOYABLE(): RegDeployableData {
     };
 }
 
-export function ENVIRONMENT(): IEnvironmentData {
+export function ENVIRONMENT(): Required<IEnvironmentData> {
     return {
         description,
         id: "env_" + nanoid(),
@@ -140,7 +141,7 @@ export function ENVIRONMENT(): IEnvironmentData {
     };
 }
 
-export function FACTION(): IFactionData {
+export function FACTION(): Required<IFactionData> {
     return {
         color,
         description,
@@ -222,7 +223,6 @@ export function MANUFACTURER(): RegManufacturerData {
 
 export function MECH(): RegMechData {
     return {
-        activations: 1,
         burn: 0,
         cc_ver: CC_VERSION,
         cloud_portrait: "",
@@ -373,6 +373,9 @@ export function NPC_FEATURE(): RegNpcFeatureData {
         },
         tags: [],
         type: NpcFeatureType.Trait,
+        bonus: {},
+        effect: "",
+        override: {}
     };
 }
 
@@ -386,7 +389,7 @@ export function NPC_TEMPLATE(): RegNpcTemplateData {
     };
 }
 
-export function NPC_CLASS_STATS(): INpcClassStats {
+export function NPC_CLASS_STATS(): Required<INpcClassStats> {
     return {
         activations: [1, 1, 1],
         agility: [0, 0, 0],
@@ -407,7 +410,7 @@ export function NPC_CLASS_STATS(): INpcClassStats {
     };
 }
 
-export function ORGANIZATION(): IOrganizationData {
+export function ORGANIZATION(): Required<IOrganizationData> {
     return {
         actions: "",
         description,
@@ -554,13 +557,18 @@ export function RESERVE(): RegReserveData {
     };
 }
 
-export function SITREP(): ISitrepData {
+export function SITREP(): Required<ISitrepData> {
     return {
         description,
         enemyVictory: "The enemy wins when ___",
         id: "sit_" + nanoid(),
         name: "New Sitrep",
         pcVictory: "The PCs win when ___",
+        controlZone: "",
+        deployment: "",
+        extraction: "",
+        noVictory: "",
+        objective: ""
     };
 }
 
@@ -575,7 +583,7 @@ export function SKILL(): RegSkillData {
     };
 }
 
-export function STATUS(): IStatusData {
+export function STATUS(): Required<IStatusData> {
     return {
         effects: [],
         icon,
@@ -584,12 +592,13 @@ export function STATUS(): IStatusData {
     };
 }
 
-export function TAG_TEMPLATE(): ITagTemplateData {
+export function TAG_TEMPLATE(): Required<ITagTemplateData> {
     return {
         description,
         id: "tg_" + nanoid(),
         name: "New Tag",
         hidden: false,
+        filter_ignore: false
     };
 }
 
@@ -684,4 +693,41 @@ export function WEAPON_MOD(): RegWeaponModData {
         bonuses: [],
         synergies: [],
     };
+}
+
+
+
+// Provides a default function for every entrytype
+export const DEFAULT_FUNC_MAP: {[key in EntryType]: () => RegEntryTypes<key>} = {
+        [EntryType.CORE_BONUS]: CORE_BONUS,
+        [EntryType.CORE_SYSTEM]: CORE_SYSTEM,
+        [EntryType.ENVIRONMENT]: ENVIRONMENT,
+        [EntryType.FACTION]: FACTION,
+        [EntryType.FRAME_TRAIT]: FRAME_TRAIT,
+        [EntryType.FRAME]: FRAME,
+        [EntryType.LICENSE]: LICENSE,
+        [EntryType.MANUFACTURER]: MANUFACTURER,
+        [EntryType.MECH_SYSTEM]: MECH_SYSTEM,
+        [EntryType.MECH_WEAPON]: MECH_WEAPON,
+        [EntryType.NPC]: NPC,
+        [EntryType.NPC_CLASS]: NPC_CLASS,
+        [EntryType.NPC_FEATURE]: NPC_FEATURE,
+        [EntryType.NPC_TEMPLATE]: NPC_TEMPLATE,
+        [EntryType.ORGANIZATION]: ORGANIZATION,
+        [EntryType.PILOT_ARMOR]: PILOT_ARMOR,
+        [EntryType.PILOT_GEAR]: PILOT_GEAR,
+        [EntryType.PILOT_WEAPON]: PILOT_WEAPON,
+        [EntryType.QUIRK]: QUIRK,
+        [EntryType.RESERVE]: RESERVE,
+        [EntryType.SITREP]: SITREP,
+        [EntryType.SKILL]: SKILL,
+        [EntryType.STATUS]: STATUS,
+        [EntryType.TAG]: TAG_TEMPLATE,
+        [EntryType.TALENT]: TALENT,
+        [EntryType.WEAPON_MOD]: WEAPON_MOD,
+
+        // The inventoried things (actors!)
+        [EntryType.PILOT]: PILOT,
+        [EntryType.DEPLOYABLE]: DEPLOYABLE,
+        [EntryType.MECH]: MECH, 
 }

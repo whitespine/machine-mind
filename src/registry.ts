@@ -533,9 +533,8 @@ export abstract class SerUtil {
         await Promise.all(items.map(i => i.ready() as Promise<any>)); // Since these promises self return we need to basically just ignore their type to avoid clashes.
     }
 
-
     public static chunk_string(id_string: string): string {
-        return id_string.replace(/(\s|\/|-)+/g, '_').toLowerCase();
+        return id_string.replace(/(\s|\/|-)+/g, "_").toLowerCase();
     }
 }
 
@@ -611,14 +610,14 @@ export abstract class RegEntry<T extends EntryType> {
     // Make a reference to this item
     public as_ref(as_mmid: boolean = false): RegRef<T> {
         // If our context was set as mmid-mode, then we save back as ids whenever possible
-        if(as_mmid) {
-            "".toLowerCase
-            let mmid = (this as any).id ?? ((this as any).name?.toLowerCase()) ?? "MISSING_MMID";
+        if (as_mmid) {
+            "".toLowerCase;
+            let mmid = (this as any).id ?? (this as any).name?.toLowerCase() ?? "MISSING_MMID";
             return {
                 id: mmid,
                 is_unresolved_mmid: true,
-                type: this.Type
-            }
+                type: this.Type,
+            };
         } else {
             return {
                 id: this.RegistryID,
@@ -791,7 +790,6 @@ export class OpCtx {
     // We rely entirely on no collisions here
     private resolved: Map<string, any> = new Map(); // Maps lookups with a key in a specified registry to their results
 
-
     get(id: string): RegEntry<any> | null {
         return this.resolved.get(id) ?? null;
     }
@@ -913,6 +911,23 @@ export abstract class Registry {
         } else {
             return this.get_cat(type).create_default(ctx);
         }
+    }
+
+    // Shorthand for get_cat(type).get_live(ctx, id);
+    public async get_live<T extends EntryType>(
+        type: T,
+        ctx: OpCtx,
+        id: string
+    ): Promise<LiveEntryTypes<T> | null> {
+        return this.get_cat(type).get_live(ctx, id);
+    }
+
+    // Shorthand for get_cat(type).get_raw(id);
+    public async get_raw<T extends EntryType>(
+        type: T,
+        id: string
+    ): Promise<RegEntryTypes<T> | null> {
+        return this.get_cat(type).get_raw(id);
     }
 
     // Delete an item, by cat + id. Just delegates through get_cat
