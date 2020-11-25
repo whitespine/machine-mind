@@ -6,7 +6,7 @@ import { Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { DEFAULT_PILOT } from "../src/classes/default_entries";
-import { validate_props } from "../src/classes/fill_test_util";
+import { validate_props } from "../src/classes/key_util";
 
 type DefSetup = {
     reg: StaticReg;
@@ -126,17 +126,7 @@ describe("Static Registry Reference implementation", () => {
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
     });
 
-    it("All core items have all keys", async () => {
-        // expect.assertions(7);
-        let env = await init_basic_setup();
-        let ctx = new OpCtx();
-        for(let k of Object.values(EntryType)) {
-            let cat = env.reg.get_cat(k);
-            for(let x of await cat.list_live(ctx)) {
-                validate_props(x);
-            }
-        }
-    });
+
 
     it("Can create inventories things", async () => {
         expect.assertions(7);

@@ -6,7 +6,7 @@ import { Counter, Frame, Mech, MechWeapon, Pilot, Talent } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { gist_io, cloud_sync } from "../src/funcs";
-import { validate_props } from "../src/classes/fill_test_util";
+import { validate_props } from "../src/classes/key_util";
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
 

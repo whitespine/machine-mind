@@ -1,12 +1,9 @@
 // @ts-nocheck
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
-import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { Counter, Frame, MechWeapon } from "../src/class";
+import { OpCtx,  OpCtx } from "../src/registry";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
 import { IContentPack, intake_pack } from '../src/classes/ContentPack';
-import { DEFAULT_PILOT } from "../src/classes/default_entries";
-import { validate_props } from "../src/classes/fill_test_util";
 import * as fs from "fs";
 
 type DefSetup = {
