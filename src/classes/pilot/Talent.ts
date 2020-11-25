@@ -86,7 +86,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
     CurrentRank!: number;
 
     public async load(data: RegTalentData): Promise<void> {
-        data = { ...defaults.TALENT, ...data };
+        data = { ...defaults.TALENT(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Icon = data.icon;

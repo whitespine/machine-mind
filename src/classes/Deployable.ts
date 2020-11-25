@@ -97,7 +97,7 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
     Tags!: TagInstance[];
 
     public async load(data: RegDeployableData): Promise<void> {
-        data = { ...defaults.DEPLOYABLE, ...data };
+        data = { ...defaults.DEPLOYABLE(), ...data };
         this.Name = data.name;
         this.DeployableType = data.type;
         this.Detail = data.detail;

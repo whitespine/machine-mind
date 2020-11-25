@@ -2,7 +2,7 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { Counter, Frame, MechWeapon } from "../src/class";
+import { Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { DEFAULT_PILOT } from "../src/classes/default_entries";
@@ -222,7 +222,6 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can handle circular loops", async () => {
-
         let env = await init_basic_setup();
 
         let ctx = new OpCtx();
@@ -243,5 +242,28 @@ describe("Static Registry Reference implementation", () => {
         let pilot = await env.reg.get_cat(EntryType.PILOT).create_default(ctx);
 
     });
+
+    /*
+    it("Properly generates implicit ids", async () => {
+        expect.assertions(5);
+        let env = await init_basic_setup();
+
+        // Get our lanny
+        let ctx = new OpCtx();
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster");
+
+        // expect its core system and stuff to have generated reasonable names
+        expect(lanny.CoreSystem.ID).toEqual("cs_lancaster_latch_drone");
+
+        const trait_names = lanny.Traits.map(ft => ft.ID);
+        expect(trait_names).toContain("ft_lancaster_combat_repair");
+        expect(trait_names).toContain("ft_lancaster_insulated");
+        expect(trait_names).toContain("ft_lancaster_redundant_systems"); // 4
+
+        const drone_system: MechSystem = await env.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid(ctx, "ms_restock_drone");
+        const drone = drone_system.Deployables[0];
+        expect(drone.ID).toEqual("dep_restock_drone"); // 5
+    });
+    */
     
 });

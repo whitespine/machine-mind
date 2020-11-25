@@ -132,32 +132,32 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
     }
 
     public static async unpack(
-        dep: PackedCoreSystemData,
+        data: PackedCoreSystemData,
         reg: Registry,
         ctx: OpCtx
     ): Promise<CoreSystem> {
         // Get tags
-        let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
+        let tags = data.tags?.map(TagInstance.unpack_reg) ?? [];
 
         // Get the counters
-        let counters = SerUtil.unpack_counters_default(dep.counters);
+        let counters = SerUtil.unpack_counters_default(data.counters);
 
         // Get the deployables
         let deployables_ = await SerUtil.unpack_children(
             Deployable.unpack,
             reg,
             ctx,
-            dep.deployables
+            data.deployables
         );
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data
-        let integrated = SerUtil.unpack_integrated_refs(dep.integrated);
+        let integrated = SerUtil.unpack_integrated_refs(data.integrated);
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {
             ...defaults.CORE_SYSTEM(),
-            ...dep,
+            ...data,
             tags,
             counters,
             deployables,

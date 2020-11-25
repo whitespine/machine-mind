@@ -532,6 +532,11 @@ export abstract class SerUtil {
     public static async all_ready(items: Array<RegSer<any> | RegEntry<any>>): Promise<void> {
         await Promise.all(items.map(i => i.ready() as Promise<any>)); // Since these promises self return we need to basically just ignore their type to avoid clashes.
     }
+
+
+    public static chunk_string(id_string: string): string {
+        return id_string.replace(/(\s|\/|-)+/g, '_').toLowerCase();
+    }
 }
 
 // Simple serialization and deserialization
@@ -558,10 +563,9 @@ export abstract class RegSer<SourceType> {
     constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
         this.Registry = registry;
         this.OpCtx = ctx;
-        ctx.enter(this);
 
         // Load, and when done remove our pending entry
-        this._load_promise = this.load(data).then(() => ctx.exit(this));
+        this._load_promise = this.load(data);
     }
 
     // Async ready check
@@ -593,11 +597,10 @@ export abstract class RegEntry<T extends EntryType> {
         this.Registry = registry;
         this.RegistryID = id;
         this.OpCtx = ctx;
-        ctx.enter(this);
         ctx.set(id, this);
 
         // Load, and when done remove our pending entry
-        this._load_promise = this.load(reg_data).then(() => ctx.exit(this));
+        this._load_promise = this.load(reg_data);
     }
     // Async ready check
     public async ready(): Promise<this> {
@@ -606,12 +609,23 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Make a reference to this item
-    public as_ref(): RegRef<T> {
-        return {
-            id: this.RegistryID,
-            type: this.Type,
-            is_unresolved_mmid: false, // We're in a reg! we're gooood!
-        };
+    public as_ref(as_mmid: boolean = false): RegRef<T> {
+        // If our context was set as mmid-mode, then we save back as ids whenever possible
+        if(as_mmid) {
+            "".toLowerCase
+            let mmid = (this as any).id ?? ((this as any).name?.toLowerCase()) ?? "MISSING_MMID";
+            return {
+                id: mmid,
+                is_unresolved_mmid: true,
+                type: this.Type
+            }
+        } else {
+            return {
+                id: this.RegistryID,
+                type: this.Type,
+                is_unresolved_mmid: false, // We're in a reg! we're gooood!
+            };
+        }
     }
 
     // Populate this item with stuff
@@ -713,7 +727,7 @@ export abstract class RegEntry<T extends EntryType> {
         // We change our registry before saving, in order to more reliably catch weird saving reg interaactions
         // This is the only situation in which the Registry or RegistryID of a live object can change
         (this as any).Registry = to_new_reg;
-        let saved = ((await this.save()) as unknown) as RegEntryTypes<T>;
+        let saved = (this.save() as unknown) as RegEntryTypes<T>;
 
         // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
         let new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
@@ -776,8 +790,7 @@ export type ReviveFunc<T extends EntryType> = (
 export class OpCtx {
     // We rely entirely on no collisions here
     private resolved: Map<string, any> = new Map(); // Maps lookups with a key in a specified registry to their results
-    // private pending: {[key: number]: Array<() => any>} = {};
-    private pending = 0;
+
 
     get(id: string): RegEntry<any> | null {
         return this.resolved.get(id) ?? null;
@@ -798,33 +811,6 @@ export class OpCtx {
     delete(id: string) {
         this.resolved.delete(id);
     }
-
-    // Readyness
-    private pending_waiters: Array<() => any> = [];
-    enter(for_item: RegEntry<any> | RegSer<any>) {
-        this.pending++;
-        // console.log("Incrementing: " + this.pending + " for item " + (for_item as any).constructor?.name + (for_item as any).ID);
-    }
-
-    exit(for_item: RegEntry<any> | RegSer<any>) {
-        this.pending--;
-        // console.log("Decrementing: " + this.pending + " for item " + (for_item as any).constructor?.name + (for_item as any).ID);
-        /*
-        if(this.pending <= 0) {
-            this.pending = 0;
-            for(let succ of this.pending_waiters) {
-                succ(); // Tell it to keep going
-            }
-        }
-        */
-    }
-    /*
-    settled(): Promise<void> {
-         return new Promise((succ, fail) => {
-            this.pending_waiters.push(succ);
-         });
-    }
-    */
 }
 
 export abstract class RegCat<T extends EntryType> {
