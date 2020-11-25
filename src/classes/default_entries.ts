@@ -312,6 +312,7 @@ export function MECH_SYSTEM(): RegMechSystemData {
 
 export function NPC(): RegNpcData {
     return {
+        current_hp: 0,
         burn: 0,
         campaign: "",
         cloudImage: "",
