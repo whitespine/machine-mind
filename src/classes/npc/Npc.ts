@@ -53,7 +53,8 @@ export interface PackedNpcData {
 export interface RegNpcData extends AllNpcData {
     tier: number; // Custom tiering is handled on a per item basis
     custom_counters: RegCounterData[];
-    current_hp: number; // This is really the only aattr from the old current_stats that we need to carry over
+    current_hp: number; 
+    current_heat: number; 
     // Other stuff held in inventory
 }
 
@@ -72,6 +73,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     LocalImage!: string;
     Burn!: number;
     CurrentHP!: number;
+    CurrentHeat!: number;
     Overshield!: number;
     Destroyed!: boolean;
     Defeat!: string;
@@ -191,6 +193,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Destroyed = data.destroyed;
         this.ID = data.id;
         this.CurrentHP = data.current_hp;
+        this.CurrentHeat = data.current_heat;
         this.Labels = data.labels;
         this.LocalImage =data.localImage;
         this.Name = data.name;
@@ -213,6 +216,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             destroyed: this.Destroyed,
             id: this.ID,
             current_hp: this.CurrentHP,
+            current_heat: this.CurrentHeat,
             labels: this.Labels,
             localImage: this.LocalImage,
             name: this.Name,
