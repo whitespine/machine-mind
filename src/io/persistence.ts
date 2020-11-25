@@ -8,6 +8,6 @@ export interface GetResult<T> {
 // At a basic level this just abstracts away the IO layer.
 // However, we operate under the assumption that these may be expensive
 export abstract class PersistentStore {
-    public abstract async set_item(key: string, val: any): Promise<void>;
-    public abstract async get_item<T>(key: string): Promise<T>;
+    public abstract  set_item(key: string, val: any): Promise<void>;
+    public abstract  get_item<T>(key: string): Promise<T>;
 }
