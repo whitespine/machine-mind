@@ -26,6 +26,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
     Power!: number;
 
     protected async load(data: RegNpcTemplateData): Promise<void> {
+        data = {...defaults.NPC_TEMPLATE(), ...data};
         this.Name = data.name;
         this.Description = data.description;
         this.Power = data.power;

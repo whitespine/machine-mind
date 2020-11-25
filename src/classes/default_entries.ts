@@ -1,4 +1,3 @@
-import { defaults } from "@src/funcs";
 import {
     IEnvironmentData,
     IFactionData,
@@ -15,8 +14,10 @@ import {
     RegLicenseData,
     RegManufacturerData,
     RegMechData,
+    RegMechLoadoutData,
     RegMechSystemData,
     RegMechWeaponData,
+    RegMechWeaponProfile,
     RegNpcClassData,
     RegNpcData,
     RegNpcFeatureData,
@@ -24,6 +25,7 @@ import {
     RegPilotArmorData,
     RegPilotData,
     RegPilotGearData,
+    RegPilotLoadoutData,
     RegPilotWeaponData,
     RegQuirkData,
     RegReserveData,
@@ -31,6 +33,7 @@ import {
     RegTalentData,
     RegTalentRank,
     RegWeaponModData,
+    RegWepMountData,
 } from "@src/interface";
 import { nanoid } from "nanoid";
 import {
@@ -46,6 +49,7 @@ import {
     SkillFamily,
     OrgType,
     NpcFeatureType,
+    MountType,
 } from "../enums";
 
 // Some general defaults
@@ -247,6 +251,14 @@ export function MECH(): RegMechData {
         reactions: [],
         resistances: [],
     };
+}
+
+export function MECH_LOADOUT(): RegMechLoadoutData {
+    return {
+        frame: null,
+        system_mounts: [],
+        weapon_mounts: []
+    }
 }
 
 export function MECH_WEAPON(): RegMechWeaponData {
@@ -509,6 +521,18 @@ export function PILOT(): RegPilotData {
     };
 }
 
+export function PILOT_LOADOUT(): RegPilotLoadoutData {
+    return {
+        armor: [null],
+        extendedGear: [null, null],
+        extendedWeapons: [null, null],
+        gear: [null, null, null],
+        id: "ploadout_" + nanoid(),
+        name: "Foundry Loadout",
+        weapons: [null, null]
+    }
+}
+
 export function RESERVE(): RegReserveData {
     return {
         name: "New Reserve",
@@ -605,6 +629,33 @@ export function QUIRK(): RegQuirkData {
         integrated: [],
         name: "New Quirk",
         synergies: [],
+    };
+}
+
+export function WEAPON_MOUNT_DATA(): RegWepMountData {
+    return {
+        mount_type: MountType.Main,
+        slots: [],
+    }
+}
+
+export function WEAPON_PROFILE(): RegMechWeaponProfile {
+    return {
+        // ...MECH_WEAPON(),
+        actions: [],
+        bonuses: [],
+        counters: [],
+        damage: [],
+        description,
+        effect: "",
+        name: "New Profile",
+        on_attack: "",
+        on_crit: "",
+        on_hit: "",
+        range: [],
+        synergies: [],
+        tags: [],
+        type: WeaponType.Rifle
     };
 }
 

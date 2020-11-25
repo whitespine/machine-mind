@@ -4,6 +4,7 @@ import { Counter, NpcClass, NpcFeature, NpcTemplate } from "@src/class";
 import { PackedCounterSaveData, RegCounterData } from "@src/interface";
 import { INpcStats } from "./NpcStats";
 import { EntryType, InventoriedRegEntry, SerUtil } from "@src/registry";
+import { defaults } from '@src/funcs';
 
 interface INpcItemSaveData {
     // unsure if we really need this
@@ -184,6 +185,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
 
     protected async load(data: RegNpcData): Promise<void> {
+        data = {...defaults.NPC(), ...data};
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;
         this.Burn = data.burn;

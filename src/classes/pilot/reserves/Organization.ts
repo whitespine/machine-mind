@@ -1,5 +1,5 @@
 import { OrgType } from "@src/enums";
-import { bound_int } from "@src/funcs";
+import { bound_int, defaults } from "@src/funcs";
 import { EntryType, RegEntry, SimSer } from "@src/registry";
 
 export interface IOrganizationData {
@@ -38,6 +38,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
 
     public async load(data: IOrganizationData): Promise<void> {
+        data = {...defaults.ORGANIZATION(), ...data};
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
         this.Efficiency = bound_int(data.efficiency, 0, 6);

@@ -1,3 +1,4 @@
+import { defaults } from '@src/funcs';
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
 
 export interface ITagTemplateData {
@@ -27,6 +28,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     _hidden!: boolean | null;
 
     public async load(data: ITagTemplateData): Promise<void> {
+        data = {...defaults.TAG_TEMPLATE(), ...data};
         this.ID = data.id;
         this.Name = data.id;
         this.Description = data.description;

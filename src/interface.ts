@@ -21,7 +21,7 @@ export { PackedDamageData, RegDamageData } from "./classes/Damage";
 export { IRangeData } from "./classes/Range";
 export { PackedMechData, RegMechData } from "./classes/mech/Mech";
 export { PackedMechSystemData, RegMechSystemData } from "./classes/mech/MechSystem";
-export { PackedMechWeaponData, RegMechWeaponData } from "./classes/mech/MechWeapon";
+export { PackedMechWeaponData, RegMechWeaponData, RegMechWeaponProfile, PackedMechWeaponProfile } from "./classes/mech/MechWeapon";
 export {
     PackedMechLoadoutData,
     PackedMountData,
@@ -42,7 +42,7 @@ export {
     RegPilotWeaponData,
     RegPilotEquipmentData,
 } from "./classes/pilot/PilotEquipment";
-export { PackedPilotEquipmentState, PackedPilotLoadoutData } from "./classes/pilot/PilotLoadout";
+export { PackedPilotEquipmentState, PackedPilotLoadoutData, RegPilotLoadoutData } from "./classes/pilot/PilotLoadout";
 export { IFactionData } from "./classes/Faction";
 export { PackedReserveData, RegReserveData } from "./classes/pilot/reserves/Reserve";
 export { IOrganizationData } from "./classes/pilot/reserves/Organization";

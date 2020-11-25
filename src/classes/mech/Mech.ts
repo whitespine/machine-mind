@@ -14,7 +14,7 @@ import {
     Status,
     Synergy,
 } from "@src/class";
-import { bound_int } from "@src/funcs";
+import { bound_int, defaults } from "@src/funcs";
 import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
 import {
     EntryType,
@@ -550,6 +550,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public async load(data: RegMechData): Promise<void> {
+        data = {...defaults.MECH(), ...data};
         let subreg = this.get_inventory();
         this.ID = data.id;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;

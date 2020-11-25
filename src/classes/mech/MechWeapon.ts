@@ -282,6 +282,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
     Tags!: TagInstance[];
 
     public async load(data: RegMechWeaponProfile): Promise<void> {
+      data = {...defaults.WEAPON_PROFILE(), ...data};
       this.Name = data.name;
       this.WepType = data.type;
       this.BaseDamage = SerUtil.process_damages(data.damage);

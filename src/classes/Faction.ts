@@ -1,3 +1,4 @@
+import { defaults } from '@src/funcs';
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
 export interface IFactionData {
@@ -18,6 +19,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
     Color!: string;
 
     public async load(data: IFactionData): Promise<void> {
+        data = {...data, ...defaults.FACTION()};
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;

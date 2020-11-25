@@ -86,6 +86,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     WepMounts!: WeaponMount[];
 
     public async load(data: RegMechLoadoutData): Promise<void> {
+        data = {...defaults.MECH_LOADOUT(), ...data};
         this.SysMounts = await Promise.all(
             data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).ready())
         );
@@ -524,6 +525,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     public async load(data: RegWepMountData): Promise<void> {
+        data = {...defaults.WEAPON_MOUNT_DATA(), ...data};
         this.MountType = data.mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
 
