@@ -50,7 +50,7 @@ export abstract class MechEquipment extends LicensedItem {
 
     public constructor(data: IMechEquipmentData) {
         super(data);
-        this.SP = data.sp || 0;
+        this.SP = data.sp;
         this.Effect = data.effect;
         this.IsIntegrated = data.talent_item || data.frame_id || data.id.includes("_integrated");
         this._uses = 0;

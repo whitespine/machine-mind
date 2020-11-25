@@ -92,22 +92,4 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         rdata.name = packed_skill.name ?? rdata.id;
         return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
     }
-
-    /*
-    // Handles the tricky process of fetching skills via IRankedDaata
-    public static async unpack_ranked_data(rank: IRankedData, reg: Registry): Promise<Skill> {
-        // Find the appropriate skill
-        let cat = reg.get_cat(EntryType.SKILL);
-        let found = await cat.lookup_mmid(rank.id);
-
-        // If found, just make us a copy
-        if (found) {
-            let cpy = await found.save();
-            return cat.create_live(cpy, ctx);
-        } else {
-            // TODO
-            throw new Error("Do not yet support custom skills cuz I am lazy");
-        }
-    }
-    */
 }

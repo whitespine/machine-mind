@@ -49,7 +49,6 @@ interface AllMechData {
     current_core_energy: number;
     burn: number;
     ejected: boolean;
-    activations: number;
     meltdown_imminent: boolean; // TODO: Make this active effect
     cc_ver: string;
     core_active: boolean;
@@ -64,6 +63,7 @@ export interface PackedMechData extends AllMechData {
     reactions: string[];
     loadouts: PackedMechLoadoutData[];
     active_loadout_index: number;
+    activations: number; // We don't track this or other current-state things quite yet
 
     // These are easily deduced and thus not kept
     reactor_destroyed: boolean;
@@ -86,7 +86,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     GmNote!: string;
     Portrait!: string;
     CloudPortrait!: string;
-    BuiltInImg!: string;
     Loadout!: MechLoadout;
     CurrentStructure!: number; // Get set elsewhere to bound
     CurrentStress!: number;
@@ -96,7 +95,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     CurrentRepairs!: number;
     CurrentCoreEnergy!: number;
     CurrentOvercharge!: number;
-    Activations!: number;
+    // Activations!: number;
     Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
     Resistances!: DamageType[];
@@ -136,8 +135,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // Per turn data
-    TurnActions!: number;
-    CurrentMove!: number;
+    // TurnActions!: number;
+    // CurrentMove!: number;
 
     // -- Info --------------------------------------------------------------------------------------
     public get Icon(): string {
@@ -376,11 +375,11 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // Refresh our basic per-turns. More work definitely to be done here!
-    public NewTurn(): void {
-        this.Activations = 1;
-        this.TurnActions = 2;
-        this.CurrentMove = this.Speed;
-    }
+    // public NewTurn(): void {
+        // this.Activations = 1;
+        // this.TurnActions = 2;
+        // this.CurrentMove = this.Speed;
+    // }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
     public get StatusString(): string[] {
@@ -542,7 +541,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             reactions: this.Reactions,
             burn: this.Burn,
             ejected: this.Ejected,
-            activations: this.Activations,
             meltdown_imminent: this.MeltdownImminent,
             cc_ver: CC_VERSION,
             loadout: this.Loadout.save(),
@@ -562,19 +560,19 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.Loadout = await new MechLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
-        this.Overshield = data.overshield || 0;
+        this.Overshield = data.overshield;
         this.CurrentStress = data.current_stress;
         this.CurrentHeat = data.current_heat;
         this.CurrentRepairs = data.current_repairs;
-        this.CurrentOvercharge = data.current_overcharge || 0;
-        this.CurrentCoreEnergy = data.current_core_energy ?? 1;
-        this.Resistances = data.resistances || [];
-        this.Reactions = data.reactions || [];
-        this.Burn = data.burn || 0;
+        this.CurrentOvercharge = data.current_overcharge;
+        this.CurrentCoreEnergy = data.current_core_energy;
+        this.Resistances = data.resistances;
+        this.Reactions = data.reactions;
+        this.Burn = data.burn;
         this.Ejected = data.ejected || false;
-        this.Activations = data.activations || 1;
-        this.MeltdownImminent = data.meltdown_imminent || false;
-        this.CoreActive = data.core_active || false;
+        this.MeltdownImminent = data.meltdown_imminent;
+        this.CoreActive = data.core_active;
+        this.Cc_ver = data.cc_ver;
 
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
         // They will be two separate items. This is a bit odd, but for the most part the pilot-items are more of a "shop" for the mechs to insinuate from.
@@ -644,7 +642,7 @@ export async function mech_cloud_sync(
     mech.CurrentCoreEnergy = data.current_core_energy;
     mech.Burn = data.burn;
     mech.Ejected = data.ejected;
-    mech.Activations = data.activations;
+    // mech.Activations = data.activations;
     mech.MeltdownImminent = data.meltdown_imminent;
     mech.Cc_ver = data.cc_ver;
     mech.CoreActive = data.core_active;

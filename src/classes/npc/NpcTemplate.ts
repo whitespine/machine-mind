@@ -54,9 +54,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
     ): Promise<NpcTemplate> {
         let rdata: RegNpcTemplateData = {
             ...defaults.NPC_TEMPLATE(),
-            name: data.name,
-            description: data.description,
-            power: data.power,
+            ...data,
 
             base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
             optional_features: data.optional_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f))

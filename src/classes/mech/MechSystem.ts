@@ -108,7 +108,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         this.ID = data.id;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
-        this.SysType = data.type || SystemType.System;
+        this.SysType = data.type;
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.SP = data.sp;
@@ -121,7 +121,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
 
         await SerUtil.load_basd(this.Registry, data, this);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
-        this.Counters = data.counters?.map(c => new Counter(c)) || [];
+        this.Counters = data.counters.map(c => new Counter(c));
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
 

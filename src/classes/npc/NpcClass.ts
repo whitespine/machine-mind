@@ -34,7 +34,6 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     BaseFeatures!: NpcFeature[];
     OptionalFeatures!: NpcFeature[];
     Power!: number;
-    Brew!: string;
 
     public async load(data: RegNpcClassData): Promise<void> {
         data = {...defaults.NPC_CLASS(), ...data};
@@ -71,12 +70,8 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     ): Promise<NpcClass> {
         let rdata: RegNpcClassData = {
             ...defaults.NPC_CLASS(),
-            id: data.id,
-            name: data.name,
-            info: data.info,
-            role: data.role,
+            ...data,
             base_stats: data.stats,
-            power: data.power,
 
             base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
             optional_features: data.optional_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f))

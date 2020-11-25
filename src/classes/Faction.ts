@@ -19,12 +19,12 @@ export class Faction extends RegEntry<EntryType.FACTION> {
     Color!: string;
 
     public async load(data: IFactionData): Promise<void> {
-        data = {...data, ...defaults.FACTION()};
+        data = {...defaults.FACTION(), ...data};
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
         this.Logo = data.logo;
-        this.LogoURL = data.logo_url || null;
+        this.LogoURL = data.logo_url ?? null;
         this.Color = data.color;
     }
 

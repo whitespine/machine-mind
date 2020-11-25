@@ -112,7 +112,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         if (this.Classes.length) {
             return this.Classes[0];
         } else {
-            console.error("Npc without class!");
+            console.warn("Npc without class!");
             return null;
         }
     }
@@ -186,6 +186,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
 
     protected async load(data: RegNpcData): Promise<void> {
         data = {...defaults.NPC(), ...data};
+        let subreg = this.get_inventory();
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;
         this.Burn = data.burn;
@@ -205,6 +206,10 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Side =data.side;
         this.Subtitle = data.subtitle;
         this.Tag = data.tag;
+
+        this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx);
+        this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx);
+        this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx);
     }
 
     public save(): RegNpcData {

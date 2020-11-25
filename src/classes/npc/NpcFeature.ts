@@ -27,7 +27,7 @@ export interface PackedNpcFeatureData extends AllNpcFeatureData {
     hide_active: boolean; // ???????
 }
 
-export interface RegNpcFeatureData extends AllNpcFeatureData {
+export interface RegNpcFeatureData extends Required<AllNpcFeatureData> {
     tags: RegTagInstanceData[];
 }
 
@@ -38,7 +38,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Effect!: string;
     public Bonus!: object;
     public Override!: object;
-    public Locked!: boolean;
+    // public Locked!: boolean;
     public Tags!: TagInstance[];
     public FeatureType!: NpcFeatureType;
 
@@ -77,12 +77,10 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.ID = data.id;
         this.Name = data.name;
         this.Origin = data.origin;
-        this.Effect = data.effect || "";
-        this.Bonus = data.bonus || {};
-        this.Override = data.override || {};
-        // this.Locked = data.locked || false;
+        this.Effect = data.effect;
+        this.Bonus = data.bonus;
+        this.Override = data.override;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
-        // this.Hide_active = data.hide_active || false;
         this.FeatureType = data.type;
     }
 
@@ -103,17 +101,12 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcFeature> {
+        data = {...defaults.NPC_FEATURE(), ...data};
         let tags = data.tags.map(TagInstance.unpack_reg) ?? [];
         let rdata: RegNpcFeatureData = {
-            // ...defaults.NPC_CLASS(),
-            id: data.id,
-            name: data.name,
-            origin: data.origin,
+            ...defaults.NPC_FEATURE(),
+            ...data,
             tags,
-            type: data.type,
-            bonus: data.bonus,
-            effect: data.effect,
-            override: data.override
         };
         return reg.get_cat(EntryType.NPC_FEATURE).create_live(ctx, rdata);
     }

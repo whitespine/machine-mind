@@ -8,7 +8,7 @@ import {
     Bonus,
     Synergy,
 } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@src/interface";
 import {
     EntryType,
@@ -118,7 +118,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     }
 
     public async load(data: RegPilotLoadoutData): Promise<void> {
-        data = {...defaults.PILOT_LOADOUT, ...data};
+        data = { ...defaults.PILOT_LOADOUT(), ...data };
         // Simple
         this.Name = data.name;
         this.ID = data.id;
@@ -231,11 +231,11 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         // TODO: apply the other details
         /*
             id: string;
-    destroyed: boolean;
-    uses: number;
-    cascading: false;
-    customDamageType: null;
-    */
+            destroyed: boolean;
+            uses: number;
+            cascading: false;
+            customDamageType: null;
+        */
         return item;
     }
 
