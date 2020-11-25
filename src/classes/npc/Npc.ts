@@ -47,12 +47,13 @@ export interface PackedNpcData {
     templates: string[];
     actions: number;
     stats: INpcStats;
-    // currentStats: INpcStats; // -- Appears to be unused
+    currentStats: INpcStats; // exact usage unclear
 }
 
 export interface RegNpcData extends AllNpcData {
     tier: number; // Custom tiering is handled on a per item basis
     custom_counters: RegCounterData[];
+    current_hp: number; // This is really the only aattr from the old current_stats that we need to carry over
     // Other stuff held in inventory
 }
 
@@ -70,6 +71,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     CloudImage!: string;
     LocalImage!: string;
     Burn!: number;
+    CurrentHP!: number;
     Overshield!: number;
     Destroyed!: boolean;
     Defeat!: string;
@@ -179,8 +181,25 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         return 0;
     }
 
-    protected load(data: RegNpcData): Promise<void> {
-        throw new Error("Method not implemented.");
+    protected async load(data: RegNpcData): Promise<void> {
+        this.CustomCounters = SerUtil.process_counters(data.custom_counters);
+        this.Tier = data.tier;
+        this.Burn = data.burn;
+        this.Campaign =data.campaign;
+        this.CloudImage = data.cloudImage;
+        this.Defeat = data.defeat;
+        this.Destroyed = data.destroyed;
+        this.ID = data.id;
+        this.CurrentHP = data.current_hp;
+        this.Labels = data.labels;
+        this.LocalImage =data.localImage;
+        this.Name = data.name;
+        this.Note =data.note;
+        this.Overshield = data.overshield;
+        this.Resistances = data.resistances;
+        this.Side =data.side;
+        this.Subtitle = data.subtitle;
+        this.Tag = data.tag;
     }
 
     public save(): RegNpcData {
@@ -193,6 +212,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             defeat: this.Defeat,
             destroyed: this.Destroyed,
             id: this.ID,
+            current_hp: this.CurrentHP,
             labels: this.Labels,
             localImage: this.LocalImage,
             name: this.Name,
