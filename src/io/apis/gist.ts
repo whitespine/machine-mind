@@ -18,14 +18,20 @@ const gistApi = axios.create({
     responseType: "json",
 });
 
+// Don't need auth for fetching, so don't use them
+const noAuthGistApi = axios.create({
+    baseURL: "https://api.github.com/gists",
+    responseType: "json",
+});
+
 const changelogGistID = "3eaedde89e606f60a6346ab190972edf";
 const getChangelog = function() {
-    return gistApi.get(changelogGistID).then(res => res.data);
+    return noAuthGistApi.get(changelogGistID).then(res => res.data);
 };
 
 const creditsGistID = "c79f09f5459c5991c1228c853191bd51";
 const getCredits = function() {
-    return gistApi.get(creditsGistID).then(res => res.data);
+    return noAuthGistApi.get(creditsGistID).then(res => res.data);
 };
 
 const newPilot = async function(pilot: Pilot): Promise<any> {
@@ -56,7 +62,7 @@ const savePilot = async function(pilot: Pilot) {
 };
 
 const loadPilot = async function(id: string): Promise<IPilotData> {
-    const gistData = (await gistApi.get(id)).data;
+    const gistData = (await noAuthGistApi.get(id)).data;
     const pilotData = JSON.parse(gistData.files["pilot.txt"].content) as IPilotData;
     // This is occasionally missing from the transmitted data
     pilotData.cloudID = id;
