@@ -146,8 +146,8 @@ export class License extends RegEntry<EntryType.LICENSE> {
         return result;
     }
 
-    // TODO: This might lead to double-reffing
-    public get_child_entries(): RegEntry<any>[] {
-        return this.Unlocks.flat();
-    }
+    // For the time being, this is disabled. There's no real sensible way for a license (owned by a pilot) to give systems/etc (which are owned by a mech)
+    // public get_child_entries(): RegEntry<any>[] {
+        // return this.Unlocks.flat();
+    // }
 }

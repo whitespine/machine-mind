@@ -9,7 +9,7 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 import { ActivationType } from "../enums";
 
 export interface PackedDeployableData {
@@ -68,7 +68,8 @@ export interface RegDeployableData {
     current_hp: number;
 }
 
-export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
+export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
+
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;
@@ -95,6 +96,11 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
     Synergies!: Synergy[];
     Counters!: Counter[];
     Tags!: TagInstance[];
+
+    // They don't own anything yet, but statuses will maybe change this? or if they have systems? idk, they're actors so it made sense at the time
+    protected enumerate_owned_items(): RegEntry<any>[] {
+        return [];
+    }
 
     public async load(data: RegDeployableData): Promise<void> {
         data = { ...defaults.DEPLOYABLE(), ...data };

@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { Counter, NpcClass, NpcFeature, NpcTemplate } from "@src/class";
 import { PackedCounterSaveData, RegCounterData } from "@src/interface";
 import { INpcStats } from "./NpcStats";
-import { EntryType, InventoriedRegEntry, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 
 interface INpcItemSaveData {
@@ -95,6 +95,10 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     private _classes!: NpcClass[];
     public get Classes(): NpcClass[] {
         return [...this._classes];
+    }
+
+    protected enumerate_owned_items(): RegEntry<any>[] {
+        return [...this._classes, ...this._features, ...this._templates];
     }
 
     // this._tag = this.Class.Role.toLowerCase() === "biological" ? "Biological" : "Mech";

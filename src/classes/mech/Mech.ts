@@ -134,6 +134,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         return [...this._statuses_and_conditions];
     }
 
+    protected enumerate_owned_items(): RegEntry<any>[] {
+        return [...this._owned_weapons, ...this._owned_systems, ...this._owned_weapon_mods, ...this._owned_frames, ...this._statuses_and_conditions];
+    }
+
     // Per turn data
     // TurnActions!: number;
     // CurrentMove!: number;
@@ -597,16 +601,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
     private sum_bonuses(id: string): number {
         return Bonus.SumPilotBonuses(this.Pilot, this.AllBonuses, id);
-    }
-
-    public get_child_entries(): RegEntry<any>[] {
-        return [
-            ...this.OwnedSystems,
-            ...this.OwnedWeapons,
-            ...this.OwnedWeaponMods,
-            ...this.OwnedFrames,
-            ...this.StatusesAndConditions,
-        ];
     }
 }
 

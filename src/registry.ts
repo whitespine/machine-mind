@@ -650,12 +650,14 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
-    // Generates a new opctx
-    public async refreshed(): Promise<LiveEntryTypes<T> | null> {
-        return this.Registry.get_cat(this.Type).get_live(new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
+    // Generates a new opctx if none is provided, otherwise behaves just like getLive() on this items reg
+    public async refreshed(ctx?: OpCtx): Promise<LiveEntryTypes<T> | null> {
+        return this.Registry.get_cat(this.Type).get_live(ctx ?? new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
     }
 
     // List all child items of this item. We assume none by default
+    // Note that this is NOT the inventory of an item. It is instead a listing of items that must be brought along if this item is moved
+    // Most notably: Integrated systems, weapons, and deployables
     public get_child_entries(): RegEntry<any>[] {
         return [];
     }
@@ -684,15 +686,10 @@ export abstract class RegEntry<T extends EntryType> {
         return all;
     }
 
-    // Repack this item. Can oftentimes just be save() with a few minor tweaks. Used for ccio.
-    public async pack(): Promise<PackedEntryTypes<T>> {
-        return {} as any;
-        // TODO
-    }
-
     // Create a copy self in the target DB, bringing along all child items with properly reconstructed links.
-    // Returns said copy
-    public async insinuate(to_new_reg: Registry): Promise<LiveEntryTypes<T>> {
+    // Returns said copy. If supplied, ctx will be used for the revival of the newly insinuated data in to_new_reg. 
+    // This can be the same ctx as the original without issue, but doing so is pretty unlikely to be useful
+    public async insinuate(to_new_reg: Registry, ctx?: OpCtx): Promise<LiveEntryTypes<T>> {
         // The public expore of insinuate, which ensures it is safe by refreshing before and after all operations
         let fresh = await this.refreshed();
         // If not fresh, implying deleted  while we try to insinuate, we abort the operation
@@ -701,51 +698,53 @@ export abstract class RegEntry<T extends EntryType> {
         }
 
         // After refresh, destroy the opctx cache to be reconstructed as we build below
-        await (fresh as RegEntry<any>).insinuate_imp(to_new_reg, true);
+        let hitlist: Set<RegEntry<any>> = new Set();
+        await (fresh as RegEntry<any>)._insinuate_imp(to_new_reg, hitlist);
 
-        // We do not want fresh itself. Instead, re-fetch fresh from the new registry
-        let fresher = (await fresh.refreshed()) as LiveEntryTypes<T>;
+        // At this point no more processing is going to occur - our entire data structure should have been transferred over to the new reg
+        // However, what _hasn't_ yet been processed / updated are our reg entrie references - they're still saved as their original ids
+        // So we write all back once more with the new reference structure established
+        for (let i of hitlist) {
+            await i.writeback();
+        }
+
+        // We do not want `fresh` itself, as its references will be wacky. Instead, re-fetch fresh from the new registry
+        let fresher = (await fresh.refreshed(ctx)) as LiveEntryTypes<T>;
         return fresher;
     }
 
     // Note that since a live copy is always a mere reflection of the underlying reg data, this has no effect on the original reg
     // In order to properly resettle children, we require valid implementations of get_child_entries
-    private is_insinuating = false;
-    protected async insinuate_imp(to_new_reg: Registry, root_call: boolean): Promise<void> {
-        // Check if we've been hit to avoid spurious copying
-        if (this.is_insinuating) {
-            return;
-        }
-        this.is_insinuating = true;
-
-        // Ask all of our live children to insinuate themselves. They shall insinuate recursively
-        for (let child of this.get_child_entries()) {
-            await child.insinuate_imp(to_new_reg, false); // Ensure that they don't get root call true. This prevents dumb save-thrashing
+    // Insinuation hit list is used to track which items are already being insinuated, so as not to get caught in cycles
+    // Return value is the temporary new live entry we used to generate the ID. NOTE THAT IT IS NOT MEANT TO BE RETURNED - IT IS SUPER UNSTABLE
+    // it is, however, needed for inventoried regs to figure out their new inventory location. Null indicates no insinuation occurred due to circular reference protection
+    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Set<RegEntry<any>>): Promise<LiveEntryTypes<T> | null> {
+        // Check if we've been hit to avoid circular problems
+        if (insinuation_hit_list.has(this)) {
+            return null;
+        } else {
+            insinuation_hit_list.add(this);
         }
 
-        // To do ourself is quite simple once this is done. Now that all of our child data is in the new registry, we simply transfer ourself via save/load
-        // We change our registry before saving, in order to more reliably catch weird saving reg interaactions
+        // To insinuate this specific item is fairly simple. Just save the data, then create a corresponding entry in the new reg
+        // We change our registry before saving as a just-in-case. It shouldn't really matter
         // This is the only situation in which the Registry or RegistryID of a live object can change
         (this as any).Registry = to_new_reg;
         let saved = (this.save() as unknown) as RegEntryTypes<T>;
 
-        // Create an entry with the saved data. We assume that the saved data will be the same as the data used to create - this is by definition true, though our types don't specifically validate that
-        let new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
+        // Create an entry with the saved data. This is essentially a duplicate of this item on the other registry
+        // however, this new item will (somewhat predictably) fail to resolve any of its references. We don't care - we just want its id
+        let new_entry: LiveEntryTypes<T> = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
 
-        // Update our ID now as well, since it has been decided by the registry. This only really matters to make the outer _refreshed()_ call work better
+        // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
+        // Thankfully, all we really need to do is have this ID right / be able to save validly, so the outer insinuate method can make all of the references have the proper id's
         (this as any).RegistryID = new_entry.RegistryID;
 
-        // In cases of Non-DAG heirarchies (the only example of which I can think of being Mechs knowing their Pilot and perhaps deployables knowing their deployer),
-        // this simplistic approach will unfortunately leave us with some possibly unmaintained references... A possible solution is to re-propagate the update function back through the chain
-        // to make sure that everything saved properly. We do this here - Need specific test cases to validate it is working
-        if (root_call) {
-            // No more processing is going to occur, so links/refs can be stably saved
-            for (let i of this.get_child_entries_recursive()) {
-                await i.writeback();
-                i.is_insinuating = false;
-            }
-            this.is_insinuating = false;
+        // Ask all of our live children to insinuate themselves. They shall insinuate recursively
+        for (let child of this.get_child_entries()) {
+            await child._insinuate_imp(to_new_reg, insinuation_hit_list); // Ensure that they don't get root call true. This prevents dumb save-thrashing
         }
+        return new_entry;
     }
 }
 
@@ -765,6 +764,28 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
             return this.Registry;
         }
         return v;
+    }
+
+    // used for insinuation. All these items, contained in this items inventory, will be brought along with
+    protected abstract enumerate_owned_items(): RegEntry<any>[];
+
+    // Insinuation logic is a bit different as well
+    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Set<RegEntry<any>>): Promise<LiveEntryTypes<any> | null> {
+        // Get our super call. Since new entry is of same type, then it should also have an inventory
+        let new_reg_entry = await super._insinuate_imp(to_new_reg, insinuation_hit_list) as InventoriedRegEntry<T> | null;
+
+        // If it went off, then we want to insinuate all items from our inventory to the new regs inventory
+        if(new_reg_entry) {            // Get every item. 
+            let all_items = this.enumerate_owned_items();
+
+            // Get our new target reg (the new entry's inventory)
+            let new_inventory = new_reg_entry.get_inventory();
+
+            // Insinuate them all
+            for(let i of all_items) {
+                await i._insinuate_imp(new_inventory, insinuation_hit_list);
+            }
+        }
     }
 }
 

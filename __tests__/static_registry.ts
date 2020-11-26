@@ -194,6 +194,7 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can handle some more peculiar insinuation/ctx cases", async () => {
+        expect.assertions(4);
         let full_env = await init_basic_setup();
         let empty_env = await init_basic_setup(false);
 
@@ -204,10 +205,45 @@ describe("Static Registry Reference implementation", () => {
         let moved_ctx = moved_lanny.OpCtx;
 
         // Should share nothing in common
-        expect(lanny === moved_lanny).toBeFalsy();
-        expect(ctx === moved_ctx).toBeFalsy();
-        expect(lanny.Registry === moved_lanny.Registry).toBeFalsy();
-        expect(lanny.RegistryID === moved_lanny.RegistryID).toBeFalsy();
+        expect(lanny === moved_lanny).toBeFalsy(); // 1
+        expect(ctx === moved_ctx).toBeFalsy(); 
+        expect(lanny.Registry === moved_lanny.Registry).toBeFalsy(); 
+        expect(lanny.RegistryID === moved_lanny.RegistryID).toBeFalsy(); // 4
+    });
+
+    it("Properly transfers inventory items while insinuating", async () => {
+        expect.assertions(8);
+        let source_env = await init_basic_setup(false);
+        let dest_env = await init_basic_setup(false);
+
+        // Create the pilot and give them a basic gun and some armor
+        let ctx = new OpCtx();
+        let source_pilot = await source_env.reg.create_live("pilot", ctx);
+
+        // The gun, we build directly in the source pilot reg
+        let source_gun = await source_pilot.get_inventory().create_live("pilot_weapon", ctx);
+        // The armor, we make then insinuate
+        let source_world_armor = await source_env.reg.create_live("pilot_armor", ctx);
+        let source_pilot_armor = await source_world_armor.insinuate(source_pilot.get_inventory());
+
+        // Sanity check. Pilot should have one of each type. World should only have the single armor
+        let check_ctx = new OpCtx();
+        let source_pilot_check = await source_pilot.refreshed(check_ctx);
+        expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
+        expect(source_pilot_check.OwnedArmor.length).toEqual(1);
+        expect((await source_env.reg.get_cat("pilot_armor").list_live(check_ctx)).length).toEqual(1);
+        expect((await source_env.reg.get_cat("pilot_weapon").list_live(check_ctx)).length).toEqual(0); // 4
+
+        // Ok here we go - do the transfer. Can just re-use source pilot - though it won't have the items visible in its fields, they have been stored in its reg
+        let dest_pilot = await source_pilot.insinuate(dest_env.reg);
+
+        // Did it bring its items?
+        expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
+        expect(source_pilot_check.OwnedArmor.length).toEqual(1);
+        expect((await dest_env.reg.get_cat("pilot_armor").list_live(check_ctx)).length).toEqual(0);
+        expect((await dest_env.reg.get_cat("pilot_weapon").list_live(check_ctx)).length).toEqual(0); // 8
+
+        // Reg should also not have any items
 
     });
 

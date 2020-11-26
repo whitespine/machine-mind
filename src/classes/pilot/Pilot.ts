@@ -220,7 +220,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [...this._quirks];
     }
 
-
+    protected enumerate_owned_items(): RegEntry<any>[] {
+        return [...this._owned_weapons, ...this._owned_armor, ...this._owned_gear, ...this._core_bonuses, ...this._factions, ...this._skills, ...this._talents, ...this._reserves, ...this._orgs, ...this._licenses];
+    }
 
     // TODO: Create a more formalized method of tracking brew ids or something. Right now we just drop it when parsing, but it should really be an additional value on regentry creation
     public get Brews(): string[] {
@@ -711,22 +713,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             status: this.Status,
             text_appearance: this.TextAppearance,
         };
-    }
-
-    public get_child_entries(): RegEntry<any>[] {
-        let result: RegEntry<any>[] = [
-            ...this.CoreBonuses,
-            ...this.Licenses,
-            ...this.Reserves,
-            ...this.Skills,
-            ...this.Talents,
-            ...this.Orgs,
-            ...this.Mechs,
-            ...this.OwnedArmor,
-            ...this.OwnedWeapons,
-            ...this.OwnedGear,
-        ];
-        return result;
     }
 }
 
