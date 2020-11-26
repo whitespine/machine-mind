@@ -31,7 +31,7 @@ describe("Key trimming functionality", () => {
         expect.assertions(3 * Object.values(EntryType).length);
 
         for(let k of Object.values(EntryType)) {
-            let defaulter = defaults.DEFAULT_FUNC_MAP[k];
+            let defaulter = defaults.DEFAULT_FUNC_FOR(k);
             let base = defaulter();
             let augmented = defaulter();
             augmented["bozo"] = "not even supposed to BE here";

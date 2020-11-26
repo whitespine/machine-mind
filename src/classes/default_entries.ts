@@ -696,7 +696,7 @@ export function WEAPON_MOD(): RegWeaponModData {
 }
 
 // Provides a default function for every entrytype
-export const DEFAULT_FUNC_MAP: { [key in EntryType]: () => RegEntryTypes<key> } = {
+const DEFAULT_FUNC_MAP: { [key in EntryType]: () => RegEntryTypes<key> } = {
     [EntryType.CORE_BONUS]: CORE_BONUS,
     [EntryType.CORE_SYSTEM]: CORE_SYSTEM,
     [EntryType.ENVIRONMENT]: ENVIRONMENT,
@@ -729,3 +729,11 @@ export const DEFAULT_FUNC_MAP: { [key in EntryType]: () => RegEntryTypes<key> } 
     [EntryType.DEPLOYABLE]: DEPLOYABLE,
     [EntryType.MECH]: MECH,
 };
+
+export function DEFAULT_FUNC_FOR<T extends EntryType>(type: T): () => RegEntryTypes<T> {
+    return DEFAULT_FUNC_MAP[type] as () => RegEntryTypes<T>;
+}
+
+export function DEFAULT_FOR<T extends EntryType>(type: T): RegEntryTypes<T> {
+    return DEFAULT_FUNC_MAP[type]() as RegEntryTypes<T>;
+}

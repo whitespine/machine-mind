@@ -68,7 +68,7 @@ function simple_cat_builder<T extends EntryType>(
     clazz: EntryConstructor<T>,
     data_source_override?: Map<string, RegEntryTypes<T>>
 ): StaticRegCat<T> {
-    let template = defaults.DEFAULT_FUNC_MAP[type] as () => RegEntryTypes<T>;
+    let template = defaults.DEFAULT_FUNC_FOR(type);
     // Our outer builder, which is used during
     return new StaticRegCat(
         reg,
