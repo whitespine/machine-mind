@@ -266,7 +266,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         return reg.get_cat(EntryType.WEAPON_MOD).create_live(ctx, rdata, true);
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

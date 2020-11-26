@@ -165,7 +165,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         return reg.get_cat(EntryType.MECH_SYSTEM).create_live(ctx, rdata, true);
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

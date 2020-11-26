@@ -139,7 +139,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         return this.Name;
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Traits, ...(this.CoreSystem ? [this.CoreSystem] : [])];
     }
 }

@@ -80,7 +80,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
         };
         return reg.get_cat(EntryType.FRAME_TRAIT).create_live(ctx, rdata, true);
     }
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

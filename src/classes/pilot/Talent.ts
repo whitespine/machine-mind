@@ -201,7 +201,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         return this.UnlockedRanks.flatMap(x => x.Synergies);
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 

@@ -655,35 +655,11 @@ export abstract class RegEntry<T extends EntryType> {
         return this.Registry.get_cat(this.Type).get_live(ctx ?? new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
     }
 
-    // List all child items of this item. We assume none by default
+    // List all associated items of this item. We assume none by default
     // Note that this is NOT the inventory of an item. It is instead a listing of items that must be brought along if this item is moved
     // Most notably: Integrated systems, weapons, and deployables
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [];
-    }
-
-    // List all child items recursively via simple bfs
-    public get_child_entries_recursive(): RegEntry<any>[] {
-        let all: RegEntry<any>[] = [];
-        let frontier: RegEntry<any>[] = [this];
-        while (frontier.length) {
-            // Fetch and store next item
-            let next = frontier.pop()!;
-            if (next !== this) {
-                all.push(next);
-            }
-
-            // Crawl its children. We could make this a recursive function but it really doesn't matter
-            frontier.push(...next.get_child_entries());
-
-            // Sanity check
-            if (all.length > 5000) {
-                throw new Error("Something has gone wrong in the item dependency chain");
-            }
-        }
-
-        // That's it
-        return all;
     }
 
     // Create a copy self in the target DB, bringing along all child items with properly reconstructed links.
@@ -741,7 +717,7 @@ export abstract class RegEntry<T extends EntryType> {
         (this as any).RegistryID = new_entry.RegistryID;
 
         // Ask all of our live children to insinuate themselves. They shall insinuate recursively
-        for (let child of this.get_child_entries()) {
+        for (let child of this.get_assoc_entries()) {
             await child._insinuate_imp(to_new_reg, insinuation_hit_list); // Ensure that they don't get root call true. This prevents dumb save-thrashing
         }
         return new_entry;

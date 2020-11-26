@@ -58,7 +58,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
         return reg.get_cat(EntryType.QUIRK).create_live(ctx, qdata, true);
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

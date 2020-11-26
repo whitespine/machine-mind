@@ -319,6 +319,5 @@ describe("Static Registry Reference implementation", () => {
         dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_final);
         expect(dest_frames.length).toEqual(0);
         expect(dest_weapons.length).toEqual(1); // 4
-
     });
 });

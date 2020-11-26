@@ -182,7 +182,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         return this.Integrated.filter(r => r instanceof MechWeapon) as MechWeapon[];
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Integrated, ...this.Deployables];
     }
 }

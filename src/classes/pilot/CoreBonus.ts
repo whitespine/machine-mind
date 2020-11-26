@@ -126,7 +126,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata, true);
     }
 
-    public get_child_entries(): RegEntry<any>[] {
+    public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
 }

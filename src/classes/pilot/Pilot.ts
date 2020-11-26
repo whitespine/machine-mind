@@ -224,6 +224,10 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [...this._owned_weapons, ...this._owned_armor, ...this._owned_gear, ...this._core_bonuses, ...this._factions, ...this._skills, ...this._talents, ...this._reserves, ...this._orgs, ...this._licenses];
     }
 
+    public get_assoc_entries(): RegEntry<any>[] {
+        return this.Mechs;
+    }
+
     // TODO: Create a more formalized method of tracking brew ids or something. Right now we just drop it when parsing, but it should really be an additional value on regentry creation
     public get Brews(): string[] {
         return [];
