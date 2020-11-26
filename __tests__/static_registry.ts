@@ -218,12 +218,12 @@ describe("Static Registry Reference implementation", () => {
 
         // Create the pilot and give them a basic gun and some armor
         let ctx = new OpCtx();
-        let source_pilot = await source_env.reg.create_live("pilot", ctx);
+        let source_pilot = await source_env.reg.create_live(EntryType.PILOT, ctx);
 
         // The gun, we build directly in the source pilot reg
-        let source_gun = await source_pilot.get_inventory().create_live("pilot_weapon", ctx);
+        let source_gun = await source_pilot.get_inventory().create_live(EntryType.PILOT_WEAPON, ctx);
         // The armor, we make then insinuate
-        let source_world_armor = await source_env.reg.create_live("pilot_armor", ctx);
+        let source_world_armor = await source_env.reg.create_live(EntryType.PILOT_ARMOR, ctx);
         let source_pilot_armor = await source_world_armor.insinuate(source_pilot.get_inventory());
 
         // Sanity check. Pilot should have one of each type. World should only have the single armor
@@ -231,8 +231,8 @@ describe("Static Registry Reference implementation", () => {
         let source_pilot_check = await source_pilot.refreshed(check_ctx);
         expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
         expect(source_pilot_check.OwnedArmor.length).toEqual(1);
-        expect((await source_env.reg.get_cat("pilot_armor").list_live(check_ctx)).length).toEqual(1);
-        expect((await source_env.reg.get_cat("pilot_weapon").list_live(check_ctx)).length).toEqual(0); // 4
+        expect((await source_env.reg.get_cat(EntryType.PILOT_ARMOR).list_live(check_ctx)).length).toEqual(1);
+        expect((await source_env.reg.get_cat(EntryType.PILOT_WEAPON).list_live(check_ctx)).length).toEqual(0); // 4
 
         // Ok here we go - do the transfer. Can just re-use source pilot - though it won't have the items visible in its fields, they have been stored in its reg
         let dest_pilot = await source_pilot.insinuate(dest_env.reg);
@@ -240,11 +240,10 @@ describe("Static Registry Reference implementation", () => {
         // Did it bring its items?
         expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
         expect(source_pilot_check.OwnedArmor.length).toEqual(1);
-        expect((await dest_env.reg.get_cat("pilot_armor").list_live(check_ctx)).length).toEqual(0);
-        expect((await dest_env.reg.get_cat("pilot_weapon").list_live(check_ctx)).length).toEqual(0); // 8
 
-        // Reg should also not have any items
-
+        // Dest reg should also not have any items in global space
+        expect((await dest_env.reg.get_cat(EntryType.PILOT_ARMOR).list_live(check_ctx)).length).toEqual(0);
+        expect((await dest_env.reg.get_cat(EntryType.PILOT_WEAPON).list_live(check_ctx)).length).toEqual(0); // 8
     });
 
     it("Can handle circular loops", async () => {
@@ -269,27 +268,57 @@ describe("Static Registry Reference implementation", () => {
 
     });
 
-    /*
-    it("Properly generates implicit ids", async () => {
-        expect.assertions(5);
-        let env = await init_basic_setup();
+    it("Properly brings along child entries", async () => {
+        expect.assertions(6);
+        let source_env = await init_basic_setup(true);
+        let dest_env = await init_basic_setup(false);
 
-        // Get our lanny
-        let ctx = new OpCtx();
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster");
+        // Dest env should be empty
+        let ctx_orig = new OpCtx();
+        let dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_orig);
+        let dest_cores = await dest_env.reg.get_cat(EntryType.CORE_SYSTEM).list_live(ctx_orig);
+        let dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_orig);
+        expect(dest_frames.length).toEqual(0);
+        expect(dest_cores.length).toEqual(0);
+        expect(dest_weapons.length).toEqual(0); // 3
 
-        // expect its core system and stuff to have generated reasonable names
-        expect(lanny.CoreSystem.ID).toEqual("cs_lancaster_latch_drone");
+        // Take the sherman, which has a native weapon, and send it over.
+        let sherman = await source_env.reg.get_cat(EntryType.FRAME).lookup_mmid(new OpCtx(), "mf_sherman");
+        let dest_sherman = await sherman.insinuate(dest_env.reg);
 
-        const trait_names = lanny.Traits.map(ft => ft.ID);
-        expect(trait_names).toContain("ft_lancaster_combat_repair");
-        expect(trait_names).toContain("ft_lancaster_insulated");
-        expect(trait_names).toContain("ft_lancaster_redundant_systems"); // 4
-
-        const drone_system: MechSystem = await env.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid(ctx, "ms_restock_drone");
-        const drone = drone_system.Deployables[0];
-        expect(drone.ID).toEqual("dep_restock_drone"); // 5
+        // Dest env should have one frame, one core, and one weapon now
+        let ctx_final = new OpCtx();
+        dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_final);
+        dest_cores = await dest_env.reg.get_cat(EntryType.CORE_SYSTEM).list_live(ctx_final);
+        dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_final);
+        expect(dest_frames.length).toEqual(1);
+        expect(dest_cores.length).toEqual(1);
+        expect(dest_weapons.length).toEqual(1); // 6
     });
-    */
-    
+
+    it("Doesn't drag along parent entries", async () => {
+        // Identical to above test, but we send over the solidcore
+        expect.assertions(4);
+        let source_env = await init_basic_setup(true);
+        let dest_env = await init_basic_setup(false);
+
+        // Dest env should be empty
+        let ctx_orig = new OpCtx();
+        let dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_orig);
+        let dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_orig);
+        expect(dest_frames.length).toEqual(0);
+        expect(dest_weapons.length).toEqual(0); // 2
+
+        // Take the sherman, which has a native weapon, and send it over.
+        let solidcore = await source_env.reg.get_cat(EntryType.MECH_WEAPON).lookup_mmid(new OpCtx(), "mw_sherman_integrated");
+        await solidcore.insinuate(dest_env.reg);
+
+        // Dest env should have just the weapon. 
+        let ctx_final = new OpCtx();
+        dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_final);
+        dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_final);
+        expect(dest_frames.length).toEqual(0);
+        expect(dest_weapons.length).toEqual(1); // 4
+
+    });
 });
