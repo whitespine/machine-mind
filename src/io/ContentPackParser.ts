@@ -106,7 +106,8 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
 
     const npcClasses = (await readZipJSON<PackedNpcClassData[]>(zip, "npc_classes.json")) || [];
     const npcFeatures = (await readZipJSON<PackedNpcFeatureData[]>(zip, "npc_features.json")) || [];
-    const npcTemplates = (await readZipJSON<PackedNpcTemplateData[]>(zip, "npc_templates.json")) || [];
+    const npcTemplates =
+        (await readZipJSON<PackedNpcTemplateData[]>(zip, "npc_templates.json")) || [];
 
     const id = await getPackID(manifest);
 

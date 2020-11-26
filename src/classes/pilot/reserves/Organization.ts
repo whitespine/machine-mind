@@ -38,7 +38,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
 
     public async load(data: IOrganizationData): Promise<void> {
-        data = {...defaults.ORGANIZATION(), ...data};
+        data = { ...defaults.ORGANIZATION(), ...data };
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
         this.Efficiency = bound_int(data.efficiency, 0, 6);

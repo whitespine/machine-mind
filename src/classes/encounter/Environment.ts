@@ -1,4 +1,4 @@
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
 export interface IEnvironmentData {
     id: string;
@@ -13,7 +13,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
     Description!: string;
 
     public async load(data: IEnvironmentData): Promise<void> {
-        data = {...defaults.ENVIRONMENT(), ...data};
+        data = { ...defaults.ENVIRONMENT(), ...data };
         this.ID = data.id;
         this.Description = data.description;
         this.Name = data.name;

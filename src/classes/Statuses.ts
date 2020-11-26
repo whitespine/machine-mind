@@ -1,4 +1,4 @@
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
 
 export interface IStatusData {
@@ -15,7 +15,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
     public Subtype!: "Status" | "Condition";
 
     async load(data: IStatusData) {
-        data = {...defaults.STATUS(), ...data};
+        data = { ...defaults.STATUS(), ...data };
         this.Subtype = data.type;
         this.Name = data.name;
         this.Icon = data.icon;

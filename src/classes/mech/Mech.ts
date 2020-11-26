@@ -376,9 +376,9 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     // Refresh our basic per-turns. More work definitely to be done here!
     // public NewTurn(): void {
-        // this.Activations = 1;
-        // this.TurnActions = 2;
-        // this.CurrentMove = this.Speed;
+    // this.Activations = 1;
+    // this.TurnActions = 2;
+    // this.CurrentMove = this.Speed;
     // }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
@@ -548,7 +548,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public async load(data: RegMechData): Promise<void> {
-        data = {...defaults.MECH(), ...data};
+        data = { ...defaults.MECH(), ...data };
         let subreg = this.get_inventory();
         this.ID = data.id;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;

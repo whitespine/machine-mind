@@ -1,5 +1,5 @@
 import { NpcFeature } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 interface AllNpcTemplateData {
@@ -26,7 +26,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
     Power!: number;
 
     protected async load(data: RegNpcTemplateData): Promise<void> {
-        data = {...defaults.NPC_TEMPLATE(), ...data};
+        data = { ...defaults.NPC_TEMPLATE(), ...data };
         this.Name = data.name;
         this.Description = data.description;
         this.Power = data.power;
@@ -57,7 +57,9 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
             ...data,
 
             base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
-            optional_features: data.optional_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f))
+            optional_features: data.optional_features.map(f =>
+                quick_mm_ref(EntryType.NPC_FEATURE, f)
+            ),
         };
         return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }

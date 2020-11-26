@@ -1,4 +1,4 @@
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
 export interface ISitrepData {
@@ -42,7 +42,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     }
 
     public async load(data: ISitrepData) {
-        data = {...defaults.SITREP(), ...data};
+        data = { ...defaults.SITREP(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;

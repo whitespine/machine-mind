@@ -27,7 +27,7 @@ async function init_basic_setup(include_base: boolean = true): Promise<DefSetup>
 }
 
 describe("Key trimming functionality", () => {
-    it("Removes extcess data", async () => {
+    it("Removes excess data", async () => {
         expect.assertions(3 * Object.values(EntryType).length);
 
         for(let k of Object.values(EntryType)) {
@@ -45,7 +45,6 @@ describe("Key trimming functionality", () => {
             // trimming shouldn't affect base
             expect(Object.keys(trimmed(k, base)).length).toEqual(Object.keys(base).length);
         }
-
     });
 
 

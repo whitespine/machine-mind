@@ -29,7 +29,37 @@ import {
     Talent,
     WeaponMod,
 } from "@src/class";
-import { IEnvironmentData, IFactionData, IOrganizationData, ISitrepData, IStatusData, ITagTemplateData, RegCoreBonusData, RegCoreSystemData, RegDeployableData, RegFrameData, RegFrameTraitData, RegLicenseData, RegManufacturerData, RegMechData, RegMechSystemData, RegMechWeaponData, RegNpcClassData, RegNpcData, RegNpcFeatureData, RegNpcTemplateData, RegPilotArmorData, RegPilotData, RegPilotGearData, RegPilotWeaponData, RegQuirkData, RegReserveData, RegSkillData, RegTalentData, RegWeaponModData } from '@src/interface';
+import {
+    IEnvironmentData,
+    IFactionData,
+    IOrganizationData,
+    ISitrepData,
+    IStatusData,
+    ITagTemplateData,
+    RegCoreBonusData,
+    RegCoreSystemData,
+    RegDeployableData,
+    RegFrameData,
+    RegFrameTraitData,
+    RegLicenseData,
+    RegManufacturerData,
+    RegMechData,
+    RegMechSystemData,
+    RegMechWeaponData,
+    RegNpcClassData,
+    RegNpcData,
+    RegNpcFeatureData,
+    RegNpcTemplateData,
+    RegPilotArmorData,
+    RegPilotData,
+    RegPilotGearData,
+    RegPilotWeaponData,
+    RegQuirkData,
+    RegReserveData,
+    RegSkillData,
+    RegTalentData,
+    RegWeaponModData,
+} from "@src/interface";
 import { EntryType, RegEntry, RegEntryTypes } from "@src/registry";
 import { keys } from "ts-transformer-keys";
 
@@ -103,7 +133,7 @@ const reg_keyset_map: any = {
 export function validate_props(v: RegEntry<any>) {
     let entry = v.Type;
     let expected_keys = live_keyset_map[entry];
-    if(!expected_keys) {
+    if (!expected_keys) {
         throw new Error(`Error! ${entry} keys not found`);
     }
     for (let key of live_keyset_map[entry]) {
@@ -114,16 +144,15 @@ export function validate_props(v: RegEntry<any>) {
     }
 }
 
-
 // Trims out all unneeded keys from a regdata. Use for unpacking to get rid of junk left over by ...'ing the o.g. data
 export function trimmed<T extends EntryType>(type: T, v: RegEntryTypes<T>): RegEntryTypes<T> {
     // Perform this op by re-adding only the keys we want to keep
-    let result: any = {};    
+    let result: any = {};
     let expected_keys = reg_keyset_map[type];
-    if(!expected_keys) {
+    if (!expected_keys) {
         throw new Error(`Error! ${type} keys not found`);
     }
-    for(let k of expected_keys) {
+    for (let k of expected_keys) {
         result[k] = v[k];
     }
     return result;

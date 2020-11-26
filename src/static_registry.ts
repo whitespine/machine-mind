@@ -248,7 +248,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             if (!this.reg_data.has(i.RegistryID)) {
                 console.warn("Tried to update a destroyed/nonexistant/non-owned item");
             }
-            let saved = (i.save()) as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
+            let saved = i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
             this.reg_data.set(i.RegistryID, saved);
         }
     }

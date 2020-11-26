@@ -4,7 +4,7 @@ import { Counter, NpcClass, NpcFeature, NpcTemplate } from "@src/class";
 import { PackedCounterSaveData, RegCounterData } from "@src/interface";
 import { INpcStats } from "./NpcStats";
 import { EntryType, InventoriedRegEntry, SerUtil } from "@src/registry";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 
 interface INpcItemSaveData {
     // unsure if we really need this
@@ -54,8 +54,8 @@ export interface PackedNpcData {
 export interface RegNpcData extends AllNpcData {
     tier: number; // Custom tiering is handled on a per item basis
     custom_counters: RegCounterData[];
-    current_hp: number; 
-    current_heat: number; 
+    current_hp: number;
+    current_heat: number;
     // Other stuff held in inventory
 }
 
@@ -185,12 +185,12 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
 
     protected async load(data: RegNpcData): Promise<void> {
-        data = {...defaults.NPC(), ...data};
+        data = { ...defaults.NPC(), ...data };
         let subreg = this.get_inventory();
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;
         this.Burn = data.burn;
-        this.Campaign =data.campaign;
+        this.Campaign = data.campaign;
         this.CloudImage = data.cloudImage;
         this.Defeat = data.defeat;
         this.Destroyed = data.destroyed;
@@ -198,12 +198,12 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.CurrentHP = data.current_hp;
         this.CurrentHeat = data.current_heat;
         this.Labels = data.labels;
-        this.LocalImage =data.localImage;
+        this.LocalImage = data.localImage;
         this.Name = data.name;
-        this.Note =data.note;
+        this.Note = data.note;
         this.Overshield = data.overshield;
         this.Resistances = data.resistances;
-        this.Side =data.side;
+        this.Side = data.side;
         this.Subtitle = data.subtitle;
         this.Tag = data.tag;
 

@@ -1,5 +1,5 @@
 import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
@@ -30,7 +30,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegQuirkData): Promise<void> {
-        data = {...defaults.QUIRK(), ...data};
+        data = { ...defaults.QUIRK(), ...data };
         this.Name = data.name;
         this.Description = data.description;
 

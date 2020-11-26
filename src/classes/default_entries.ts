@@ -35,7 +35,7 @@ import {
     RegWeaponModData,
     RegWepMountData,
 } from "@src/interface";
-import { EntryType, RegEntryTypes } from '@src/registry';
+import { EntryType, RegEntryTypes } from "@src/registry";
 import { nanoid } from "nanoid";
 import {
     ActivationType,
@@ -257,8 +257,8 @@ export function MECH_LOADOUT(): RegMechLoadoutData {
     return {
         frame: null,
         system_mounts: [],
-        weapon_mounts: []
-    }
+        weapon_mounts: [],
+    };
 }
 
 export function MECH_WEAPON(): RegMechWeaponData {
@@ -375,7 +375,7 @@ export function NPC_FEATURE(): RegNpcFeatureData {
         type: NpcFeatureType.Trait,
         bonus: {},
         effect: "",
-        override: {}
+        override: {},
     };
 }
 
@@ -532,8 +532,8 @@ export function PILOT_LOADOUT(): RegPilotLoadoutData {
         gear: [null, null, null],
         id: "ploadout_" + nanoid(),
         name: "Foundry Loadout",
-        weapons: [null, null]
-    }
+        weapons: [null, null],
+    };
 }
 
 export function RESERVE(): RegReserveData {
@@ -568,7 +568,7 @@ export function SITREP(): Required<ISitrepData> {
         deployment: "",
         extraction: "",
         noVictory: "",
-        objective: ""
+        objective: "",
     };
 }
 
@@ -598,7 +598,7 @@ export function TAG_TEMPLATE(): Required<ITagTemplateData> {
         id: "tg_" + nanoid(),
         name: "New Tag",
         hidden: false,
-        filter_ignore: false
+        filter_ignore: false,
     };
 }
 
@@ -645,7 +645,7 @@ export function WEAPON_MOUNT_DATA(): RegWepMountData {
     return {
         mount_type: MountType.Main,
         slots: [],
-    }
+    };
 }
 
 export function WEAPON_PROFILE(): RegMechWeaponProfile {
@@ -664,7 +664,7 @@ export function WEAPON_PROFILE(): RegMechWeaponProfile {
         range: [],
         synergies: [],
         tags: [],
-        type: WeaponType.Rifle
+        type: WeaponType.Rifle,
     };
 }
 
@@ -695,39 +695,37 @@ export function WEAPON_MOD(): RegWeaponModData {
     };
 }
 
-
-
 // Provides a default function for every entrytype
-export const DEFAULT_FUNC_MAP: {[key in EntryType]: () => RegEntryTypes<key>} = {
-        [EntryType.CORE_BONUS]: CORE_BONUS,
-        [EntryType.CORE_SYSTEM]: CORE_SYSTEM,
-        [EntryType.ENVIRONMENT]: ENVIRONMENT,
-        [EntryType.FACTION]: FACTION,
-        [EntryType.FRAME_TRAIT]: FRAME_TRAIT,
-        [EntryType.FRAME]: FRAME,
-        [EntryType.LICENSE]: LICENSE,
-        [EntryType.MANUFACTURER]: MANUFACTURER,
-        [EntryType.MECH_SYSTEM]: MECH_SYSTEM,
-        [EntryType.MECH_WEAPON]: MECH_WEAPON,
-        [EntryType.NPC]: NPC,
-        [EntryType.NPC_CLASS]: NPC_CLASS,
-        [EntryType.NPC_FEATURE]: NPC_FEATURE,
-        [EntryType.NPC_TEMPLATE]: NPC_TEMPLATE,
-        [EntryType.ORGANIZATION]: ORGANIZATION,
-        [EntryType.PILOT_ARMOR]: PILOT_ARMOR,
-        [EntryType.PILOT_GEAR]: PILOT_GEAR,
-        [EntryType.PILOT_WEAPON]: PILOT_WEAPON,
-        [EntryType.QUIRK]: QUIRK,
-        [EntryType.RESERVE]: RESERVE,
-        [EntryType.SITREP]: SITREP,
-        [EntryType.SKILL]: SKILL,
-        [EntryType.STATUS]: STATUS,
-        [EntryType.TAG]: TAG_TEMPLATE,
-        [EntryType.TALENT]: TALENT,
-        [EntryType.WEAPON_MOD]: WEAPON_MOD,
+export const DEFAULT_FUNC_MAP: { [key in EntryType]: () => RegEntryTypes<key> } = {
+    [EntryType.CORE_BONUS]: CORE_BONUS,
+    [EntryType.CORE_SYSTEM]: CORE_SYSTEM,
+    [EntryType.ENVIRONMENT]: ENVIRONMENT,
+    [EntryType.FACTION]: FACTION,
+    [EntryType.FRAME_TRAIT]: FRAME_TRAIT,
+    [EntryType.FRAME]: FRAME,
+    [EntryType.LICENSE]: LICENSE,
+    [EntryType.MANUFACTURER]: MANUFACTURER,
+    [EntryType.MECH_SYSTEM]: MECH_SYSTEM,
+    [EntryType.MECH_WEAPON]: MECH_WEAPON,
+    [EntryType.NPC]: NPC,
+    [EntryType.NPC_CLASS]: NPC_CLASS,
+    [EntryType.NPC_FEATURE]: NPC_FEATURE,
+    [EntryType.NPC_TEMPLATE]: NPC_TEMPLATE,
+    [EntryType.ORGANIZATION]: ORGANIZATION,
+    [EntryType.PILOT_ARMOR]: PILOT_ARMOR,
+    [EntryType.PILOT_GEAR]: PILOT_GEAR,
+    [EntryType.PILOT_WEAPON]: PILOT_WEAPON,
+    [EntryType.QUIRK]: QUIRK,
+    [EntryType.RESERVE]: RESERVE,
+    [EntryType.SITREP]: SITREP,
+    [EntryType.SKILL]: SKILL,
+    [EntryType.STATUS]: STATUS,
+    [EntryType.TAG]: TAG_TEMPLATE,
+    [EntryType.TALENT]: TALENT,
+    [EntryType.WEAPON_MOD]: WEAPON_MOD,
 
-        // The inventoried things (actors!)
-        [EntryType.PILOT]: PILOT,
-        [EntryType.DEPLOYABLE]: DEPLOYABLE,
-        [EntryType.MECH]: MECH, 
-}
+    // The inventoried things (actors!)
+    [EntryType.PILOT]: PILOT,
+    [EntryType.DEPLOYABLE]: DEPLOYABLE,
+    [EntryType.MECH]: MECH,
+};

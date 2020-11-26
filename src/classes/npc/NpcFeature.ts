@@ -1,6 +1,6 @@
 import { TagInstance } from "@src/class";
 import { NpcFeatureType } from "@src/enums";
-import { defaults } from '@src/funcs';
+import { defaults } from "@src/funcs";
 import { PackedTagInstanceData, RegTagInstanceData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 
@@ -73,7 +73,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     }
 
     protected async load(data: RegNpcFeatureData): Promise<void> {
-        data = {...defaults.NPC_FEATURE(), ...data};
+        data = { ...defaults.NPC_FEATURE(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Origin = data.origin;
@@ -101,7 +101,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcFeature> {
-        data = {...defaults.NPC_FEATURE(), ...data};
+        data = { ...defaults.NPC_FEATURE(), ...data };
         let tags = data.tags.map(TagInstance.unpack_reg) ?? [];
         let rdata: RegNpcFeatureData = {
             ...defaults.NPC_FEATURE(),
