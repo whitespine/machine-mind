@@ -40,6 +40,6 @@ export class Faction extends RegEntry<EntryType.FACTION> {
     }
 
     public static async unpack(dep: IFactionData, reg: Registry, ctx: OpCtx): Promise<Faction> {
-        return reg.get_cat(EntryType.FACTION).create_live(ctx, dep);
+        return reg.get_cat(EntryType.FACTION).create_live(ctx, dep, true);
     }
 }

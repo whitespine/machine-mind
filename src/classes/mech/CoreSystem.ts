@@ -163,7 +163,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
             deployables,
             integrated,
         };
-        return reg.get_cat(EntryType.CORE_SYSTEM).create_live(ctx, unpacked);
+        return reg.get_cat(EntryType.CORE_SYSTEM).create_live(ctx, unpacked, true);
     }
 
     // Checks if any passive fields are present. Its possible sibling, has_active, is unnecessary

@@ -108,6 +108,6 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             ...data,
             tags,
         };
-        return reg.get_cat(EntryType.NPC_FEATURE).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.NPC_FEATURE).create_live(ctx, rdata, true);
     }
 }

@@ -123,7 +123,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             bonuses: cor.bonuses ?? [],
             synergies: cor.synergies ?? [],
         };
-        return reg.create_live(EntryType.CORE_BONUS, ctx, cbdata);
+        return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {

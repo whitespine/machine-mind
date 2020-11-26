@@ -50,7 +50,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<TagTemplate> {
-        return reg.get_cat(EntryType.TAG).create_live(ctx, dep);
+        return reg.get_cat(EntryType.TAG).create_live(ctx, dep, true);
     }
 
     // Helpers for quickly checking common tags

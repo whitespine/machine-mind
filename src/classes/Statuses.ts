@@ -32,7 +32,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
     }
 
     public static async unpack(dep: IStatusData, reg: Registry, ctx: OpCtx): Promise<Status> {
-        return reg.get_cat(EntryType.STATUS).create_live(ctx, dep);
+        return reg.get_cat(EntryType.STATUS).create_live(ctx, dep, true);
     }
 
     public get is_status(): boolean {

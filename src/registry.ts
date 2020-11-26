@@ -71,6 +71,7 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
+import { trimmed } from './classes/key_util';
 import {
     IActionData,
     IBonusData,
@@ -858,7 +859,11 @@ export abstract class RegCat<T extends EntryType> {
 
     // A simple singular form if you don't want to mess with arrays
     // The awaited item should be .ready
-    async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
+    // If trim is specified (which we usually want when unpacking but rarely otherwise), cut off all unexpected keys
+    async create_live(ctx: OpCtx, val: RegEntryTypes<T>, trim: boolean = false): Promise<LiveEntryTypes<T>> {
+        if(trim) {
+            val = trimmed(this.cat, val);
+        }
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
     }

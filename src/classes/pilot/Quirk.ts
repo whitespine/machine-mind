@@ -50,17 +50,12 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
 
     public static async unpack(raw_quirk: string, reg: Registry, ctx: OpCtx): Promise<Quirk> {
         let qdata: RegQuirkData = {
-            name: "Quirk",
+            ...defaults.QUIRK(),
+            name: `Quirk: ${raw_quirk.split(" ").slice(0, 6).join(" ")}...`, // Show the first 6 words in the name
             description: raw_quirk,
-            counters: [],
-            deployables: [],
-            integrated: [],
-            actions: [],
-            bonuses: [],
-            synergies: [],
         };
 
-        return reg.get_cat(EntryType.QUIRK).create_live(ctx, qdata);
+        return reg.get_cat(EntryType.QUIRK).create_live(ctx, qdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {

@@ -90,6 +90,6 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         let rdata = { ...defaults.SKILL(), ...packed_skill };
         // Default the name
         rdata.name = packed_skill.name ?? rdata.id;
-        return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata, true);
     }
 }

@@ -160,7 +160,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
             ranks,
             curr_rank: 1,
         };
-        return reg.get_cat(EntryType.TALENT).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.TALENT).create_live(ctx, rdata, true);
     }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed
     public Rank(rank: number): TalentRank | null {

@@ -174,6 +174,6 @@ export class Deployable extends RegEntry<EntryType.DEPLOYABLE> {
             counters,
             tags,
         };
-        return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
+        return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked, true);
     }
 }

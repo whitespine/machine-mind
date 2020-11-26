@@ -263,7 +263,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             counters: SerUtil.unpack_counters_default(data.counters),
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
-        return reg.get_cat(EntryType.WEAPON_MOD).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.WEAPON_MOD).create_live(ctx, rdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {

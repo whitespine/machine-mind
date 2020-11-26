@@ -115,7 +115,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
-        return reg.get_cat(EntryType.PILOT_ARMOR).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.PILOT_ARMOR).create_live(ctx, rdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {
@@ -163,7 +163,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
-        return reg.get_cat(EntryType.PILOT_GEAR).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.PILOT_GEAR).create_live(ctx, rdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {
@@ -220,7 +220,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             damage: data.damage.map(d => Damage.unpack(d)),
         };
-        return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata);
+        return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata, true);
     }
 
     public get_child_entries(): RegEntry<any>[] {
