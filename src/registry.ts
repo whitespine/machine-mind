@@ -732,7 +732,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
 
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
     get_inventory(): Registry {
-        let v = this.Registry.get_inventory(this.RegistryID);
+        let v = this.Registry.get_inventory(this.Type, this.RegistryID);
         if (!v) {
             console.error(
                 `Couldn't lookup inventory registry for item ${this.Type}:${this.RegistryID}`
@@ -1017,7 +1017,7 @@ export abstract class Registry {
     }
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
-    public abstract get_inventory(for_item_id: string): Registry | null;
+    public abstract get_inventory(for_item_type: EntryType, for_item_id: string): Registry | null;
 
     // Creates an inventory for the specified id.
     // public abstract get_inventory(for_item_id: string): Promise<Registry | null>;

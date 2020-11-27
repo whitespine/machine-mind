@@ -100,7 +100,8 @@ export class StaticReg extends Registry {
     private env: RegEnv;
 
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
-    get_inventory(for_actor_id: string): Registry | null {
+    get_inventory(for_actor_type: EntryType, for_actor_id: string): Registry | null {
+        // we don't actually use the item type here. #lazy
         let result = this.env.inventories.get(for_actor_id);
         if (!result) {
             result = new StaticReg(this.env);
