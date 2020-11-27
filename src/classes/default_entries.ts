@@ -158,7 +158,6 @@ export function FRAME_TRAIT(): RegFrameTraitData {
         bonuses: [],
         counters: [],
         synergies: [],
-        // tags: [],
         deployables: [],
         integrated: [],
         description,

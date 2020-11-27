@@ -10,9 +10,9 @@ import {
     SerUtil,
     SimSer,
 } from "@src/registry";
-import { weapons } from "lancer-data";
-import { basename } from "path";
 import { FittingSize, MountType, WeaponSize } from "../../enums";
+
+//todo: superheavies :<
 
 //////////////////////// PACKED INFO ////////////////////////
 interface PackedEquipmentData {
@@ -83,7 +83,7 @@ export interface RegWepMountData {
 export class MechLoadout extends RegSer<RegMechLoadoutData> {
     Frame!: Frame | null;
     SysMounts!: SystemMount[];
-    WepMounts!: WeaponMount[];
+    WepMounts!: WeaponMount[]; // TODO: check or auto populate mounts in some way, based on frame
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         data = { ...defaults.MECH_LOADOUT(), ...data };
@@ -148,6 +148,41 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         return false;
     }
 
+    // Resets this mech's mounts to match what the frame should have
+    public async reset_weapon_mounts(): Promise<void> {
+        this.WepMounts = [];
+        if(this.Frame) {
+            for(let size of this.Frame.Mounts) {
+                let new_mount = await this._new_mount(MountType.Unknown);
+                this.WepMounts.push(new_mount);
+            }
+        }
+    }
+
+    // Attempts to equip a weapon. Makes a new mount as necessary NOTE: This weapon does NOT handle insinuation. do that yourself, dummy!
+    public async equip_weapon(weapon: MechWeapon): Promise<void> {
+        // Just jam it in any empty one that'll fit us
+        for(let mount of this.WepMounts) {
+            if(mount.try_add_weapon(weapon)) {
+                return; // We're done
+            }
+        }
+
+        // Agh. Nothing accepted it. Make a new unknown mount. Validation is a separate concern that we don't validate here
+        let new_mount = await this._new_mount(MountType.Unknown);
+        new_mount.try_add_weapon(weapon); // Should always succeed
+        this.WepMounts.push(new_mount);
+    }
+
+    // Just make a new sys mount. We don't really expect these to be empty, so don't bother checking.
+    public async equip_system(system: MechSystem) {
+        let new_mount = new SystemMount(this.Registry, this.OpCtx, {system: null});
+        await new_mount.ready();
+        new_mount.System  = system;
+        this.SysMounts.push(new_mount);
+    }
+
+    // Good ol' unpacking funcs
     public static async unpack(
         mech_frame_id: string,
         mech_loadout: PackedMechLoadoutData,
@@ -160,14 +195,18 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         return base;
     }
 
-    // We do this quite often
+    // We do this quite often. Creates a new empty mount of the specified size
     private async _new_mount(type: MountType): Promise<WeaponMount> {
         let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] });
         await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
+        mount.reset(); // Give it its default slots
         return mount;
-    }
-
+    }   
+    
+    
+    // Sync this loadout with compcon
     // There's no real reason to restrict this logic just to unpacking. Having it be a method allows us to avoid replicating work
+    // override reg is a bit of a finicky param - we will look there for any weapons or systems. Make sure that we don't end up referencing unowned items! (Covetous reg is your friend)
     public async sync(
         mech_frame_id: string,
         mech_loadout: PackedMechLoadoutData,
@@ -203,7 +242,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             to_be_rendered.push(coerced);
         }
 
-        // This can be improved once beef makes that possible
+        // TODO: fix core bonus based stuff. I admittedly forget why I didn't just do this earlier???
         // if(mech_loadout.integratedWeapon) {
         if (false) {
             to_be_rendered.push(mech_loadout.integratedWeapon);
@@ -216,11 +255,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         to_be_rendered.push(...mech_loadout.mounts);
 
         for (let tbr of to_be_rendered) {
-            let mount = new WeaponMount(this.Registry, this.OpCtx, {
-                slots: [],
-                mount_type: tbr.mount_type as MountType,
-            });
-            await mount.ready(); // no-op
+            let mount = await this._new_mount(tbr.mount_type as MountType);
             await mount.sync(tbr, override_reg);
             weps.push(mount);
         }
@@ -268,7 +303,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     }
 }
 
-// Just wraps a system (slot can be empty)
+// Just wraps a system (slot can be empty). For system mod future compatibility
 export class SystemMount extends RegSer<RegSysMountData> {
     System!: MechSystem | null; // The system
     Integrated!: boolean; // Is it integrated?
@@ -463,14 +498,16 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         return this._validate_slots(this.Slots);
     }
 
-    // Adds weapon to next available fitting, if possible. If not, returns a string stating an error
-    public try_add_weapon(wep: MechWeapon) {
+    // Adds weapon to next available fitting, if possible. Returns success
+    public try_add_weapon(wep: MechWeapon): boolean {
         for (let s of this.Slots) {
             if (s.check_can_take(wep) === null) {
                 // Put it
                 s.Weapon = wep;
+                return true;
             }
         }
+        return false;
     }
 
     // Clear all slots
@@ -499,6 +536,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
             case MountType.Heavy:
                 return [new WeaponSlot(null, null, FittingSize.Heavy, this)];
             case MountType.Integrated:
+            case MountType.Unknown:
                 return [new WeaponSlot(null, null, FittingSize.Integrated, this)];
             default:
                 return [];

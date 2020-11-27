@@ -9,6 +9,8 @@ export enum MountType {
     MainAux = "Main/Aux",
     Flex = "Flex",
     Integrated = "Integrated",
+    // This is just to handle undetermined, e.g. by auto addition
+    Unknown = "Unknown"
 }
 
 export enum NpcFeatureType {
