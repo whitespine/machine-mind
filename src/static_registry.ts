@@ -85,6 +85,9 @@ function simple_cat_builder<T extends EntryType>(
             // Otherwise create
             let new_item = new clazz(type, reg, ctx, id, raw);
             ctx.set(id, new_item);
+
+            // Flag with the some junk, doesn't really matter
+            new_item.flags = { test: "itworks" };
             await new_item.ready();
 
             // And we're done
@@ -100,7 +103,7 @@ export class StaticReg extends Registry {
     private env: RegEnv;
 
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
-    get_inventory(for_actor_type: EntryType, for_actor_id: string): Registry | null {
+    get_inventory(_for_actor_type: EntryType, for_actor_id: string): Registry | null {
         // we don't actually use the item type here. #lazy
         let result = this.env.inventories.get(for_actor_id);
         if (!result) {

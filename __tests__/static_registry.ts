@@ -38,7 +38,7 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can manipulate a very simple item", async () => {
-        expect.assertions(14);
+        expect.assertions(15);
         let s = await init_basic_setup(false);
         let c = s.reg.get_cat(EntryType.MANUFACTURER);
         let ctx = new OpCtx();
@@ -55,6 +55,9 @@ describe("Static Registry Reference implementation", () => {
         });
 
         expect(man).toBeTruthy();
+
+        // Make sure it has flags
+        expect(man.flags?.test).toEqual("itworks");
 
         // Try retreiving raw 
         let raw = await c.get_raw(man.RegistryID);
@@ -126,8 +129,6 @@ describe("Static Registry Reference implementation", () => {
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
     });
 
-
-
     it("Can create inventories things", async () => {
         expect.assertions(7);
         let env = await init_basic_setup();
@@ -170,7 +171,7 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Properly re-finds the same live item", async () => {
-        expect.assertions(5);
+        expect.assertions(7);
         let env = await init_basic_setup();
 
         // Oops! All lannies
@@ -178,14 +179,20 @@ describe("Static Registry Reference implementation", () => {
 
         // Regardless of id resolution method we expect these to be the same
         let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster");
+        lanny.flags = "alpha"; // for later test
         let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster"); // Double identical lookup via mmid
         expect(lanny === lenny).toBeTruthy();
         let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx, lanny.RegistryID); // Repeat lookup by reg iD
         expect(lanny === larry).toBeTruthy();
         let harry: Frame = await env.reg.resolve_wildcard_mmid(ctx, "mf_lancaster");
+        harry.flags = "beta"; // for later test
         expect(lanny === harry).toBeTruthy();
         let terry: Frame = await env.reg.resolve(ctx, lanny.as_ref());
         expect(lanny === terry).toBeTruthy();
+
+        // Do they all have the same flags? They should, and it should reflect our modification to harry
+        expect(lanny.flags == lenny.flags && lanny.flags == larry.flags && lanny.flags == harry.flags && lanny.flags == terry.flags).toBeTruthy();
+        expect(lanny.flags).toEqual("beta");
 
         // Does changing the ctx break it? (it should)
         let ctx_2 = new OpCtx();
@@ -194,21 +201,25 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can handle some more peculiar insinuation/ctx cases", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
         let full_env = await init_basic_setup();
         let empty_env = await init_basic_setup(false);
 
         // Insinuate the lancaster from the full to the empty, using a refresh to ensure things remain cool
         let ctx = new OpCtx();
+        let moved_ctx = new OpCtx();
         let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster")
-        let moved_lanny = await lanny.insinuate(empty_env.reg);
-        let moved_ctx = moved_lanny.OpCtx;
+        lanny.flags = "alpha";
+        let moved_lanny = await lanny.insinuate(empty_env.reg, moved_ctx);
+        
+        // Modified shouldn't have carried over
+        expect(moved_lanny.flags).not.toEqual("alpha");
 
         // Should share nothing in common
-        expect(lanny === moved_lanny).toBeFalsy(); // 1
+        expect(lanny === moved_lanny).toBeFalsy(); // 2
         expect(ctx === moved_ctx).toBeFalsy(); 
         expect(lanny.Registry === moved_lanny.Registry).toBeFalsy(); 
-        expect(lanny.RegistryID === moved_lanny.RegistryID).toBeFalsy(); // 4
+        expect(lanny.RegistryID === moved_lanny.RegistryID).toBeFalsy(); // 5
     });
 
     it("Properly transfers inventory items while insinuating", async () => {
