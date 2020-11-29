@@ -346,7 +346,27 @@ describe("Static Registry Reference implementation", () => {
         let reg1 = new HookyReg(env);
         let reg2 = new HookyReg(env);
         let ctx = new OpCtx();
-        let old_wep = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns"});
-        let new_wep = await old_wep.insinuate(reg2);
+        let old_sys = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns"});
+        let new_sys = await old_sys.insinuate(reg2);
+    });
+
+    it("Preserves misc original data", async () => {
+        expect.assertions(4);
+        let setup = await init_basic_setup(true);
+        let reg = setup.reg;
+        let ctx = new OpCtx();
+        let sys = await reg.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns", nonspec_data: "test"});
+
+        // Initial write should still have the field
+        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).name).toEqual("ns");
+        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).nonspec_data).toEqual("test");
+
+        // Modify sys slightly and writeback. Modification shouldn't matter but we want to be sure
+        sys.Name = "newname";
+        await sys.writeback();
+
+        // Should still be the same, but name should be updated
+        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).name).toEqual("newname");
+        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).nonspec_data).toEqual("test");
     });
 });

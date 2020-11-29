@@ -125,7 +125,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
 
-    public save(): RegMechSystemData {
+    protected save_imp(): RegMechSystemData {
         return {
             description: this.Description,
             effect: this.Effect,

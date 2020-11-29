@@ -216,7 +216,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx);
     }
 
-    public save(): RegNpcData {
+    protected save_imp(): RegNpcData {
         return {
             custom_counters: SerUtil.save_all(this.CustomCounters),
             tier: this.Tier,

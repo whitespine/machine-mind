@@ -132,7 +132,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
     }
 
-    public save(): RegDeployableData {
+    protected save_imp(): RegDeployableData {
         return {
             name: this.Name,
             type: this.Type,

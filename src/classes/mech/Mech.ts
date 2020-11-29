@@ -523,7 +523,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // -- I/O ---------------------------------------------------------------------------------------
-    public save(): RegMechData {
+    protected save_imp(): RegMechData {
         return {
             id: this.ID,
             pilot: this.Pilot?.as_ref() ?? null,

@@ -86,7 +86,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         this.OtherArt = frameData.other_art || [];
     }
 
-    public save(): RegFrameData {
+    protected save_imp(): RegFrameData {
         return {
             id: this.ID,
             description: this.Description,

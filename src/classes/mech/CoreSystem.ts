@@ -104,7 +104,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
-    public save(): RegCoreSystemData {
+    protected save_imp(): RegCoreSystemData {
         return {
             activation: this.Activation,
             description: this.Description,

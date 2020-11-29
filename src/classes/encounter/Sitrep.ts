@@ -26,7 +26,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     ControlZone!: string;
     Extraction!: string;
 
-    public save(): ISitrepData {
+    protected save_imp(): ISitrepData {
         return {
             id: this.ID,
             name: this.Name,

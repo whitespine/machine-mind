@@ -688,7 +688,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
     }
 
-    public save(): RegPilotData {
+    protected save_imp(): RegPilotData {
         return {
             active_mech: this.ActiveMech?.as_ref() ?? null,
             background: this.Background,

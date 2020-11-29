@@ -37,7 +37,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         );
     }
 
-    public save(): RegNpcTemplateData {
+    protected save_imp(): RegNpcTemplateData {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.OptionalFeatures),

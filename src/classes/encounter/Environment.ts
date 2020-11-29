@@ -19,7 +19,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         this.Name = data.name;
     }
 
-    public save(): IEnvironmentData {
+    protected save_imp(): IEnvironmentData {
         return {
             description: this.Description,
             id: this.ID,

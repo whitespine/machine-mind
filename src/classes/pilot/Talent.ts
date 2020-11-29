@@ -113,7 +113,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         this.CurrentRank = data.curr_rank;
     }
 
-    public save(): RegTalentData {
+    protected save_imp(): RegTalentData {
         let ranks: RegTalentRank[] = [];
         for (let r of this.Ranks) {
             ranks.push({

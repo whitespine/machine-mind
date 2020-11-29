@@ -95,7 +95,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public save(): RegPilotArmorData {
+    protected save_imp(): RegPilotArmorData {
         return {
             description: this.Description,
             id: this.ID,
@@ -143,7 +143,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public save(): RegPilotGearData {
+    protected save_imp(): RegPilotGearData {
         return {
             description: this.Description,
             id: this.ID,
@@ -196,7 +196,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         await SerUtil.load_basd(this.Registry, data, this);
     }
 
-    public save(): RegPilotWeaponData {
+    protected save_imp(): RegPilotWeaponData {
         return {
             id: this.ID,
             description: this.Description,

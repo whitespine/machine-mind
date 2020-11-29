@@ -155,7 +155,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       return tag_util.limited_max(this);
   }
 
-  public save(): RegMechWeaponData {
+  protected save_imp(): RegMechWeaponData {
     return {
       id: this.ID,
       license: this.License,
@@ -298,7 +298,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile>{
       this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
-    public save(): RegMechWeaponProfile {
+    protected save_imp(): RegMechWeaponProfile {
       return {
             name: this.Name,
             type: this.WepType,

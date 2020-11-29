@@ -22,7 +22,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
         this.Effects = data.effects;
     }
 
-    public save(): IStatusData {
+    protected save_imp(): IStatusData {
         return {
             name: this.Name,
             icon: this.Icon,

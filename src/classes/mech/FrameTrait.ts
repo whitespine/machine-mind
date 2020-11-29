@@ -55,7 +55,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
         this.Counters = SerUtil.process_counters(data.counters);
     }
 
-    public save(): RegFrameTraitData {
+    protected save_imp(): RegFrameTraitData {
         return {
             name: this.Name,
             description: this.Description,

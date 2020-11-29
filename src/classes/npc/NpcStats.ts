@@ -348,7 +348,7 @@ export class NpcStats extends RegSer<INpcStats> {
     }
     * /
 
-    public save(): INpcStats {
+    protected save_imp(): INpcStats {
         return {
             activations: this.Stats.activations,
             armor: this.Stats.armor,

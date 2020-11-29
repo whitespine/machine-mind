@@ -36,7 +36,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         this._hidden = data.hidden || null; // Whether to show this tag
     }
 
-    public save(): ITagTemplateData {
+    protected save_imp(): ITagTemplateData {
         return {
             id: this.ID,
             name: this.Name,
@@ -103,7 +103,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
         this.Tag = Tag;
     }
 
-    public save(): RegTagInstanceData {
+    protected save_imp(): RegTagInstanceData {
         return {
             val: this.Value ?? undefined,
             tag: this.Tag.as_ref(),

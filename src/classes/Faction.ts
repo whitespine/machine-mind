@@ -28,7 +28,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
         this.Color = data.color;
     }
 
-    public save(): IFactionData {
+    protected save_imp(): IFactionData {
         return {
             id: this.ID,
             name: this.Name,

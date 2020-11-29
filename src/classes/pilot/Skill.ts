@@ -57,7 +57,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         this.CurrentRank = data.rank;
     }
 
-    public save(): RegSkillData {
+    protected save_imp(): RegSkillData {
         return {
             description: this.Description,
             detail: this.Description,

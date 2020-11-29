@@ -34,7 +34,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         this.Description = data.description;
         this.Logo = data.logo;
     }
-    public save(): RegManufacturerData {
+    protected save_imp(): RegManufacturerData {
         return {
             id: this.ID,
             name: this.Name,

@@ -84,7 +84,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.FeatureType = data.type;
     }
 
-    public save(): RegNpcFeatureData {
+    protected save_imp(): RegNpcFeatureData {
         return {
             id: this.ID,
             name: this.Name,

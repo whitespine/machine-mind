@@ -50,7 +50,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         );
     }
 
-    public save(): RegNpcClassData {
+    protected save_imp(): RegNpcClassData {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.BaseFeatures),

@@ -78,7 +78,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         this.Counters = SerUtil.process_counters(data.counters);
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
-    public save(): RegCoreBonusData {
+    protected save_imp(): RegCoreBonusData {
         return {
             description: this.Description,
             effect: this.Effect,

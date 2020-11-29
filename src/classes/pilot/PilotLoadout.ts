@@ -141,7 +141,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         );
     }
 
-    public save(): RegPilotLoadoutData {
+    protected save_imp(): RegPilotLoadoutData {
         return {
             id: this.ID,
             name: this.Name,

@@ -153,7 +153,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         return true;
     }
 
-    public save(): RegWeaponModData {
+    protected save_imp(): RegWeaponModData {
         return {
             license: this.License,
             license_level: this.LicenseLevel,
