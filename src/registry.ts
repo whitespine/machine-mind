@@ -588,6 +588,7 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly RegistryID: string;
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
+    public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
     private _load_promise: Promise<any>;
 
     // This constructor assumes that we've already got an entry in this registry.
@@ -595,8 +596,9 @@ export abstract class RegEntry<T extends EntryType> {
     constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>) {
         this.Type = type;
         this.Registry = registry;
-        this.RegistryID = id;
         this.OpCtx = ctx;
+        this.RegistryID = id;
+        this.OrigData = reg_data;
         ctx.set(id, this);
 
         // Load, and when done remove our pending entry
@@ -686,6 +688,10 @@ export abstract class RegEntry<T extends EntryType> {
 
         // We do not want `fresh` itself, as its references will be wacky. Instead, re-fetch fresh from the new registry
         let fresher = (await fresh.refreshed(ctx)) as LiveEntryTypes<T>;
+
+        // Trigger post insinuation hook on the new reg
+        await to_new_reg.hook_post_insinuate(this.Type, this as unknown as LiveEntryTypes<T>, fresher);
+
         return fresher;
     }
 
@@ -1045,6 +1051,9 @@ export abstract class Registry {
 
     // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
     public abstract get_inventory(for_item_type: EntryType, for_item_id: string): Registry | null;
+
+    // Hook called upon completion of an insinutation. NOTE: called on the _destination_ reg
+    public hook_post_insinuate<T extends EntryType>(_type: T, _orig_live: LiveEntryTypes<T>, _new_live: LiveEntryTypes<T>): Promise<void> | void { /* override */ }
 }
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)

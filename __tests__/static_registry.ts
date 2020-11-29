@@ -331,4 +331,22 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_frames.length).toEqual(0);
         expect(dest_weapons.length).toEqual(1); // 4
     });
+    
+    it("Calls insinuation hooks", async () => {
+        expect.assertions(3);
+        class HookyReg extends StaticReg {
+            hook_post_insinuate(t, o, n) {
+                expect(t).toEqual(EntryType.MECH_SYSTEM);
+                expect(o.Name).toEqual("ns");
+                expect(n.Name).toEqual("ns");
+            }
+        }
+
+        let env = new RegEnv();
+        let reg1 = new HookyReg(env);
+        let reg2 = new HookyReg(env);
+        let ctx = new OpCtx();
+        let old_wep = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns"});
+        let new_wep = await old_wep.insinuate(reg2);
+    });
 });
