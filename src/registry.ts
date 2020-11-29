@@ -885,8 +885,27 @@ export abstract class RegCat<T extends EntryType> {
     abstract list_live(ctx: OpCtx): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item, propagating any changes made to it to the backend data source
-    // Do NOT attempt to feed this items foreign to this cat
-    abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
+    async update(...items: LiveEntryTypes<T>[]): Promise<void> {
+        let to_save: Array<{id: string, data: RegEntryTypes<T>}> = [];
+        for (let i of items) {
+            if (this.cat != i.Type) {
+                console.warn("Tried to update an item with an incorrectly typed new live item");
+                continue;
+            }
+            let saved = i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
+            to_save.push({id: i.RegistryID, data: saved});
+        }
+        return this.update_many_raw(to_save);
+    }
+
+    // Simpler wrapper around the below
+    async update_raw(id: string, data: RegEntryTypes<T>): Promise<void> {
+        return this.update_many_raw([{id, data}]);
+    }
+
+    // This method does not do any intrinsic safety checking of if the item already exists - that is the responsibility of the user
+    // Do NOT attempt to feed this items foreign to this cat. It has no way of telling.
+    abstract update_many_raw(items: Array<{id: string, data: RegEntryTypes<T>}>): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
     abstract delete_id(id: string): Promise<RegEntryTypes<T> | null>;

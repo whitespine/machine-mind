@@ -246,14 +246,14 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         return this.revive_func(this.parent, ctx, id, raw);
     }
 
-    // a bit tricky in terms of what side effects this could have, actually.
-    async update(...items: LiveEntryTypes<T>[]): Promise<void> {
+    // Just a simple .set call. Check if ID exists first
+    async update_many_raw(items: Array<{ id: string; data: RegEntryTypes<T> }>): Promise<void> {
         for (let i of items) {
-            if (!this.reg_data.has(i.RegistryID)) {
+            if (!this.reg_data.has(i.id)) {
                 console.warn("Tried to update a destroyed/nonexistant/non-owned item");
+                continue;
             }
-            let saved = i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
-            this.reg_data.set(i.RegistryID, saved);
+            this.reg_data.set(i.id, i.data);
         }
     }
 

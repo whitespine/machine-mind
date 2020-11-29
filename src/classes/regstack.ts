@@ -270,8 +270,8 @@ export class CovetousCatStack<T extends EntryType> extends RegCat<T> {
     }
 
     // Use base
-    update(...items: LiveEntryTypes<T>[]): Promise<void> {
-        return this.base.update(...items);
+    update_many_raw(items: Array<{ id: string; data: RegEntryTypes<T> }>): Promise<void> {
+        return this.base.update_many_raw(items);
     }
 
     // Use base
