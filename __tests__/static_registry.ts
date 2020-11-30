@@ -332,22 +332,45 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(1); // 4
     });
     
-    it("Calls insinuation hooks", async () => {
+    it("Calls insinuation hooks (simple)", async () => {
         expect.assertions(3);
         class HookyReg extends StaticReg {
-            hook_post_insinuate(t, o, n) {
-                expect(t).toEqual(EntryType.MECH_SYSTEM);
-                expect(o.Name).toEqual("ns");
-                expect(n.Name).toEqual("ns");
+            hook_post_insinuate(record) {
+                expect(record.type).toEqual(EntryType.MECH_SYSTEM);
+                expect(record.old_item.Name).toEqual("ns");
+                expect(record.new_item.Name).toEqual("ns");
             }
         }
 
         let env = new RegEnv();
-        let reg1 = new HookyReg(env);
+        let reg1 = new StaticReg(env);
         let reg2 = new HookyReg(env);
         let ctx = new OpCtx();
         let old_sys = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns"});
         let new_sys = await old_sys.insinuate(reg2);
+    });
+
+    it("Calls insinuation hooks (insinuated)", async () => {
+        expect.assertions(6 + 2);
+        class HookyReg extends StaticReg {
+            hook_post_insinuate(record) {
+                expect(true).toBeTruthy(); // Will be hit 5 times
+
+                // A bit more: if it is a frame, make sure it has its stuff
+                if(record.type == EntryType.FRAME) {
+                    expect(record.new_item.Traits.length).toEqual(4);
+                    expect(record.new_item.CoreSystem).toBeTruthy();
+                }
+            }
+        }
+
+        let src = await init_basic_setup(true);
+        let dest = new HookyReg(src.env);
+        let ctx = new OpCtx();
+
+        // We plan on moving a frame, specifically the drake. The drake has 4 traits and one core system, totaling 6 expected insinuate hooks
+        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_drake");
+        await drake.insinuate(dest);
     });
 
     it("Preserves misc original data", async () => {

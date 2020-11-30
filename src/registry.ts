@@ -587,6 +587,13 @@ export abstract class RegSer<SourceType> {
     protected abstract save_imp(): SourceType;
 }
 
+// Describes an itemized transfer as part of an insinuation
+export interface InsinuationRecord<T extends EntryType> {
+    type: T;
+    old_item: LiveEntryTypes<T>;
+    new_item: LiveEntryTypes<T>;
+}
+
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
 export abstract class RegEntry<T extends EntryType> {
@@ -686,22 +693,30 @@ export abstract class RegEntry<T extends EntryType> {
             throw new Error("Cannot insinuate a deleted item: undefined behavior");
         }
 
-        // After refresh, destroy the opctx cache to be reconstructed as we build below
-        let hitlist: Set<RegEntry<any>> = new Set();
-        await (fresh as RegEntry<any>)._insinuate_imp(to_new_reg, hitlist);
+        // Create a mapping of original items to Insinuation records
+        let hitlist: Map<RegEntry<EntryType>, InsinuationRecord<EntryType>> = new Map();
+        await (fresh as RegEntry<EntryType>)._insinuate_imp(to_new_reg, hitlist);
 
         // At this point no more processing is going to occur - our entire data structure should have been transferred over to the new reg
-        // However, what _hasn't_ yet been processed / updated are our reg entrie references - they're still saved as their original ids
+        // However, what _hasn't_ yet been processed / updated are our reg entry references - they're still saved as their original ids
         // So we write all back once more with the new reference structure established
-        for (let i of hitlist) {
+        for (let i of hitlist.keys()) {
             await i.writeback();
         }
 
         // We do not want `fresh` itself, as its references will be wacky. Instead, re-fetch fresh from the new registry
         let fresher = (await fresh.refreshed(ctx)) as LiveEntryTypes<T>;
 
-        // Trigger post insinuation hook on the new reg
-        await to_new_reg.hook_post_insinuate(this.Type, this as unknown as LiveEntryTypes<T>, fresher);
+        // Trigger post insinuation hook on the new reg for every item
+        // One might thing "oh no won't this be expensive?". Nope! The refresh to get `fresher` has already prefetched them to ctx
+        for(let record of hitlist.values()) {
+            let n = await record.new_item.refreshed(ctx);
+            if(!n) {
+                console.error("Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted.");
+            }
+            record.new_item = n!;
+            await to_new_reg.hook_post_insinuate(record);
+        }
 
         return fresher;
     }
@@ -711,13 +726,11 @@ export abstract class RegEntry<T extends EntryType> {
     // Insinuation hit list is used to track which items are already being insinuated, so as not to get caught in cycles
     // Return value is the temporary new live entry we used to generate the ID. NOTE THAT IT IS NOT MEANT TO BE RETURNED - IT IS SUPER UNSTABLE
     // it is, however, needed for inventoried regs to figure out their new inventory location. Null indicates no insinuation occurred due to circular reference protection
-    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Set<RegEntry<any>>): Promise<LiveEntryTypes<T> | null> {
+    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Map<RegEntry<any>, InsinuationRecord<any>>): Promise<LiveEntryTypes<T> | null> {
         // Check if we've been hit to avoid circular problems
         if (insinuation_hit_list.has(this)) {
             return null;
-        } else {
-            insinuation_hit_list.add(this);
-        }
+        } 
 
         // To insinuate this specific item is fairly simple. Just save the data, then create a corresponding entry in the new reg
         // We change our registry before saving as a just-in-case. It shouldn't really matter
@@ -732,6 +745,13 @@ export abstract class RegEntry<T extends EntryType> {
         // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
         // Thankfully, all we really need to do is have this ID right / be able to save validly, so the outer insinuate method can make all of the references have the proper id's
         (this as any).RegistryID = new_entry.RegistryID;
+
+        // Mark our new item. Note that this "new_item" will be replaced later with a refreshed copy
+        insinuation_hit_list.set(this, {
+            new_item: new_entry,
+            old_item: this,
+            type: this.Type
+        });
 
         // Ask all of our live children to insinuate themselves. They shall insinuate recursively
         for (let child of this.get_assoc_entries()) {
@@ -773,7 +793,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
     protected abstract enumerate_owned_items(): RegEntry<any>[];
 
     // Insinuation logic is a bit different as well
-    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Set<RegEntry<any>>): Promise<LiveEntryTypes<any> | null> {
+    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Map<RegEntry<EntryType>, InsinuationRecord<EntryType>>): Promise<LiveEntryTypes<T> | null> {
         // Get our super call. Since new entry is of same type, then it should also have an inventory
         let new_reg_entry = await super._insinuate_imp(to_new_reg, insinuation_hit_list) as InventoriedRegEntry<T> | null;
 
@@ -788,6 +808,12 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
             for(let i of all_items) {
                 await i._insinuate_imp(new_inventory, insinuation_hit_list);
             }
+
+            // At last, return the original value. Our work is done
+            return new_reg_entry as unknown as LiveEntryTypes<T>; // Why typescript hurt me so
+        } else {
+            // Super returned null so so do we
+            return null;
         }
     }
 }
@@ -1083,7 +1109,7 @@ export abstract class Registry {
     public abstract get_inventory(for_item_type: EntryType, for_item_id: string): Registry | null;
 
     // Hook called upon completion of an insinutation. NOTE: called on the _destination_ reg
-    public hook_post_insinuate<T extends EntryType>(_type: T, _orig_live: LiveEntryTypes<T>, _new_live: LiveEntryTypes<T>): Promise<void> | void { /* override */ }
+    public hook_post_insinuate<T extends EntryType>(_record: InsinuationRecord<T>): Promise<void> | void { /* override */ }
 }
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)
