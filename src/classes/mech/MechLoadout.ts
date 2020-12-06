@@ -3,7 +3,7 @@ import { defaults } from "@src/funcs";
 import {
     EntryType,
     OpCtx,
-    quick_mm_ref,
+    quick_local_ref,
     Registry,
     RegRef,
     RegSer,
@@ -11,6 +11,7 @@ import {
     SimSer,
 } from "@src/registry";
 import { FittingSize, MountType, WeaponSize } from "../../enums";
+import { gathering_resolve_mmid, RegFallback as RegFallbackStack } from "../regstack";
 
 //todo: superheavies :<
 
@@ -151,8 +152,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Resets this mech's mounts to match what the frame should have
     public async reset_weapon_mounts(): Promise<void> {
         this.WepMounts = [];
-        if(this.Frame) {
-            for(let size of this.Frame.Mounts) {
+        if (this.Frame) {
+            for (let size of this.Frame.Mounts) {
                 let new_mount = await this._new_mount(MountType.Unknown);
                 this.WepMounts.push(new_mount);
             }
@@ -162,8 +163,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Attempts to equip a weapon. Makes a new mount as necessary NOTE: This weapon does NOT handle insinuation. do that yourself, dummy!
     public async equip_weapon(weapon: MechWeapon): Promise<void> {
         // Just jam it in any empty one that'll fit us
-        for(let mount of this.WepMounts) {
-            if(mount.try_add_weapon(weapon)) {
+        for (let mount of this.WepMounts) {
+            if (mount.try_add_weapon(weapon)) {
                 return; // We're done
             }
         }
@@ -176,13 +177,14 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // Just make a new sys mount. We don't really expect these to be empty, so don't bother checking.
     public async equip_system(system: MechSystem) {
-        let new_mount = new SystemMount(this.Registry, this.OpCtx, {system: null});
+        let new_mount = new SystemMount(this.Registry, this.OpCtx, { system: null });
         await new_mount.ready();
-        new_mount.System  = system;
+        new_mount.System = system;
         this.SysMounts.push(new_mount);
     }
 
     // Good ol' unpacking funcs
+    /*
     public static async unpack(
         mech_frame_id: string,
         mech_loadout: PackedMechLoadoutData,
@@ -194,6 +196,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         await base.sync(mech_frame_id, mech_loadout, reg);
         return base;
     }
+    */
 
     // We do this quite often. Creates a new empty mount of the specified size
     private async _new_mount(type: MountType): Promise<WeaponMount> {
@@ -201,21 +204,21 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
         mount.reset(); // Give it its default slots
         return mount;
-    }   
-    
-    
-    // Sync this loadout with compcon
-    // There's no real reason to restrict this logic just to unpacking. Having it be a method allows us to avoid replicating work
-    // override reg is a bit of a finicky param - we will look there for any weapons or systems. Make sure that we don't end up referencing unowned items! (Covetous reg is your friend)
+    }
+
+    // Sync this loadout with compcon style loadout data
+    // There's no real reason to restrict this logic just to unpacking, as we never just want a loadout on its own - only useful as part of a mech sync
     public async sync(
         mech_frame_id: string,
         mech_loadout: PackedMechLoadoutData,
-        override_reg: Registry
+        stack: RegFallbackStack
     ): Promise<void> {
         // Find the frame
-        let frame = await override_reg.resolve(
+        let frame = await gathering_resolve_mmid(
+            stack,
             this.OpCtx,
-            quick_mm_ref(EntryType.FRAME, mech_frame_id)
+            EntryType.FRAME,
+            mech_frame_id
         );
 
         // Reconstruct the mount setup
@@ -256,7 +259,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
         for (let tbr of to_be_rendered) {
             let mount = await this._new_mount(tbr.mount_type as MountType);
-            await mount.sync(tbr, override_reg);
+            await mount.sync(tbr, stack);
             weps.push(mount);
         }
 
@@ -277,10 +280,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 sys = corr.System;
             } else {
                 // Look it up
-                sys = await override_reg.resolve(
-                    this.OpCtx,
-                    quick_mm_ref(EntryType.MECH_SYSTEM, mls.id)
-                );
+                sys = await gathering_resolve_mmid(stack, this.OpCtx, EntryType.MECH_SYSTEM, mls.id);                
             }
 
             // Update state
@@ -407,18 +407,15 @@ export class WeaponSlot {
     }
 
     // Take in the specified data
-    async sync(dat: PackedWeaponSlotData, reg: Registry, ctx: OpCtx): Promise<void> {
+    async sync(dat: PackedWeaponSlotData, stack: RegFallbackStack, ctx: OpCtx): Promise<void> {
         // First we resolve the weapon
         if (dat.weapon) {
             // See if we already have that weapon mounted
             if (this.Weapon && dat.weapon.id == this.Weapon.ID) {
                 // Do nothing. Weapon is unchanged
             } else {
-                // Otherwise attempt to resolve from the provided reg
-                this.Weapon = await reg.resolve(
-                    ctx,
-                    quick_mm_ref(EntryType.MECH_WEAPON, dat.weapon.id)
-                );
+                // Otherwise attempt to resolve 
+                this.Weapon = await gathering_resolve_mmid(stack, ctx, EntryType.MECH_WEAPON, dat.weapon.id);            
             }
 
             // We have resolved the weapon. Now update state
@@ -438,10 +435,7 @@ export class WeaponSlot {
                         // Do nothing. Mod is unchanged
                     } else {
                         // Attempt to resolve mod
-                        this.Mod = await reg.resolve(
-                            ctx,
-                            quick_mm_ref(EntryType.WEAPON_MOD, mod.id)
-                        );
+                        this.Mod = await gathering_resolve_mmid(stack, ctx, EntryType.WEAPON_MOD, mod.id);
                     }
 
                     // We have resolved the mod. Now update state
@@ -544,7 +538,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     // Match the provided mount data. Use the provided reg to facillitate lookup of required items from outside of mech
-    public async sync(mnt: PackedMountData, override_reg: Registry) {
+    public async sync(mnt: PackedMountData, fallback: RegFallbackStack) {
         // Init slots based on our size
         this.MountType = mnt.mount_type as MountType;
         this.Slots = this._slots_for_mount(this.MountType);
@@ -557,7 +551,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
             let s = this.Slots[i];
             let cw = packed_slots[i];
             if (cw) {
-                await s.sync(cw, override_reg, this.OpCtx);
+                await s.sync(cw, fallback, this.OpCtx);
             }
         }
     }

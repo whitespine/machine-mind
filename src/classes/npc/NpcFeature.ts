@@ -102,7 +102,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         ctx: OpCtx
     ): Promise<NpcFeature> {
         data = { ...defaults.NPC_FEATURE(), ...data };
-        let tags = data.tags.map(TagInstance.unpack_reg) ?? [];
+        let tags = SerUtil.unpack_tag_instances(reg, data.tags);
         let rdata: RegNpcFeatureData = {
             ...defaults.NPC_FEATURE(),
             ...data,

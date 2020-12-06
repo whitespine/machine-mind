@@ -47,7 +47,7 @@ describe("Mechs", () => {
         let ctx = new OpCtx();
         let dk: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
-        await cloud_sync(dk_data, dk, s.reg);
+        await cloud_sync(dk_data, dk, [s.reg]);
         dk = await dk.refreshed();
 
         // Get his active mech, which should be the lanny
@@ -86,7 +86,7 @@ describe("Mechs", () => {
         let ctx = new OpCtx();
         let dk: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
-        await cloud_sync(dk_data, dk, s.reg);
+        await cloud_sync(dk_data, dk, [s.reg]);
         dk = await dk.refreshed();
 
         // Get his active mech, which should be the lanny

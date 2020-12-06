@@ -11,7 +11,7 @@ import {
 } from "@src/class";
 import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
 import { WeaponSize, WeaponType } from '../../enums';
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { defaults, tag_util } from '@src/funcs';
 import { Manufacturer } from '../Manufacturer';
 // TODO:
@@ -196,7 +196,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
   static async unpack(dat: PackedMechWeaponData, reg: Registry, ctx: OpCtx): Promise<MechWeapon> {
     // Get the basics
     // These two arrays we continue to add to as we unpack profiles
-    let parent_integrated = SerUtil.unpack_integrated_refs(dat.integrated);
+    let parent_integrated = SerUtil.unpack_integrated_refs(reg, dat.integrated);
     let parent_dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, dat.deployables);
     let parent_deployables = SerUtil.ref_all(parent_dep_entries);
 
@@ -211,7 +211,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       integrated: parent_integrated,
       deployables: parent_deployables,
       selected_profile: 0,
-      source: quick_mm_ref(EntryType.MANUFACTURER, dat.source),
+      source: quick_local_ref(reg, EntryType.MANUFACTURER, dat.source),
     };
 
     // Get profiles - depends on if array is provided, but we tend towards the default 
@@ -228,12 +228,12 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON>{
       // We pluck out deployables and integrated
       let dep_entries = await SerUtil.unpack_children(Deployable.unpack, reg, ctx, p.deployables);
       let dep_refs = SerUtil.ref_all(dep_entries);
-      let int_refs = SerUtil.unpack_integrated_refs(p.integrated);
+      let int_refs = SerUtil.unpack_integrated_refs(reg, p.integrated);
       parent_integrated.push(...int_refs);
       parent_deployables.push(...dep_refs);
 
       // The rest is left to the profile
-      let tags = p.tags?.map(TagInstance.unpack_reg) ?? [];
+      let tags = SerUtil.unpack_tag_instances(reg, p.tags);
       let unpacked_profile: RegMechWeaponProfile = {
         damage: (p.damage || []).map(Damage.unpack),
         range: p.range || [],

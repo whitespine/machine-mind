@@ -76,7 +76,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             counters: SerUtil.unpack_counters_default(data.counters),
-            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
         };
         return reg.get_cat(EntryType.FRAME_TRAIT).create_live(ctx, rdata, true);
     }

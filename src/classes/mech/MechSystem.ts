@@ -11,7 +11,7 @@ import {
     RegDeployableData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 
@@ -157,8 +157,8 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
             ...defaults.MECH_SYSTEM(),
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-            source: quick_mm_ref(EntryType.MANUFACTURER, data.source),
-            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
         };
 

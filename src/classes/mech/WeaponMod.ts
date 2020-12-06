@@ -23,7 +23,7 @@ import {
     RegDamageData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 import { TagInstance } from "../Tag";
@@ -252,14 +252,14 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         let rdata: RegWeaponModData = {
             ...defaults.WEAPON_MOD(),
             ...data,
-            source: quick_mm_ref(EntryType.MANUFACTURER, data.source),
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
-            added_tags: data.added_tags?.map(TagInstance.unpack_reg) ?? [],
+            added_tags: SerUtil.unpack_tag_instances(reg, data.added_tags),
             allowed_sizes,
             allowed_types,
 
             // Boring stuff
-            integrated: SerUtil.unpack_integrated_refs(data.integrated),
+            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };

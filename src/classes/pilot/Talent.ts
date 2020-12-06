@@ -149,7 +149,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
                 ...r,
                 ...(await SerUtil.unpack_basdt(r, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
-                integrated: SerUtil.unpack_integrated_refs(r.integrated),
+                integrated: SerUtil.unpack_integrated_refs(reg, r.integrated),
             });
         }
 

@@ -169,7 +169,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Deployable> {
-        let tags = dep.tags?.map(TagInstance.unpack_reg) ?? [];
+        let tags = SerUtil.unpack_tag_instances(reg, dep.tags)
         let counters = SerUtil.unpack_counters_default(dep.counters);
         let unpacked: RegDeployableData = {
             ...defaults.DEPLOYABLE(),

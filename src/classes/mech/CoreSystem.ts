@@ -137,7 +137,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         ctx: OpCtx
     ): Promise<CoreSystem> {
         // Get tags
-        let tags = data.tags?.map(TagInstance.unpack_reg) ?? [];
+        let tags = SerUtil.unpack_tag_instances(reg, data.tags);
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(data.counters);
@@ -152,7 +152,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data
-        let integrated = SerUtil.unpack_integrated_refs(data.integrated);
+        let integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = {

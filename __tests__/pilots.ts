@@ -47,7 +47,7 @@ describe("Pilots", () => {
         let ctx = new OpCtx();
         let dk: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
-        await cloud_sync(dk_data, dk, s.reg);
+        await cloud_sync(dk_data, dk, [s.reg]);
         dk = await dk.refreshed();
 
         // Some basics
@@ -123,7 +123,7 @@ describe("Pilots", () => {
         // Load the king
         let dk: Pilot = await source.reg.create_live(EntryType.PILOT, new OpCtx());
         let dk_data = await gist_io.download_pilot(DONKEY_KONG);
-        await cloud_sync(dk_data, dk, source.reg);
+        await cloud_sync(dk_data, dk, [source.reg]);
         dk = await dk.refreshed();
 
         // Send him on his merry way

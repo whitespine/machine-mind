@@ -1,7 +1,7 @@
 import { CoreSystem, FrameTrait } from "@src/class";
 import { defaults } from "@src/funcs";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
@@ -110,7 +110,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         let fdata: RegFrameData = {
             ...defaults.FRAME(),
             ...frame,
-            source: quick_mm_ref(EntryType.MANUFACTURER, frame.source),
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
             traits: SerUtil.ref_all(traits),
             core_system: cs.as_ref(),
             image_url: frame.image_url ?? "",

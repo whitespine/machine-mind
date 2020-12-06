@@ -33,7 +33,7 @@ import {
     InventoriedRegEntry,
     LiveEntryTypes,
     OpCtx,
-    quick_mm_ref,
+    quick_local_ref,
     RegEntry,
     Registry,
     RegRef,
@@ -45,9 +45,7 @@ import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from '../../enums';
-import { skills } from 'lancer-data';
-import { SSL_OP_SINGLE_DH_USE } from 'constants';
-import { CovetousReg } from '../regstack';
+import { finding_iterate, finding_resolve_mmid, gathering_resolve_mmid, RegFallback } from '../regstack';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -721,13 +719,13 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 }
 
 // Due to the nature of pilot data, and the fact that we generally desire to use this for synchronization of an existing pilot rather than as a one off compendium import,
-// we define this separately. compendium_reg is where we look if we can't find an item in the pilot that we expected
+// we define this separately. gather_source_regs is where we look if we can't find an item in the pilot that we expected - it will be added to the pilot
 // TODO: Figure out a way to handle cases where the pilot has multiple copies of the same system by mmid (e.g. "lefty" and "righty" on knives or something)- in this case it will always just pick the first it finds
 // TODO: Don't just nuke reserves, do something fancier
 export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
-    compendium_reg: Registry
+    gather_source_regs: Registry[] // 
 ): Promise<void> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();
@@ -740,7 +738,10 @@ export async function cloud_sync(
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
     let pilot_inv = pilot.get_inventory();
     // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
-    let covetous = new CovetousReg(pilot_inv, [compendium_reg]);
+    let stack: RegFallback = {
+        base: pilot_inv,
+        fallbacks: gather_source_regs
+    };
     let ctx = pilot.OpCtx;
     // Identity
     pilot.ID = data.id;
@@ -753,31 +754,31 @@ export async function cloud_sync(
     pilot.Portrait = data.portrait; // Should this be a link or something? Mayabe just not sync it?
     pilot.TextAppearance = data.text_appearance;
 
-    // Fetch licenses. Need to do before mech or else itll fail to get its equipment from the pilot. Also need to update rank 
-    let license_ctx = new OpCtx();
-    for(let t of data.licenses) {
-        // Find the corresponding mech
-        let found_mech = await compendium_reg.get_cat(EntryType.FRAME).lookup_mmid(license_ctx, t.id);
+    // Fetch machine-mind stored licenses. 
+    const stack_licenses: License[] =[]; 
+    for await(const i of finding_iterate(stack, ctx, EntryType.LICENSE)) {
+        stack_licenses.push(i); 
+    }
 
-        if(found_mech) {
-            // Get the pilot licenses
-            let owned_licenses = await pilot_inv.get_cat(EntryType.LICENSE).list_live(ctx);
+    // Then, do lookups almost-as-normal. Can't just do gathering resolve because we dunno what the license will actually be called
+    for(let cc_pilot_license of data.licenses) {
+        // Do a lazy convert of the id. Due to the way compcon stores licenses we can't just do by ID, though I expect with the release of alt frames this will change. Sort of TODO
+        // Find the corresponding license
+        for(let sl of stack_licenses) {
+            let found_corr_item = sl.FlatUnlocks.find(x => x.ID == cc_pilot_license.id);
+            if(found_corr_item) {
+                // We have found a local license corresponding to the new license.
+                // First, check if owned by pilot
+                if(sl.Registry.name() != pilot_inv.name()) {
+                    // Grab a copy for our pilot
+                    sl = await sl.insinuate(pilot_inv, ctx);
+                }
 
-            // We use the mech name as the license names
-            let found_license = owned_licenses.find(l => l.Name == found_mech?.Name);
-
-            // If we did not find, we attempt to look in the compendium
-            if(!found_license) {
-                let all_licenses = await compendium_reg.get_cat(EntryType.LICENSE).list_live(license_ctx);
-                found_license = all_licenses.find(l => l.Name == found_mech?.Name);
-                found_license = await found_license?.insinuate(pilot_inv);
-            }
-
-            // If we have at this point found, update rank and writeback
-            if(found_license) {
-                // Update rank
-                found_license.CurrentRank= t.rank;
-                await found_license.writeback();
+                // Then update lvl and save
+                sl.CurrentRank = cc_pilot_license.rank;
+                await sl.writeback();
+                // Got it - we can go
+                break;
             }
         }
     }
@@ -799,7 +800,7 @@ export async function cloud_sync(
         corr_mech.Pilot = pilot;
 
         // Apply
-        await mech_cloud_sync(md, corr_mech, compendium_reg);
+        await mech_cloud_sync(md, corr_mech, gather_source_regs);
     }
 
     // Try to find a quirk that matches, or create if not present
@@ -842,7 +843,9 @@ export async function cloud_sync(
     );
 
     // Core bonuses. Does not delete. All we care about is that we have them
-    await covetous.resolve_many(ctx, data.core_bonuses.map(cb => quick_mm_ref(EntryType.CORE_BONUS, cb)));
+    for(let cb of data.core_bonuses) {
+        await gathering_resolve_mmid(stack, ctx, EntryType.CORE_BONUS, cb);
+    }
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // For reserves, as they lack a meaningful way of identification we just clobber.
@@ -858,7 +861,7 @@ export async function cloud_sync(
     // Skills, we try to find and if not create
     for(let s of data.skills) {
         // Try to get/fetch pre-existing
-        let found = await covetous.resolve(ctx, quick_mm_ref(EntryType.SKILL, s.id));
+        let found = await gathering_resolve_mmid(stack, ctx, EntryType.SKILL, s.id);
         if(!found) {
             // Make if we can
             if((s as PackedSkillData).custom) {
@@ -886,7 +889,7 @@ export async function cloud_sync(
 
     // Fetch talents. Also need to update rank. Due nothing to missing
     for(let t of data.talents) {
-        let found = await covetous.resolve(ctx, quick_mm_ref(EntryType.TALENT, t.id));
+        let found = await gathering_resolve_mmid(stack, ctx, EntryType.TALENT, t.id);
         if(found) {
             // Update rank
             found.CurrentRank= t.rank;
@@ -917,13 +920,23 @@ export async function cloud_sync(
         c.sync_state_from(data.counter_data);
     }
 
-    // Get all weapons we will need
-    let armor_refs = data.loadout.armor.filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_ARMOR, a!.id));
-    let weapon_refs = [...data.loadout.weapons, ...data.loadout.extendedWeapons].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_WEAPON, a!.id));
-    let gear_refs = [...data.loadout.gear, ...data.loadout.extendedGear].filter(x => x).map(a => quick_mm_ref(EntryType.PILOT_GEAR, a!.id));
-    await covetous.resolve_many(ctx, armor_refs);
-    await covetous.resolve_many(ctx, weapon_refs);
-    await covetous.resolve_many(ctx, gear_refs);
+    // Fetch all weapons, armor, gear we will need
+    for(let a of data.loadout.armor) {
+        if(a) {
+            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_ARMOR, a.id);
+        }
+    }
+    for(let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
+        if(w) {
+            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_WEAPON, w.id);
+        }
+    }
+    for(let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
+        if(g) {
+            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_GEAR, g.id);
+        }
+    }
+;
 
     // Do loadout stuff
     pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs

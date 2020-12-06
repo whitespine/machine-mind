@@ -3,14 +3,11 @@ import {
     EntryType,
     LiveEntryTypes,
     OpCtx,
-    quick_mm_ref,
     RegEntry,
     Registry,
     RegRef,
-    RegSer,
     SerUtil,
 } from "@src/registry";
-import { createDecipher } from "crypto";
 import { Manufacturer } from "./Manufacturer";
 import { Frame } from "./mech/Frame";
 
@@ -136,6 +133,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
         return licenses;
     }
 
+    // Shows all unlocks that the current rank affords
     public get UnlockedItems(): LicensedItem[] {
         let result: LicensedItem[] = [];
         for (let i = 0; i <= this.CurrentRank; i++) {
@@ -146,7 +144,13 @@ export class License extends RegEntry<EntryType.LICENSE> {
         return result;
     }
 
+    // A simple flattened version of Unlocks
+    public get FlatUnlocks(): LicensedItem[] {
+        return this.Unlocks.flatMap(x => x);
+    }
+
     // For the time being, this is disabled. There's no real sensible way for a license (owned by a pilot) to give systems/etc (which are owned by a mech)
+    // Much better to just show these items in the item window
     // public get_child_entries(): RegEntry<any>[] {
         // return this.Unlocks.flat();
     // }

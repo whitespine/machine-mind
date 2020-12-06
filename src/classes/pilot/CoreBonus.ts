@@ -11,7 +11,7 @@ import {
 import {
     EntryType,
     OpCtx,
-    quick_mm_ref,
+    quick_local_ref,
     RegEntry,
     Registry,
     RegRef,
@@ -107,7 +107,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
-        let integrated = SerUtil.unpack_integrated_refs(cor.integrated || []);
+        let integrated = SerUtil.unpack_integrated_refs(reg, cor.integrated);
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(cor.counters);
@@ -117,7 +117,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             integrated,
             deployables,
             counters,
-            source: quick_mm_ref(EntryType.MANUFACTURER, cor.source),
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, cor.source),
             mounted_effect: cor.mounted_effect ?? "",
             actions: cor.actions ?? [],
             bonuses: cor.bonuses ?? [],

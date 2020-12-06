@@ -116,7 +116,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         if (this.Classes.length) {
             return this.Classes[0];
         } else {
-            console.warn("Npc without class!");
+            console.log("Npc without class!");
             return null;
         }
     }

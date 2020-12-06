@@ -1,6 +1,6 @@
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { NpcFeature } from "@src/class";
-import { EntryType, OpCtx, quick_mm_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 
 interface AllNpcClassData {
@@ -73,9 +73,9 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
             ...data,
             base_stats: data.stats,
 
-            base_features: data.base_features.map(f => quick_mm_ref(EntryType.NPC_FEATURE, f)),
+            base_features: data.base_features.map(f => quick_local_ref(reg, EntryType.NPC_FEATURE, f)),
             optional_features: data.optional_features.map(f =>
-                quick_mm_ref(EntryType.NPC_FEATURE, f)
+                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
         };
         return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata, true);

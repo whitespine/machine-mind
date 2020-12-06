@@ -10,16 +10,6 @@
  * (and more importantly, it is more efficient/easily logically to ask "Where is MY <lmg>" vs "Where is <lmg>")
  * We handle this by having pilots, mechs, and npcs each have their own inventory (in the form of a Registry). (maybe deployables? What would they own? statuses, maybe. Foundry supports regardless but begs the question of what the point is)
  *
- * Relations can be cross-registry (i.e. between items with their own registries).
- * This brings us to an important mandate: ALL REGISTRY-OWNING ITEM CATEGORIES MUST BE GLOBAL / HAVE SOME METHOD OF CROSS-REGISTRY LOOKUP
- * Foundry does this for us by getActor methods. Anyone else will have to roll something themselves (check static_registry)
- * The key distinction for these types is that
- *  - The cat's for these types should behave identically between ALL items (in the same environment). The lowliest system mod should be able to find any pilot
- *  - These items meet the above situation of pilots/mechs having their own inventory
- *  - These items can freely retrive their own regs. One can also just deliberately grab a registry by its id.
- * In theory you could not do the above if you had a strictly-downward-waterfalling heirarchy, but this is weird
- *
- *
  * When a field describes a list of allowed/forbidden fields, [] means NONE.
  * undefined should either mean None or does not apply, contextually.
  * It might be easier to just treat as null in those cases. However, never store as null
@@ -71,7 +61,7 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
-import { trimmed } from './classes/key_util';
+import { trimmed } from "./classes/key_util";
 import {
     IActionData,
     IBonusData,
@@ -318,13 +308,15 @@ export abstract class SerUtil {
      * Handles the intake of integrated items.
      * Note that this creates an UNRESOLVED REF, meaning that it may or not exist until we actually attempt to load this item.
      * This reference will exist until the item is saved for the first time, which will override the ref to an actual item ref.
+     * We assume they come from the compendium
      */
-    public static unpack_integrated_refs(integrated?: string[]): RegRef<any>[] {
-        return (integrated || []).map(i => ({
-            id: i,
-            type: null,
-            is_unresolved_mmid: true,
-        }));
+    public static unpack_integrated_refs(reg: Registry, integrated?: string[]): RegRef<any>[] {
+        return (integrated || []).map(i => quick_local_ref(reg, null, i));
+    }
+    
+    // Just deals with potential nulls
+    public static unpack_tag_instances(reg: Registry, tags?: PackedTagInstanceData[]): RegTagInstanceData[] {
+        return (tags || []).map(i => TagInstance.unpack_reg(reg, i));
     }
 
     /**
@@ -501,7 +493,7 @@ export abstract class SerUtil {
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get tags
-        let tags = src.tags?.map(TagInstance.unpack_reg) ?? [];
+        let tags = SerUtil.unpack_tag_instances(reg, src.tags);
 
         return {
             actions: src.actions ?? [],
@@ -581,7 +573,7 @@ export abstract class RegSer<SourceType> {
 
     // Export this item for registry saving back to registry
     public save(): SourceType {
-        return {...this.OrigData, ...this.save_imp()};
+        return { ...this.OrigData, ...this.save_imp() };
     }
 
     protected abstract save_imp(): SourceType;
@@ -632,12 +624,14 @@ export abstract class RegEntry<T extends EntryType> {
                 id: mmid,
                 is_unresolved_mmid: true,
                 type: this.Type,
+                reg_name: this.Registry.name()
             };
         } else {
             return {
                 id: this.RegistryID,
                 type: this.Type,
                 is_unresolved_mmid: false, // We're in a reg! we're gooood!
+                reg_name: this.Registry.name()
             };
         }
     }
@@ -648,7 +642,7 @@ export abstract class RegEntry<T extends EntryType> {
     // Export this item for registry saving back to registry
     public save(): RegEntryTypes<T> {
         let savedata = this.save_imp();
-        return {...this.OrigData, ...savedata}; // TODO: do more of a recursive merge
+        return { ...this.OrigData, ...savedata }; // TODO: do more of a recursive merge
     }
 
     // What we override for saves
@@ -683,7 +677,7 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Create a copy self in the target DB, bringing along all child items with properly reconstructed links.
-    // Returns said copy. If supplied, ctx will be used for the revival of the newly insinuated data in to_new_reg. 
+    // Returns said copy. If supplied, ctx will be used for the revival of the newly insinuated data in to_new_reg.
     // This can be the same ctx as the original without issue, but doing so is pretty unlikely to be useful
     public async insinuate(to_new_reg: Registry, ctx?: OpCtx): Promise<LiveEntryTypes<T>> {
         // The public expore of insinuate, which ensures it is safe by refreshing before and after all operations
@@ -709,10 +703,12 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Trigger post insinuation hook on the new reg for every item
         // One might thing "oh no won't this be expensive?". Nope! The refresh to get `fresher` has already prefetched them to ctx
-        for(let record of hitlist.values()) {
+        for (let record of hitlist.values()) {
             let n = await record.new_item.refreshed(ctx);
-            if(!n) {
-                console.error("Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted.");
+            if (!n) {
+                console.error(
+                    "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted."
+                );
             }
             record.new_item = n!;
             await to_new_reg.hook_post_insinuate(record);
@@ -726,11 +722,14 @@ export abstract class RegEntry<T extends EntryType> {
     // Insinuation hit list is used to track which items are already being insinuated, so as not to get caught in cycles
     // Return value is the temporary new live entry we used to generate the ID. NOTE THAT IT IS NOT MEANT TO BE RETURNED - IT IS SUPER UNSTABLE
     // it is, however, needed for inventoried regs to figure out their new inventory location. Null indicates no insinuation occurred due to circular reference protection
-    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Map<RegEntry<any>, InsinuationRecord<any>>): Promise<LiveEntryTypes<T> | null> {
+    public async _insinuate_imp(
+        to_new_reg: Registry,
+        insinuation_hit_list: Map<RegEntry<any>, InsinuationRecord<any>>
+    ): Promise<LiveEntryTypes<T> | null> {
         // Check if we've been hit to avoid circular problems
         if (insinuation_hit_list.has(this)) {
             return null;
-        } 
+        }
 
         // To insinuate this specific item is fairly simple. Just save the data, then create a corresponding entry in the new reg
         // We change our registry before saving as a just-in-case. It shouldn't really matter
@@ -740,7 +739,11 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Create an entry with the saved data. This is essentially a duplicate of this item on the other registry
         // however, this new item will (somewhat predictably) fail to resolve any of its references. We don't care - we just want its id
-        let new_entry: LiveEntryTypes<T> = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
+        let new_entry: LiveEntryTypes<T> = await to_new_reg.create_live(
+            this.Type,
+            this.OpCtx,
+            saved
+        );
 
         // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
         // Thankfully, all we really need to do is have this ID right / be able to save validly, so the outer insinuate method can make all of the references have the proper id's
@@ -750,7 +753,7 @@ export abstract class RegEntry<T extends EntryType> {
         insinuation_hit_list.set(this, {
             new_item: new_entry,
             old_item: this,
-            type: this.Type
+            type: this.Type,
         });
 
         // Ask all of our live children to insinuate themselves. They shall insinuate recursively
@@ -759,7 +762,6 @@ export abstract class RegEntry<T extends EntryType> {
         }
         return new_entry;
     }
-
 
     // Get the session specific data for this item. This is ephemeral and context specific. In foundry, we use it to track the corresponding Foundry Actor/Item
     public get flags(): any | null {
@@ -779,7 +781,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
 
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
     get_inventory(): Registry {
-        let v = this.Registry.get_inventory(this.Type, this.RegistryID);
+        let v = this.Registry.switch_reg_inv(this);
         if (!v) {
             console.error(
                 `Couldn't lookup inventory registry for item ${this.Type}:${this.RegistryID}`
@@ -790,27 +792,34 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
     }
 
     // used for insinuation. All these items, contained in this items inventory, will be brought along with
-    protected abstract enumerate_owned_items(): RegEntry<any>[];
+    protected abstract enumerate_owned_items(): RegEntry<EntryType>[];
 
     // Insinuation logic is a bit different as well
-    public async _insinuate_imp(to_new_reg: Registry, insinuation_hit_list: Map<RegEntry<EntryType>, InsinuationRecord<EntryType>>): Promise<LiveEntryTypes<T> | null> {
+    public async _insinuate_imp(
+        to_new_reg: Registry,
+        insinuation_hit_list: Map<RegEntry<EntryType>, InsinuationRecord<EntryType>>
+    ): Promise<LiveEntryTypes<T> | null> {
         // Get our super call. Since new entry is of same type, then it should also have an inventory
-        let new_reg_entry = await super._insinuate_imp(to_new_reg, insinuation_hit_list) as InventoriedRegEntry<T> | null;
+        let new_reg_entry = (await super._insinuate_imp(
+            to_new_reg,
+            insinuation_hit_list
+        )) as InventoriedRegEntry<T> | null;
 
         // If it went off, then we want to insinuate all items from our inventory to the new regs inventory
-        if(new_reg_entry) {            // Get every item. 
+        if (new_reg_entry) {
+            // Get every item.
             let all_items = this.enumerate_owned_items();
 
             // Get our new target reg (the new entry's inventory)
             let new_inventory = new_reg_entry.get_inventory();
 
             // Insinuate them all
-            for(let i of all_items) {
+            for (let i of all_items) {
                 await i._insinuate_imp(new_inventory, insinuation_hit_list);
             }
 
             // At last, return the original value. Our work is done
-            return new_reg_entry as unknown as LiveEntryTypes<T>; // Why typescript hurt me so
+            return (new_reg_entry as unknown) as LiveEntryTypes<T>; // Why typescript hurt me so
         } else {
             // Super returned null so so do we
             return null;
@@ -838,7 +847,7 @@ export type ReviveFunc<T extends EntryType> = (
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
 export class OpCtx {
-    // We rely entirely on no collisions here
+    // We rely entirely on no collisions here. Luckily, they are nigh-on impossible with nanoids, and even with foundry's keys at the scale we are using
     private resolved: Map<string, any> = new Map(); // Maps lookups with a key in a specified registry to their results
 
     get(id: string): RegEntry<any> | null {
@@ -871,7 +880,7 @@ export class OpCtx {
 
     // Retrieves the flags for a specific item. Flags are ephemeral data stored on objects
     public get_flags(for_item_id: string): any | null {
-        if(this.flags.has(for_item_id)) {
+        if (this.flags.has(for_item_id)) {
             return this.flags.get(for_item_id);
         } else {
             return null;
@@ -912,26 +921,26 @@ export abstract class RegCat<T extends EntryType> {
 
     // Save the given live item, propagating any changes made to it to the backend data source
     async update(...items: LiveEntryTypes<T>[]): Promise<void> {
-        let to_save: Array<{id: string, data: RegEntryTypes<T>}> = [];
+        let to_save: Array<{ id: string; data: RegEntryTypes<T> }> = [];
         for (let i of items) {
             if (this.cat != i.Type) {
                 console.warn("Tried to update an item with an incorrectly typed new live item");
                 continue;
             }
             let saved = i.save() as RegEntryTypes<T>; // Unsure why this type assertion is necessary, but oh well
-            to_save.push({id: i.RegistryID, data: saved});
+            to_save.push({ id: i.RegistryID, data: saved });
         }
         return this.update_many_raw(to_save);
     }
 
     // Simpler wrapper around the below
     async update_raw(id: string, data: RegEntryTypes<T>): Promise<void> {
-        return this.update_many_raw([{id, data}]);
+        return this.update_many_raw([{ id, data }]);
     }
 
     // This method does not do any intrinsic safety checking of if the item already exists - that is the responsibility of the user
     // Do NOT attempt to feed this items foreign to this cat. It has no way of telling.
-    abstract update_many_raw(items: Array<{id: string, data: RegEntryTypes<T>}>): Promise<void>;
+    abstract update_many_raw(items: Array<{ id: string; data: RegEntryTypes<T> }>): Promise<void>;
 
     // Delete the given id in the given category. Return deleted item, or null if not found
     abstract delete_id(id: string): Promise<RegEntryTypes<T> | null>;
@@ -946,8 +955,12 @@ export abstract class RegCat<T extends EntryType> {
     // A simple singular form if you don't want to mess with arrays
     // The awaited item should be .ready
     // If trim is specified (which we usually want when unpacking but rarely otherwise), cut off all unexpected keys
-    async create_live(ctx: OpCtx, val: RegEntryTypes<T>, trim: boolean = false): Promise<LiveEntryTypes<T>> {
-        if(trim) {
+    async create_live(
+        ctx: OpCtx,
+        val: RegEntryTypes<T>,
+        trim: boolean = false
+    ): Promise<LiveEntryTypes<T>> {
+        if (trim) {
             val = trimmed(this.cat, val);
         }
         let vs = await this.create_many_live(ctx, val);
@@ -1044,7 +1057,7 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<RegEntry<any> | null> {
+    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<EntryType> | null> {
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_mmid(ctx, mmid);
@@ -1068,9 +1081,9 @@ export abstract class Registry {
     }
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
-    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<RegEntry<any> | null> {
+    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<LiveEntryTypes<EntryType> | null> {
         // Haven't resolved this yet
-        let result: RegEntry<any> | null;
+        let result: LiveEntryTypes<any> | null;
         if (ref.is_unresolved_mmid) {
             if (ref.type) {
                 result = await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.id);
@@ -1092,24 +1105,34 @@ export abstract class Registry {
         return this.resolve_many_rough(ctx, refs) as any; // bro trust me
     }
 
-    // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat
+    // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat. Can be of mixed types
     public async resolve_many_rough(
         ctx: OpCtx,
         refs: RegRef<EntryType>[] | undefined
-    ): Promise<Array<RegEntry<any>>> {
+    ): Promise<Array<LiveEntryTypes<EntryType>>> {
         if (!refs) {
             return [];
         }
         let resolves = await Promise.all(refs.map(r => this.resolve_rough(ctx, r)));
         resolves = resolves.filter(d => d != null);
-        return resolves as RegEntry<any>[]; // We filtered the nulls
+        return resolves as LiveEntryTypes<any>[]; // We filtered the nulls
     }
 
-    // Returns the inventory registry of the specified id. Doesn't really matter how you implement this, really
-    public abstract get_inventory(for_item_type: EntryType, for_item_id: string): Registry | null;
+    // Returns the inventory registry of the specified id. Implementation is highly domain specific - foundry needs specifiers for type _and_ id. In such cases, would recommend compound id, like "actor:123456789"
+    public abstract switch_reg(selector: string): Registry | null;
+
+    // Wraps switch_reg. Provides an inventory for the given inventoried unit
+    public abstract switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry;
+
+    // Returns the name by which this reg would be fetched via switch_reg
+    public abstract name(): string;
 
     // Hook called upon completion of an insinutation. NOTE: called on the _destination_ reg
-    public hook_post_insinuate<T extends EntryType>(_record: InsinuationRecord<T>): Promise<void> | void { /* override */ }
+    public hook_post_insinuate<T extends EntryType>(
+        _record: InsinuationRecord<T>
+    ): Promise<void> | void {
+        /* override */
+    }
 }
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)
@@ -1130,12 +1153,17 @@ export interface RegRef<T extends EntryType> {
 
     // Is our ID like, the actual id, or just like "DRAKE" or some shit
     is_unresolved_mmid: boolean;
+
+    // The name of the reg we expect to find this item in. If we cannot resolve this to another reg, we just treat it as though it is expected in the source reg
+    reg_name: string;
 }
 
-export function quick_mm_ref<T extends EntryType>(type: T | null, mmid: string): RegRef<T> {
+// Quickly make an id-based reference reference
+export function quick_local_ref<T extends EntryType>(reg: Registry, type: T | null, mmid: string): RegRef<T> {
     return {
         id: mmid,
         type: type as T | null,
         is_unresolved_mmid: true,
+        reg_name: reg.name()
     };
 }

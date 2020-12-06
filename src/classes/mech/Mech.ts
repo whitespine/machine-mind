@@ -21,14 +21,14 @@ import {
     InventoriedRegEntry,
     LiveEntryTypes,
     OpCtx,
-    quick_mm_ref,
+    quick_local_ref,
     RegEntry,
     Registry,
     RegRef,
     SerUtil,
 } from "@src/registry";
 import { CC_VERSION, DamageType } from "../../enums";
-import { CovetousCatStack, CovetousReg } from "../regstack";
+import { gathering_resolve_mmid, RegFallback } from '../regstack';
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
@@ -607,16 +607,16 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 export async function mech_cloud_sync(
     data: PackedMechData,
     mech: Mech,
-    compendium_reg: Registry
+    gather_source_regs: Registry[]
 ): Promise<void> {
     // Reg stuff
     let mech_inv = mech.get_inventory();
     let ctx = mech.OpCtx;
-    let covetous: CovetousReg;
+    let stack: RegFallback;
     if (mech.Pilot) {
-        covetous = new CovetousReg(mech_inv, [mech.Pilot.get_inventory(), compendium_reg]);
+        stack = {base: mech_inv, fallbacks: [mech.Pilot.get_inventory(), ...gather_source_regs]};
     } else {
-        covetous = new CovetousReg(mech_inv, [compendium_reg]);
+        stack = {base: mech_inv, fallbacks: [...gather_source_regs]};
     }
 
     // All of this is trivial
@@ -647,7 +647,7 @@ export async function mech_cloud_sync(
     let packed_loadout = data.loadouts[data.active_loadout_index];
 
     // The unpacking process does basically everything we need, including insinuation (thank you covetous ref!)
-    await mech.Loadout.sync(data.frame, packed_loadout, covetous);
+    await mech.Loadout.sync(data.frame, packed_loadout, stack);
     // Resolve the frame and set it
     // mech.Loadout.unpack(packed_loadout,
 
@@ -657,11 +657,10 @@ export async function mech_cloud_sync(
     }
     let snc_names = [...data.statuses, ...data.conditions];
 
-    // And re-resolve
-    await covetous.resolve_many(
-        ctx,
-        snc_names.map(n => quick_mm_ref(EntryType.STATUS, n))
-    );
+    // And re-resolve from compendium. Again, just want the fetch
+    for(let snc of snc_names) {
+        await gathering_resolve_mmid(stack, ctx, EntryType.STATUS, snc);
+    }
 
     // We always want to insinuate and writeback to be sure we own all of these items
     await mech.writeback();

@@ -134,7 +134,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
-        let integrated = SerUtil.unpack_integrated_refs(res.integrated || []);
+        let integrated = SerUtil.unpack_integrated_refs(reg, res.integrated || []);
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(res.counters);

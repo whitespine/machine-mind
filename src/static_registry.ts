@@ -35,6 +35,7 @@ import {
 import {
     EntryConstructor,
     EntryType,
+    InventoriedRegEntry,
     LiveEntryTypes,
     OpCtx,
     RegCat,
@@ -56,7 +57,7 @@ export class RegEnv {
     public npc_cat: Map<string, RegNpcData> = new Map();
 
     // Tracks our sub registries. These don't really clean up right now, but maybe someday
-    public inventories: Map<string, StaticReg> = new Map();
+    public registries: Map<string, StaticReg> = new Map();
 }
 
 // Our static builders
@@ -101,9 +102,22 @@ function simple_cat_builder<T extends EntryType>(
 export class StaticReg extends Registry {
     // Simple lookup for envs. We do NOT self register
     private env: RegEnv;
+    private _name: string;
+
+    public switch_reg(selector: string): Registry  {
+        return this.env.registries.get(selector) ?? new StaticReg(this.env, selector);
+    }
+
+    public switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry {
+        return this.switch_reg(for_inv_item.RegistryID);
+    }
+
+    public name(): string {
+        return this._name; 
+    }
 
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
-    get_inventory(_for_actor_type: EntryType, for_actor_id: string): Registry | null {
+        /*
         // we don't actually use the item type here. #lazy
         let result = this.env.inventories.get(for_actor_id);
         if (!result) {
@@ -111,12 +125,13 @@ export class StaticReg extends Registry {
             this.env.inventories.set(for_actor_id, result);
         }
         return result;
-    }
+        */
 
     // Just delegates to std_builders, as we need
-    constructor(env: RegEnv) {
+    constructor(env: RegEnv, name?: string) {
         super();
         this.env = env;
+        this._name = name ?? nanoid();
         this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus));
         this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem));
         this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
@@ -143,13 +158,16 @@ export class StaticReg extends Registry {
         this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent));
         this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
 
-        // The inventoried things (actors!)
+        // The inventoried things (actors!), which for this case we keep on a global scope (if we had compendiums as a distinct genre, would be diff)
         this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
         this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
         this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
         this.init_set_cat(simple_cat_builder(EntryType.NPC, this, Npc, env.npc_cat));
 
         this.init_finalize();
+
+        // Register self
+        this.env.registries.set(this._name, this);
     }
 }
 
@@ -221,6 +239,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
                 id: new_id,
                 is_unresolved_mmid: false,
                 type: this.cat,
+                reg_name: this.parent.name()
             });
         }
 

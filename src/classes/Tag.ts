@@ -1,5 +1,5 @@
 import { defaults } from "@src/funcs";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
+import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
 
 export interface ITagTemplateData {
     id: string;
@@ -112,14 +112,10 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     // Unpacks this tag instance, forming a proper reg ref instead of the old shoddy id lookup based thing
     // we don't instantiate to avoid a farily common race condition
-    public static unpack_reg(inst: PackedTagInstanceData): RegTagInstanceData {
+    public static unpack_reg(reg: Registry, inst: PackedTagInstanceData): RegTagInstanceData {
         // Just create an unresolved ref
         let dat: RegTagInstanceData = {
-            tag: {
-                id: inst.id,
-                type: EntryType.TAG,
-                is_unresolved_mmid: true,
-            },
+            tag: quick_local_ref(reg, EntryType.TAG, inst.id),
             val: inst.val,
         };
         return dat;
