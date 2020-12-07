@@ -2,11 +2,9 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { Counter, Frame, MechSystem, MechWeapon } from "../src/class";
+import { CoreBonus, Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
-import { DEFAULT_PILOT } from "../src/classes/default_entries";
-import { validate_props } from "../src/classes/key_util";
 
 type DefSetup = {
     reg: StaticReg;
@@ -391,5 +389,26 @@ describe("Static Registry Reference implementation", () => {
         // Should still be the same, but name should be updated
         expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).name).toEqual("newname");
         expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).nonspec_data).toEqual("test");
+    });
+
+    it("Properly redirects resolutions to different named regs", async () => {
+        expect.assertions(2);
+        let env = new RegEnv();
+        let ctx = new OpCtx();
+        let reg_a = new StaticReg(env, "a");
+        let reg_b = new StaticReg(env, "b");
+
+        // make a val in B
+        let exp_val: CoreBonus = await reg_b.get_cat(EntryType.CORE_BONUS).create_live(ctx, {name: "foo"}); // Don't really care abt data
+        let exp_val_ref = exp_val.as_ref();
+        
+        // Attempt to fetch from A
+        let found_val: CoreBonus = await reg_a.resolve_rough(new OpCtx(), exp_val_ref);
+
+        // Initial write should still have the field
+        expect(found_val.Name).toEqual("foo");
+
+        // Should know that it belongs to B
+        expect(found_val.Registry.name()).toEqual("b");
     });
 });

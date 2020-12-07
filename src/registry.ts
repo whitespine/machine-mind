@@ -335,16 +335,9 @@ export abstract class SerUtil {
 
     // Pack up references. This helper allows us to handle the awkward integrated = null cases
     public static ref_all<T extends EntryType>(
-        items: Array<T extends EntryType ? LiveEntryTypes<T> : RegEntry<any>>
+        items: Array<RegEntry<T>>
     ): RegRef<T>[] {
-        return items.map(
-            i =>
-                ({
-                    id: i.RegistryID,
-                    is_unresolved_mmid: false, // It's from a live entry type
-                    type: i.Type,
-                } as RegRef<T>)
-        ); // This type coercion is dumb but necessary in case they give us some really weird type
+        return items.map(i => i.as_ref());
     }
 
     // Makes our save code look more consistent
@@ -1082,6 +1075,16 @@ export abstract class Registry {
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
     public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<LiveEntryTypes<EntryType> | null> {
+        // Check name
+        if(ref.reg_name != this.name()) {
+            let appropriate_reg = this.switch_reg(ref.reg_name);
+            if(appropriate_reg) {
+                return appropriate_reg.resolve_rough(ctx, ref);
+            } else {
+                return null;
+            }
+        }
+
         // Haven't resolved this yet
         let result: LiveEntryTypes<any> | null;
         if (ref.is_unresolved_mmid) {
