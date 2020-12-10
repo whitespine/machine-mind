@@ -278,31 +278,30 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Properly brings along child entries", async () => {
-        expect.assertions(6);
-        let source_env = await init_basic_setup(true);
+        expect.assertions(5);
+        let src_env = await init_basic_setup(true);
         let dest_env = await init_basic_setup(false);
 
         // Dest env should be empty
         let ctx_orig = new OpCtx();
         let dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_orig);
-        let dest_cores = await dest_env.reg.get_cat(EntryType.CORE_SYSTEM).list_live(ctx_orig);
         let dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_orig);
         expect(dest_frames.length).toEqual(0);
-        expect(dest_cores.length).toEqual(0);
-        expect(dest_weapons.length).toEqual(0); // 3
+        expect(dest_weapons.length).toEqual(0); // 2
 
-        // Take the sherman, which has a native weapon, and send it over.
-        let sherman = await source_env.reg.get_cat(EntryType.FRAME).lookup_mmid(new OpCtx(), "mf_sherman");
+        // Take the sherman, which has a native weapon
+        let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_mmid(new OpCtx(), "mf_sherman");
+        expect(sherman.CoreSystem.Integrated.length).toEqual(1); // 3
+
+        // Send it over
         let dest_sherman = await sherman.insinuate(dest_env.reg);
 
         // Dest env should have one frame, one core, and one weapon now
         let ctx_final = new OpCtx();
         dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_final);
-        dest_cores = await dest_env.reg.get_cat(EntryType.CORE_SYSTEM).list_live(ctx_final);
         dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_final);
         expect(dest_frames.length).toEqual(1);
-        expect(dest_cores.length).toEqual(1);
-        expect(dest_weapons.length).toEqual(1); // 6
+        expect(dest_weapons.length).toEqual(1); // 5
     });
 
     it("Doesn't drag along parent entries", async () => {
@@ -349,14 +348,15 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Calls insinuation hooks (insinuated)", async () => {
-        expect.assertions(6 + 2);
+        expect.assertions(5 + 3);
         class HookyReg extends StaticReg {
             hook_post_insinuate(record) {
-                expect(true).toBeTruthy(); // Will be hit 5 times
+                expect(true).toBeTruthy(); // Will be hit 5 times from insinuations
 
                 // A bit more: if it is a frame, make sure it has its stuff
                 if(record.type == EntryType.FRAME) {
-                    expect(record.new_item.Traits.length).toEqual(4);
+                    expect(record.new_item.Traits.length).toEqual(2);
+                    expect(record.new_item.CoreSystem.Deployables.length).toEqual(4);
                     expect(record.new_item.CoreSystem).toBeTruthy();
                 }
             }
@@ -366,8 +366,8 @@ describe("Static Registry Reference implementation", () => {
         let dest = new HookyReg(src.env);
         let ctx = new OpCtx();
 
-        // We plan on moving a frame, specifically the drake. The drake has 4 traits and one core system, totaling 6 expected insinuate hooks
-        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_drake");
+        // We plan on moving a frame, specifically the hydra. The hydra has 4 deployables, so totaling 5 expected insinuate hooks
+        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_hydra");
         await drake.insinuate(dest);
     });
 

@@ -134,12 +134,11 @@ import {
 // at minimum a name, EntryType, and brew
 export enum EntryType {
     CORE_BONUS = "core_bonus",
-    CORE_SYSTEM = "core_system",
+    // CORE_SYSTEM = "core_system", // -- Merged into frame
     DEPLOYABLE = "deployable",
     ENVIRONMENT = "environment",
     FACTION = "faction",
     FRAME = "frame",
-    FRAME_TRAIT = "frame_trait",
     MECH = "mech", // Mech actors
     LICENSE = "license",
     MANUFACTURER = "manufacturer",
@@ -147,7 +146,6 @@ export enum EntryType {
     NPC_CLASS = "npc_class",
     NPC_TEMPLATE = "npc_template",
     NPC_FEATURE = "npc_feature",
-    // NPC_WEAPON = "Npc Weapon",
     WEAPON_MOD = "weapon_mod",
     MECH_SYSTEM = "mech_system",
     MECH_WEAPON = "mech_weapon",
@@ -171,12 +169,10 @@ type _RegTypeMap = { [key in EntryType]: object };
 export interface FixedRegEntryTypes extends _RegTypeMap {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: RegCoreBonusData;
-    [EntryType.CORE_SYSTEM]: RegCoreSystemData;
     [EntryType.DEPLOYABLE]: RegDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
     [EntryType.FRAME]: RegFrameData;
-    [EntryType.FRAME_TRAIT]: RegFrameTraitData;
     [EntryType.LICENSE]: RegLicenseData;
     [EntryType.MANUFACTURER]: RegManufacturerData;
     [EntryType.MECH]: RegMechData;
@@ -210,12 +206,10 @@ export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTy
 interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
-    [EntryType.CORE_SYSTEM]: PackedCoreSystemData;
     [EntryType.DEPLOYABLE]: PackedDeployableData;
     [EntryType.ENVIRONMENT]: IEnvironmentData;
     [EntryType.FACTION]: IFactionData;
     [EntryType.FRAME]: PackedFrameData;
-    [EntryType.FRAME_TRAIT]: PackedFrameTraitData;
     [EntryType.LICENSE]: null;
     [EntryType.MANUFACTURER]: PackedManufacturerData;
     [EntryType.MECH]: PackedMechData;
@@ -247,12 +241,10 @@ export type PackedEntryTypes<T extends EntryType> = T extends keyof FixedPackedE
 type FixedLiveEntryTypes = {
     // [EntryType.CONDITION]: Status;
     [EntryType.CORE_BONUS]: CoreBonus;
-    [EntryType.CORE_SYSTEM]: CoreSystem;
     [EntryType.DEPLOYABLE]: Deployable;
     [EntryType.ENVIRONMENT]: Environment;
     [EntryType.FACTION]: Faction;
     [EntryType.FRAME]: Frame;
-    [EntryType.FRAME_TRAIT]: FrameTrait;
     [EntryType.LICENSE]: License;
     [EntryType.MANUFACTURER]: Manufacturer;
     [EntryType.WEAPON_MOD]: WeaponMod;

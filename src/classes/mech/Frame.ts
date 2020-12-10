@@ -5,6 +5,8 @@ import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil 
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
+import { RegFrameTraitData } from './FrameTrait';
+import { RegCoreSystemData } from './CoreSystem';
 
 // The raw stat information
 export interface IFrameStats {
@@ -45,8 +47,8 @@ export interface PackedFrameData extends AllFrameData {
 }
 
 export interface RegFrameData extends Required<AllFrameData> {
-    traits: RegRef<EntryType.FRAME_TRAIT>[];
-    core_system: RegRef<EntryType.CORE_SYSTEM> | null;
+    traits: RegFrameTraitData[];
+    core_system: RegCoreSystemData;
     source: RegRef<EntryType.MANUFACTURER> | null;
 }
 
@@ -60,30 +62,28 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     Description!: string;
     Mounts!: MountType[];
     Traits!: FrameTrait[];
-    CoreSystem!: CoreSystem | null; // For the purposeses of people doing dumb homebrew stuff, we support this
+    CoreSystem!: CoreSystem;
     Stats!: IFrameStats;
     OtherArt!: IArtLocation[];
     ImageUrl!: string;
 
-    public async load(frameData: RegFrameData): Promise<void> {
-        frameData = { ...defaults.FRAME(), ...frameData };
-        this.ID = frameData.id;
-        this.LicenseLevel = frameData.license_level;
-        this.Source = frameData.source
-            ? await this.Registry.resolve(this.OpCtx, frameData.source)
+    public async load(fd: RegFrameData): Promise<void> {
+        fd = { ...defaults.FRAME(), ...fd };
+        this.ID = fd.id;
+        this.LicenseLevel = fd.license_level;
+        this.Source = fd.source
+            ? await this.Registry.resolve(this.OpCtx, fd.source)
             : null;
-        this.Name = frameData.name;
-        this.Description = frameData.description;
-        this.MechType = frameData.mechtype;
-        this.YPosition = frameData.y_pos || 30;
-        this.Mounts = frameData.mounts;
-        this.Stats = frameData.stats;
-        this.Traits = await this.Registry.resolve_many(this.OpCtx, frameData.traits);
-        this.CoreSystem = frameData.core_system
-            ? await this.Registry.resolve(this.OpCtx, frameData.core_system)
-            : null;
-        this.ImageUrl = frameData.image_url;
-        this.OtherArt = frameData.other_art || [];
+        this.Name = fd.name;
+        this.Description = fd.description;
+        this.MechType = fd.mechtype;
+        this.YPosition = fd.y_pos || 30;
+        this.Mounts = fd.mounts;
+        this.Stats = fd.stats;
+        this.Traits = await Promise.all(fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft).ready()));
+        this.CoreSystem = await new CoreSystem(this.Registry, this.OpCtx,  fd.core_system).ready();
+        this.ImageUrl = fd.image_url;
+        this.OtherArt = fd.other_art || [];
     }
 
     protected save_imp(): RegFrameData {
@@ -97,8 +97,8 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             y_pos: this.YPosition,
             mounts: this.Mounts,
             stats: this.Stats,
-            traits: SerUtil.ref_all(this.Traits),
-            core_system: this.CoreSystem?.as_ref() || null,
+            traits: SerUtil.save_all(this.Traits),
+            core_system: this.CoreSystem.save(),
             image_url: this.ImageUrl,
             other_art: this.OtherArt,
         };
@@ -106,13 +106,13 @@ export class Frame extends RegEntry<EntryType.FRAME> {
 
     public static async unpack(frame: PackedFrameData, reg: Registry, ctx: OpCtx): Promise<Frame> {
         let traits = await SerUtil.unpack_children(FrameTrait.unpack, reg, ctx, frame.traits);
-        let cs = await CoreSystem.unpack(frame.core_system, reg, ctx);
+        let core_system = await CoreSystem.unpack(frame.core_system, reg, ctx);
         let fdata: RegFrameData = {
             ...defaults.FRAME(),
             ...frame,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
-            traits: SerUtil.ref_all(traits),
-            core_system: cs.as_ref(),
+            traits,
+            core_system,
             image_url: frame.image_url ?? "",
             other_art: frame.other_art ?? [],
         };
@@ -140,6 +140,6 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     }
 
     public get_assoc_entries(): RegEntry<any>[] {
-        return [...this.Traits, ...(this.CoreSystem ? [this.CoreSystem] : [])];
+        return [...this.Traits.flatMap(t => t.get_assoc_entries()), ...this.CoreSystem.get_assoc_entries()];
     }
 }

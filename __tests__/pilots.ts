@@ -116,7 +116,7 @@ describe("Pilots", () => {
     });
 
     it("Will insinuate mechs when it insinuates pilot", async () => {
-        expect.assertions(7);
+        expect.assertions(5);
         let source = await init_basic_setup(true);
         let dest = await init_basic_setup(false);
 
@@ -133,21 +133,17 @@ describe("Pilots", () => {
         let ctx = new OpCtx();
         let dest_mechs = await dest.reg.get_cat(EntryType.MECH).list_live(ctx); // ought to have 3
         let dest_frames = await dest.reg.get_cat(EntryType.FRAME).list_live(ctx); // ought to have 0 - the frames are owned by the mechs
-        let dest_cores = await dest.reg.get_cat(EntryType.CORE_SYSTEM).list_live(ctx); // ought to have 0 
         let dest_weapons = await dest.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx); // ought to have 0 
         expect(dest_mechs.length).toEqual(3);
         expect(dest_frames.length).toEqual(0);
-        expect(dest_cores.length).toEqual(0);
-        expect(dest_weapons.length).toEqual(0); // 4
+        expect(dest_weapons.length).toEqual(0); // 3
 
         // Make sure that the mechs do in fact have the items, though. Only both with a few
         let lanny = await dest_mechs.find((m: Mech) => m.Loadout.Frame.ID == "mf_lancaster");
         let lanny_inv = lanny.get_inventory();
         let lanny_frames = await lanny_inv.get_cat(EntryType.FRAME).list_live(ctx);
-        let lanny_cores = await lanny_inv.get_cat(EntryType.CORE_SYSTEM).list_live(ctx);
         let lanny_weapons = await lanny_inv.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
         expect(lanny_frames.length).toEqual(1);
-        expect(lanny_cores.length).toEqual(1);
-        expect(lanny_weapons.length).toEqual(3); // 7
+        expect(lanny_weapons.length).toEqual(3); // 5
     });
 });

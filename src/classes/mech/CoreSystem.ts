@@ -10,7 +10,7 @@ import {
     RegTagInstanceData,
     IBonusData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { ActivationType, FrameEffectUse } from "../../enums";
 
 export interface AllCoreSystemData {
@@ -53,7 +53,7 @@ export interface RegCoreSystemData extends Required<AllCoreSystemData> {
     passive_bonuses?: IBonusData[];
 }
 
-export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
+export class CoreSystem extends RegSer<RegCoreSystemData> {
     Name!: string;
     Description!: string;
 
@@ -135,7 +135,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
         data: PackedCoreSystemData,
         reg: Registry,
         ctx: OpCtx
-    ): Promise<CoreSystem> {
+    ): Promise<RegCoreSystemData> {
         // Get tags
         let tags = SerUtil.unpack_tag_instances(reg, data.tags);
 
@@ -163,7 +163,7 @@ export class CoreSystem extends RegEntry<EntryType.CORE_SYSTEM> {
             deployables,
             integrated,
         };
-        return reg.get_cat(EntryType.CORE_SYSTEM).create_live(ctx, unpacked, true);
+        return unpacked;
     }
 
     // Checks if any passive fields are present. Its possible sibling, has_active, is unnecessary

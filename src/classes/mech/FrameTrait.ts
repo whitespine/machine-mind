@@ -8,7 +8,7 @@ import {
     PackedDeployableData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { FrameEffectUse } from "../../enums";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
@@ -34,7 +34,7 @@ export interface RegFrameTraitData extends Required<AllFrameTraitData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
 }
 
-export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
+export class FrameTrait extends RegSer<RegFrameTraitData> {
     Name!: string;
     Description!: string;
     Use!: FrameEffectUse;
@@ -70,7 +70,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
         data: PackedFrameTraitData,
         reg: Registry,
         ctx: OpCtx
-    ): Promise<FrameTrait> {
+    ): Promise<RegFrameTraitData> {
         let rdata: RegFrameTraitData = {
             ...defaults.FRAME_TRAIT(),
             ...data,
@@ -78,7 +78,7 @@ export class FrameTrait extends RegEntry<EntryType.FRAME_TRAIT> {
             counters: SerUtil.unpack_counters_default(data.counters),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
         };
-        return reg.get_cat(EntryType.FRAME_TRAIT).create_live(ctx, rdata, true);
+        return rdata;
     }
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];

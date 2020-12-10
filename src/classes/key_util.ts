@@ -69,12 +69,10 @@ function live_keyset_map(): any {
     if (!pending_live_keyset) {
         pending_live_keyset = {
             [EntryType.CORE_BONUS]: keys<CoreBonus>(),
-            [EntryType.CORE_SYSTEM]: keys<CoreSystem>(),
             [EntryType.DEPLOYABLE]: keys<Deployable>(),
             [EntryType.ENVIRONMENT]: keys<Environment>(),
             [EntryType.FACTION]: keys<Faction>(),
             [EntryType.FRAME]: keys<Frame>(),
-            [EntryType.FRAME_TRAIT]: keys<FrameTrait>(),
             [EntryType.LICENSE]: keys<License>(),
             [EntryType.MANUFACTURER]: keys<Manufacturer>(),
             [EntryType.WEAPON_MOD]: keys<WeaponMod>(),
@@ -108,12 +106,10 @@ function reg_keyset_map(): any {
     if (!pending_reg_keyset) {
         pending_reg_keyset = {
             [EntryType.CORE_BONUS]: keys<RegCoreBonusData>(),
-            [EntryType.CORE_SYSTEM]: keys<RegCoreSystemData>(),
             [EntryType.DEPLOYABLE]: keys<RegDeployableData>(),
             [EntryType.ENVIRONMENT]: keys<IEnvironmentData>(),
             [EntryType.FACTION]: keys<IFactionData>(),
             [EntryType.FRAME]: keys<RegFrameData>(),
-            [EntryType.FRAME_TRAIT]: keys<RegFrameTraitData>(),
             [EntryType.LICENSE]: keys<RegLicenseData>(),
             [EntryType.MANUFACTURER]: keys<RegManufacturerData>(),
             [EntryType.WEAPON_MOD]: keys<RegWeaponModData>(),

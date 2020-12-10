@@ -133,10 +133,8 @@ export class StaticReg extends Registry {
         this.env = env;
         this._name = name ?? nanoid();
         this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus));
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_SYSTEM, this, CoreSystem));
         this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
         this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
-        this.init_set_cat(simple_cat_builder(EntryType.FRAME_TRAIT, this, FrameTrait));
         this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame));
         this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License));
         this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer));

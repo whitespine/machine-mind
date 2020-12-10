@@ -193,7 +193,7 @@ export function FRAME(): RegFrameData {
         },
         traits: [],
         y_pos: 0,
-        core_system: null,
+        core_system: CORE_SYSTEM(),
         image_url: "",
         other_art: [],
     };
@@ -697,10 +697,8 @@ export function WEAPON_MOD(): RegWeaponModData {
 // Provides a default function for every entrytype
 const DEFAULT_FUNC_MAP: { [key in EntryType]: () => RegEntryTypes<key> } = {
     [EntryType.CORE_BONUS]: CORE_BONUS,
-    [EntryType.CORE_SYSTEM]: CORE_SYSTEM,
     [EntryType.ENVIRONMENT]: ENVIRONMENT,
     [EntryType.FACTION]: FACTION,
-    [EntryType.FRAME_TRAIT]: FRAME_TRAIT,
     [EntryType.FRAME]: FRAME,
     [EntryType.LICENSE]: LICENSE,
     [EntryType.MANUFACTURER]: MANUFACTURER,
