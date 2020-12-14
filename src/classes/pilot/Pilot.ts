@@ -46,6 +46,7 @@ import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquip
 import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from '../../enums';
 import { finding_iterate, finding_resolve_mmid, gathering_resolve_mmid, RegFallback } from '../regstack';
+import { BonusSummary } from '../Bonus';
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -640,7 +641,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
     // Sum our pilot bonuses for the specified id, return the number
     private sum_bonuses(id: string): number {
-        return Bonus.SumPilotBonuses(this, this.PilotBonuses, id);
+        let filtered = this.PilotBonuses.filter(b => b.ID == id);
+        let ctx = Bonus.PilotContext(this);
+        return Bonus.Accumulate(0, filtered, ctx).final_value;
     }
 
     public async load(data: RegPilotData): Promise<void> {

@@ -3,6 +3,8 @@ import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
 import { SerUtil, SimSer } from "@src/registry";
 import * as filtrex from "filtrex";
+import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
+import { Range } from "./Range";
 
 export interface IBonusData {
     id: string;
@@ -11,6 +13,30 @@ export interface IBonusData {
     range_types?: RangeType[];
     weapon_types?: WeaponType[];
     weapon_sizes?: WeaponSize[];
+
+    // ugh
+    overwrite?: boolean;
+    replace?: boolean;
+}
+
+interface BonusSummaryItem {
+    bonus: Bonus; // The bonus that contributed this item
+    value: number; // The computed result of the bonus
+    included: boolean; // True if this value was actually included (false in cases of overwrites, or in the case of the base item being replaced)
+}
+
+export interface BonusSummary {
+    base_value: number; // Self descriptive. Dropped in favor of base_replacements should base_replacements exist
+    base_replacements: BonusSummaryItem[] | null;
+    final_value: number; // What number should be used when all is said and done
+    replace: boolean; // Whether replacement logic item(s) overrode the base
+    overwrite: boolean; // Whether override logic overrode all other logic. 
+    contributors: BonusSummaryItem[]; // All the contributing bonuses, included or no, used to tabulate this value. Doesn't include replacements
+}
+
+// Maps things like ll to the value we expect. Missing values are assumed to be zero
+export interface BonusContext {
+    [key: string]: number
 }
 
 export class Bonus {
@@ -22,8 +48,13 @@ export class Bonus {
     RangeTypes!: RangeType[];
     WeaponTypes!: WeaponType[];
     WeaponSizes!: WeaponSize[];
-    _value!: string | number;
-    _value_func!: (v: any) => any;
+    Overwrite!: boolean;
+    Replace!: boolean;
+
+
+    // Cached compiled thingies
+    private _value!: string | number;
+    private _value_func!: (v: BonusContext) => number;
 
     // A transient value used for further display information
     Source: string;
@@ -35,6 +66,8 @@ export class Bonus {
         this.RangeTypes = data.range_types ?? [];
         this.WeaponTypes = data.weapon_types ?? [];
         this.WeaponSizes = data.weapon_sizes ?? [];
+        this.Overwrite = data.overwrite ?? false;
+        this.Replace = data.replace ?? false;
 
         // Set our source if need be
         this.Source = source;
@@ -49,10 +82,9 @@ export class Bonus {
     public set Value(new_val: string | number) {
         this._value = new_val;
 
-        // Replace ll and bonus
+        // Replace any {} surrounded value with a default-substituting equivalent. {ll} -> (ll or 0)
         let val = "" + this.Value;
-        val = val.replace(/\{ll\}/g, "ll");
-        val = val.replace(/\{grit\}/g, "grit");
+        val = val.replace(/\{(.*?)\}/g, "($1 or 0)")
         try {
             this._value_func = filtrex.compileExpression(val);
         } catch (e) {
@@ -77,6 +109,8 @@ export class Bonus {
             range_types: SerUtil.drop_empty(this.RangeTypes),
             weapon_types: SerUtil.drop_empty(this.WeaponTypes),
             weapon_sizes: SerUtil.drop_empty(this.WeaponSizes),
+            overwrite: this.Overwrite,
+            replace: this.Replace
         };
     }
 
@@ -104,33 +138,158 @@ export class Bonus {
         return str;
     }
 
-    // Returns this bonus as a numerical value
-    public evaluate(pilot: Pilot | null): number {
-        let vals = { ll: 0, grit: 0 };
-        if (pilot) {
-            vals.ll = pilot.Level;
-            vals.grit = pilot.Grit;
-        }
-        return this._value_func(vals);
-    }
-
     // For npcs
     public evaluate_tier(number: number): number {
         return 0;
     }
 
-    // Sums all bonuses on the specific id, for the specified pilot
-    public static SumPilotBonuses(
-        pilot: Pilot | null,
-        bonuses: Bonus[],
-        bonus_type: string
-    ): number {
-        return bonuses
-            .filter(x => x.ID === bonus_type)
-            .reduce((sum, bonus) => sum + bonus.evaluate(pilot), 0);
+    // Quickly check if a weapon qualifies for this bonus. We accept a range because multiple ranges are typically discreet, whereas damages are pooled
+    public applies_to_weapon(
+        weapon: MechWeapon,
+        profile: MechWeaponProfile,
+        range: Range
+    ): boolean {
+        // Check type
+        if (this.WeaponTypes.length && !this.WeaponTypes.some(wt => profile.WepType === wt)) {
+            return false; // Does not apply - wrong type
+        }
+
+        // Check size
+        if (this.WeaponSizes.length && !this.WeaponSizes.some(ws => weapon.Size === ws)) {
+            return false; // Does not apply - wrong size
+        }
+
+        // Check damage type
+        if (
+            this.DamageTypes.length &&
+            !this.DamageTypes.some(dt => profile.BaseDamage.some(x => x.DamageType === dt))
+        ) {
+            return false; // Does not apply - wrong damage type
+        }
+
+        // Check range type
+        if (this.RangeTypes.length && this.RangeTypes.some(rt => range.RangeType === rt)) {
+            return false; // Does not apply - wrong range type
+        }
+
+        return true;
     }
 
-    /*
-     */
-    // Lists contributors for just the mech
+    // Generates a context for a given pilot
+    public static PilotContext(pilot: Pilot): BonusContext {
+        return {
+            "ll": pilot.Level,
+            "grit": pilot.Grit
+        }
+    }
+
+
+    // The canonical way to sum bonuses. Includes logic for handling the "overwrite" and "replace" flags
+    public static Accumulate(base_value: number, bonuses: Bonus[], context: BonusContext): BonusSummary {
+        // Init with some generic values
+        let result: BonusSummary = {
+            base_value: base_value,
+            base_replacements: null,
+            contributors: [],
+            final_value: 0,
+            overwrite: false,
+            replace: false
+        };
+
+        // Groups
+        let norm: BonusSummaryItem[] = [];
+        let repl: BonusSummaryItem[] = [];
+        let over: BonusSummaryItem[] = [];
+        let over_repl: BonusSummaryItem[] = [];
+
+        // Process initial 
+        for(let b of bonuses) {
+            let as_item: BonusSummaryItem = {
+                bonus: b,
+                included: true, // We mark false as appropriate later
+                value: b._value_func(context)
+            }
+
+            // Update flags
+            result.overwrite ||= b.Overwrite;
+            result.replace ||= b.Replace;
+
+            // Categorize appropriately
+            if(b.Replace && b.Overwrite) {
+                over_repl.push(as_item);
+            } else if(b.Replace) {
+                repl.push(as_item);
+            } else if(b.Overwrite) {
+                over.push(as_item);
+            } else {
+                norm.push(as_item);
+            }
+        }
+
+        // Decide total and mark included
+        if(over_repl.length) {
+            // Everything in non-over-repl is not used
+            norm.forEach(x => x.included = false);
+            over.forEach(x => x.included = false);
+            repl.forEach(x => x.included = false);
+
+            // Find the max - make all others not included
+            over_repl.forEach(x => x.included = false);
+            let highest = find_max(over_repl)!;
+            highest.included = true;
+            result.final_value = highest.value;
+        } else {
+            // We aren't just nuking everything in favor of a single item
+            let contrib = 0;
+            let base = base_value;
+
+            // Handle if we have one or more replaces
+            if(repl.length) {
+                // Re-compute base by summing the replaces
+                base = 0;
+                for(let r of repl) {
+                    base += r.value;                    
+                }
+            }
+
+            // Handle if we have one or more overwrites
+            if(over.length) {
+                // Only over will be counted here. We nuke all other non-replace contribs
+                norm.forEach(x => x.included = false);
+                over.forEach(x => x.included = false);
+                let highest = find_max(over)!;
+                highest.included = true;
+                contrib = highest.value;
+            } else {
+                // If we have no overwrites then we still need to sum up contribs
+                for(let c of norm) {
+                    contrib += c.value;
+                }
+            }
+
+            // Set the final by summing the above two
+            result.final_value = base + contrib;
+        }
+
+
+        // Add all the items regardless
+        result.contributors = [...norm, ...over];
+        if(repl.length || over_repl.length) {
+            result.base_replacements = [...repl, ...over_repl];
+        }
+        return result;
+    }
+}
+
+// Find highest valued item of provided array
+function find_max(items: BonusSummaryItem[]): BonusSummaryItem | null {
+    let highest_val = 0;
+    let highest: BonusSummaryItem | null = null;
+    for(let v of items) {
+        if(v.value > highest_val) {
+            highest = v;
+            highest_val = v.value;
+        }
+    }
+    return highest;
 }

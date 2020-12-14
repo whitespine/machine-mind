@@ -3,7 +3,7 @@ import { defaults } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
-    IRangeData,
+    RegRangeData, PackedRangeData,
     ISynergyData,
     PackedDamageData,
     PackedDeployableData,
@@ -27,7 +27,6 @@ interface AllPackedData {
     id: string;
     name: string; // v-html
     description: string;
-    range: IRangeData[];
     actions?: IActionData[]; // these are only available to UNMOUNTED pilots
     bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies?: ISynergyData[];
@@ -38,7 +37,7 @@ interface AllPackedData {
 export interface PackedPilotWeaponData extends AllPackedData {
     type: "Weapon";
     damage: PackedDamageData[];
-    range: IRangeData[];
+    range: PackedRangeData[];
 }
 export interface PackedPilotGearData extends AllPackedData {
     type: "Gear";
@@ -64,7 +63,7 @@ interface AllRegData {
 export interface RegPilotWeaponData extends AllRegData {
     effect: string;
     damage: RegDamageData[];
-    range: IRangeData[];
+    range: RegRangeData[];
 }
 
 export interface RegPilotArmorData extends AllRegData {}

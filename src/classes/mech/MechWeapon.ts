@@ -9,7 +9,7 @@ import {
     TagInstance,
     WeaponMod,
 } from "@src/class";
-import type {IRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
+import type {PackedRangeData, RegRangeData, IActionData, IBonusData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData } from "@src/interface";
 import { WeaponSize, WeaponType } from '../../enums';
 import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, RegSer, SerUtil } from '@src/registry';
 import { defaults, tag_util } from '@src/funcs';
@@ -26,7 +26,7 @@ export interface PackedMechWeaponData {
   "mount": WeaponSize,
   "type": WeaponType,
   "damage"?: PackedDamageData[],
-  "range"?: IRangeData[],
+  "range"?: PackedRangeData[],
   "tags"?: PackedTagInstanceData[],
   "sp"?: number,
   "description": string, // v-html
@@ -40,6 +40,8 @@ export interface PackedMechWeaponData {
   "deployables"?: PackedDeployableData[],
   "counters"?: PackedCounterData[],
   "integrated"?: string[]
+  "skirmish_cost"?: number;
+  "barrage_cost"?: number,
   profiles: PackedMechWeaponProfile[];
 }
 export type PackedMechWeaponProfile  = Omit<PackedMechWeaponData, "profiles" | "source" | "license" | "license_level" | "mount">;
@@ -69,7 +71,7 @@ export interface RegMechWeaponProfile   {
   "name": string, 
   "type": WeaponType,
   "damage": RegDamageData[],
-  "range": IRangeData[],
+  "range": RegRangeData[],
   "tags": RegTagInstanceData[],
   "description": string, // v-html
   "effect": string // v-html

@@ -28,7 +28,8 @@ import {
     SerUtil,
 } from "@src/registry";
 import { CC_VERSION, DamageType } from "../../enums";
-import { gathering_resolve_mmid, RegFallback } from '../regstack';
+import { BonusContext, BonusSummary } from "../Bonus";
+import { gathering_resolve_mmid, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
 
@@ -135,7 +136,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     protected enumerate_owned_items(): RegEntry<any>[] {
-        return [...this._owned_weapons, ...this._owned_systems, ...this._owned_weapon_mods, ...this._owned_frames, ...this._statuses_and_conditions];
+        return [
+            ...this._owned_weapons,
+            ...this._owned_systems,
+            ...this._owned_weapon_mods,
+            ...this._owned_frames,
+            ...this._statuses_and_conditions,
+        ];
     }
 
     // Per turn data
@@ -191,84 +198,71 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public get Size(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("size");
-        const size = Math.ceil(this.Frame.Stats.size + bonus);
-        return bound_int(size, 0.5, Rules.MaxFrameSize);
+        let bonus = this.sum_bonuses(this.Frame.Stats.size, "size");
+        return bound_int(bonus, 0.5, Rules.MaxFrameSize);
     }
 
     public get Armor(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("armor");
-        const armor = this.Frame.Stats.armor + bonus;
-        return bound_int(armor, 0, Rules.MaxMechArmor);
+        let bonus = this.sum_bonuses(this.Frame.Stats.armor, "armor");
+        return bound_int(bonus, 0, Rules.MaxMechArmor);
     }
 
     public get SaveTarget(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("save");
-        return this.Frame.Stats.save + bonus;
+        return this.sum_bonuses(this.Frame.Stats.save, "save");
     }
 
     public get Evasion(): number {
         if (!this.Frame) return 0;
         // if (this.IsStunned) return 5;
         // TODO - allow status bonuses to override somehow
-        const bonus = this.sum_bonuses("evasion");
-        return this.Frame.Stats.evasion + bonus;
+        return this.sum_bonuses(this.Frame.Stats.evasion, "evasion");
     }
 
     public get Speed(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("speed");
-        return this.Frame.Stats.speed + bonus;
+        return this.sum_bonuses(this.Frame.Stats.speed, "speed");
     }
 
     public get SensorRange(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("sensor");
-        return this.Frame.Stats.sensor_range + bonus;
+        return this.sum_bonuses(this.Frame.Stats.sensor_range, "sensor");
     }
 
     public get EDefense(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("edef");
-        return this.Frame.Stats.edef + bonus;
+        return this.sum_bonuses(this.Frame.Stats.edef, "edef");
     }
 
     public get LimitedBonus(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("limited_bonus");
-        return bonus;
+        return this.sum_bonuses(0, "limited_bonus");
     }
 
     public get AttackBonus(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("attack");
-        return bonus;
+        return this.sum_bonuses(0, "attack");
     }
 
     public get TechAttack(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("tech_attack");
-        return this.Frame.Stats.tech_attack + bonus;
+        return this.sum_bonuses(this.Frame.Stats.tech_attack, "tech_attack");
     }
 
     public get Grapple(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("grapple");
-        return Rules.BaseGrapple + bonus;
+        return this.sum_bonuses(Rules.BaseGrapple, "grapple");
     }
 
     public get Ram(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("ram");
-        return Rules.BaseRam + bonus;
+        return this.sum_bonuses(Rules.BaseRam, "ram");
     }
 
     public get SaveBonus(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("save");
-        return bonus;
+        return this.sum_bonuses(0, "save");
     }
 
     // -- HASE --------------------------------------------------------------------------------------
@@ -292,8 +286,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public get MaxStructure(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("structure");
-        return this.Frame.Stats.structure + bonus;
+        return this.sum_bonuses(this.Frame.Stats.structure, "structure");
     }
     // Applies damage to this mech, factoring in resistances. Does not handle structure. Do that yourself, however you feel is appropriate!
     /*
@@ -308,8 +301,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public get MaxHP(): number {
         if (!this.Frame) return 0;
-        const bonus = this.sum_bonuses("hp");
-        return this.Frame.Stats.hp + bonus;
+        return this.sum_bonuses(this.Frame.Stats.hp, "hp");
     }
 
     public get CurrentSP(): number {
@@ -319,7 +311,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public get MaxSP(): number {
         if (!this.Frame) return 0;
-        return this.Frame.Stats.sp + this.sum_bonuses("sp");
+        return this.sum_bonuses(this.Frame.Stats.sp, "sp");
     }
 
     public get FreeSP(): number {
@@ -356,17 +348,17 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public get HeatCapacity(): number {
         if (!this.Frame) return 0;
-        return this.Frame.Stats.heatcap + this.sum_bonuses("heatcap");
+        return this.sum_bonuses(this.Frame.Stats.heatcap, "heatcap");
     }
 
     public get MaxStress(): number {
         if (!this.Frame) return 0;
-        return this.Frame.Stats.stress + this.sum_bonuses("stress");
+        return this.sum_bonuses(this.Frame.Stats.stress, "stress");
     }
 
     public get RepairCapacity(): number {
         if (!this.Frame) return 0;
-        return this.Frame.Stats.repcap + this.sum_bonuses("repcap");
+        return this.sum_bonuses(this.Frame.Stats.repcap, "repcap");
     }
 
     public AddReaction(r: string): void {
@@ -599,8 +591,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
-    private sum_bonuses(id: string): number {
-        return Bonus.SumPilotBonuses(this.Pilot, this.AllBonuses, id);
+    private sum_bonuses(base_value: number, id: string): number {
+        let filtered = this.AllBonuses.filter(b => b.ID == id);
+        let ctx: BonusContext = {};
+        if (this.Pilot) {
+            ctx = Bonus.PilotContext(this.Pilot);
+        }
+        return Bonus.Accumulate(base_value, filtered, ctx).final_value;
     }
 }
 
@@ -614,9 +611,9 @@ export async function mech_cloud_sync(
     let ctx = mech.OpCtx;
     let stack: RegFallback;
     if (mech.Pilot) {
-        stack = {base: mech_inv, fallbacks: [mech.Pilot.get_inventory(), ...gather_source_regs]};
+        stack = { base: mech_inv, fallbacks: [mech.Pilot.get_inventory(), ...gather_source_regs] };
     } else {
-        stack = {base: mech_inv, fallbacks: [...gather_source_regs]};
+        stack = { base: mech_inv, fallbacks: [...gather_source_regs] };
     }
 
     // All of this is trivial
@@ -658,7 +655,7 @@ export async function mech_cloud_sync(
     let snc_names = [...data.statuses, ...data.conditions];
 
     // And re-resolve from compendium. Again, just want the fetch
-    for(let snc of snc_names) {
+    for (let snc of snc_names) {
         await gathering_resolve_mmid(stack, ctx, EntryType.STATUS, snc);
     }
 

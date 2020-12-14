@@ -16,7 +16,7 @@ export interface PackedDeployableData {
     name: string;
     type: string; // this is for UI furnishing only,
     detail: string;
-    activation: ActivationType;
+    activation?: ActivationType;
     deactivation?: ActivationType;
     recall?: ActivationType;
     redeploy?: ActivationType;
@@ -28,6 +28,8 @@ export interface PackedDeployableData {
     edef?: number;
     heatcap?: number;
     repcap?: number;
+    pilot?: boolean;
+    mech?: boolean;
     sensor_range?: number;
     tech_attack?: number;
     save?: number;
@@ -55,6 +57,8 @@ export interface RegDeployableData {
     edef: number;
     heatcap: number;
     repcap: number;
+    pilot: boolean;
+    mech: boolean;
     sensor_range: number;
     tech_attack: number;
     save: number;
@@ -91,6 +95,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     TechAttack!: number;
     Save!: number;
     Speed!: number;
+    AvailableMounted!: boolean;
+    AvailableUnmounted!: boolean;
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -125,6 +131,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.TechAttack = data.tech_attack;
         this.Save = data.save;
         this.Speed = data.speed;
+        this.AvailableMounted = data.mech;
+        this.AvailableUnmounted = data.pilot;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
@@ -160,6 +168,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             synergies: SerUtil.save_all(this.Synergies),
             tags: SerUtil.save_all(this.Tags),
             counters: this.Counters.map(c => c.save()),
+            mech: this.AvailableMounted,
+            pilot: this.AvailableUnmounted
         };
     }
 

@@ -2,17 +2,23 @@ import { SerUtil, SimSer } from "@src/registry";
 import { ActivationType } from "../enums";
 
 export interface IActionData {
-    id?: string; // For synergies and stuff like that
-    name: string;
-    activation: ActivationType;
-    cost?: number;
-    frequency?: string;
-    init?: string;
-    trigger?: string;
-    terse?: string;
-    detail: string;
-    pilot?: boolean;
-    sub_actions?: IActionData[];
+  id?: string
+  name: string
+  activation: ActivationType
+  cost?: number
+  frequency?: string
+  init?: string
+  trigger?: string
+  terse?: string
+  detail: string
+  pilot?: boolean
+  mech?: boolean
+  hide_active?: boolean
+  synergy_locations?: string[]
+  confirm?: string[]
+  log?: string
+  ignore_used?: boolean
+  heat_cost?: number
 }
 
 export enum ActivePeriod {
@@ -27,13 +33,16 @@ export class Action extends SimSer<IActionData> {
     ID!: string | null;
     Name!: string;
     Activation!: ActivationType;
-    Terse!: string | null;
-    Detail!: string;
     Cost!: number | null;
     Frequency!: Frequency;
     Init!: string | null; // This describes the conditions under which this action becomes available (e.g. activate mimic mesh to get battlefield awareness
     Trigger!: string | null; // What sets this reaction off, if anything
-    SubActions!: Action[];
+    Terse!: string | null;
+    Detail!: string;
+    AvailableMounted!: boolean;
+    AvailableUnmounted!: boolean;
+    HeatCost!: number;
+    // We don't handle other fields yet - they're almost purely for flavor. Synergies, maybe someday
 
     public load(data: IActionData): void {
         this.ID;
@@ -49,7 +58,9 @@ export class Action extends SimSer<IActionData> {
         this.Frequency = new Frequency(data.frequency || "");
         this.Init = data.init || null;
         this.Trigger = data.trigger || null;
-        this.SubActions = (data.sub_actions || []).map(x => new Action(x));
+        this.AvailableUnmounted = data.pilot ?? false;
+        this.AvailableMounted = data.mech ?? (data.pilot ? false : true); // If undefined, guess that we should only allow if pilot is unset/set false
+        this.HeatCost = data.heat_cost ?? 0;
     }
 
     public save(): IActionData {
@@ -63,7 +74,9 @@ export class Action extends SimSer<IActionData> {
             frequency: this.Frequency.ToString(),
             init: this.Init || undefined,
             trigger: this.Trigger || undefined,
-            sub_actions: this.SubActions.map(x => x.save()),
+            pilot: this.AvailableUnmounted,
+            mech: this.AvailableMounted,
+            heat_cost: this.HeatCost
         };
     }
 }

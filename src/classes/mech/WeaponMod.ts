@@ -13,8 +13,8 @@ import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
     IBonusData,
-    IRangeData,
     ISynergyData,
+    PackedRangeData, RegRangeData,
     PackedCounterData,
     PackedDamageData,
     PackedDeployableData,
@@ -37,7 +37,6 @@ export interface AllWeaponModData {
     effect: string; // v-html
     allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
     allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
-    added_range?: IRangeData[]; // damage added to the weapon the mod is installed on, see note
     actions?: IActionData[];
     bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent weapon
     synergies?: ISynergyData[];
@@ -49,8 +48,9 @@ export interface PackedWeaponModData extends AllWeaponModData {
     added_tags?: PackedTagInstanceData[]; // tags propogated to the weapon the mod is installed on
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
+    added_damage?: PackedDamageData[]; // damage added to the weapon the mod is installed on
+    added_range?: PackedRangeData[]; // range added to the weapon the mod is installed on
     integrated?: string[];
-    added_damage?: PackedDamageData[]; // damage added to the weapon the mod is installed on, see note
     restricted_types?: WeaponType[]; // weapon types the mod CAN NOT be applied to
     restricted_sizes?: WeaponSize[]; // weapon sizes the mod CAN NOT be applied to
 }
@@ -62,7 +62,8 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
-    added_damage: RegDamageData[]; // damage added to the weapon the mod is installed on, see note
+    added_damage: RegDamageData[]; // damage added to the weapon the mod is installed on
+    added_range: RegRangeData[]; // damage added to the weapon the mod is installed on
 
     // state info
     cascading: boolean;

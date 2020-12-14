@@ -1,36 +1,36 @@
 import { RangeType } from "../enums";
 import { SimSer } from "@src/registry";
-import { MechWeapon } from "./mech/MechWeapon";
+import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
 import { Bonus, Mech } from "@src/class";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
-export interface IRangeData {
+export interface PackedRangeData {
     type: RangeType;
     val: number;
     override?: boolean;
     bonus?: number;
 }
 
-export class Range extends SimSer<IRangeData> {
+export interface RegRangeData {
+    type: RangeType;
+    val: number;
+}
+
+export class Range extends SimSer<RegRangeData> {
     RangeType!: RangeType;
     Value!: number;
-    Override!: boolean;
-    Bonus!: number;
+    Bonuses?: string[]; // A purely visual attribute included in ranges produced by calc_range_with_bonuses. Describes the change
 
-    public load(data: IRangeData): void {
+    public load(data: PackedRangeData): void {
         this.RangeType = data.type;
         this.Value = data.val;
-        this.Override = data.override || false;
-        this.Bonus = data.bonus || 0;
     }
 
-    public save(): IRangeData {
+    public save(): PackedRangeData {
         return {
             type: this.RangeType,
             val: this.Value,
-            override: this.Override || undefined,
-            bonus: this.Bonus || undefined,
         };
     }
 
@@ -39,18 +39,22 @@ export class Range extends SimSer<IRangeData> {
     }
 
     public get DiscordEmoji(): string {
-        switch (this.RangeType) {
+        return Range.discord_emoji_for(this.RangeType);
+    }
+
+    // Returns the discord emoji corresponding to the provided range type
+    public static discord_emoji_for(rt: RangeType): string {
+        switch (rt) {
             case RangeType.Range:
             case RangeType.Threat:
             case RangeType.Thrown:
-                return `:cc_${this.RangeType.toLowerCase()}:`;
+                return `:cc_${rt.toLowerCase()}:`;
         }
-        return `:cc_aoe_${this.RangeType.toLowerCase()}:`;
+        return `:cc_aoe_${rt.toLowerCase()}:`;
     }
 
     public get Text(): string {
-        if (this.Override) return this.Value.toString();
-        if (this.Bonus) return `${this.RangeType} ${this.Value} (+${this.Bonus})`;
+        if (this.Bonuses) return `${this.RangeType} ${this.Value} (+${this.Bonuses})`;
         return `${this.RangeType} ${this.Value}`;
     }
 
@@ -59,39 +63,23 @@ export class Range extends SimSer<IRangeData> {
         return b.RangeTypes.includes(this.RangeType);
     }
 
-    public static CalculateRange(item: MechWeapon, mech: Mech): Range[] {
+    // Gives the bonus-included ranges for the given mech weapon
+    public static calc_range_with_bonuses(weapon: MechWeapon, profile: MechWeaponProfile, mech: Mech): Range[] {
         const bonuses = mech.AllBonuses.filter(x => x.ID === "range");
         const output: Range[] = [];
-        item.SelectedProfile.BaseRange.forEach(r => {
-            if (r.Override) return;
-            let bonus = 0;
-            bonuses.forEach(b => {
-                if (
-                    b.WeaponTypes.length &&
-                    !b.WeaponTypes.some(wt => item.SelectedProfile.WepType === wt)
-                )
-                    return;
-                if (b.WeaponSizes.length && !b.WeaponSizes.some(ws => item.Size === ws)) return;
-                if (
-                    b.DamageTypes.length &&
-                    !b.DamageTypes.some(dt =>
-                        item.SelectedProfile.BaseDamage.some(x => x.DamageType === dt)
-                    )
-                )
-                    return;
-                if (!b.RangeTypes.length || b.RangeTypes.some(rt => r.RangeType === rt)) {
-                    bonus += b.evaluate(mech.Pilot);
-                }
+        const ctx = mech.Pilot ? Bonus.PilotContext(mech.Pilot) : {};
+        for(let base_range of profile.BaseRange) {
+            let bonus_summary = Bonus.Accumulate(base_range.Value, bonuses, ctx);
+
+            // Push the augmented range
+            let new_range = new Range({
+                type: base_range.RangeType,
+                val: bonus_summary.final_value
             });
-            output.push(
-                new Range({
-                    type: r.RangeType,
-                    val: r.Value,
-                    override: r.Override,
-                    bonus: bonus,
-                })
-            );
-        });
+            new_range.Bonuses = bonus_summary.contributors.map(b => `+${b.value} :: ${b.bonus.Title}`); // TODO: make this format more cases, such as overwrites and replaces
+
+            output.push(new_range);
+        }
         return output;
     }
 }

@@ -25,18 +25,34 @@ export class Damage extends SimSer<RegDamageData> {
 
     // Vaarious formatting options
     get Icon(): string {
-        return `cci-${this.DamageType.toLowerCase()}`;
+        return Damage.icon_for(this.DamageType);
+    }
+
+    // Returns the css font icon corresponding to the provided damage type
+    public static icon_for(dt: DamageType): string {
+        return `cci-${dt.toLowerCase()}`;
     }
 
     get Text(): string {
         return `${this.Value} ${this.DamageType} Damage`;
     }
 
-    DiscordEmoji(): string {
-        return `:cc_damage_${this.DamageType.toLowerCase()}:`;
+    get DiscordEmoji(): string {
+        return Damage.discord_emoji_for(this.DamageType);
     }
-    Color(): string {
-        return `damage--${this.DamageType.toLowerCase()}`;
+
+    // Returns the discord emoji corresponding to the provided damage type
+    public static discord_emoji_for(dt: DamageType): string {
+        return `:cc_damage_${dt.toLowerCase()}:`;
+    }
+
+    get Color(): string {
+        return Damage.color_for(this.DamageType);
+    }
+
+    // Returns the css color name corresponding to the provided damage type
+    public static color_for(dt: DamageType): string {
+        return `damage--${dt.toLowerCase()}`;
     }
 
     public load(data: RegDamageData): void {

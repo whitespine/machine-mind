@@ -6,7 +6,7 @@
 // first in this file.
 export { IActionData } from "@src/classes/Action";
 export { IBackground } from "@src/classes/Background";
-export { IBonusData } from "@src/classes/Bonus";
+export { IBonusData, BonusSummary } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
@@ -18,7 +18,7 @@ export { PackedDeployableData, RegDeployableData } from "./classes/Deployable";
 export { PackedFrameData, RegFrameData, IFrameStats } from "./classes/mech/Frame";
 export { PackedFrameTraitData, RegFrameTraitData } from "./classes/mech/FrameTrait";
 export { PackedDamageData, RegDamageData } from "./classes/Damage";
-export { IRangeData } from "./classes/Range";
+export { PackedRangeData, RegRangeData  } from "./classes/Range";
 export { PackedMechData, RegMechData } from "./classes/mech/Mech";
 export { PackedMechSystemData, RegMechSystemData } from "./classes/mech/MechSystem";
 export {

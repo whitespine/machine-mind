@@ -68,7 +68,7 @@ import {
     IEnvironmentData,
     IFactionData,
     IOrganizationData,
-    IRangeData,
+    PackedRangeData, RegRangeData,
     ISitrepData,
     IStatusData,
     ISynergyData,
@@ -376,7 +376,7 @@ export abstract class SerUtil {
     }
 
     // Some simple helpers. Doing generic solutions on these ended up being too much of a pain to justify it
-    public static process_ranges(ranges?: IRangeData[]): Range[] {
+    public static process_ranges(ranges?: RegRangeData[]): Range[] {
         return (ranges || []).map(r => new Range(r));
     }
 
