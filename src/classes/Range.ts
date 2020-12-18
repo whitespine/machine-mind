@@ -35,7 +35,11 @@ export class Range extends SimSer<RegRangeData> {
     }
 
     public get Icon(): string {
-        return `cci-${this.RangeType.toLowerCase()}`;
+        return Range.icon_for(this.RangeType);
+    }
+
+    public static icon_for(rt: RangeType): string {
+        return `cci-${rt.toLowerCase()}`;
     }
 
     public get DiscordEmoji(): string {
