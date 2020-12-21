@@ -52,38 +52,38 @@ export class MechSkills extends SimSer<IMechSkills> {
     // Get the bonuses imparted by these skills to mechs
     public get SkillBonuses(): Bonus[] {
         return [
-            Bonus.generate("hp", this.Hull * 2, "HULL"),
-            Bonus.generate("repcap", Math.floor(this.Hull / 2), "HULL"),
-            Bonus.generate("evasion", this.Agi, "AGI"),
-            Bonus.generate("speed", Math.floor(this.Agi / 2), "AGI"),
-            Bonus.generate("edef", this.Sys, "SYS"),
-            Bonus.generate("tech_attack", this.Sys, "SYS"),
-            Bonus.generate("sp", Math.floor(this.Sys / 2), "SYS"),
-            Bonus.generate("heatcap", this.Eng, "ENG"),
-            Bonus.generate("limited_bonus", Math.floor(this.Eng / 2), "SYS"),
+            Bonus.generate("hp", this.Hull * 2).from_source("HULL"),
+            Bonus.generate("repcap", Math.floor(this.Hull / 2)).from_source("HULL"),
+            Bonus.generate("evasion", this.Agi).from_source("AGI"),
+            Bonus.generate("speed", Math.floor(this.Agi / 2)).from_source("AGI"),
+            Bonus.generate("edef", this.Sys).from_source("SYS"),
+            Bonus.generate("tech_attack", this.Sys).from_source("SYS"),
+            Bonus.generate("sp", Math.floor(this.Sys / 2)).from_source("SYS"),
+            Bonus.generate("heatcap", this.Eng).from_source("ENG"),
+            Bonus.generate("limited_bonus", Math.floor(this.Eng / 2)).from_source("SYS"),
         ];
     }
 
     // TODO: allow overrides by some mechanism. Alternatively, just tell emperor to have a -grit penalty to hp (actually that's way easier)
     // This is somewhat unrelated but felt a fitting place to put this. Bonuses from grit
     public static LevelBonuses: Bonus[] = [
-        Bonus.generate("hp", "{grit}", "Pilot GRIT"),
-        Bonus.generate("sp", "{grit}", "Pilot GRIT"),
-        Bonus.generate("attack", "{grit}", "Pilot GRIT"),
-        Bonus.generate("save", "{grit}", "Pilot GRIT"),
-        Bonus.generate("cb_point", "floor({ll} / 3)", "Pilot LEVEL / 3"),
-        Bonus.generate("talent_point", "{ll}", "Pilot LEVEL"),
-        Bonus.generate("skill_point", "{ll}", "Pilot LEVEL"),
-        Bonus.generate("mech_skill_point", "{ll}", "Pilot LEVEL"),
-        Bonus.generate("license_point", "{ll}", "Pilot LEVEL"),
+        Bonus.generate("hp", "{grit}").from_source("Pilot GRIT"),
+        Bonus.generate("sp", "{grit}").from_source("Pilot GRIT"),
+        Bonus.generate("attack", "{grit}").from_source("Pilot GRIT"),
+        Bonus.generate("save", "{grit}").from_source("Pilot GRIT"),
+        Bonus.generate("cb_point", "floor({ll} / 3)").from_source("Pilot LEVEL / 3"),
+        Bonus.generate("talent_point", "{ll}").from_source("Pilot LEVEL"),
+        Bonus.generate("skill_point", "{ll}").from_source("Pilot LEVEL"),
+        Bonus.generate("mech_skill_point", "{ll}").from_source("Pilot LEVEL"),
+        Bonus.generate("license_point", "{ll}").from_source("Pilot LEVEL"),
     ];
 
     public static BaseBonuses: Bonus[] = [
-        Bonus.generate("pilot_hp", Rules.BasePilotHP, "Base HP"),
-        Bonus.generate("skill_point", Rules.MinimumPilotSkills, "Base Points"),
-        Bonus.generate("mech_skill_point", Rules.MinimumMechSkills, "Base Points"),
-        Bonus.generate("talent_point", Rules.MinimumPilotTalents, "Base Points"),
-        Bonus.generate("ai_cap", 1, "Base AI Cap"),
+        Bonus.generate("pilot_hp", Rules.BasePilotHP).from_source("Base HP"),
+        Bonus.generate("skill_point", Rules.MinimumPilotSkills).from_source("Base Points"),
+        Bonus.generate("mech_skill_point", Rules.MinimumMechSkills).from_source("Base Points"),
+        Bonus.generate("talent_point", Rules.MinimumPilotTalents).from_source("Base Points"),
+        Bonus.generate("ai_cap", 1).from_source("Base AI Cap"),
     ];
 
     public get AllBonuses(): Bonus[] {

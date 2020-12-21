@@ -14,6 +14,9 @@ export interface RegDamageData {
     val: string; // We always want it to be dicey!
 }
 
+// Used to store things like what damage types a bonus affects
+export type DamageTypeChecklist = { [key in DamageType]: boolean };
+
 export class Damage extends SimSer<RegDamageData> {
     DamageType!: DamageType;
     Value!: string;
@@ -70,6 +73,19 @@ export class Damage extends SimSer<RegDamageData> {
         return {
             type: dat.type,
             val: "" + dat.val,
+        };
+    }
+
+    // Convert a damage type array to a checklist. If no damage types provided, assume all
+    public static MakeChecklist(damages: DamageType[]): DamageTypeChecklist {
+        let override = damages.length == 0;
+        return {
+            Burn: override || damages.includes(DamageType.Burn),
+            Energy: override || damages.includes(DamageType.Energy),
+            Explosive: override || damages.includes(DamageType.Explosive),
+            Heat: override || damages.includes(DamageType.Heat),
+            Kinetic: override || damages.includes(DamageType.Kinetic),
+            Variable: override || damages.includes(DamageType.Variable),
         };
     }
 }

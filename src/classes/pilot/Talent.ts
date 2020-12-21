@@ -2,7 +2,8 @@ import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy 
 import { defaults } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     ISynergyData,
     PackedDeployableData,
     PackedCounterData,
@@ -23,7 +24,7 @@ export interface PackedTalentRank {
     description: string; // v-html
     exclusive: boolean; // see below
     actions?: IActionData[];
-    bonuses?: IBonusData[];
+    bonuses?: PackedBonusData[];
     synergies?: ISynergyData[];
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
@@ -46,7 +47,7 @@ export interface RegTalentRank {
     description: string; // v-html
     exclusive: boolean; // see below
     actions: IActionData[];
-    bonuses: IBonusData[];
+    bonuses: RegBonusData[];
     synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];

@@ -2,7 +2,8 @@ import { Action, Bonus, Counter, Deployable, Synergy } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     ISynergyData,
     PackedCounterData,
     PackedDeployableData,
@@ -18,7 +19,6 @@ interface AllFrameTraitData {
     description: string; // v-html
     use?: FrameEffectUse;
     actions?: IActionData[];
-    bonuses?: IBonusData[];
     synergies?: ISynergyData[];
 }
 
@@ -26,9 +26,11 @@ export interface PackedFrameTraitData extends AllFrameTraitData {
     integrated?: string[];
     counters?: PackedCounterData[];
     deployables?: PackedDeployableData[];
+    bonuses?: PackedBonusData[];
 }
 
 export interface RegFrameTraitData extends Required<AllFrameTraitData> {
+    bonuses: RegBonusData[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -50,7 +52,7 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         this.Name = data.name;
         this.Description = data.description;
         this.Use = data.use ?? null;
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
         this.Counters = SerUtil.process_counters(data.counters);
     }

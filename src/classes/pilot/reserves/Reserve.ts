@@ -1,7 +1,6 @@
 import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@src/class";
-import { reserves } from "lancer-data";
 import { IActionData, Action } from "@src/classes/Action";
-import { IBonusData, Bonus } from "@src/classes/Bonus";
+import { PackedBonusData, Bonus, RegBonusData } from "@src/classes/Bonus";
 import {
     ISynergyData,
     PackedCounterData,
@@ -24,16 +23,17 @@ interface AllReserveData {
     used: boolean;
     consumable: boolean;
     actions?: IActionData[];
-    bonuses?: IBonusData[];
     synergies?: ISynergyData[];
 }
 export interface PackedReserveData extends AllReserveData {
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
+    bonuses?: PackedBonusData[];
 }
 
 export interface RegReserveData extends Required<AllReserveData> {
+    bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
@@ -68,9 +68,9 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         this.ResourceNote = data.resource_note;
         this.ResourceCost = data.resource_cost;
         this.Description = data.description;
-        this.Actions = data.actions.map(x => new Action(x));
-        this.Bonuses = data.bonuses.map(x => new Bonus(x, `${this.ReserveType} - ${this.Name}`));
-        this.Synergies = data.synergies.map(x => new Synergy(x));
+        (this.Actions = SerUtil.process_actions(data.actions)),
+            (this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name)),
+            (this.Synergies = data.synergies.map(x => new Synergy(x)));
         this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
         this.Counters = data.counters.map(c => new Counter(c));
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
@@ -114,11 +114,12 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
             consumable: this.Consumable,
             used: this.Used,
             counters: this.Counters.map(c => c.save()),
-            deployables: this.Deployables.map(d => d.as_ref()),
+            // deployables: this.Deployables.map(d => d.as_ref()),
             integrated: this.Integrated.map(i => i.as_ref()),
-            actions: this.Actions.map(a => a.save()),
-            bonuses: this.Bonuses.map(b => b.save()),
-            synergies: this.Synergies.map(s => s.save()),
+            // actions: this.Actions.map(a => a.save()),
+            // bonuses: this.Bonuses.map(b => b.save()),
+            // synergies: this.Synergies.map(s => s.save()),
+            ...SerUtil.save_commons(this),
         };
     }
 
@@ -141,6 +142,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         let rdata: RegReserveData = {
             ...defaults.RESERVE(),
             ...res,
+            bonuses: (res.bonuses ?? []).map(Bonus.unpack),
             integrated,
             deployables,
             counters,

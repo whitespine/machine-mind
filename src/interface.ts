@@ -6,7 +6,7 @@
 // first in this file.
 export { IActionData } from "@src/classes/Action";
 export { IBackground } from "@src/classes/Background";
-export { IBonusData, BonusSummary } from "@src/classes/Bonus";
+export { PackedBonusData, RegBonusData, BonusSummary } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
@@ -17,8 +17,8 @@ export { PackedCoreSystemData, RegCoreSystemData } from "./classes/mech/CoreSyst
 export { PackedDeployableData, RegDeployableData } from "./classes/Deployable";
 export { PackedFrameData, RegFrameData, IFrameStats } from "./classes/mech/Frame";
 export { PackedFrameTraitData, RegFrameTraitData } from "./classes/mech/FrameTrait";
-export { PackedDamageData, RegDamageData } from "./classes/Damage";
-export { PackedRangeData, RegRangeData  } from "./classes/Range";
+export { PackedDamageData, RegDamageData, DamageTypeChecklist } from "./classes/Damage";
+export { PackedRangeData, RegRangeData, RangeTypeChecklist } from "./classes/Range";
 export { PackedMechData, RegMechData } from "./classes/mech/Mech";
 export { PackedMechSystemData, RegMechSystemData } from "./classes/mech/MechSystem";
 export {
@@ -26,6 +26,8 @@ export {
     RegMechWeaponData,
     RegMechWeaponProfile,
     PackedMechWeaponProfile,
+    WeaponSizeChecklist,
+    WeaponTypeChecklist,
 } from "./classes/mech/MechWeapon";
 export {
     PackedMechLoadoutData,

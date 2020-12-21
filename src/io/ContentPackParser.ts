@@ -148,7 +148,7 @@ export function get_base_content_pack(): IContentPack {
         data: {
             coreBonuses: lancerData.core_bonuses,
             factions: lancerData.factions,
-            frames: lancerData.frames,
+            frames: lancerData.frames.filter(m => m.id != "missing_frame"), // yeet the unresolved frame
             manufacturers: lancerData.manufacturers,
             mods: lancerData.mods,
             npcClasses: lancerData.npc_classes,

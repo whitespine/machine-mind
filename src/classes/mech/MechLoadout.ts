@@ -214,12 +214,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         stack: RegFallbackStack
     ): Promise<void> {
         // Find the frame
-        let frame = await gathering_resolve_mmid(
-            stack,
-            this.OpCtx,
-            EntryType.FRAME,
-            mech_frame_id
-        );
+        let frame = await gathering_resolve_mmid(stack, this.OpCtx, EntryType.FRAME, mech_frame_id);
 
         // Reconstruct the mount setup
         let weps: WeaponMount[] = [];
@@ -280,7 +275,12 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 sys = corr.System;
             } else {
                 // Look it up
-                sys = await gathering_resolve_mmid(stack, this.OpCtx, EntryType.MECH_SYSTEM, mls.id);                
+                sys = await gathering_resolve_mmid(
+                    stack,
+                    this.OpCtx,
+                    EntryType.MECH_SYSTEM,
+                    mls.id
+                );
             }
 
             // Update state
@@ -414,8 +414,13 @@ export class WeaponSlot {
             if (this.Weapon && dat.weapon.id == this.Weapon.ID) {
                 // Do nothing. Weapon is unchanged
             } else {
-                // Otherwise attempt to resolve 
-                this.Weapon = await gathering_resolve_mmid(stack, ctx, EntryType.MECH_WEAPON, dat.weapon.id);            
+                // Otherwise attempt to resolve
+                this.Weapon = await gathering_resolve_mmid(
+                    stack,
+                    ctx,
+                    EntryType.MECH_WEAPON,
+                    dat.weapon.id
+                );
             }
 
             // We have resolved the weapon. Now update state
@@ -435,7 +440,12 @@ export class WeaponSlot {
                         // Do nothing. Mod is unchanged
                     } else {
                         // Attempt to resolve mod
-                        this.Mod = await gathering_resolve_mmid(stack, ctx, EntryType.WEAPON_MOD, mod.id);
+                        this.Mod = await gathering_resolve_mmid(
+                            stack,
+                            ctx,
+                            EntryType.WEAPON_MOD,
+                            mod.id
+                        );
                     }
 
                     // We have resolved the mod. Now update state

@@ -2,7 +2,8 @@ import { Action, Bonus, Counter, Synergy, TagInstance } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     ISynergyData,
     PackedTagInstanceData,
     RegTagInstanceData,
@@ -35,7 +36,7 @@ export interface PackedDeployableData {
     save?: number;
     speed?: number;
     actions?: IActionData[];
-    bonuses?: IBonusData[];
+    bonuses?: PackedBonusData[];
     synergies?: ISynergyData[];
     counters?: PackedCounterData[];
     tags?: PackedTagInstanceData[];
@@ -64,7 +65,7 @@ export interface RegDeployableData {
     save: number;
     speed: number;
     actions: IActionData[];
-    bonuses: IBonusData[];
+    bonuses: RegBonusData[]; // Why does this exist, again?
     synergies: ISynergyData[];
     counters: RegCounterData[];
     tags: RegTagInstanceData[];
@@ -73,7 +74,6 @@ export interface RegDeployableData {
 }
 
 export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
-
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;
@@ -169,7 +169,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             tags: SerUtil.save_all(this.Tags),
             counters: this.Counters.map(c => c.save()),
             mech: this.AvailableMounted,
-            pilot: this.AvailableUnmounted
+            pilot: this.AvailableUnmounted,
         };
     }
 
@@ -179,11 +179,12 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Deployable> {
-        let tags = SerUtil.unpack_tag_instances(reg, dep.tags)
+        let tags = SerUtil.unpack_tag_instances(reg, dep.tags);
         let counters = SerUtil.unpack_counters_default(dep.counters);
         let unpacked: RegDeployableData = {
             ...defaults.DEPLOYABLE(),
             ...dep,
+            bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
             max_hp: dep.hp ?? 0,
             overshield: 0,
             current_hp: dep.hp ?? 0,

@@ -1,5 +1,14 @@
 import { defaults } from "@src/funcs";
-import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, RegSer, SimSer } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_local_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    RegSer,
+    SimSer,
+} from "@src/registry";
 
 export interface ITagTemplateData {
     id: string;

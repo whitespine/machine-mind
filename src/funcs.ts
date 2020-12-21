@@ -11,6 +11,7 @@ export { validate_props } from "@src/classes/key_util";
 export * as defaults from "@src/classes/default_entries";
 export * as tag_util from "@src/classes/mech/EquipUtil";
 
+// We oftentimes need to make sure we don't go outside of allowed ranges
 export function bound_int(x: number, min: number, max: number) {
     if (x < min) {
         return min;
@@ -19,4 +20,15 @@ export function bound_int(x: number, min: number, max: number) {
     } else {
         return x;
     }
+}
+
+// Useful for just showing the true values of checklists
+export function list_truthy_keys(of_dict: {[key: string]: any}): string[] {
+    let result: string[] = [];
+    for(let k of Object.keys(of_dict)) {
+        if(of_dict[k]) {
+            result.push(k);
+        }
+    }
+    return result;
 }

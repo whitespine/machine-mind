@@ -12,9 +12,11 @@ import {
 import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     ISynergyData,
-    PackedRangeData, RegRangeData,
+    PackedRangeData,
+    RegRangeData,
     PackedCounterData,
     PackedDamageData,
     PackedDeployableData,
@@ -23,7 +25,15 @@ import {
     RegDamageData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_local_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 import { TagInstance } from "../Tag";
@@ -38,7 +48,6 @@ export interface AllWeaponModData {
     allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
     allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
     actions?: IActionData[];
-    bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent weapon
     synergies?: ISynergyData[];
 }
 
@@ -48,6 +57,7 @@ export interface PackedWeaponModData extends AllWeaponModData {
     added_tags?: PackedTagInstanceData[]; // tags propogated to the weapon the mod is installed on
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
+    bonuses?: PackedBonusData[]; // these bonuses are applied to the pilot, not parent weapon
     added_damage?: PackedDamageData[]; // damage added to the weapon the mod is installed on
     added_range?: PackedRangeData[]; // range added to the weapon the mod is installed on
     integrated?: string[];
@@ -64,6 +74,7 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     integrated: RegRef<any>[];
     added_damage: RegDamageData[]; // damage added to the weapon the mod is installed on
     added_range: RegRangeData[]; // damage added to the weapon the mod is installed on
+    bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent weapon
 
     // state info
     cascading: boolean;
@@ -209,7 +220,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.Cascading = data.cascading;
         this.Uses = data.uses;
 
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Counters = SerUtil.process_counters(data.counters);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);

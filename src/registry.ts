@@ -64,11 +64,13 @@ import {
 import { trimmed } from "./classes/key_util";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     IEnvironmentData,
     IFactionData,
     IOrganizationData,
-    PackedRangeData, RegRangeData,
+    PackedRangeData,
+    RegRangeData,
     ISitrepData,
     IStatusData,
     ISynergyData,
@@ -305,9 +307,12 @@ export abstract class SerUtil {
     public static unpack_integrated_refs(reg: Registry, integrated?: string[]): RegRef<any>[] {
         return (integrated || []).map(i => quick_local_ref(reg, null, i));
     }
-    
+
     // Just deals with potential nulls
-    public static unpack_tag_instances(reg: Registry, tags?: PackedTagInstanceData[]): RegTagInstanceData[] {
+    public static unpack_tag_instances(
+        reg: Registry,
+        tags?: PackedTagInstanceData[]
+    ): RegTagInstanceData[] {
         return (tags || []).map(i => TagInstance.unpack_reg(reg, i));
     }
 
@@ -326,9 +331,7 @@ export abstract class SerUtil {
     }
 
     // Pack up references. This helper allows us to handle the awkward integrated = null cases
-    public static ref_all<T extends EntryType>(
-        items: Array<RegEntry<T>>
-    ): RegRef<T>[] {
+    public static ref_all<T extends EntryType>(items: Array<RegEntry<T>>): RegRef<T>[] {
         return items.map(i => i.as_ref());
     }
 
@@ -392,8 +395,8 @@ export abstract class SerUtil {
         return (actions || []).map(a => new Action(a));
     }
 
-    public static process_bonuses(bonuses: IBonusData[] | undefined, source: string): Bonus[] {
-        return (bonuses || []).map(b => new Bonus(b, source));
+    public static process_bonuses(bonuses: RegBonusData[] | undefined, source: string): Bonus[] {
+        return (bonuses || []).map(b => new Bonus(b).from_source(source));
     }
 
     // Because this is so common, we abstract it to here. Shouldn't try to do this for all of them
@@ -408,7 +411,7 @@ export abstract class SerUtil {
         Synergies: Synergy[];
         Deployables: Deployable[] /*Tags: TagInstance[]*/;
     }): {
-        bonuses: IBonusData[];
+        bonuses: RegBonusData[];
         actions: IActionData[];
         synergies: ISynergyData[];
         deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -427,7 +430,7 @@ export abstract class SerUtil {
     public static async load_basd(
         reg: Registry,
         src: {
-            bonuses?: IBonusData[];
+            bonuses?: RegBonusData[];
             actions?: IActionData[];
             synergies?: ISynergyData[];
             deployables?: RegRef<EntryType.DEPLOYABLE>[];
@@ -440,10 +443,11 @@ export abstract class SerUtil {
             Deployables: Deployable[] /*, Tags: TagInstance[] */;
             Name?: string;
             OpCtx: OpCtx;
-        }
+        },
+        bonus_src_text: string
     ): Promise<void> {
         target.Actions = SerUtil.process_actions(src.actions);
-        target.Bonuses = SerUtil.process_bonuses(src.bonuses, target.Name ?? "");
+        target.Bonuses = SerUtil.process_bonuses(src.bonuses, bonus_src_text);
         target.Synergies = SerUtil.process_synergies(src.synergies);
         target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables);
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
@@ -453,7 +457,7 @@ export abstract class SerUtil {
     // Handles the bonuses, actions, synergies, deployables, and tags of an item
     public static async unpack_basdt(
         src: {
-            bonuses?: IBonusData[];
+            bonuses?: PackedBonusData[];
             actions?: IActionData[];
             synergies?: ISynergyData[];
             deployables?: PackedDeployableData[];
@@ -462,7 +466,7 @@ export abstract class SerUtil {
         reg: Registry,
         ctx: OpCtx
     ): Promise<{
-        bonuses: IBonusData[];
+        bonuses: RegBonusData[];
         actions: IActionData[];
         synergies: ISynergyData[];
         deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -480,9 +484,12 @@ export abstract class SerUtil {
         // Get tags
         let tags = SerUtil.unpack_tag_instances(reg, src.tags);
 
+        // Get bonuses
+        let bonuses = (src.bonuses ?? []).map(b => Bonus.unpack(b));
+
         return {
+            bonuses,
             actions: src.actions ?? [],
-            bonuses: src.bonuses ?? [],
             synergies: src.synergies ?? [],
             deployables,
             tags,
@@ -609,14 +616,14 @@ export abstract class RegEntry<T extends EntryType> {
                 id: mmid,
                 is_unresolved_mmid: true,
                 type: this.Type,
-                reg_name: this.Registry.name()
+                reg_name: this.Registry.name(),
             };
         } else {
             return {
                 id: this.RegistryID,
                 type: this.Type,
                 is_unresolved_mmid: false, // We're in a reg! we're gooood!
-                reg_name: this.Registry.name()
+                reg_name: this.Registry.name(),
             };
         }
     }
@@ -1042,7 +1049,10 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    public async resolve_wildcard_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<EntryType> | null> {
+    public async resolve_wildcard_mmid(
+        ctx: OpCtx,
+        mmid: string
+    ): Promise<LiveEntryTypes<EntryType> | null> {
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_mmid(ctx, mmid);
@@ -1066,11 +1076,14 @@ export abstract class Registry {
     }
 
     // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
-    public async resolve_rough(ctx: OpCtx, ref: RegRef<any>): Promise<LiveEntryTypes<EntryType> | null> {
+    public async resolve_rough(
+        ctx: OpCtx,
+        ref: RegRef<any>
+    ): Promise<LiveEntryTypes<EntryType> | null> {
         // Check name
-        if(ref.reg_name != this.name()) {
+        if (ref.reg_name != this.name()) {
             let appropriate_reg = this.switch_reg(ref.reg_name);
-            if(appropriate_reg) {
+            if (appropriate_reg) {
                 return appropriate_reg.resolve_rough(ctx, ref);
             } else {
                 return null;
@@ -1154,11 +1167,15 @@ export interface RegRef<T extends EntryType> {
 }
 
 // Quickly make an id-based reference reference
-export function quick_local_ref<T extends EntryType>(reg: Registry, type: T | null, mmid: string): RegRef<T> {
+export function quick_local_ref<T extends EntryType>(
+    reg: Registry,
+    type: T | null,
+    mmid: string
+): RegRef<T> {
     return {
         id: mmid,
         type: type as T | null,
         is_unresolved_mmid: true,
-        reg_name: reg.name()
+        reg_name: reg.name(),
     };
 }

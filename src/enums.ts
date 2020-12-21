@@ -10,7 +10,7 @@ export enum MountType {
     Flex = "Flex",
     Integrated = "Integrated",
     // This is just to handle undetermined, e.g. by auto addition
-    Unknown = "Unknown"
+    Unknown = "Unknown",
 }
 
 export enum NpcFeatureType {

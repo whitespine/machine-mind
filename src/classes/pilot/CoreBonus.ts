@@ -6,7 +6,8 @@ import {
     ISynergyData,
     PackedDeployableData,
     PackedCounterData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
 } from "@src/interface";
 import {
     EntryType,
@@ -29,10 +30,10 @@ interface AllCoreBonusData {
     description: string; // v-html
     mounted_effect?: string;
     actions?: IActionData[];
-    bonuses?: IBonusData[];
     synergies?: ISynergyData[];
 }
 export interface PackedCoreBonusData extends AllCoreBonusData {
+    bonuses?: PackedBonusData[];
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
@@ -40,6 +41,7 @@ export interface PackedCoreBonusData extends AllCoreBonusData {
 }
 
 export interface RegCoreBonusData extends Required<AllCoreBonusData> {
+    bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
@@ -120,7 +122,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             source: quick_local_ref(reg, EntryType.MANUFACTURER, cor.source),
             mounted_effect: cor.mounted_effect ?? "",
             actions: cor.actions ?? [],
-            bonuses: cor.bonuses ?? [],
+            bonuses: (cor.bonuses ?? []).map(Bonus.unpack),
             synergies: cor.synergies ?? [],
         };
         return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata, true);

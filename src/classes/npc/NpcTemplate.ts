@@ -1,6 +1,14 @@
 import { NpcFeature } from "@src/class";
 import { defaults } from "@src/funcs";
-import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_local_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 
 interface AllNpcTemplateData {
     name: string;
@@ -56,7 +64,9 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
             ...defaults.NPC_TEMPLATE(),
             ...data,
 
-            base_features: data.base_features.map(f => quick_local_ref(reg, EntryType.NPC_FEATURE, f)),
+            base_features: data.base_features.map(f =>
+                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
+            ),
             optional_features: data.optional_features.map(f =>
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),

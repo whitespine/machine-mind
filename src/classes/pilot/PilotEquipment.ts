@@ -2,8 +2,10 @@ import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "
 import { defaults } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
-    RegRangeData, PackedRangeData,
+    RegBonusData,
+    PackedBonusData,
+    RegRangeData,
+    PackedRangeData,
     ISynergyData,
     PackedDamageData,
     PackedDeployableData,
@@ -28,7 +30,7 @@ interface AllPackedData {
     name: string; // v-html
     description: string;
     actions?: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses?: IBonusData[]; // these bonuses are applied to the pilot, not parent system
+    bonuses?: PackedBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies?: ISynergyData[];
     deployables?: PackedDeployableData[];
     tags?: PackedTagInstanceData[];
@@ -54,7 +56,7 @@ interface AllRegData {
     name: string; // v-html
     description: string;
     actions: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses: IBonusData[]; // these bonuses are applied to the pilot, not parent system
+    bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     tags: RegTagInstanceData[];
@@ -91,7 +93,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
 
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
     }
 
     protected save_imp(): RegPilotArmorData {
@@ -139,7 +141,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
 
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
     }
 
     protected save_imp(): RegPilotGearData {
@@ -192,7 +194,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Damage = SerUtil.process_damages(data.damage);
         this.Range = SerUtil.process_ranges(data.range);
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
     }
 
     protected save_imp(): RegPilotWeaponData {

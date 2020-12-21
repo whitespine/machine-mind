@@ -1,6 +1,6 @@
 import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
 import { defaults } from "@src/funcs";
-import { IActionData, IBonusData, ISynergyData, RegCounterData } from "@src/interface";
+import { IActionData, ISynergyData, RegBonusData, RegCounterData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 ///////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@ export interface RegQuirkData {
     name: string; // v-html
     description: string;
     actions: IActionData[]; // these are only available to UNMOUNTED pilots
-    bonuses: IBonusData[]; // these bonuses are applied to the pilot, not parent system
+    bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies: ISynergyData[];
 
     // All associated content
@@ -34,7 +34,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
         this.Name = data.name;
         this.Description = data.description;
 
-        SerUtil.load_basd(this.Registry, data, this);
+        SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
         this.Counters = SerUtil.process_counters(data.counters);
     }
@@ -51,7 +51,10 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     public static async unpack(raw_quirk: string, reg: Registry, ctx: OpCtx): Promise<Quirk> {
         let qdata: RegQuirkData = {
             ...defaults.QUIRK(),
-            name: `Quirk: ${raw_quirk.split(" ").slice(0, 6).join(" ")}...`, // Show the first 6 words in the name
+            name: `Quirk: ${raw_quirk
+                .split(" ")
+                .slice(0, 6)
+                .join(" ")}...`, // Show the first 6 words in the name
             description: raw_quirk,
         };
 

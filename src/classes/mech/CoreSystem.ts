@@ -8,7 +8,8 @@ import {
     PackedTagInstanceData,
     RegCounterData,
     RegTagInstanceData,
-    IBonusData,
+    PackedBonusData,
+    RegBonusData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { ActivationType, FrameEffectUse } from "../../enums";
@@ -40,8 +41,8 @@ export interface PackedCoreSystemData extends AllCoreSystemData {
     counters?: PackedCounterData[];
     integrated?: string[];
     tags: PackedTagInstanceData[];
-    active_bonuses: IBonusData[];
-    passive_bonuses?: IBonusData[];
+    active_bonuses?: PackedBonusData[];
+    passive_bonuses?: PackedBonusData[];
 }
 
 export interface RegCoreSystemData extends Required<AllCoreSystemData> {
@@ -49,8 +50,8 @@ export interface RegCoreSystemData extends Required<AllCoreSystemData> {
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     tags: RegTagInstanceData[];
-    active_bonuses: IBonusData[];
-    passive_bonuses?: IBonusData[];
+    active_bonuses: RegBonusData[];
+    passive_bonuses: RegBonusData[];
 }
 
 export class CoreSystem extends RegSer<RegCoreSystemData> {
@@ -158,6 +159,8 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         let unpacked: RegCoreSystemData = {
             ...defaults.CORE_SYSTEM(),
             ...data,
+            active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
+            passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
             tags,
             counters,
             deployables,

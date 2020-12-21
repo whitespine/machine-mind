@@ -2,6 +2,7 @@ import { RangeType } from "../enums";
 import { SimSer } from "@src/registry";
 import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
 import { Bonus, Mech } from "@src/class";
+import { range } from "lodash";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -17,6 +18,10 @@ export interface RegRangeData {
     val: number;
 }
 
+// Used to store things like what range-typed weapons a bonus affects
+export type RangeTypeChecklist = { [key in RangeType]: boolean };
+
+// Represents a single range for a weapon. Line 8, range 10, burst 2, etc. Blast will have a separate entry for its "normal" range and the range of the explosion
 export class Range extends SimSer<RegRangeData> {
     RangeType!: RangeType;
     Value!: number;
@@ -57,33 +62,58 @@ export class Range extends SimSer<RegRangeData> {
         return `:cc_aoe_${rt.toLowerCase()}:`;
     }
 
+    // A simple text output. Perhaps unnecessary - kept from compcon
     public get Text(): string {
         if (this.Bonuses) return `${this.RangeType} ${this.Value} (+${this.Bonuses})`;
         return `${this.RangeType} ${this.Value}`;
     }
 
-    // Checks if the given bonus can affect this range
-    public can_bonus_apply(b: Bonus) {
-        return b.RangeTypes.includes(this.RangeType);
-    }
-
     // Gives the bonus-included ranges for the given mech weapon
-    public static calc_range_with_bonuses(weapon: MechWeapon, profile: MechWeaponProfile, mech: Mech): Range[] {
-        const bonuses = mech.AllBonuses.filter(x => x.ID === "range");
+    public static calc_range_with_bonuses(
+        weapon: MechWeapon,
+        profile: MechWeaponProfile,
+        mech: Mech
+    ): Range[] {
+        // cut down to bonuses that affect ranges
+        let all_bonuses = mech.AllBonuses.filter(x => x.ID === "range");
+
+        // Start building our output
         const output: Range[] = [];
         const ctx = mech.Pilot ? Bonus.PilotContext(mech.Pilot) : {};
-        for(let base_range of profile.BaseRange) {
-            let bonus_summary = Bonus.Accumulate(base_range.Value, bonuses, ctx);
+        for (let base_range of profile.BaseRange) {
+            // Further narrow down to bonuses to this specific range/weapon combo
+            let range_specific_bonuses = all_bonuses.filter(b =>
+                b.applies_to_weapon(weapon, profile, base_range)
+            );
+
+            // Compute them vals
+            let bonus_summary = Bonus.Accumulate(base_range.Value, range_specific_bonuses, ctx);
 
             // Push the augmented range
             let new_range = new Range({
                 type: base_range.RangeType,
-                val: bonus_summary.final_value
+                val: bonus_summary.final_value,
             });
-            new_range.Bonuses = bonus_summary.contributors.map(b => `+${b.value} :: ${b.bonus.Title}`); // TODO: make this format more cases, such as overwrites and replaces
+            new_range.Bonuses = bonus_summary.contributors.map(
+                b => `+${b.value} :: ${b.bonus.Title}`
+            ); // TODO: make this format more cases, such as overwrites and replaces
 
             output.push(new_range);
         }
         return output;
+    }
+
+    // Convert a range type array to a checklist. If no range types provided, assume all
+    public static MakeChecklist(ranges: RangeType[]): RangeTypeChecklist {
+        let override = ranges.length == 0;
+        return {
+            Blast: override || ranges.includes(RangeType.Blast),
+            Burst: override || ranges.includes(RangeType.Burst),
+            Cone: override || ranges.includes(RangeType.Cone),
+            Line: override || ranges.includes(RangeType.Line),
+            Range: override || ranges.includes(RangeType.Range),
+            Thrown: override || ranges.includes(RangeType.Thrown),
+            Threat: override || ranges.includes(RangeType.Threat),
+        };
     }
 }

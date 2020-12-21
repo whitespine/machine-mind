@@ -99,7 +99,8 @@ describe("Static Registry Reference implementation", () => {
         expect(env).toBeTruthy();
 
         // Should have items in every category. just check frames
-        expect((await env.reg.get_cat(EntryType.FRAME).list_raw()).length).toEqual(4*7 + 1); // 7 by each manufacturer, 1 gms
+        let all_frames = await env.reg.get_cat(EntryType.FRAME).list_raw();
+        expect(all_frames.length).toEqual(4*7 + 1); // 7 by each manufacturer, 1 gms
     });
 
     it("Gets basic frame information right", async () => {

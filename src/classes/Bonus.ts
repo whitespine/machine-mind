@@ -1,12 +1,13 @@
-import { Mech, Npc, Pilot } from "@src/class";
+import { Damage, MechWeapon, Npc, Pilot, Range} from "@src/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
 import { SerUtil, SimSer } from "@src/registry";
 import * as filtrex from "filtrex";
-import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
-import { Range } from "./Range";
+import { DamageTypeChecklist, RangeTypeChecklist, WeaponSizeChecklist, WeaponTypeChecklist } from "@src/interface";
+import { defaults, list_truthy_keys } from "@src/funcs";
+import { MechWeaponProfile } from "./mech/MechWeapon";
 
-export interface IBonusData {
+export interface PackedBonusData {
     id: string;
     val: string | number;
     damage_types?: DamageType[];
@@ -17,6 +18,19 @@ export interface IBonusData {
     // ugh
     overwrite?: boolean;
     replace?: boolean;
+}
+
+// Make all fields required, force val to string, and use checklists
+export interface RegBonusData {
+    id: string;
+    val: string;
+    damage_types: DamageTypeChecklist;
+    range_types: RangeTypeChecklist;
+    weapon_types: WeaponTypeChecklist;
+    weapon_sizes: WeaponSizeChecklist;
+
+    overwrite: boolean;
+    replace: boolean;
 }
 
 interface BonusSummaryItem {
@@ -39,52 +53,68 @@ export interface BonusContext {
     [key: string]: number
 }
 
-export class Bonus {
-    // We don't extend simser {
+export class Bonus extends SimSer<RegBonusData> {
     ID!: string;
     Title!: string | number;
     Detail!: string | number;
-    DamageTypes!: DamageType[];
-    RangeTypes!: RangeType[];
-    WeaponTypes!: WeaponType[];
-    WeaponSizes!: WeaponSize[];
+    DamageTypes!: DamageTypeChecklist;
+    RangeTypes!: RangeTypeChecklist;
+    WeaponTypes!: WeaponTypeChecklist;
+    WeaponSizes!: WeaponSizeChecklist;
     Overwrite!: boolean;
     Replace!: boolean;
 
-
     // Cached compiled thingies
-    private _value!: string | number;
+    private _value!: string;
     private _value_func!: (v: BonusContext) => number;
 
-    // A transient value used for further display information
-    Source: string;
+    // An ephemeral label
+    Source: string = "???";
 
-    public constructor(data: IBonusData, source: string) {
+    // A self returning func for easily setting the source
+    public from_source(src: string): Bonus {
+        this.Source = src;
+        return this;
+    }
+
+    public load(data: RegBonusData) {
+        data = {...defaults.BONUS(), ...data};
         this.ID = data.id;
         this.Value = data.val;
-        this.DamageTypes = data.damage_types ?? []; // We much prefer these just be empty
-        this.RangeTypes = data.range_types ?? [];
-        this.WeaponTypes = data.weapon_types ?? [];
-        this.WeaponSizes = data.weapon_sizes ?? [];
-        this.Overwrite = data.overwrite ?? false;
-        this.Replace = data.replace ?? false;
+        this.DamageTypes = data.damage_types;
+        this.RangeTypes = data.range_types;
+        this.WeaponTypes = data.weapon_types;
+        this.WeaponSizes = data.weapon_sizes;
+        this.Overwrite = data.overwrite;
+        this.Replace = data.replace;
 
-        // Set our source if need be
-        this.Source = source;
-
-        // Check for more metadata.
+        // Check for more metadata from our list/map of implemented bonus data
         const entry = BonusDict.get(data.id);
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
     }
 
+    public static unpack(data: PackedBonusData): RegBonusData {
+        return {
+            ...defaults.BONUS(),
+            ...data,
+            val: "" + data.val,
+            damage_types: Damage.MakeChecklist(data.damage_types ?? []),
+            range_types: Range.MakeChecklist(data.range_types ?? []),
+            weapon_sizes: MechWeapon.MakeSizeChecklist(data.weapon_sizes ?? []),
+            weapon_types: MechWeapon.MakeTypeChecklist(data.weapon_types ?? [])
+        }
+    }
+
     // Compile the expression
-    public set Value(new_val: string | number) {
-        this._value = new_val;
+    public set Value(new_val: string) {
+        this._value = ""+new_val;
 
         // Replace any {} surrounded value with a default-substituting equivalent. {ll} -> (ll or 0)
         let val = "" + this.Value;
         val = val.replace(/\{(.*?)\}/g, "($1 or 0)")
+
+        // Then compile
         try {
             this._value_func = filtrex.compileExpression(val);
         } catch (e) {
@@ -92,23 +122,29 @@ export class Bonus {
         }
     }
 
-    public get Value(): string | number {
+    public get Value(): string {
         return this._value;
     }
 
     // Just a more convenient constructor
-    public static generate(id: string, val: string | number, source: string): Bonus {
-        return new Bonus({ id, val }, source);
+    public static generate(id: string, val: string | number, replace: boolean = false, overwrite: boolean = false): Bonus {
+        return new Bonus({
+            ...defaults.BONUS(), 
+            id, 
+            val: "" + val,
+            replace,
+            overwrite
+        });
     }
 
-    public save(): IBonusData {
+    public save(): RegBonusData {
         return {
             id: this.ID,
             val: this.Value,
-            damage_types: SerUtil.drop_empty(this.DamageTypes),
-            range_types: SerUtil.drop_empty(this.RangeTypes),
-            weapon_types: SerUtil.drop_empty(this.WeaponTypes),
-            weapon_sizes: SerUtil.drop_empty(this.WeaponSizes),
+            damage_types: {...this.DamageTypes}, 
+            range_types: {...this.RangeTypes},
+            weapon_types: {...this.WeaponTypes},
+            weapon_sizes: {...this.WeaponSizes},
             overwrite: this.Overwrite,
             replace: this.Replace
         };
@@ -117,23 +153,11 @@ export class Bonus {
     // Formats our detail string to properly show weapon types, damage types, value, etc
     private parse_detail(str: string): string {
         str = str.replace(/{VAL}/g, "" + this.Value);
-        str = str.replace(/{INC_DEC}/g, this.Value > -1 ? "Increases" : "Decreases");
-        str = str.replace(
-            /{RANGE_TYPES}/g,
-            ` ${this.RangeTypes.length ? this.RangeTypes.join("/").toUpperCase() : ""}`
-        );
-        str = str.replace(
-            /{DAMAGE_TYPES}/g,
-            ` ${this.DamageTypes.length ? this.DamageTypes.join("/").toUpperCase() : ""}`
-        );
-        str = str.replace(
-            /{WEAPON_TYPES}/g,
-            ` ${this.WeaponTypes.length ? this.WeaponTypes.join("/").toUpperCase() : ""}`
-        );
-        str = str.replace(
-            /{WEAPON_SIZES}/g,
-            ` ${this.WeaponSizes.length ? this.WeaponSizes.join("/").toUpperCase() : ""}`
-        );
+        str = str.replace(/{INC_DEC}/g, parseInt(this.Value) > -1 ? "Increases" : "Decreases");
+        str = str.replace(/{RANGE_TYPES}/g, list_truthy_keys(this.RangeTypes).join("/"));
+        str = str.replace(/{DAMAGE_TYPES}/g, list_truthy_keys(this.DamageTypes).join("/"));
+        str = str.replace(/{WEAPON_TYPES}/g, list_truthy_keys(this.WeaponTypes).join("/"));
+        str = str.replace(/{WEAPON_SIZES}/g, list_truthy_keys(this.WeaponSizes).join("/"));
 
         return str;
     }
@@ -150,25 +174,22 @@ export class Bonus {
         range: Range
     ): boolean {
         // Check type
-        if (this.WeaponTypes.length && !this.WeaponTypes.some(wt => profile.WepType === wt)) {
+        if (!this.WeaponTypes[profile.WepType]) {
             return false; // Does not apply - wrong type
         }
 
         // Check size
-        if (this.WeaponSizes.length && !this.WeaponSizes.some(ws => weapon.Size === ws)) {
+        if (this.WeaponSizes[weapon.Size]) {
             return false; // Does not apply - wrong size
         }
 
-        // Check damage type
-        if (
-            this.DamageTypes.length &&
-            !this.DamageTypes.some(dt => profile.BaseDamage.some(x => x.DamageType === dt))
-        ) {
+        // Check damage type. Basically just check intersection of our damage type keys with
+        if(profile.BaseDamage.some(bd => this.DamageTypes[bd.DamageType])) {
             return false; // Does not apply - wrong damage type
         }
 
-        // Check range type
-        if (this.RangeTypes.length && this.RangeTypes.some(rt => range.RangeType === rt)) {
+        // Check range type. Would be same deal, but we typically want to check for specific ranges
+        if (this.RangeTypes[range.RangeType]) {
             return false; // Does not apply - wrong range type
         }
 

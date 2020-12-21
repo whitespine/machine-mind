@@ -1,12 +1,20 @@
 import { CoreSystem, FrameTrait } from "@src/class";
 import { defaults } from "@src/funcs";
 import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
-import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_local_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
-import { RegFrameTraitData } from './FrameTrait';
-import { RegCoreSystemData } from './CoreSystem';
+import { RegFrameTraitData } from "./FrameTrait";
+import { RegCoreSystemData } from "./CoreSystem";
 
 // The raw stat information
 export interface IFrameStats {
@@ -71,17 +79,17 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         fd = { ...defaults.FRAME(), ...fd };
         this.ID = fd.id;
         this.LicenseLevel = fd.license_level;
-        this.Source = fd.source
-            ? await this.Registry.resolve(this.OpCtx, fd.source)
-            : null;
+        this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source) : null;
         this.Name = fd.name;
         this.Description = fd.description;
         this.MechType = fd.mechtype;
         this.YPosition = fd.y_pos || 30;
         this.Mounts = fd.mounts;
         this.Stats = fd.stats;
-        this.Traits = await Promise.all(fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft).ready()));
-        this.CoreSystem = await new CoreSystem(this.Registry, this.OpCtx,  fd.core_system).ready();
+        this.Traits = await Promise.all(
+            fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft).ready())
+        );
+        this.CoreSystem = await new CoreSystem(this.Registry, this.OpCtx, fd.core_system).ready();
         this.ImageUrl = fd.image_url;
         this.OtherArt = fd.other_art || [];
     }
@@ -140,6 +148,9 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     }
 
     public get_assoc_entries(): RegEntry<any>[] {
-        return [...this.Traits.flatMap(t => t.get_assoc_entries()), ...this.CoreSystem.get_assoc_entries()];
+        return [
+            ...this.Traits.flatMap(t => t.get_assoc_entries()),
+            ...this.CoreSystem.get_assoc_entries(),
+        ];
     }
 }

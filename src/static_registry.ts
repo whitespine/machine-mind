@@ -104,7 +104,7 @@ export class StaticReg extends Registry {
     private env: RegEnv;
     private _name: string;
 
-    public switch_reg(selector: string): Registry  {
+    public switch_reg(selector: string): Registry {
         return this.env.registries.get(selector) ?? new StaticReg(this.env, selector);
     }
 
@@ -113,11 +113,11 @@ export class StaticReg extends Registry {
     }
 
     public name(): string {
-        return this._name; 
+        return this._name;
     }
 
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
-        /*
+    /*
         // we don't actually use the item type here. #lazy
         let result = this.env.inventories.get(for_actor_id);
         if (!result) {
@@ -237,7 +237,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
                 id: new_id,
                 is_unresolved_mmid: false,
                 type: this.cat,
-                reg_name: this.parent.name()
+                reg_name: this.parent.name(),
             });
         }
 

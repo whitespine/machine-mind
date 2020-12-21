@@ -152,6 +152,6 @@ export class License extends RegEntry<EntryType.LICENSE> {
     // For the time being, this is disabled. There's no real sensible way for a license (owned by a pilot) to give systems/etc (which are owned by a mech)
     // Much better to just show these items in the item window
     // public get_child_entries(): RegEntry<any>[] {
-        // return this.Unlocks.flat();
+    // return this.Unlocks.flat();
     // }
 }

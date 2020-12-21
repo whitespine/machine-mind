@@ -1,3 +1,4 @@
+import { Bonus } from "@src/class";
 import {
     IEnvironmentData,
     IFactionData,
@@ -6,6 +7,7 @@ import {
     ISitrepData,
     IStatusData,
     ITagTemplateData,
+    RegBonusData,
     RegCoreBonusData,
     RegCoreSystemData,
     RegDeployableData,
@@ -36,6 +38,7 @@ import {
     RegWepMountData,
 } from "@src/interface";
 import { EntryType, RegEntryTypes } from "@src/registry";
+import { replace } from "lodash";
 import { nanoid } from "nanoid";
 import {
     ActivationType,
@@ -59,6 +62,46 @@ const color = "#777777";
 const icon = "";
 const logo = icon;
 
+// Our default bonus basically does nothing but allows everything
+export function BONUS(): RegBonusData {
+    return {
+        id: "unknown",
+        val: "0",
+        overwrite: false,
+        replace: false,
+        damage_types: {
+            Burn: true,
+            Energy: true,
+            Explosive: true,
+            Heat: true,
+            Kinetic: true,
+            Variable: true,
+        },
+        range_types: {
+            Blast: true,
+            Burst: true,
+            Cone: true,
+            Line: true,
+            Range: true,
+            Threat: true,
+            Thrown: true,
+        },
+        weapon_sizes: {
+            Auxiliary: true,
+            Heavy: true,
+            Main: true,
+            Superheavy: true,
+        },
+        weapon_types: {
+            CQB: true,
+            Cannon: true,
+            Launcher: true,
+            Melee: true,
+            Nexus: true,
+            Rifle: true,
+        },
+    };
+}
 export function CORE_BONUS(): RegCoreBonusData {
     return {
         actions: [],
@@ -78,13 +121,13 @@ export function CORE_BONUS(): RegCoreBonusData {
 
 export function CORE_SYSTEM(): RegCoreSystemData {
     return {
-        name: "New Core Active",
+        name: "New Core System",
         description,
         use: FrameEffectUse.Unknown,
 
         activation: ActivationType.Quick,
         active_name: "Core Active",
-        active_effect: "effect",
+        active_effect: "",
         active_actions: [],
         active_bonuses: [],
         active_synergies: [],
@@ -94,7 +137,7 @@ export function CORE_SYSTEM(): RegCoreSystemData {
         deployables: [],
         integrated: [],
         passive_actions: [],
-        passive_effect: "effect",
+        passive_effect: "",
         passive_name: "Core Passive",
         passive_bonuses: [],
         passive_synergies: [],
@@ -131,7 +174,7 @@ export function DEPLOYABLE(): RegDeployableData {
         tech_attack: 0,
         type: "",
         pilot: false,
-        mech: true
+        mech: true,
     };
 }
 
@@ -441,26 +484,11 @@ export function PILOT_ARMOR(): RegPilotArmorData {
         ...PILOT_GEAR(),
         name: "New Armor",
         bonuses: [
-            {
-                id: "pilot_hp",
-                val: 3,
-            },
-            {
-                id: "pilot_evasion",
-                val: 8,
-            },
-            {
-                id: "pilot_edef",
-                val: 8,
-            },
-            {
-                id: "pilot_speed",
-                val: 4,
-            },
-            {
-                id: "pilot_armor",
-                val: 1,
-            },
+            Bonus.generate("pilot_hp", 3, true).save(),
+            Bonus.generate("pilot_evasion", 3, true).save(),
+            Bonus.generate("pilot_edef", 3, true).save(),
+            Bonus.generate("pilot_speed", 3, true).save(),
+            Bonus.generate("pilot_armor", 0, true).save(),
         ],
     };
 }

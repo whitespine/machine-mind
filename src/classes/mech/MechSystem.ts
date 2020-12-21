@@ -2,7 +2,8 @@ import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@src/c
 import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
-    IBonusData,
+    RegBonusData,
+    PackedBonusData,
     ISynergyData,
     PackedCounterData,
     PackedDeployableData,
@@ -11,7 +12,15 @@ import {
     RegDeployableData,
     RegTagInstanceData,
 } from "@src/interface";
-import { EntryType, OpCtx, quick_local_ref, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    OpCtx,
+    quick_local_ref,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { SystemType } from "../../enums";
 import { Manufacturer } from "../Manufacturer";
 
@@ -25,7 +34,6 @@ interface AllMechSystemData {
     description: string; // v-html
     effect: string; // v-html
     actions?: IActionData[];
-    bonuses?: IBonusData[];
     synergies?: ISynergyData[];
 }
 
@@ -33,11 +41,13 @@ export interface PackedMechSystemData extends AllMechSystemData {
     deployables?: PackedDeployableData[];
     integrated?: string[];
     counters?: PackedCounterData[];
+    bonuses?: PackedBonusData[];
     tags?: PackedTagInstanceData[];
     source: string; // must be the same as the Manufacturer ID to sort correctly
 }
 
 export interface RegMechSystemData extends Required<AllMechSystemData> {
+    bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     integrated: RegRef<any>[];
     counters: RegCounterData[];
@@ -119,7 +129,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         this.Destroyed = data.destroyed;
         this.Uses = data.uses;
 
-        await SerUtil.load_basd(this.Registry, data, this);
+        await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters.map(c => new Counter(c));
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
