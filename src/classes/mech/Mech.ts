@@ -29,6 +29,7 @@ import {
 } from "@src/registry";
 import { CC_VERSION, DamageType } from "../../enums";
 import { BonusContext, BonusSummary } from "../Bonus";
+import { DamageTypeChecklist } from "../Damage";
 import { gathering_resolve_mmid, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
 import { WeaponMod } from "./WeaponMod";
@@ -74,7 +75,7 @@ export interface PackedMechData extends AllMechData {
 
 export interface RegMechData extends AllMechData {
     pilot: RegRef<EntryType.PILOT> | null;
-    resistances: DamageType[];
+    resistances: DamageTypeChecklist;
     //reactions: RegRef<EntryType.ACTION>[]
     reactions: string[];
     loadout: RegMechLoadoutData; // We only support one, for now
@@ -99,7 +100,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // Activations!: number;
     Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
-    Resistances!: DamageType[];
+    Resistances!: DamageTypeChecklist;
     Reactions!: string[]; // I haven't decided what I want to do with this yet. for now just names?
     Ejected!: boolean;
     MeltdownImminent!: boolean;
@@ -435,7 +436,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             // TODO
         });
         this.clear_statuses();
-        this.Resistances = [];
         this.Burn = 0;
         this.MeltdownImminent = false;
     }
@@ -562,7 +562,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge;
         this.CurrentCoreEnergy = data.current_core_energy;
-        this.Resistances = data.resistances;
+        this.Resistances = {...data.resistances};
         this.Reactions = data.reactions;
         this.Burn = data.burn;
         this.Ejected = data.ejected || false;
@@ -637,7 +637,7 @@ export async function mech_cloud_sync(
     mech.MeltdownImminent = data.meltdown_imminent;
     mech.Cc_ver = data.cc_ver;
     mech.CoreActive = data.core_active;
-    mech.Resistances = data.resistances as DamageType[];
+    mech.Resistances = Damage.MakeChecklist(data.resistances as DamageType[]);
     mech.Reactions = data.reactions;
 
     // We only take one loadout - whichever is active

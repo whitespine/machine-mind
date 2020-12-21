@@ -1,5 +1,6 @@
 import { Bonus } from "@src/class";
 import {
+    DamageTypeChecklist,
     IEnvironmentData,
     IFactionData,
     INpcClassStats,
@@ -293,7 +294,14 @@ export function MECH(): RegMechData {
         pilot: null,
         portrait: "",
         reactions: [],
-        resistances: [],
+        resistances: {
+            Variable: false, 
+            Kinetic: false, 
+            Heat: false, 
+            Explosive: false,
+            Energy: false,
+            Burn: false 
+        },
     };
 }
 
