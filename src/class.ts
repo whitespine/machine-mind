@@ -22,7 +22,7 @@ export { Frame } from "./classes/mech/Frame";
 export { FrameTrait } from "./classes/mech/FrameTrait";
 import { MechSystem } from "./classes/mech/MechSystem";
 export { WeaponMod } from "./classes/mech/WeaponMod";
-import { MechWeapon } from "./classes/mech/MechWeapon";
+import { MechWeapon, MechWeaponProfile } from "./classes/mech/MechWeapon";
 export type MechEquipment = MechSystem | MechWeapon;
 export { MechWeapon, MechSystem };
 
