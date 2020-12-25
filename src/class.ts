@@ -24,7 +24,7 @@ import { MechSystem } from "./classes/mech/MechSystem";
 export { WeaponMod } from "./classes/mech/WeaponMod";
 import { MechWeapon, MechWeaponProfile } from "./classes/mech/MechWeapon";
 export type MechEquipment = MechSystem | MechWeapon;
-export { MechWeapon, MechSystem };
+export { MechWeapon, MechSystem, MechWeaponProfile };
 
 export { Talent } from "./classes/pilot/Talent";
 export { License } from "./classes/License";
