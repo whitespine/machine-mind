@@ -266,6 +266,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             ...data,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
+            added_range: data.added_range?.map(Range.unpack) ?? [],
             added_tags: SerUtil.unpack_tag_instances(reg, data.added_tags),
             allowed_sizes,
             allowed_types,

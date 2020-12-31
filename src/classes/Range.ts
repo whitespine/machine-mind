@@ -3,6 +3,7 @@ import { SimSer } from "@src/registry";
 import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
 import { Bonus, Mech } from "@src/class";
 import { range } from "lodash";
+import { BonusSummary } from "./Bonus";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
@@ -15,7 +16,7 @@ export interface PackedRangeData {
 
 export interface RegRangeData {
     type: RangeType;
-    val: number;
+    val: string;
 }
 
 // Used to store things like what range-typed weapons a bonus affects
@@ -24,15 +25,15 @@ export type RangeTypeChecklist = { [key in RangeType]: boolean };
 // Represents a single range for a weapon. Line 8, range 10, burst 2, etc. Blast will have a separate entry for its "normal" range and the range of the explosion
 export class Range extends SimSer<RegRangeData> {
     RangeType!: RangeType;
-    Value!: number;
+    Value!: string;
     Bonuses?: string[]; // A purely visual attribute included in ranges produced by calc_range_with_bonuses. Describes the change
 
-    public load(data: PackedRangeData): void {
+    public load(data: RegRangeData): void {
         this.RangeType = data.type;
         this.Value = data.val;
     }
 
-    public save(): PackedRangeData {
+    public save(): RegRangeData {
         return {
             type: this.RangeType,
             val: this.Value,
@@ -87,12 +88,21 @@ export class Range extends SimSer<RegRangeData> {
             );
 
             // Compute them vals
-            let bonus_summary = Bonus.Accumulate(base_range.Value, range_specific_bonuses, ctx);
+            let bonus_summary: BonusSummary;
+            let base_as_num = parseInt(base_range.Value);
+            let fallback_base: string; //
+            if(Number.isNaN(base_as_num)) {
+                fallback_base = base_range.Value + " + ";
+                bonus_summary = Bonus.Accumulate(0, range_specific_bonuses, ctx);
+            } else {
+                fallback_base = "";
+                bonus_summary = Bonus.Accumulate(base_as_num, range_specific_bonuses, ctx);
+            }
 
             // Push the augmented range
             let new_range = new Range({
                 type: base_range.RangeType,
-                val: bonus_summary.final_value,
+                val: fallback_base + bonus_summary.final_value,
             });
             new_range.Bonuses = bonus_summary.contributors.map(
                 b => `+${b.value} :: ${b.bonus.Title}`
@@ -115,5 +125,12 @@ export class Range extends SimSer<RegRangeData> {
             Thrown: override || ranges.includes(RangeType.Thrown),
             Threat: override || ranges.includes(RangeType.Threat),
         };
+    }
+
+    public static unpack(r: PackedRangeData): RegRangeData {
+        return {
+            type: r.type,
+            val: ""+r.val
+        }
     }
 }

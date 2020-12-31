@@ -264,7 +264,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             let tags = SerUtil.unpack_tag_instances(reg, p.tags);
             let unpacked_profile: RegMechWeaponProfile = {
                 damage: (p.damage || []).map(Damage.unpack),
-                range: p.range || [],
+                range: (p.range || []).map(Range.unpack),
                 tags,
                 effect: p.effect || "",
                 on_attack: p.on_attack || "",

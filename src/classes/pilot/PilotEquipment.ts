@@ -220,6 +220,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             damage: data.damage.map(d => Damage.unpack(d)),
+            range: data.range.map(Range.unpack)
         };
         return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata, true);
     }

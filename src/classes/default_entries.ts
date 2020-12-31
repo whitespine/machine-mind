@@ -340,7 +340,7 @@ export function MECH_WEAPON(): RegMechWeaponData {
                 on_attack: "",
                 on_crit: "",
                 on_hit: "",
-                range: [{ type: RangeType.Range, val: 8 }],
+                range: [{ type: RangeType.Range, val: "8" }],
                 tags: [],
             },
         ],
@@ -509,7 +509,7 @@ export function PILOT_WEAPON(): RegPilotWeaponData {
         range: [
             {
                 type: RangeType.Range,
-                val: 5,
+                val: "5",
             },
         ],
         damage: [
