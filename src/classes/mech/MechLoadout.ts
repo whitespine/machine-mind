@@ -154,8 +154,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         this.WepMounts = [];
         if (this.Frame) {
             for (let size of this.Frame.Mounts) {
-                let new_mount = await this._new_mount(MountType.Unknown);
-                this.WepMounts.push(new_mount);
+                let new_mount = await this.AddEmptyWeaponMount(MountType.Unknown);
             }
         }
     }
@@ -169,18 +168,15 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             }
         }
 
-        // Agh. Nothing accepted it. Make a new unknown mount. Validation is a separate concern that we don't validate here
-        let new_mount = await this._new_mount(MountType.Unknown);
+        // Agh. Nothing accepted it. Make a new unknown mount. Validation is a separate concern that we don't handle here
+        let new_mount = await this.AddEmptyWeaponMount(MountType.Unknown);
         new_mount.try_add_weapon(weapon); // Should always succeed
-        this.WepMounts.push(new_mount);
     }
 
     // Just make a new sys mount. We don't really expect these to be empty, so don't bother checking.
     public async equip_system(system: MechSystem) {
-        let new_mount = new SystemMount(this.Registry, this.OpCtx, { system: null });
-        await new_mount.ready();
+        let new_mount = await this.AddEmptySystemMount();
         new_mount.System = system;
-        this.SysMounts.push(new_mount);
     }
 
     // Good ol' unpacking funcs
@@ -199,10 +195,19 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     */
 
     // We do this quite often. Creates a new empty mount of the specified size
-    private async _new_mount(type: MountType): Promise<WeaponMount> {
+    async AddEmptyWeaponMount(type: MountType): Promise<WeaponMount> {
         let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] });
         await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
         mount.reset(); // Give it its default slots
+        this.WepMounts.push(mount);
+        return mount;
+    }
+
+    // Sibling to the above
+    async AddEmptySystemMount(): Promise<SystemMount> {
+        let mount = new SystemMount(this.Registry, this.OpCtx, {system: null});
+        await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
+        this.SysMounts.push(mount);
         return mount;
     }
 
@@ -217,11 +222,12 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         let frame = await gathering_resolve_mmid(stack, this.OpCtx, EntryType.FRAME, mech_frame_id);
 
         // Reconstruct the mount setup
-        let weps: WeaponMount[] = [];
-        let syss: SystemMount[] = [];
+        this.WepMounts = [];
+        this.SysMounts = [];
 
         // Get all of our mount data
         let to_be_rendered: PackedMountData[] = [];
+
         // let mount_index = 0; // used for re-using weapons
         for (let integrated_wep of mech_loadout.integratedMounts) {
             // Coerce into the normal packed form, for our sanity's sake
@@ -253,9 +259,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         to_be_rendered.push(...mech_loadout.mounts);
 
         for (let tbr of to_be_rendered) {
-            let mount = await this._new_mount(tbr.mount_type as MountType);
+            let mount = await this.AddEmptyWeaponMount(tbr.mount_type as MountType);
             await mount.sync(tbr, stack);
-            weps.push(mount);
         }
 
         // Now systems. We check if they are in the same position to preserve typedness/customization, but otherwise make no especial effort
@@ -265,8 +270,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             let mls = mech_loadout.systems[i];
 
             // Create a mount and check the corresponding
-            let nm = new SystemMount(this.Registry, this.OpCtx, { system: null });
-            await nm.ready(); // Should be basically instant
+            let mount = await this.AddEmptySystemMount();
+            await mount.ready(); // Should be basically instant
 
             // If system already exists no need to fetch
             let sys: MechSystem | null = null;
@@ -292,14 +297,11 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             }
 
             // Append the new mount
-            nm.System = sys;
-            syss.push(nm);
+            mount.System = sys;
         }
 
         // Save
         this.Frame = frame;
-        this.WepMounts = weps;
-        this.SysMounts = syss;
     }
 }
 
