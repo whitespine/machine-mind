@@ -257,25 +257,28 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can handle circular loops", async () => {
+        expect.assertions(2);
         let env = await init_basic_setup();
-
         let ctx = new OpCtx();
-        // Make our pilot and mech
-        let pilot = await env.reg.create_live(EntryType.PILOT, ctx);
-        let mech = await env.reg.create_live(EntryType.MECH, ctx);
+
+        // Make two systems
+        let sys_a = await env.reg.create_live(EntryType.MECH_SYSTEM, ctx, {});
+        let sys_b = await env.reg.create_live(EntryType.MECH_SYSTEM, ctx, {});
 
         // Make them friends
-        pilot.Mechs.push(mech);
-        mech.Pilot = pilot;
+        sys_a.Integrated.push(sys_b);
+        sys_b.Integrated.push(sys_a);
         
-        // Write them back
-        await pilot.writeback();
-        await mech.writeback();
+        // Write back 
+        await sys_a.writeback();
+        await sys_b.writeback();
 
-        // Read them back in a new ctx
-        ctx = new OpCtx();
-        let pilot = await env.reg.get_cat(EntryType.PILOT).create_default(ctx);
+        // Read them back in a new ctx. If it doesn't crash, we're fine
+        let new_ctx = new OpCtx();
+        let resolved = await env.reg.get_cat(EntryType.MECH_SYSTEM).get_live(new_ctx, sys_a.RegistryID);
 
+        expect(resolved.Integrated.length).toBe(1);
+        expect(resolved.Integrated[0].Integrated.length).toBe(1);
     });
 
     it("Properly brings along child entries", async () => {
@@ -331,12 +334,19 @@ describe("Static Registry Reference implementation", () => {
     });
     
     it("Calls insinuation hooks (simple)", async () => {
-        expect.assertions(3);
+        expect.assertions(5);
         class HookyReg extends StaticReg {
             hook_post_insinuate(record) {
                 expect(record.type).toEqual(EntryType.MECH_SYSTEM);
-                expect(record.old_item.Name).toEqual("ns");
+                expect(old_sys.Name).toEqual("ns");
+                expect(old_sys.Description).toEqual("alpha");
                 expect(record.new_item.Name).toEqual("ns");
+                expect(record.new_item.Description).toEqual("beta"); // Note the change from our other hook!
+            }
+
+            hook_insinuate_pre_final_write(record) {
+                // We can sorta do anything we want to finalize our conversion
+                record.pending.Description = "beta";
             }
         }
 
@@ -344,7 +354,7 @@ describe("Static Registry Reference implementation", () => {
         let reg1 = new StaticReg(env);
         let reg2 = new HookyReg(env);
         let ctx = new OpCtx();
-        let old_sys = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns"});
+        let old_sys = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns", description: "alpha"});
         let new_sys = await old_sys.insinuate(reg2);
     });
 

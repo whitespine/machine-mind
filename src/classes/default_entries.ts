@@ -550,7 +550,6 @@ export function PILOT(): RegPilotData {
             extendedWeapons: [null],
         },
         mechSkills: [0, 0, 0, 0],
-        mechs: [],
         mounted: false,
         notes: "",
         player_name: "",

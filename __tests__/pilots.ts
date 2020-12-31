@@ -98,8 +98,9 @@ describe("Pilots", () => {
         expect(cb_names).toContain("adaptive reactor"); // 30
 
         // Mechs
-        expect(dk.Mechs.length).toEqual(3);
-        let mech_names = dk.Mechs.map(c => c.Name.toLowerCase());
+        let mechs = await dk.Mechs(dk.Registry);
+        expect(mechs.length).toEqual(3);
+        let mech_names = mechs.map(c => c.Name.toLowerCase());
         expect(mech_names).toContain("retsacnal");
         expect(mech_names).toContain("gengar");
         expect(mech_names).toContain("the fool"); // 34

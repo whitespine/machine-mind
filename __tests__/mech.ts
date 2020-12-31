@@ -51,7 +51,7 @@ describe("Mechs", () => {
         dk = await dk.refreshed();
 
         // Get his active mech, which should be the lanny
-        let mech = dk.Mechs[0];
+        let mech = dk.ActiveMech;
 
         // Some basics
         expect(mech.Name).toEqual("RETSACNAL");
@@ -90,7 +90,7 @@ describe("Mechs", () => {
         dk = await dk.refreshed();
 
         // Get his active mech, which should be the lanny
-        let mech: Mech = dk.Mechs[0];
+        let mech: Mech = dk.ActiveMech;
 
 
         expect(mech.CurrentStructure).toEqual(4);

@@ -102,8 +102,8 @@ export interface RegPilotData extends Required<BothPilotData> {
     // quirks: RegRef<EntryType.QUIRK>[];
 
     // Since mechs are themselves actors we don't need to cascade item ownership - just actor ownership
-    // We DO actually need a ref to these as ownership amidst the mech category is generally ambiguous
-    mechs: RegRef<EntryType.MECH>[];
+    // However, we can actually determine which mechs this pilot owns by just looking at the mechs themselves.
+    // mechs: RegRef<EntryType.MECH>[];
 
     // We do own these, though
     // skills: RegRef<EntryType.SKILL>[];
@@ -157,7 +157,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     MechSkills!: MechSkills;
 
 
-    Mechs!: Mech[];
+    // Mechs!: Mech[];
     CustomCounters!: Counter[];
     // The version of compcon that produced this
     CCVersion!: string;
@@ -223,8 +223,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [...this._owned_weapons, ...this._owned_armor, ...this._owned_gear, ...this._core_bonuses, ...this._factions, ...this._skills, ...this._talents, ...this._reserves, ...this._orgs, ...this._licenses];
     }
 
-    public get_assoc_entries(): RegEntry<any>[] {
-        return this.Mechs;
+    public async get_assoc_entries(): Promise<RegEntry<any>[]> {
+        return await this.Mechs(this.Registry);
     }
 
     // TODO: Create a more formalized method of tracking brew ids or something. Right now we just drop it when parsing, but it should really be an additional value on regentry creation
@@ -616,6 +616,13 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
     */
 
+    // Umbrella utility function for deducing which mechs in a pool are owned by this mech
+    // Slightly expensive, which is why we don't do it automatically
+    public async Mechs(from_reg: Registry): Promise<Mech[]> {
+        let all_mechs = await from_reg.get_cat(EntryType.MECH).list_live(this.OpCtx);
+        return all_mechs.filter(m => m.Pilot == this);
+    }
+
     // Grabs counters from the pilot, their gear, their active mech, etc etc
     public get Counters(): Counter[] {
         return [
@@ -666,7 +673,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Level = data.level;
         this.Loadout = await (new PilotLoadout(subreg, this.OpCtx, data.loadout)).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
-        this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
+        // this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
@@ -708,7 +715,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             level: this.Level,
             loadout: this.Loadout.save(),
             mechSkills: this.MechSkills.save(),
-            mechs: SerUtil.ref_all(this.Mechs),
+            // mechs: SerUtil.ref_all(this.Mechs),
             mounted: this.Mounted,
             name: this.Name,
             notes: this.Notes,
@@ -786,17 +793,18 @@ export async function cloud_sync(
         }
     }
 
-
     // Then do mechs
+    let pilot_mechs = await pilot.Mechs(pilot.Registry);
     for (let md of data.mechs) {
         // Look up one the a matching compcon id
-        let corr_mech = pilot.Mechs.find(m => m.ID == md.id);
+        let corr_mech = pilot_mechs.find(m => m.ID == md.id);
 
         if (!corr_mech) {
             // Make a new one
             corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
-            // Add it to the pilot
-            pilot.Mechs.push(corr_mech);
+
+            // Add it to our temporary tracker
+            pilot_mechs.push(corr_mech);
         }
 
         // Tell it we own it
