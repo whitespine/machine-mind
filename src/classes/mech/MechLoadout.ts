@@ -154,7 +154,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         this.WepMounts = [];
         if (this.Frame) {
             for (let size of this.Frame.Mounts) {
-                let new_mount = await this.AddEmptyWeaponMount(MountType.Unknown);
+                await this.AddEmptyWeaponMount(size);
             }
         }
     }
