@@ -35,7 +35,7 @@ export {
     PackedWeaponSlotData,
     RegMechLoadoutData,
     RegSysMountData,
-    RegWepMountData,
+    RegWepMountData
 } from "./classes/mech/MechLoadout";
 export { RegWeaponModData, PackedWeaponModData } from "./classes/mech/WeaponMod";
 export { PackedPilotData, RegPilotData } from "./classes/pilot/Pilot";

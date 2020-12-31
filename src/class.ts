@@ -33,7 +33,7 @@ export { PilotLoadout } from "./classes/pilot/PilotLoadout";
 export { Quirk } from "./classes/pilot/Quirk";
 export { Pilot } from "./classes/pilot/Pilot";
 export { TagInstance, TagTemplate } from "./classes/Tag";
-export { MechLoadout } from "./classes/mech/MechLoadout";
+export { MechLoadout, WeaponMount, WeaponSlot, SystemMount } from "./classes/mech/MechLoadout";
 export { Mech } from "./classes/mech/Mech";
 export { Reserve } from "./classes/pilot/reserves/Reserve";
 // export { Project } from "./classes/pilot/reserves/Project";
