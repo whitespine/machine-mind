@@ -68,6 +68,7 @@ export class MechSkills extends SimSer<IMechSkills> {
     // This is somewhat unrelated but felt a fitting place to put this. Bonuses from grit
     public static LevelBonuses: Bonus[] = [
         Bonus.generate("hp", "{grit}").from_source("Pilot GRIT"),
+        Bonus.generate("pilot_hp", "{grit}").from_source("Pilot GRIT"),
         Bonus.generate("sp", "{grit}").from_source("Pilot GRIT"),
         Bonus.generate("attack", "{grit}").from_source("Pilot GRIT"),
         Bonus.generate("save", "{grit}").from_source("Pilot GRIT"),
