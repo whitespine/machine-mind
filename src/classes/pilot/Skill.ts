@@ -62,7 +62,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
             description: this.Description,
             detail: this.Description,
             family: this.Family,
-            id: this.Family,
+            id: this.ID,
             name: this.Name,
             rank: this.CurrentRank,
         };
