@@ -72,9 +72,11 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
             .replace(/[^A-Za-z0-9_]/g, "")
             .toLowerCase();
         if (manifest.item_prefix) {
-            return `${manifest.item_prefix}__${type}_${sanitizedName}`;
+            // return `${manifest.item_prefix}__${type}_${sanitizedName}`;
+            return `${manifest.item_prefix}__${sanitizedName}`;
         } else {
-            return `${type}_${sanitizedName}`;
+            return sanitizedName;
+            // return `${type}_${sanitizedName}`;
         }
     };
 
