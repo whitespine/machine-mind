@@ -224,7 +224,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public async get_assoc_entries(): Promise<RegEntry<any>[]> {
-        return await this.Mechs(this.Registry);
+        return await this.Mechs();
     }
 
     // TODO: Create a more formalized method of tracking brew ids or something. Right now we just drop it when parsing, but it should really be an additional value on regentry creation
@@ -618,8 +618,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
     // Umbrella utility function for deducing which mechs in a pool are owned by this mech
     // Slightly expensive, which is why we don't do it automatically
-    public async Mechs(from_reg: Registry): Promise<Mech[]> {
-        let all_mechs = await from_reg.get_cat(EntryType.MECH).list_live(this.OpCtx);
+    public async Mechs(): Promise<Mech[]> {
+        let all_mechs = await this.Registry.get_cat(EntryType.MECH).list_live(this.OpCtx);
         return all_mechs.filter(m => m.Pilot == this);
     }
 
@@ -794,7 +794,7 @@ export async function cloud_sync(
     }
 
     // Then do mechs
-    let pilot_mechs = await pilot.Mechs(pilot.Registry);
+    let pilot_mechs = await pilot.Mechs();
     for (let md of data.mechs) {
         // Look up one the a matching compcon id
         let corr_mech = pilot_mechs.find(m => m.ID == md.id);
@@ -954,6 +954,6 @@ export async function cloud_sync(
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
     await pilot.Loadout.ready();
 
-    // We writeback. We should still be in a stable state though
+    // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();
 }
