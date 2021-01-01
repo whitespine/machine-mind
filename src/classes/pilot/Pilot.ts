@@ -736,11 +736,11 @@ export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
     gather_source_regs: Registry[] // 
-): Promise<void> {
+): Promise<{pilot: Pilot, pilot_mechs: Mech[]} | null> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();
     if(!tmp_pilot) {
-        return;
+        return null; // This is fairly catastrophic
     }
     pilot = tmp_pilot;
 
@@ -956,4 +956,5 @@ export async function cloud_sync(
 
     // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();
+    return {pilot, pilot_mechs};
 }
