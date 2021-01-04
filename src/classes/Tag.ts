@@ -39,7 +39,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     public async load(data: ITagTemplateData): Promise<void> {
         data = { ...defaults.TAG_TEMPLATE(), ...data };
         this.ID = data.id;
-        this.Name = data.id;
+        this.Name = data.name;
         this.Description = data.description;
         this._filter_ignore = data.filter_ignore || null;
         this._hidden = data.hidden || null; // Whether to show this tag
