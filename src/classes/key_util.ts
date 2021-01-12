@@ -48,7 +48,6 @@ import {
     RegMechWeaponData,
     RegNpcClassData,
     RegNpcData,
-    RegNpcFeatureData,
     RegNpcTemplateData,
     RegPilotArmorData,
     RegPilotData,
@@ -62,6 +61,7 @@ import {
 } from "@src/interface";
 import { EntryType, RegEntry, RegEntryTypes } from "@src/registry";
 import { keys } from "ts-transformer-keys";
+import { AnyRegNpcFeatureData } from "./npc/NpcFeature";
 
 // Expected keys for live types
 let pending_live_keyset: any = null;
@@ -118,7 +118,7 @@ function reg_keyset_map(): any {
             [EntryType.MECH_WEAPON]: keys<RegMechWeaponData>(),
             [EntryType.NPC]: keys<RegNpcData>(),
             [EntryType.NPC_CLASS]: keys<RegNpcClassData>(),
-            [EntryType.NPC_FEATURE]: keys<RegNpcFeatureData>(),
+            [EntryType.NPC_FEATURE]: keys<AnyRegNpcFeatureData>(),
             [EntryType.NPC_TEMPLATE]: keys<RegNpcTemplateData>(),
             [EntryType.ORGANIZATION]: keys<IOrganizationData>(),
             [EntryType.PILOT_ARMOR]: keys<RegPilotArmorData>(),

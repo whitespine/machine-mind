@@ -282,7 +282,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         }
 
         // And we are done
-        return reg.get_cat(EntryType.MECH_WEAPON).create_live(ctx, unpacked, true);
+        return reg.get_cat(EntryType.MECH_WEAPON).create_live(ctx, unpacked);
     }
 
     // Weapons need to bring their stuff along too!

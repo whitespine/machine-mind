@@ -191,6 +191,6 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             counters,
             tags,
         };
-        return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked, true);
+        return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
     }
 }

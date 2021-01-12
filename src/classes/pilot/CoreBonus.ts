@@ -125,7 +125,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             bonuses: (cor.bonuses ?? []).map(Bonus.unpack),
             synergies: cor.synergies ?? [],
         };
-        return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata, true);
+        return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata);
     }
 
     public get_assoc_entries(): RegEntry<any>[] {
