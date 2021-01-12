@@ -62,6 +62,7 @@ import {
     Organization,
 } from "@src/class";
 import { trimmed } from "./classes/key_util";
+import { AnyPackedNpcFeatureData, AnyRegNpcFeatureData } from "./classes/npc/NpcFeature";
 import {
     IActionData,
     RegBonusData,
@@ -86,7 +87,6 @@ import {
     PackedMechSystemData,
     PackedMechWeaponData,
     PackedNpcClassData,
-    PackedNpcFeatureData,
     PackedNpcTemplateData,
     PackedPilotArmorData,
     PackedPilotData,
@@ -111,7 +111,6 @@ import {
     RegMechWeaponData,
     RegNpcClassData,
     RegNpcData,
-    RegNpcFeatureData,
     RegNpcTemplateData,
     RegPilotArmorData,
     RegPilotData,
@@ -182,7 +181,7 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.MECH_WEAPON]: RegMechWeaponData;
     [EntryType.NPC]: RegNpcData;
     [EntryType.NPC_CLASS]: RegNpcClassData;
-    [EntryType.NPC_FEATURE]: RegNpcFeatureData;
+    [EntryType.NPC_FEATURE]: AnyRegNpcFeatureData;
     [EntryType.NPC_TEMPLATE]: RegNpcTemplateData;
     [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: RegPilotArmorData;
@@ -218,7 +217,7 @@ interface FixedPackedEntryTypes {
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
     [EntryType.MECH_WEAPON]: PackedMechWeaponData;
     [EntryType.NPC_CLASS]: PackedNpcClassData;
-    [EntryType.NPC_FEATURE]: PackedNpcFeatureData;
+    [EntryType.NPC_FEATURE]: AnyPackedNpcFeatureData;
     [EntryType.NPC_TEMPLATE]: PackedNpcTemplateData;
     [EntryType.ORGANIZATION]: IOrganizationData;
     [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
@@ -971,11 +970,11 @@ export abstract class RegCat<T extends EntryType> {
     async create_live(
         ctx: OpCtx,
         val: RegEntryTypes<T>,
-        trim: boolean = false
+        // trim: boolean = false
     ): Promise<LiveEntryTypes<T>> {
-        if (trim) {
-            val = trimmed(this.cat, val);
-        }
+        // if (trim) {
+            // val = trimmed(this.cat, val);
+        // }
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
     }

@@ -1,5 +1,7 @@
 import { Bonus } from "@src/class";
 import {
+    AnyRegNpcFeatureData,
+    BaseRegNpcFeatureData,
     DamageTypeChecklist,
     IEnvironmentData,
     IFactionData,
@@ -23,8 +25,12 @@ import {
     RegMechWeaponProfile,
     RegNpcClassData,
     RegNpcData,
-    RegNpcFeatureData,
+    RegNpcReactionData,
+    RegNpcSystemData,
+    RegNpcTechData,
     RegNpcTemplateData,
+    RegNpcTraitData,
+    RegNpcWeaponData,
     RegPilotArmorData,
     RegPilotData,
     RegPilotGearData,
@@ -39,7 +45,6 @@ import {
     RegWepMountData,
 } from "@src/interface";
 import { EntryType, RegEntryTypes } from "@src/registry";
-import { replace } from "lodash";
 import { nanoid } from "nanoid";
 import {
     ActivationType,
@@ -295,12 +300,12 @@ export function MECH(): RegMechData {
         portrait: "",
         reactions: [],
         resistances: {
-            Variable: false, 
-            Kinetic: false, 
-            Heat: false, 
+            Variable: false,
+            Kinetic: false,
+            Heat: false,
             Explosive: false,
             Energy: false,
-            Burn: false 
+            Burn: false,
         },
     };
 }
@@ -414,7 +419,11 @@ export function NPC_CLASS(): RegNpcClassData {
     };
 }
 
-export function NPC_FEATURE(): RegNpcFeatureData {
+export function NPC_FEATURE(): AnyRegNpcFeatureData {
+    return NPC_TRAIT();
+}
+
+function npc_feature_commons(): BaseRegNpcFeatureData {
     return {
         id: "npcf_" + nanoid(),
         name: "New Npc Feature",
@@ -426,8 +435,84 @@ export function NPC_FEATURE(): RegNpcFeatureData {
         tags: [],
         type: NpcFeatureType.Trait,
         bonus: {},
-        effect: "",
+        effect: "No Effect",
         override: {},
+    };
+}
+
+export function NPC_TECH(): RegNpcTechData {
+    return {
+        ...npc_feature_commons(),
+        name: "New NPC Tech",
+        type: NpcFeatureType.Tech,
+        accuracy: [0, 0, 0],
+        attack_bonus: [0, 0, 0],
+        tech_type: "Quick Tech",
+    };
+}
+
+export function NPC_WEAPON(): RegNpcWeaponData {
+    return {
+        ...npc_feature_commons(),
+        name: "New NPC Tech",
+        type: NpcFeatureType.Weapon,
+        accuracy: [0, 0, 0],
+        attack_bonus: [0, 0, 0],
+        weapon_type: "Unknown",
+        damage: [
+            [{
+                type: DamageType.Kinetic,
+                val: "1"
+            }],
+            [{
+                type: DamageType.Kinetic,
+                val: "2"
+            }],
+            [{
+                type: DamageType.Kinetic,
+                val: "3"
+            }],
+        ],
+        range: [
+            {
+                type: RangeType.Range,
+                val: "5",
+            },
+            {
+                type: RangeType.Range,
+                val: "10",
+            },
+            {
+                type: RangeType.Range,
+                val: "15",
+            },
+        ],
+        on_hit: "",
+    };
+}
+
+export function NPC_REACTION(): RegNpcReactionData {
+    return {
+        ...npc_feature_commons(),
+        name: "New NPC Reaction",
+        trigger: "Undefined trigger",
+        type: NpcFeatureType.Reaction,
+    };
+}
+
+export function NPC_TRAIT(): RegNpcTraitData {
+    return {
+        ...npc_feature_commons(),
+        name: "New NPC Trait",
+        type: NpcFeatureType.Trait,
+    };
+}
+
+export function NPC_SYSTEM(): RegNpcSystemData {
+    return {
+        ...npc_feature_commons(),
+        name: "New NPC System",
+        type: NpcFeatureType.System,
     };
 }
 

@@ -36,7 +36,6 @@ import {
     IFactionData,
     PackedWeaponModData,
     PackedNpcClassData,
-    PackedNpcFeatureData,
     PackedNpcTemplateData,
     ITagTemplateData,
     IStatusData,
@@ -45,6 +44,7 @@ import {
     IActionData,
     PackedPilotEquipmentData,
     PackedManufacturerData,
+    AnyPackedNpcFeatureData,
 } from "@src/interface";
 import { Rules } from "@src/class";
 
@@ -72,7 +72,7 @@ export const info = _info as {
 export const manufacturers = _manufacturers as PackedManufacturerData[];
 export const mods = _mods as PackedWeaponModData[];
 export const npc_classes = _npc_classes as PackedNpcClassData[];
-export const npc_features = _npc_features as PackedNpcFeatureData[];
+export const npc_features = _npc_features as AnyPackedNpcFeatureData[];
 export const npc_templates = _npc_templates as PackedNpcTemplateData[];
 export const pilot_gear = _pilot_gear as PackedPilotEquipmentData[];
 export const quirks = _quirks as string[];

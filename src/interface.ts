@@ -67,20 +67,11 @@ export {
     ITalentItemData,
 } from "./classes/pilot/Talent";
 export { PackedSkillData, RegSkillData } from "./classes/pilot/Skill";
-export { RegNpcFeatureData, PackedNpcFeatureData } from "./classes/npc/NpcFeature";
+export {IOriginData, PackedNpcReactionData, PackedNpcWeaponData, PackedNpcSystemData, PackedNpcTraitData, PackedNpcTechData, NpcFeature, AnyPackedNpcFeatureData , AnyRegNpcFeatureData , PackedNpcDamageData , BaseRegNpcFeatureData, RegNpcReactionData, RegNpcSystemData, RegNpcTechData, RegNpcTraitData, RegNpcWeaponData} from "./classes/npc/NpcFeature";
 export { RegNpcData, PackedNpcData } from "./classes/npc/Npc";
 export { RegNpcTemplateData, PackedNpcTemplateData } from "./classes/npc/NpcTemplate";
 export { RegNpcClassData, PackedNpcClassData } from "./classes/npc/NpcClass";
 export { INpcClassStats } from "./classes/npc/NpcClassStats";
-// export { RegNpcReactionData } from "./classes/npc/NpcReaction";
-// export { INpcSystemData } from "./classes/npc/NpcSystem";
-// export { INpcTechData } from "./classes/npc/NpcTech";
-// export { INpcItemSaveData } from "./classes/npc/NpcItem";
-// export { INpcDamageData, INpcWeaponData } from "./classes/npc/NpcWeapon";
-// export { INpcStats } from "./classes/npc/NpcStats";
-// export { INpcClassData } from "./classes/npc/NpcClass";
-// export { INpcTemplateData } from "./classes/npc/NpcTemplate";
-// export { INpcData } from "./classes/npc/Npc";
 // export { IEncounterData } from "./classes/encounter/Encounter.dts";
 // export { IMissionData } from "./classes/encounter/Mission";
 // export { IMissionStep } from "./classes/encounter/IMissionStep";

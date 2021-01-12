@@ -88,7 +88,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
         };
-        return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata, true);
+        return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata);
     }
 
     public get RoleIcon(): string {

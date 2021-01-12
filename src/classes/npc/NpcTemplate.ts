@@ -71,6 +71,6 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
         };
-        return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata, true);
+        return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }
 }

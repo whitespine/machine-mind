@@ -44,7 +44,7 @@ import {
     PackedSkillData,
     PackedManufacturerData,
     PackedNpcClassData,
-    PackedNpcFeatureData,
+    AnyPackedNpcFeatureData,
     PackedNpcTemplateData,
 } from "@src/interface";
 import { IStatusData } from "./Statuses";
@@ -73,7 +73,7 @@ export interface IContentPackData {
     tags: ITagTemplateData[];
 
     npcClasses: PackedNpcClassData[];
-    npcFeatures: PackedNpcFeatureData[];
+    npcFeatures: AnyPackedNpcFeatureData[];
     npcTemplates: PackedNpcTemplateData[];
 
     // New additions courtesy of whitespine
