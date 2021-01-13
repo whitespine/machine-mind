@@ -97,28 +97,14 @@ export interface PackedPilotData extends BothPilotData {
 export interface RegPilotData extends Required<BothPilotData> {
     active_mech: RegRef<EntryType.MECH> | null;
 
-    // factions: RegRef<EntryType.FACTION>[]; // I mostly made these first-class entities because I thought faction-membership bonuses/reserves would be kinda cool...
-    // organizations: RegRef<EntryType.ORGANIZATION>[];
-    // quirks: RegRef<EntryType.QUIRK>[];
-
-    // Since mechs are themselves actors we don't need to cascade item ownership - just actor ownership
-    // However, we can actually determine which mechs this pilot owns by just looking at the mechs themselves.
-    // mechs: RegRef<EntryType.MECH>[];
+    // Compcon doesn't (but should) track these
+    current_overshield: number;
 
     // We do own these, though
-    // skills: RegRef<EntryType.SKILL>[];
-    // talents: RegRef<EntryType.TALENT>[];
-    // core_bonuses: RegRef<EntryType.CORE_BONUS>[];
     custom_counters: RegCounterData[];
 
-    // Contains refs to our equpment, which we still own independently
+    // Contains refs to our equpment, which we still own independently via our inventory
     loadout: RegPilotLoadoutData;
-
-    // the equip on our pilot
-    // licenses: RegRef<EntryType.LICENSE>[];
-    // owned_weapons: RegRef<EntryType.PILOT_WEAPON>[];
-    // owned_armor: RegRef<EntryType.PILOT_ARMOR>[];
-    // owned_gear: RegRef<EntryType.PILOT_GEAR>[];
 
     // We don't really track active state much here. We do at least track mounted state
     mounted: boolean;
@@ -149,6 +135,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     Level!: number;
     Status!: string; // I honestly have no idea what this is
     CurrentHP!: number;
+    Overshield!: number;
     Loadout!: PilotLoadout;
     ActiveMech!: Mech | null;
     Mounted!: boolean;
@@ -677,6 +664,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
+        this.Overshield = data.current_overshield;
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
         this.SortIndex = data.sort_index;
@@ -707,6 +695,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,
             current_hp: this.CurrentHP,
+            current_overshield: this.Overshield,
             custom_counters: SerUtil.save_all(this.CustomCounters),
             group: this.Group,
             history: this.History,

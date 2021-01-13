@@ -642,6 +642,7 @@ export function PILOT(): RegPilotData {
         sort_index: 0,
         status: "",
         text_appearance: "",
+        current_overshield: 0
     };
 }
 
