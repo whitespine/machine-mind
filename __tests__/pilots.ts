@@ -141,7 +141,7 @@ describe("Pilots", () => {
 
         // Make sure that the mechs do in fact have the items, though. Only both with a few
         let lanny = await dest_mechs.find((m: Mech) => m.Loadout.Frame.ID == "mf_lancaster");
-        let lanny_inv = lanny.get_inventory();
+        let lanny_inv = await lanny.get_inventory();
         let lanny_frames = await lanny_inv.get_cat(EntryType.FRAME).list_live(ctx);
         let lanny_weapons = await lanny_inv.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
         expect(lanny_frames.length).toEqual(1);

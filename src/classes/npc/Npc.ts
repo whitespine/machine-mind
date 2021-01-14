@@ -190,7 +190,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
 
     protected async load(data: RegNpcData): Promise<void> {
         data = { ...defaults.NPC(), ...data };
-        let subreg = this.get_inventory();
+        let subreg = await this.get_inventory();
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;
         this.Burn = data.burn;

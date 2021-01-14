@@ -545,7 +545,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     public async load(data: RegMechData): Promise<void> {
         data = { ...defaults.MECH(), ...data };
-        let subreg = this.get_inventory();
+        let subreg = await this.get_inventory();
         this.ID = data.id;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
         this.Name = data.name;
@@ -607,11 +607,11 @@ export async function mech_cloud_sync(
     gather_source_regs: Registry[]
 ): Promise<void> {
     // Reg stuff
-    let mech_inv = mech.get_inventory();
+    let mech_inv = await mech.get_inventory();
     let ctx = mech.OpCtx;
     let stack: RegFallback;
     if (mech.Pilot) {
-        stack = { base: mech_inv, fallbacks: [mech.Pilot.get_inventory(), ...gather_source_regs] };
+        stack = { base: mech_inv, fallbacks: [await mech.Pilot.get_inventory(), ...gather_source_regs] };
     } else {
         stack = { base: mech_inv, fallbacks: [...gather_source_regs] };
     }

@@ -792,7 +792,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
     }
 
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
-    get_inventory(): Registry {
+    async get_inventory(): Promise<Registry> {
         let v = this.Registry.switch_reg_inv(this);
         if (!v) {
             console.error(
@@ -823,7 +823,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
             let all_items = this.enumerate_owned_items();
 
             // Get our new target reg (the new entry's inventory)
-            let new_inventory = new_reg_entry.get_inventory();
+            let new_inventory = await new_reg_entry.get_inventory();
 
             // Insinuate them all
             for (let i of all_items) {
@@ -1102,7 +1102,7 @@ export abstract class Registry {
     ): Promise<LiveEntryTypes<EntryType> | null> {
         // Check name
         if (ref.reg_name != this.name()) {
-            let appropriate_reg = this.switch_reg(ref.reg_name);
+            let appropriate_reg = await this.switch_reg(ref.reg_name);
             if (appropriate_reg) {
                 return appropriate_reg.resolve_rough(ctx, ref);
             } else {
@@ -1147,10 +1147,10 @@ export abstract class Registry {
     }
 
     // Returns the inventory registry of the specified id. Implementation is highly domain specific - foundry needs specifiers for type _and_ id. In such cases, would recommend compound id, like "actor:123456789"
-    public abstract switch_reg(selector: string): Registry | null;
+    public abstract switch_reg(selector: string): Registry | null | Promise<Registry | null>;
 
     // Wraps switch_reg. Provides an inventory for the given inventoried unit
-    public abstract switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry;
+    public abstract switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry | Promise<Registry>;
 
     // Returns the name by which this reg would be fetched via switch_reg
     public abstract name(): string;

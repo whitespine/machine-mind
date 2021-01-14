@@ -137,7 +137,7 @@ describe("Static Registry Reference implementation", () => {
         let pilots = env.reg.get_cat(EntryType.PILOT);
         let steve = await pilots.create_default(ctx);
         steve.Name = "Steve";
-        let steve_inv = steve.get_inventory()
+        let steve_inv = await steve.get_inventory()
 
         // Inventory should be unique
         expect(steve_inv == env.reg).toBeFalsy();
@@ -155,7 +155,7 @@ describe("Static Registry Reference implementation", () => {
         expect(personal_armor.RegistryID == global_armor.RegistryID).toBeFalsy();
         expect(personal_armor.Registry == global_armor.Registry).toBeFalsy();
         expect(personal_armor.Registry == env.reg).toBeFalsy();
-        expect(global_armor.Registry == steve.get_inventory()).toBeFalsy(); // 5
+        expect(global_armor.Registry == await steve.get_inventory()).toBeFalsy(); // 5
 
         // Change its name
         personal_armor.Name = "Steve's personal armor";
@@ -231,10 +231,10 @@ describe("Static Registry Reference implementation", () => {
         let source_pilot = await source_env.reg.create_live(EntryType.PILOT, ctx);
 
         // The gun, we build directly in the source pilot reg
-        let source_gun = await source_pilot.get_inventory().create_live(EntryType.PILOT_WEAPON, ctx);
+        let source_gun = await source_pilot.get_inventory().then((i: Registry) => i.create_live(EntryType.PILOT_WEAPON, ctx));
         // The armor, we make then insinuate
         let source_world_armor = await source_env.reg.create_live(EntryType.PILOT_ARMOR, ctx);
-        let source_pilot_armor = await source_world_armor.insinuate(source_pilot.get_inventory());
+        let source_pilot_armor = await source_world_armor.insinuate(await source_pilot.get_inventory());
 
         // Sanity check. Pilot should have one of each type. World should only have the single armor
         let check_ctx = new OpCtx();
