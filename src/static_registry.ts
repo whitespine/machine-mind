@@ -116,6 +116,11 @@ export class StaticReg extends Registry {
         return this._name;
     }
 
+    // Do this prior to loading things, obviously, or else they will think they belong to another reg
+    public set_name(to_name: string) {
+        this._name = to_name;
+    }
+
     // Fetch inventory. Create if not present. Pretty primitive but w/e, its a ref imp and we aren't really concerned about mem issues
     /*
         // we don't actually use the item type here. #lazy
@@ -235,7 +240,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             this.reg_data.set(new_id, raw); // It's just that easy!
             refs.push({
                 id: new_id,
-                is_unresolved_mmid: false,
+                fallback_mmid: (raw as any).id ?? "", // Our best guess
                 type: this.cat,
                 reg_name: this.parent.name(),
             });

@@ -422,4 +422,54 @@ describe("Static Registry Reference implementation", () => {
         // Should know that it belongs to B
         expect(found_val.Registry.name()).toEqual("b");
     });
+
+    it("Properly resolves fallback mmids", async () => {
+        expect.assertions(4);
+
+        // Create two setups
+        let setup_alpha = await init_basic_setup(false);
+        let setup_beta = await init_basic_setup(false);
+
+        // For the purpose of this demonstration, they must have the same name
+        setup_alpha.reg.set_name("comp");
+        setup_beta.reg.set_name("comp");
+
+        // Load in the cp's
+        let bcp = get_base_content_pack();
+        await intake_pack(bcp, setup_alpha.reg);
+        await intake_pack(bcp, setup_beta.reg);
+
+        // Delete the sherman from beta
+        let ctx = new OpCtx();
+        let beta_frames = await setup_beta.reg.get_cat(EntryType.FRAME).list_live(ctx);
+        let beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_sherman");
+        await beta_sherman.destroy_entry();
+
+        // We take the sherman from alpha and place its data (raw, unaffected) in beta
+        let alpha_sherman = await setup_alpha.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_sherman");
+
+        let new_beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).create_live(ctx, alpha_sherman.save());
+
+        // Assert that they have the same # of mechs, since though we deleted beta's sherman we immediately replaced it
+        expect((await setup_alpha.reg.get_cat(EntryType.FRAME).list_live(ctx)).length).toEqual((await setup_beta.reg.get_cat(EntryType.FRAME).list_live(ctx)).length);
+
+        // Now, the alpha sherman's manufacturer, targs, and integrated refs would typically have just been lost in transition
+        // prior to recent changes to mmid fallbacking. But now! They shouldn't! We assume that an incorrect id means use fallback mmid, 
+        // and that an invalid ref name just means use current
+        let new_solidcore = new_beta_sherman.CoreSystem.Integrated[0];
+
+        // It should exist, in spite of us not insinuating
+        expect(new_solidcore != undefined).toBeTruthy();
+
+        // The sherman should know it's from harrison armory (again, in spite of the ref not having been transitted normally)
+        let new_man = new_beta_sherman.Source; // get yourself one
+        expect(new_man.Name).toEqual("HARRISON ARMORY");
+
+        // The solidcore should still have its ordnance tag
+        expect(new_solidcore.SelectedProfile.Tags[0].Tag.Name).toEqual("ORDNANCE");
+
+        // That's about it.
+        // NOTE: We don't test deployables, because they don't work. And they can't! Because compcon spec doesn't provide any mechanism to specify a deployable id.
+        // Could maybe gen some ourselves, but I'm holding off on that for now
+    });
 });

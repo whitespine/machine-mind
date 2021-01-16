@@ -614,24 +614,16 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Make a reference to this item
-    public as_ref(as_mmid: boolean = false): RegRef<T> {
+    public as_ref(): RegRef<T> {
+        // Attempt to get our id. Default as empty string
+        let mmid = (this as any).ID ?? "";
         // If our context was set as mmid-mode, then we save back as ids whenever possible
-        if (as_mmid) {
-            let mmid = (this as any).ID ?? (this as any).Name?.toLowerCase() ?? "MISSING_MMID";
-            return {
-                id: mmid,
-                is_unresolved_mmid: true,
-                type: this.Type,
-                reg_name: this.Registry.name(),
-            };
-        } else {
-            return {
-                id: this.RegistryID,
-                type: this.Type,
-                is_unresolved_mmid: false, // We're in a reg! we're gooood!
-                reg_name: this.Registry.name(),
-            };
-        }
+        return {
+            id: this.RegistryID,
+            fallback_mmid: mmid,
+            type: this.Type,
+            reg_name: this.Registry.name(),
+        };
     }
 
     // Populate this item with stuff
@@ -1111,15 +1103,20 @@ export abstract class Registry {
         }
 
         // Haven't resolved this yet
-        let result: LiveEntryTypes<any> | null;
-        if (ref.is_unresolved_mmid) {
-            if (ref.type) {
-                result = await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.id);
-            } else {
-                result = await this.resolve_wildcard_mmid(ctx, ref.id);
-            }
-        } else {
+        let result: LiveEntryTypes<any> | null = null;
+
+        // First try standard by id
+        if(ref.id && ref.type) {
             result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
+        }
+
+        // Failing that try fallback mmid
+        if (!result && ref.fallback_mmid) {
+            if (ref.type) {
+                result = await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid) ?? null;
+            } else {
+                result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
+            }
         }
 
         return result;
@@ -1184,26 +1181,28 @@ export interface RegRef<T extends EntryType> {
     // The item id
     id: string;
 
+    // The mmid to resolve, as a fallback to if the id couldn't be resolve / is just "" (same thing, I suppose)
+    // Holds the compcon style id, e.x. mf_lancaster
+    // If does not exist, will be "".
+    fallback_mmid: string;
+
     // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
     type: T | null;
-
-    // Is our ID like, the actual id, or just like "DRAKE" or some shit
-    is_unresolved_mmid: boolean;
 
     // The name of the reg we expect to find this item in. If we cannot resolve this to another reg, we just treat it as though it is expected in the source reg
     reg_name: string;
 }
 
-// Quickly make an id-based reference reference
+// Quickly make an mmid-based reference reference
 export function quick_local_ref<T extends EntryType>(
     reg: Registry,
     type: T | null,
     mmid: string
 ): RegRef<T> {
     return {
-        id: mmid,
+        id: "",
+        fallback_mmid: mmid,
         type: type as T | null,
-        is_unresolved_mmid: true,
         reg_name: reg.name(),
     };
 }
