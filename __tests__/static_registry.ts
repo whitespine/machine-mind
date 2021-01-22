@@ -67,7 +67,7 @@ describe("Static Registry Reference implementation", () => {
         expect(await c.lookup_mmid(ctx, "zoop")).toBeNull(); // 5
 
         // Check listing of both types
-        expect((await c.list_raw()).length).toEqual(1);
+        expect(Array.from(await c.iter_raw()).length).toEqual(1);
         expect((await c.list_live(ctx)).length).toEqual(1);
 
         // Try modifying and saving
@@ -79,7 +79,7 @@ describe("Static Registry Reference implementation", () => {
         expect(man.ID).toEqual("smz");
 
         // Check listing of both types again
-        expect((await c.list_raw()).length).toEqual(1);
+        expect(Array.from(await c.iter_raw()).length).toEqual(1);
         expect((await c.list_live(ctx)).length).toEqual(1); // 10
 
         // Check raw matches expected updated value
@@ -90,7 +90,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Delete it, make sure it is gone
         await man.destroy_entry();
-        expect((await c.list_raw()).length).toEqual(0); // 14
+        expect(Array.from(await c.iter_raw()).length).toEqual(0); // 14
     });
 
     it("Initializes if given content packs", async () => {
@@ -99,8 +99,8 @@ describe("Static Registry Reference implementation", () => {
         expect(env).toBeTruthy();
 
         // Should have items in every category. just check frames
-        let all_frames = await env.reg.get_cat(EntryType.FRAME).list_raw();
-        expect(all_frames.length).toEqual(4*7 + 1); // 7 by each manufacturer, 1 gms
+        let all_frames = await env.reg.get_cat(EntryType.FRAME).iter_raw();
+        expect(Array.from(all_frames).length).toEqual(4*7 + 1); // 7 by each manufacturer, 1 gms
     });
 
     it("Gets basic frame information right", async () => {

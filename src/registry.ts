@@ -915,7 +915,12 @@ export abstract class RegCat<T extends EntryType> {
     abstract get_raw(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Fetches all raw items of a category
-    abstract list_raw(): Promise<Array<RegEntryTypes<T>>>;
+    abstract raw_map(): Promise<Map<string, RegEntryTypes<T>>>;
+
+    // The above, but as a list
+    async iter_raw(): Promise<Iterable<RegEntryTypes<T>>> {
+        return (await this.raw_map()).values();
+    }
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
     abstract get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null>;

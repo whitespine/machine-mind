@@ -255,8 +255,8 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     //ezier
-    async list_raw(): Promise<RegEntryTypes<T>[]> {
-        return Array.from(this.reg_data.values());
+    async raw_map(): Promise<Map<string, RegEntryTypes<T>>> {
+        return new Map(this.reg_data);
     }
 
     // ezzzz
