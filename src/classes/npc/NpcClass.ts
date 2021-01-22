@@ -61,7 +61,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     protected save_imp(): RegNpcClassData {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
-            optional_features: SerUtil.ref_all(this.BaseFeatures),
+            optional_features: SerUtil.ref_all(this.OptionalFeatures),
             id: this.ID,
             info: this.Info,
             name: this.Name,
