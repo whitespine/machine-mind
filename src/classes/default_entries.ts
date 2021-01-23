@@ -60,6 +60,7 @@ import {
     OrgType,
     NpcFeatureType,
     MountType,
+    NpcTechType,
 } from "../enums";
 
 // Some general defaults
@@ -437,6 +438,8 @@ function npc_feature_commons(): BaseRegNpcFeatureData {
         bonus: {},
         effect: "No Effect",
         override: {},
+        charged: true,
+        uses: 0
     };
 }
 
@@ -447,7 +450,7 @@ export function NPC_TECH(): RegNpcTechData {
         type: NpcFeatureType.Tech,
         accuracy: [0, 0, 0],
         attack_bonus: [0, 0, 0],
-        tech_type: "Quick Tech",
+        tech_type: NpcTechType.Quick
     };
 }
 

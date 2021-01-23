@@ -96,6 +96,15 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     Tag!: TagTemplate;
     Value!: string | number | null;
 
+    public as_number(default_num: number = 0): number {
+        let parsed = Number.parseInt(`${this.Value}`);
+        if(Number.isNaN(parsed)) {
+            return default_num;
+        } else {
+            return parsed;
+        }
+    }
+
     public async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
         let Tag = await this.Registry.resolve(this.OpCtx, data.tag);

@@ -21,6 +21,11 @@ export enum NpcFeatureType {
     Tech = "Tech",
 }
 
+export enum NpcTechType {
+    Quick = "Quick",
+    Full = "Full"
+}
+
 // Defaults to main
 export function getMountType(raw: string): MountType {
     switch (raw.toLowerCase()) {

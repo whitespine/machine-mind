@@ -1,5 +1,5 @@
 import { Damage, TagInstance, Range } from "@src/class";
-import { DamageType, NpcFeatureType, RangeType } from "@src/enums";
+import { DamageType, NpcFeatureType, NpcTechType, RangeType } from "@src/enums";
 import { defaults } from "@src/funcs";
 import { PackedRangeData, PackedTagInstanceData, RegDamageData, RegRangeData, RegTagInstanceData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
@@ -87,6 +87,10 @@ export interface BaseRegNpcFeatureData {
     override: object;
     tags: RegTagInstanceData[];
     type: NpcFeatureType;
+
+    // State tracking. Not always used
+    charged: boolean;
+    uses: number;
 }
 
 export interface RegNpcWeaponData extends BaseRegNpcFeatureData {
@@ -115,7 +119,7 @@ export interface RegNpcSystemData extends BaseRegNpcFeatureData {
 export interface RegNpcTechData extends BaseRegNpcFeatureData {
     type: NpcFeatureType.Tech;
     tags: RegTagInstanceData[];
-    tech_type: string;
+    tech_type: NpcTechType;
     accuracy: number[];
     attack_bonus: number[];
 }
@@ -132,6 +136,8 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Origin!: IOriginData;
     public Effect!: string;
     public Bonus!: object;
+    public Charged!: boolean;
+    public Uses!: number;
     public Override!: object;
     // public Locked!: boolean;
     public Tags!: TagInstance[];
@@ -142,10 +148,30 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Damage: Damage[][] = [[],[],[]];
     public Accuracy: number[] = [];
     public Trigger: string = "";
-    public TechType: string = "";
-    public WeaponType: string = "";
+    public TechType: NpcTechType = NpcTechType.Quick;
+    public WepType: string = "";
     public AttackBonus: number[] = [];
     public OnHit: string = "";
+
+    // Get max uses from tag
+    public get MaxUses(): number {
+        let tag = this.Tags.find(t => t.Tag.IsLimited);
+        if(tag) {
+            return tag.as_number(0);
+        } else {
+            return 0;
+        }
+    }
+
+    // Get our recharge number, or 0 if none exists
+    public get Recharge(): number {
+        let tag = this.Tags.find(t => t.Tag.IsRecharging);
+        if(tag) {
+            return tag.as_number(0);
+        } else {
+            return 0;
+        }
+    }
     
     // TODO: Hide these types via private
 
@@ -187,6 +213,8 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.Effect = data.effect;
         this.Bonus = data.bonus;
         this.Override = data.override;
+        this.Charged = data.charged;
+        this.Uses = data.uses;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.FeatureType = data.type;
 
@@ -206,7 +234,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                 data = {...defaults.NPC_WEAPON(), ...data};
                 this.Accuracy = [...data.accuracy];
                 this.AttackBonus = [...data.attack_bonus];
-                this.WeaponType = data.weapon_type;
+                this.WepType = data.weapon_type;
                 this.Damage = data.damage.map(dr => dr.map(d => new Damage(d)));
                 this.Range = data.range.map(r => new Range(r));
                 this.OnHit = data.on_hit;
@@ -228,6 +256,8 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             override: this.Override,
             tags: SerUtil.save_all(this.Tags),
             type: this.FeatureType,
+            charged: this.Charged,
+            uses: this.Uses
         };
 
         switch(this.FeatureType) {
@@ -258,7 +288,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                     ...base,
                     accuracy: [...this.Accuracy],
                     attack_bonus: [...this.AttackBonus],
-                    weapon_type: this.WeaponType,
+                    weapon_type: this.WepType,
                     damage: this.Damage.map(s => SerUtil.save_all(s)),
                     range: SerUtil.save_all(this.Range),
                     on_hit: this.OnHit,
@@ -301,6 +331,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                 ...defaults.NPC_TECH(),
                 ...data,
                 tags,
+                tech_type: SerUtil.restrict_enum(NpcTechType, NpcTechType.Quick, data.tech_type),
                 accuracy: data.accuracy ?? [0, 0, 0],
                 attack_bonus: data.attack_bonus ?? [0, 0, 0]
             };
@@ -343,6 +374,13 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                 tags
             };
             result = result_trait;
+        }
+
+        // Last thing we do: Set uses based on tags. A bit rough, but serviceable
+        for(let t of tags) {
+            if(t.tag.fallback_mmid == "tg_limited") {
+                result.uses = Number.parseInt(`${t.val ?? 0}`);
+            }
         }
 
         return reg.get_cat(EntryType.NPC_FEATURE).create_live(ctx, result);

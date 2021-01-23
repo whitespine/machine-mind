@@ -36,10 +36,10 @@ export function is_smart(item: TaggedEquippable): boolean {
 }
 
 // Returns 0 if not limited
-export function limited_max(item: TaggedEquippable): number | null {
+export function limited_max(item: TaggedEquippable): number {
     let lim_tag = tags(item).find(t => t.Tag.IsLimited);
     if (!lim_tag) {
-        return null;
+        return 0;
     }
-    return Number.parseInt("" + lim_tag.Value || "0");
+    return lim_tag.as_number(0);
 }
