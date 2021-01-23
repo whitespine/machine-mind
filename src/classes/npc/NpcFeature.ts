@@ -3,6 +3,8 @@ import { DamageType, NpcFeatureType, NpcTechType, RangeType } from "@src/enums";
 import { defaults } from "@src/funcs";
 import { PackedRangeData, PackedTagInstanceData, RegDamageData, RegRangeData, RegTagInstanceData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
+import { INpcClassStats } from "./NpcClassStats";
+import { INpcStats } from "./NpcStats";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rider types
@@ -118,7 +120,6 @@ export interface RegNpcSystemData extends BaseRegNpcFeatureData {
 
 export interface RegNpcTechData extends BaseRegNpcFeatureData {
     type: NpcFeatureType.Tech;
-    tags: RegTagInstanceData[];
     tech_type: NpcTechType;
     accuracy: number[];
     attack_bonus: number[];
@@ -135,10 +136,10 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Name!: string;
     public Origin!: IOriginData;
     public Effect!: string;
-    public Bonus!: object;
+    public Bonus!: Partial<Omit<INpcStats, "reactions" | "sizes">>
     public Charged!: boolean;
     public Uses!: number;
-    public Override!: object;
+    public Override!: Partial<INpcStats>
     // public Locked!: boolean;
     public Tags!: TagInstance[];
     public FeatureType!: NpcFeatureType;

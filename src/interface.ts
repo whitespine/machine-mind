@@ -72,6 +72,7 @@ export { RegNpcData, PackedNpcData } from "./classes/npc/Npc";
 export { RegNpcTemplateData, PackedNpcTemplateData } from "./classes/npc/NpcTemplate";
 export { RegNpcClassData, PackedNpcClassData } from "./classes/npc/NpcClass";
 export { INpcClassStats } from "./classes/npc/NpcClassStats";
+export { INpcStats } from "./classes/npc/NpcStats";
 // export { IEncounterData } from "./classes/encounter/Encounter.dts";
 // export { IMissionData } from "./classes/encounter/Mission";
 // export { IMissionStep } from "./classes/encounter/IMissionStep";

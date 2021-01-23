@@ -2,9 +2,11 @@ import { nanoid } from "nanoid";
 
 import { Counter, NpcClass, NpcFeature, NpcTemplate } from "@src/class";
 import { PackedCounterSaveData, RegCounterData } from "@src/interface";
-import { INpcStats } from "./NpcStats";
+import { INpcStatComposite, INpcStats } from "./NpcStats";
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
+import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
+import { over } from "lodash";
 
 interface INpcItemSaveData {
     // unsure if we really need this
@@ -47,8 +49,8 @@ export interface PackedNpcData {
     items: INpcItemSaveData[];
     templates: string[];
     actions: number;
-    stats: INpcStats;
-    currentStats: INpcStats; // exact usage unclear
+    stats: INpcStatComposite;
+    currentStats: INpcStatComposite; // exact usage unclear
 }
 
 export interface RegNpcData extends AllNpcData {
@@ -56,6 +58,8 @@ export interface RegNpcData extends AllNpcData {
     custom_counters: RegCounterData[];
     current_hp: number;
     current_heat: number;
+    current_stress: number;
+    current_structure: number;
     // Other stuff held in inventory
 }
 
@@ -75,6 +79,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     Burn!: number;
     CurrentHP!: number;
     CurrentHeat!: number;
+    CurrentStructure!: number;
+    CurrentStress!: number;
     Overshield!: number;
     Destroyed!: boolean;
     Defeat!: string;
@@ -150,42 +156,89 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     */
 
     // get BaseStats!: INpcStats { return this.ActiveClass?.Stats ?? defaults.NPC_STATS
+    // Computes stat by compiling the base[tier] + all bonuses OR override (first encountered)
+    private stat<T extends keyof INpcClassStats>(key: T): number {
+        let stat_base = this.ActiveClass ? this.ActiveClass.Stats : defaults.NPC_CLASS_STATS();
+        let wrapped = new NpcClassStats(stat_base);
+        let val = wrapped.Stat(key, this.Tier);
+
+        // Apply bonuses/overrides
+        for(let feature of this.Features) {
+            let bonus = feature.Bonus[key];
+            let override = feature.Override[key];
+            if(override) {
+                return override as number;
+            }
+            if(typeof bonus == "number") {
+                val += bonus;
+            }
+        }
+        return val;
+    }
 
     // -- Encounter Management ----------------------------------------------------------------------
     public get MaxStructure(): number {
-        return 0;
+        return this.stat("structure");
     }
 
     public get MaxHP(): number {
-        return 0;
+        return this.stat("hp");
     }
 
     public get MaxStress(): number {
-        return 0;
+        return this.stat("stress");
     }
 
     public get HeatCapacity(): number {
-        return 0;
+        return this.stat("heatcap");
     }
 
     public get Activations(): number {
-        return 0;
+        return this.stat("activations");
     }
 
-    public get Actions(): number {
-        return 0;
+    public get Hull(): number {
+        return this.stat("hull");
     }
 
-    public get MaxMove(): number {
-        return 0;
+    public get Agility(): number {
+        return this.stat("agility");
+    }
+
+    public get Systems(): number {
+        return this.stat("systems");
+    }
+
+    public get Engineering(): number {
+        return this.stat("engineering");
+    }
+
+    public get SaveTarget(): number {
+        return this.stat("save");
+    }
+
+    public get SensorRange(): number {
+        return this.stat("sensor");
+    }
+
+    public get Armor(): number {
+        return this.stat("armor");
+    }
+
+    public get Size(): number {
+        return this.stat("size");
+    }
+
+    public get Speed(): number {
+        return this.stat("speed");
     }
 
     public get Evasion(): number {
-        return 0;
+        return this.stat("evade");
     }
 
     public get EDefense(): number {
-        return 0;
+        return this.stat("edef");
     }
 
     protected async load(data: RegNpcData): Promise<void> {
@@ -201,6 +254,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.ID = data.id;
         this.CurrentHP = data.current_hp;
         this.CurrentHeat = data.current_heat;
+        this.CurrentStress = data.current_stress;
+        this.CurrentStructure = data.current_structure;
         this.Labels = data.labels;
         this.LocalImage = data.localImage;
         this.Name = data.name;
@@ -237,6 +292,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             side: this.Side,
             subtitle: this.Subtitle,
             tag: this.Tag,
+            current_stress: this.CurrentStress,
+            current_structure: this.CurrentStructure
         };
     }
 }

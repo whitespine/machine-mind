@@ -6,6 +6,7 @@ import {
     IEnvironmentData,
     IFactionData,
     INpcClassStats,
+    INpcStats,
     IOrganizationData,
     ISitrepData,
     IStatusData,
@@ -401,6 +402,8 @@ export function NPC(): RegNpcData {
         subtitle: "",
         tag: "",
         tier: 1,
+        current_stress: 1,
+        current_structure: 1
     };
 }
 
@@ -547,6 +550,29 @@ export function NPC_CLASS_STATS(): Required<INpcClassStats> {
         systems: [0, 0, 0],
         stress: [1, 1, 1],
         structure: [1, 1, 1],
+    };
+}
+
+export function NPC_STATS(): Required<INpcStats> {
+    return {
+        activations: 0,
+        agility: 0,
+        armor: 0,
+        edef: 0,
+        engineering: 0,
+        evade: 0,
+        heatcap: 0,
+        hp: 0,
+        hull: 0,
+        save: 0,
+        sensor: 0,
+        size: 0,
+        speed: 0,
+        systems: 0,
+        stress: 0,
+        structure: 0,
+        sizes: [1,1,1],
+        reactions: []
     };
 }
 

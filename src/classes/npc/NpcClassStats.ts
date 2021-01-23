@@ -1,3 +1,5 @@
+import { INpcStats } from "./NpcStats";
+
 export interface INpcClassStats {
     activations: number[];
     armor: number[];
@@ -24,7 +26,7 @@ export class NpcClassStats {
         this._stats = data;
     }
 
-    public Stat(key: string, tier: number): number {
+    public Stat<T extends keyof INpcClassStats>(key: T, tier: number): number {
         return this._stats[key] ? this._stats[key][tier - 1] : 1;
     }
 

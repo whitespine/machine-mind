@@ -1,7 +1,4 @@
-import { NpcClass } from "@src/class";
-import { RegSer } from "@src/registry";
-
-export interface INpcStats {
+export interface INpcStats  {
     activations: number;
     armor: number;
     hp: number;
@@ -20,6 +17,9 @@ export interface INpcStats {
     structure?: number;
     stress?: number;
     reactions: string[];
+}
+
+export interface INpcStatComposite extends INpcStats {
     bonuses?: INpcStats;
     overrides?: INpcStats;
 }
