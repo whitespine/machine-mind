@@ -16,7 +16,7 @@ export interface IOriginData {
 
 export interface PackedNpcDamageData {
     type: string;
-    damage: number[];
+    damage: number[]; // The damage at each tier
 }
 
 
@@ -341,21 +341,24 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let damage: RegDamageData[][] = []; 
             for(let raw_dmg of (data.damage ?? [])) {
                 // Go through the numbers. Each damage type contains the value of that type at each tier
-                for(let i=0; i<raw_dmg.damage.length; i++) {
-                    let corr_dmg_tier_array = damage[i] ?? [];
+                for(let tier=0; tier < raw_dmg.damage.length; tier++) {
+                    let corr_dmg_tier_array = damage[tier] ?? [];
                     corr_dmg_tier_array.push({
                         type: SerUtil.restrict_enum(DamageType, DamageType.Kinetic, raw_dmg.type),
-                        val: `${raw_dmg.damage[i]}`
+                        val: `${raw_dmg.damage[tier]}`
                     });
-                    damage[i] = corr_dmg_tier_array; // No-op if already set. But sets if we hadn't yet
+                    damage[tier] = corr_dmg_tier_array; // No-op if already set. But sets if we hadn't yet
                 }
             }
 
-            // Same with range
-            let range: RegRangeData[] = data.range?.map(r => ({
-                type: SerUtil.restrict_enum(RangeType, RangeType.Range, r.type),
-                val: `${r}`
-            })) ?? [];
+            // Same with range. Thankfully much less complex
+            let range: RegRangeData[] = [];
+            for(let raw_range of (data.range ?? [])) {
+                range.push({
+                    type: SerUtil.restrict_enum(RangeType, RangeType.Range, raw_range.type),
+                    val: `${raw_range.val}`
+                });
+            }
 
             let result_wep: RegNpcWeaponData = {
                 ...defaults.NPC_WEAPON(),
