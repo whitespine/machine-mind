@@ -342,61 +342,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return this.CurrentSkillPoints === this.MaxSkillPoints;
     }
 
-    // Adding and removing skills should really function no differently than any other thing
-    /*
-  public CanAddSkill(skill: Skill | CustomSkill): boolean {
-    if (this._level === 0) {
-      return this._skills.length < Rules.MinimumPilotSkills && !this.has('Skill', skill.ID)
-    } else {
-      const underLimit = this.CurrentSkillPoints < this.MaxSkillPoints
-      if (!this.has('Skill', skill.ID) && underLimit) return true
-      const pSkill = this._skills.find(x => x.Skill.ID === skill.ID)
-      return underLimit && pSkill && pSkill.Rank < Rules.MaxTriggerRank
-    }
-  }
-
-  public AddSkill(skill: Skill | CustomSkill): void {
-    const index = this._skills.findIndex(x => _.isEqual(x.Skill, skill))
-    if (index === -1) {
-      this._skills.push(new PilotSkill(skill))
-    } else {
-      this._skills[index].Increment()
-    }
-    this.save()
-  }
-
-  public AddCustomSkill(cs: { skill: string; description: string; detail: string }): void {
-    this.AddSkill(new CustomSkill(cs.skill, cs.description, cs.detail))
-  }
-
-  public CanRemoveSkill(skill: Skill | CustomSkill): boolean {
-    return this.has('Skill', skill.ID)
-  }
-
-  public RemoveSkill(skill: Skill | CustomSkill): void {
-    const index = this._skills.findIndex(x => x.Skill.ID === skill.ID)
-    if (index === -1) {
-      console.error(`Skill Trigger "${skill.Name}" does not exist on Pilot ${this.Callsign}`)
-    } else {
-      if (this._skills[index].Rank > 1) {
-        this._skills[index].Decrement()
-      } else {
-        this._skills.splice(index, 1)
-      }
-    }
-    this.save()
-  }
-  */
-
-    /*
-    public ClearSkills(): void {
-        for (let i = this._skills.length - 1; i >= 0; i--) {
-            while (this._skills[i]) {
-                this.RemoveSkill(this._skills[i].Skill);
-            }
-        }
-    }
-    */
 
     // -- Talents -----------------------------------------------------------------------------------
     public get CurrentTalentPoints(): number {
@@ -418,47 +363,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     public get HasFullTalents(): boolean {
         return this.CurrentTalentPoints === this.MaxTalentPoints;
     }
-
-    // Adding and removing talents should really function no differently than any other thing
-    /*
-  public AddTalent(talent: Talent): void {
-    const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent))
-    if (index === -1) {
-      this._talents.push(new PilotTalent(talent))
-    } else {
-      this._talents[index].Increment()
-    }
-    this.talentSort()
-    this.updateIntegratedTalents()
-    this.save()
-  }
-
-  public RemoveTalent(talent: Talent): void {
-    const index = this._talents.findIndex(x => _.isEqual(x.Talent, talent))
-    if (index === -1) {
-      console.error(`Talent "${talent.Name}" does not exist on Pilot ${this.Callsign}`)
-    } else {
-      if (this._talents[index].Rank > 1) {
-        this._talents[index].Decrement()
-      } else {
-        this._talents.splice(index, 1)
-      }
-    }
-    this.talentSort()
-    this.updateIntegratedTalents()
-    this.save()
-  }
-  */
-
-    /*
-    public ClearTalents(): void {
-        for (let i = this._talents.length - 1; i >= 0; i--) {
-            while (this._talents[i]) {
-                this.RemoveTalent(this._talents[i].Talent);
-            }
-        }
-    }
-    */
 
     // -- Core Bonuses ------------------------------------------------------------------------------
 
@@ -514,42 +418,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return index?.CurrentRank ?? 0;
     }
 
-    /*
-
-    public AddLicense(license: License): void {
-        const index = this.Licenses.findIndex(x => _.isEqual(x.License, license));
-        if (index === -1) {
-            this.Licenses.push(new PilotLicense(license, 1));
-        } else {
-            this.Licenses[index].Increment();
-        }
-        this.save();
-    }
-
-    public RemoveLicense(license: License): void {
-        const index = this.Licenses.findIndex(x => _.isEqual(x.License, license));
-        if (index === -1) {
-            console.error(
-                `License "${license.ToString()}" does not exist on Pilot ${this.Callsign}`
-            );
-        } else {
-            if (this.Licenses[index].Rank > 1) {
-                this.Licenses[index].Decrement();
-            } else {
-                this.Licenses.splice(index, 1);
-            }
-        }
-        this.save();
-    }
-
-    public ClearLicenses(): void {
-        for (let i = this.Licenses.length - 1; i >= 0; i--) {
-            while (this.Licenses[i]) {
-                this.RemoveLicense(this.Licenses[i].License);
-            }
-        }
-    }
-    */
 
     // -- Mech Skills -------------------------------------------------------------------------------
     public get MaxHASEPoints(): number {
@@ -567,41 +435,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     public get HasFullHASE(): boolean {
         return this.MechSkills.Sum === this.MaxHASEPoints;
     }
-
-    // -- Downtime Reserves -------------------------------------------------------------------------
-    /*
-    public RemoveReserve(index: number): void {
-        this._reserves.splice(index, 1);
-        this.save();
-    }
-
-    public get Organizations(): Organization[] {
-        return this._orgs;
-    }
-
-    public set Organizations(orgs: Organization[]) {
-        this._orgs = orgs;
-        this.save();
-    }
-
-    public RemoveOrganization(index: number): void {
-        this._orgs.splice(index, 1);
-        this.save();
-    }
-    */
-    // -- Mechs -----------------------------------------------------------------------------------
-    /*
-    public get Mounted(): boolean {
-        if (!this.ActiveMech) return false;
-        if (
-            this.ActiveMech.Destroyed ||
-            this.ActiveMech.ReactorDestroyed ||
-            this.ActiveMech.Ejected
-        )
-            return false;
-        return this._mounted;
-    }
-    */
 
     // Umbrella utility function for deducing which mechs in a pool are owned by this mech
     // Slightly expensive, which is why we don't do it automatically
