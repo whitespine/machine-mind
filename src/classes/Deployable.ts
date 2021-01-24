@@ -107,8 +107,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     BaseMaxHP!: number;
     BaseEvasion!: number;
     BaseEDefense!: number;
-    BaseHeatCap!: number;
-    BaseRepairCap!: number; // ????
+    BaseHeatCapacity!: number;
+    BaseRepairCapacity!: number; // ????
     BaseSensorRange!: number; // Does this need to be here? Maybe. Can broadly be used to represent it's effective range
     BaseTechAttack!: number;
     BaseSave!: number;
@@ -179,11 +179,11 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get EDefense(): number {
         return this.sum_bonuses(this.BaseEDefense, "deployable_edef");
     }
-    get HeatCap(): number {
-        return this.sum_bonuses(this.BaseHeatCap, "deployable_heatcap");
+    get HeatCapacity(): number {
+        return this.sum_bonuses(this.BaseHeatCapacity, "deployable_heatcap");
     }
-    get RepairCap(): number {
-        return this.sum_bonuses(this.BaseRepairCap, "deployable_repcap");
+    get RepairCapacity(): number {
+        return this.sum_bonuses(this.BaseRepairCapacity, "deployable_repcap");
     }
     get SensorRange(): number { 
         return this.sum_bonuses(this.BaseSize, "deployable_sensor_range");
@@ -231,8 +231,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.BaseMaxHP = data.max_hp;
         this.BaseEvasion = data.evasion;
         this.BaseEDefense = data.edef;
-        this.BaseHeatCap = data.heatcap;
-        this.BaseRepairCap = data.repcap;
+        this.BaseHeatCapacity = data.heatcap;
+        this.BaseRepairCapacity = data.repcap;
         this.BaseSave = data.save;
         this.BaseSpeed = data.speed;
         this.BaseSensorRange = data.sensor_range;
@@ -267,8 +267,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             current_heat: this.CurrentHeat,
             evasion: this.BaseEvasion,
             edef: this.BaseEDefense,
-            heatcap: this.BaseHeatCap,
-            repcap: this.BaseRepairCap,
+            heatcap: this.BaseHeatCapacity,
+            repcap: this.BaseRepairCapacity,
             sensor_range: this.SensorRange,
             tech_attack: this.TechAttack,
             save: this.BaseSave,
