@@ -106,7 +106,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     BaseArmor!: number;
     BaseMaxHP!: number;
     BaseEvasion!: number;
-    BaseEDef!: number;
+    BaseEDefense!: number;
     BaseHeatCap!: number;
     BaseRepairCap!: number; // ????
     BaseSensorRange!: number; // Does this need to be here? Maybe. Can broadly be used to represent it's effective range
@@ -176,8 +176,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get Evasion(): number {
         return this.sum_bonuses(this.BaseEvasion, "deployable_evasion");
     }
-    get EDef(): number {
-        return this.sum_bonuses(this.BaseEDef, "deployable_edef");
+    get EDefense(): number {
+        return this.sum_bonuses(this.BaseEDefense, "deployable_edef");
     }
     get HeatCap(): number {
         return this.sum_bonuses(this.BaseHeatCap, "deployable_heatcap");
@@ -230,7 +230,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.BaseArmor = data.armor;
         this.BaseMaxHP = data.max_hp;
         this.BaseEvasion = data.evasion;
-        this.BaseEDef = data.edef;
+        this.BaseEDefense = data.edef;
         this.BaseHeatCap = data.heatcap;
         this.BaseRepairCap = data.repcap;
         this.BaseSave = data.save;
@@ -266,7 +266,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             overshield: this.Overshield,
             current_heat: this.CurrentHeat,
             evasion: this.BaseEvasion,
-            edef: this.BaseEDef,
+            edef: this.BaseEDefense,
             heatcap: this.BaseHeatCap,
             repcap: this.BaseRepairCap,
             sensor_range: this.SensorRange,
