@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Synergy, TagInstance } from "@src/class";
+import { Action, Bonus, Counter, Mech, Pilot, Synergy, TagInstance } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
     IActionData,
@@ -10,8 +10,10 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, InventoriedRegEntry, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { ActivationType } from "../enums";
+import { BonusContext } from "./Bonus";
+import { Npc } from "./npc/Npc";
 
 export interface PackedDeployableData {
     name: string;
@@ -58,8 +60,8 @@ export interface RegDeployableData {
     edef: number;
     heatcap: number;
     repcap: number;
-    pilot: boolean;
-    mech: boolean;
+    avail_unmounted: boolean;
+    avail_mounted: boolean;
     sensor_range: number;
     tech_attack: number;
     save: number;
@@ -69,39 +71,128 @@ export interface RegDeployableData {
     synergies: ISynergyData[];
     counters: RegCounterData[];
     tags: RegTagInstanceData[];
+
     overshield: number;
     current_hp: number;
+    burn: number;
+
+    deployer: RegRef<EntryType.PILOT | EntryType.MECH | EntryType.NPC> | null;
 }
 
 export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;
+    Cost!: number;
+
+    // Action Info
     Activation!: ActivationType;
     Deactivation!: ActivationType;
     Recall!: ActivationType;
     Redeploy!: ActivationType;
-    Size!: number;
-    Cost!: number;
-    Armor!: number;
-    CurrentHP!: number; // Note: I somewhat regret making these all nullable.
-    MaxHP!: number;
+
+    CurrentHP!: number; 
     Overshield!: number;
-    Evasion!: number;
-    EDef!: number;
-    HeatCap!: number;
-    RepairCap!: number;
-    SensorRange!: number;
-    TechAttack!: number;
-    Save!: number;
-    Speed!: number;
+    Burn!: number;
+
+    // Base Stats
+    BaseSize!: number;
+    BaseArmor!: number;
+    BaseMaxHP!: number;
+    BaseEvasion!: number;
+    BaseEDef!: number;
+    BaseHeatCap!: number;
+    BaseRepairCap!: number; // ????
+    BaseSensorRange!: number; // Does this need to be here? Maybe. Can broadly be used to represent it's effective range
+    BaseTechAttack!: number;
+    BaseSave!: number;
+    BaseSpeed!: number;
+
+    // Availability info.
     AvailableMounted!: boolean;
     AvailableUnmounted!: boolean;
+
+    // The common BASCT
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
     Counters!: Counter[];
     Tags!: TagInstance[];
+
+    // Ownership
+    Deployer!: Pilot | Mech | Npc | null;
+
+    // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
+    public get AllBonuses(): Bonus[] {
+        if (this.Deployer) {
+            if(this.Deployer.Type == EntryType.PILOT) {
+                // Get bonuses just from pilot
+                return [...this.Deployer.PilotBonuses, ...this.Bonuses];
+            } else if (this.Deployer.Type == EntryType.MECH) {
+                // Get bonuses from mechg + pilot
+                return [...this.Deployer.AllBonuses, ...this.Bonuses];
+            }
+        } 
+
+        // In case of no deployer / deployer is npc, cannot compute any additional bonuses
+        return this.Bonuses;
+    }    
+    
+    
+    // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
+    private sum_bonuses(base_value: number, id: string): number {
+        let filtered = this.AllBonuses.filter(b => b.ID == id);
+        let ctx: BonusContext = {};
+        if (this.Deployer?.Type == EntryType.PILOT) {
+            // Set pilot ctx if directly associated with a pilot
+            ctx = Bonus.PilotContext(this.Deployer);
+        } else if(this.Deployer?.Type == EntryType.MECH) {
+            // If assoc with a mech, need to route through said mech
+            if(this.Deployer.Pilot) {
+                ctx = Bonus.PilotContext(this.Deployer.Pilot);
+            }
+        }
+
+        // Use the context to accumulate. If we couldn't find a pilot, values will likely be off, but still useable
+        return Bonus.Accumulate(base_value, filtered, ctx).final_value;
+    }
+
+    // Derived stats
+    get Size(): number {
+        return this.sum_bonuses(this.BaseSize, "deployable_size");
+    }
+    get Armor(): number {
+        return this.sum_bonuses(this.BaseArmor, "deployable_armor");
+    }
+    get MaxHP(): number {
+        return this.sum_bonuses(this.BaseMaxHP, "deployable_hp");
+    }
+    get Evasion(): number {
+        return this.sum_bonuses(this.BaseEvasion, "deployable_evasion");
+    }
+    get EDef(): number {
+        return this.sum_bonuses(this.BaseEDef, "deployable_edef");
+    }
+    get HeatCap(): number {
+        return this.sum_bonuses(this.BaseHeatCap, "deployable_heatcap");
+    }
+    get RepairCap(): number {
+        return this.sum_bonuses(this.BaseRepairCap, "deployable_repcap");
+    }
+    get SensorRange(): number { 
+        return this.sum_bonuses(this.BaseSize, "deployable_sensor_range");
+    }
+    get TechAttack(): number {
+        return this.sum_bonuses(this.BaseTechAttack, "deployable_tech_attack");
+    }
+    get Save(): number {
+        return this.sum_bonuses(this.BaseSave, "deployable_save");
+    }
+    get Speed(): number {
+        return this.sum_bonuses(this.BaseSpeed, "deployable_speed");
+    }
+
+
 
     // They don't own anything yet, but statuses will maybe change this? or if they have systems? idk, they're actors so it made sense at the time
     protected enumerate_owned_items(): RegEntry<any>[] {
@@ -110,66 +201,76 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     public async load(data: RegDeployableData): Promise<void> {
         data = { ...defaults.DEPLOYABLE(), ...data };
+        this.AvailableMounted = data.avail_mounted;
+        this.AvailableUnmounted = data.avail_unmounted;
+
         this.Name = data.name;
-        this.DeployableType = data.type;
         this.Detail = data.detail;
+        this.DeployableType = data.type;
+        this.Cost = data.cost;
+
         this.Activation = data.activation;
-        this.Deactivation = data.deactivation ?? ActivationType.None;
-        this.Recall = data.recall ?? ActivationType.None;
-        this.Redeploy = data.redeploy ?? ActivationType.None;
-        this.Size = data.size;
-        this.Cost = data.cost; // Cost in resources
-        this.Armor = data.armor;
-        this.MaxHP = data.max_hp;
-        this.CurrentHP = data.current_hp ?? this.MaxHP;
+        this.Recall = data.recall;
+        this.Redeploy = data.redeploy;
+        this.Deactivation = data.deactivation;
+
+        this.CurrentHP = data.current_hp;
         this.Overshield = data.overshield;
-        this.Evasion = data.evasion;
-        this.EDef = data.edef;
-        this.HeatCap = data.heatcap;
-        this.RepairCap = data.repcap;
-        this.SensorRange = data.sensor_range;
-        this.TechAttack = data.tech_attack;
-        this.Save = data.save;
-        this.Speed = data.speed;
-        this.AvailableMounted = data.mech;
-        this.AvailableUnmounted = data.pilot;
+        this.Burn = data.burn;
+
+        this.BaseSize = data.size;
+        this.BaseArmor = data.armor;
+        this.BaseMaxHP = data.max_hp;
+        this.BaseEvasion = data.evasion;
+        this.BaseEDef = data.edef;
+        this.BaseHeatCap = data.heatcap;
+        this.BaseRepairCap = data.repcap;
+        this.BaseSave = data.save;
+        this.BaseSpeed = data.speed;
+        this.BaseSensorRange = data.sensor_range;
+        this.BaseTechAttack = data.tech_attack;
+
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
+
+        this.Deployer = data.deployer ? await this.Registry.resolve(this.OpCtx, data.deployer) : null;
     }
 
     protected save_imp(): RegDeployableData {
         return {
             name: this.Name,
             type: this.Type,
+            burn: this.Burn,
             detail: this.Detail,
             activation: this.Activation,
             deactivation: this.Deactivation,
             recall: this.Recall,
             redeploy: this.Redeploy,
-            size: this.Size,
+            size: this.BaseSize,
             cost: this.Cost,
-            armor: this.Armor,
-            max_hp: this.MaxHP,
+            armor: this.BaseArmor,
+            max_hp: this.BaseMaxHP,
             current_hp: this.CurrentHP,
             overshield: this.Overshield,
-            evasion: this.Evasion,
-            edef: this.EDef,
-            heatcap: this.HeatCap,
-            repcap: this.RepairCap,
+            evasion: this.BaseEvasion,
+            edef: this.BaseEDef,
+            heatcap: this.BaseHeatCap,
+            repcap: this.BaseRepairCap,
             sensor_range: this.SensorRange,
             tech_attack: this.TechAttack,
-            save: this.Save,
-            speed: this.Speed,
+            save: this.BaseSave,
+            speed: this.BaseSpeed,
             actions: SerUtil.save_all(this.Actions),
             bonuses: SerUtil.save_all(this.Bonuses),
             synergies: SerUtil.save_all(this.Synergies),
             tags: SerUtil.save_all(this.Tags),
             counters: this.Counters.map(c => c.save()),
-            mech: this.AvailableMounted,
-            pilot: this.AvailableUnmounted,
+            avail_mounted: this.AvailableMounted,
+            avail_unmounted: this.AvailableUnmounted,
+            deployer: this.Deployer?.as_ref() ?? null,
         };
     }
 
@@ -188,6 +289,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             max_hp: dep.hp ?? 0,
             overshield: 0,
             current_hp: dep.hp ?? 0,
+            avail_mounted: dep.mech ?? true,
+            avail_unmounted: dep.pilot ?? false,
             counters,
             tags,
         };

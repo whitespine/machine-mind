@@ -181,8 +181,10 @@ export function DEPLOYABLE(): RegDeployableData {
         speed: 0,
         tech_attack: 0,
         type: "",
-        pilot: false,
-        mech: true,
+        avail_unmounted: false,
+        avail_mounted: true,
+        deployer: null,
+        burn: 0
     };
 }
 
