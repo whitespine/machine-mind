@@ -165,6 +165,7 @@ export function DEPLOYABLE(): RegDeployableData {
         cost: 1,
         instances: 1,
         current_hp: 0,
+        current_heat: 0,
         deactivation: ActivationType.None,
         detail: "",
         edef: 0,

@@ -76,6 +76,7 @@ export interface RegDeployableData {
 
     overshield: number;
     current_hp: number;
+    current_heat: number;
     burn: number;
 
     deployer: RegRef<EntryType.PILOT | EntryType.MECH | EntryType.NPC> | null;
@@ -96,6 +97,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     // HP state
     CurrentHP!: number; 
+    CurrentHeat!: number;
     Overshield!: number;
     Burn!: number;
 
@@ -219,6 +221,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Deactivation = data.deactivation;
 
         this.CurrentHP = data.current_hp;
+        this.CurrentHeat = data.current_heat;
         this.Overshield = data.overshield;
         this.Burn = data.burn;
 
@@ -260,6 +263,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             max_hp: this.BaseMaxHP,
             current_hp: this.CurrentHP,
             overshield: this.Overshield,
+            current_heat: this.CurrentHeat,
             evasion: this.BaseEvasion,
             edef: this.BaseEDef,
             heatcap: this.BaseHeatCap,
