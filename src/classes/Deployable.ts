@@ -214,6 +214,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Detail = data.detail;
         this.DeployableType = data.type;
         this.Cost = data.cost;
+        this.Instances = data.instances;
 
         this.Activation = data.activation;
         this.Recall = data.recall;
