@@ -24,6 +24,7 @@ export interface PackedDeployableData {
     recall?: ActivationType;
     redeploy?: ActivationType;
     size: number;
+    instances?: number;
     cost?: number;
     armor?: number;
     hp?: number;
@@ -52,6 +53,7 @@ export interface RegDeployableData {
     deactivation: ActivationType;
     recall: ActivationType;
     redeploy: ActivationType;
+    instances: number;
     size: number;
     cost: number;
     armor: number;
@@ -64,7 +66,7 @@ export interface RegDeployableData {
     avail_mounted: boolean;
     sensor_range: number;
     tech_attack: number;
-    save: number;
+    save: number; // Mandatory - a 0 means use inherited, or 10 if default
     speed: number;
     actions: IActionData[];
     bonuses: RegBonusData[]; // Why does this exist, again?
@@ -83,7 +85,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;
-    Cost!: number;
+    Cost!: number; // The limited cost of deploying this
+    Instances!: number; // How many should be created in a single deployment
 
     // Action Info
     Activation!: ActivationType;
@@ -91,6 +94,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     Recall!: ActivationType;
     Redeploy!: ActivationType;
 
+    // HP state
     CurrentHP!: number; 
     Overshield!: number;
     Burn!: number;
@@ -250,6 +254,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             recall: this.Recall,
             redeploy: this.Redeploy,
             size: this.BaseSize,
+            instances: this.Instances,
             cost: this.Cost,
             armor: this.BaseArmor,
             max_hp: this.BaseMaxHP,
