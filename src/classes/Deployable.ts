@@ -95,11 +95,12 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     Recall!: ActivationType;
     Redeploy!: ActivationType;
 
-    // HP state
+    // HP and related "curr" state
     CurrentHP!: number; 
     CurrentHeat!: number;
     Overshield!: number;
     Burn!: number;
+    CurrentRepairs: number = 0; // Todo - what are we doing here
 
     // Base Stats
     BaseSize!: number;
@@ -111,7 +112,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     BaseRepairCapacity!: number; // ????
     BaseSensorRange!: number; // Does this need to be here? Maybe. Can broadly be used to represent it's effective range
     BaseTechAttack!: number;
-    BaseSave!: number;
+    BaseSaveTarget!: number;
     BaseSpeed!: number;
 
     // Availability info.
@@ -191,8 +192,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get TechAttack(): number {
         return this.sum_bonuses(this.BaseTechAttack, "deployable_tech_attack");
     }
-    get Save(): number {
-        return this.sum_bonuses(this.BaseSave, "deployable_save");
+    get SaveTarget(): number {
+        return this.sum_bonuses(this.BaseSaveTarget, "deployable_save");
     }
     get Speed(): number {
         return this.sum_bonuses(this.BaseSpeed, "deployable_speed");
@@ -233,7 +234,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.BaseEDefense = data.edef;
         this.BaseHeatCapacity = data.heatcap;
         this.BaseRepairCapacity = data.repcap;
-        this.BaseSave = data.save;
+        this.BaseSaveTarget = data.save;
         this.BaseSpeed = data.speed;
         this.BaseSensorRange = data.sensor_range;
         this.BaseTechAttack = data.tech_attack;
@@ -271,7 +272,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             repcap: this.BaseRepairCapacity,
             sensor_range: this.BaseSensorRange,
             tech_attack: this.BaseTechAttack,
-            save: this.BaseSave,
+            save: this.BaseSaveTarget,
             speed: this.BaseSpeed,
             actions: SerUtil.save_all(this.Actions),
             bonuses: SerUtil.save_all(this.Bonuses),
