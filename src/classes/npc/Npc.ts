@@ -6,7 +6,6 @@ import { INpcStatComposite, INpcStats } from "./NpcStats";
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
-import { over } from "lodash";
 
 interface INpcItemSaveData {
     // unsure if we really need this

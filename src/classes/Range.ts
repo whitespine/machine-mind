@@ -2,7 +2,6 @@ import { RangeType } from "../enums";
 import { SimSer } from "@src/registry";
 import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
 import { Bonus, Mech } from "@src/class";
-import { range } from "lodash";
 import { BonusSummary } from "./Bonus";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
