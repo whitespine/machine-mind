@@ -1,7 +1,7 @@
-import { Damage, MechWeapon, Npc, Pilot, Range} from "@src/class";
+import { Damage, Mech, MechWeapon, Npc, Pilot, Range} from "@src/class";
 import { BonusDict, BonusList } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
-import { SerUtil, SimSer } from "@src/registry";
+import { EntryType, SerUtil, SimSer } from "@src/registry";
 import * as filtrex from "filtrex";
 import { DamageTypeChecklist, RangeTypeChecklist, WeaponSizeChecklist, WeaponTypeChecklist } from "@src/interface";
 import { defaults, list_truthy_keys } from "@src/funcs";
@@ -197,11 +197,27 @@ export class Bonus extends SimSer<RegBonusData> {
     }
 
     // Generates a context for a given pilot
-    public static PilotContext(pilot: Pilot): BonusContext {
-        return {
-            "ll": pilot.Level,
-            "grit": pilot.Grit
-        }
+    public static ContextFor(unit: Pilot | Mech | Npc | null): BonusContext {
+        if(unit?.Type == EntryType.PILOT) {
+            return {
+                "ll": unit.Level,
+                "grit": unit.Grit
+            }
+        } else if(unit?.Type == EntryType.MECH) {
+            if(unit.Pilot) {
+                return {
+                    "ll": unit.Pilot.Level,
+                    "grit": unit.Pilot.Grit
+                }
+            }
+        } else if(unit?.Type == EntryType.NPC) {
+            return {
+                "tier": unit.Tier,
+            }
+        } 
+
+        // Default to having nothing.
+        return {};
     }
 
 

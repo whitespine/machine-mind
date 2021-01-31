@@ -79,7 +79,7 @@ export class Range extends SimSer<RegRangeData> {
 
         // Start building our output
         const output: Range[] = [];
-        const ctx = mech.Pilot ? Bonus.PilotContext(mech.Pilot) : {};
+        const ctx = mech.Pilot ? Bonus.ContextFor(mech.Pilot) : {};
         for (let base_range of profile.BaseRange) {
             // Further narrow down to bonuses to this specific range/weapon combo
             let range_specific_bonuses = all_bonuses.filter(b =>

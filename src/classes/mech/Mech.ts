@@ -460,7 +460,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             Bonuses?: Bonus[];
             Actions?: Action[];
             Synergies?: Synergy[];
-            Deployaables?: Deployable[];
+            Deployables?: Deployable[];
             Counters?: Counter[];
         }> = [];
 
@@ -494,23 +494,35 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         return output;
     }
 
+    private cached_bonuses: Bonus[] | null = null;
     public get MechBonuses(): Bonus[] {
-        return this.mech_feature_sources(false).flatMap(x => x.Bonuses ?? []);
+        if(!this.cached_bonuses) {
+            this.cached_bonuses = this.mech_feature_sources(false).flatMap(x => x.Bonuses ?? []);
+        }
+        return this.cached_bonuses;
     }
 
-    public get MechSynergies(): Synergy[] {
+    // Force a recompute of bonuses. Only needed if items/loadout are modified
+    public recompute_bonuses(include_pilot: boolean = true): void {
+        this.cached_bonuses = null;
+        if(this.Pilot && include_pilot) {
+            this.Pilot.recompute_bonuses();
+        }
+    }
+
+    public MechSynergies(): Synergy[] {
         return this.mech_feature_sources(false).flatMap(x => x.Synergies ?? []);
     }
 
-    public get MechActions(): Action[] {
+    public MechActions(): Action[] {
         return this.mech_feature_sources(false).flatMap(x => x.Actions ?? []);
     }
 
-    public get MechDeployables(): Deployable[] {
+    public MechDeployables(): Deployable[] {
         return this.mech_feature_sources(true).flatMap(x => x.Deployables ?? []);
     }
 
-    public get MechCounters(): Counter[] {
+    public MechCounters(): Counter[] {
         return this.mech_feature_sources(true).flatMap(x => x.Counters ?? []);
     }
 
@@ -595,7 +607,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         let filtered = this.AllBonuses.filter(b => b.ID == id);
         let ctx: BonusContext = {};
         if (this.Pilot) {
-            ctx = Bonus.PilotContext(this.Pilot);
+            ctx = Bonus.ContextFor(this.Pilot);
         }
         return Bonus.Accumulate(base_value, filtered, ctx).final_value;
     }

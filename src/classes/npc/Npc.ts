@@ -116,6 +116,9 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
     */
 
+    // We don't cache yet
+    public recompute_bonuses(){}
+
     /* ------------- Class and feature filtering helpers ------------ */
     public get ActiveClass(): NpcClass | null {
         if (this.Classes.length) {

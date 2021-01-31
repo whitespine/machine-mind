@@ -448,28 +448,38 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [
             ...this.Talents.flatMap(t => t.Counters),
             ...this.CoreBonuses.flatMap(cb => cb.Counters),
-            ...(this.ActiveMech?.MechCounters || []),
+            ...(this.ActiveMech?.MechCounters() || []),
             ...this.CustomCounters,
         ];
     }
 
-    // Lists all of the bonuses this unmounted pilot is receiving
+    // Lists all of the bonuses this unmounted pilot is receiving. Uses cache, as operation can be expensive
+    private cached_bonuses: Bonus[] | null = null;
     public get PilotBonuses(): Bonus[] {
-        return [
-            ...this.Talents.flatMap(t => t.Bonuses),
-            ...this.CoreBonuses.flatMap(cb => cb.Bonuses),
-            ...this.Loadout.Items.flatMap(i => i.Bonuses),
-            ...this.Quirks.flatMap(q => q.Bonuses),
-            ...this.Factions.flatMap(f => []), // TODO - flesh out factions
-            ...this.Reserves.flatMap(r => r.Bonuses),
-            ...this.MechSkills.AllBonuses,
-        ];
+        if(!this.cached_bonuses) {
+            this.cached_bonuses = [
+                ...this.Talents.flatMap(t => t.Bonuses),
+                ...this.CoreBonuses.flatMap(cb => cb.Bonuses),
+                ...this.Loadout.Items.flatMap(i => i.Bonuses),
+                ...this.Quirks.flatMap(q => q.Bonuses),
+                ...this.Factions.flatMap(f => []), // TODO - flesh out factions
+                ...this.Reserves.flatMap(r => r.Bonuses),
+                ...this.MechSkills.AllBonuses,
+            ];
+        }
+        return this.cached_bonuses;
     }
+
+    // Force a recompute of bonuses. Only needed if items/loadout are modified
+    public recompute_bonuses(): void {
+        this.cached_bonuses = null;
+    }
+
 
     // Sum our pilot bonuses for the specified id, return the number
     private sum_bonuses(id: string): number {
         let filtered = this.PilotBonuses.filter(b => b.ID == id);
-        let ctx = Bonus.PilotContext(this);
+        let ctx = Bonus.ContextFor(this);
         return Bonus.Accumulate(0, filtered, ctx).final_value;
     }
 

@@ -128,15 +128,17 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     // Ownership
     Deployer!: Pilot | Mech | Npc | null;
+    
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
     public get AllBonuses(): Bonus[] {
+        // Get bonuses, prefering cached
         if (this.Deployer) {
             if(this.Deployer.Type == EntryType.PILOT) {
                 // Get bonuses just from pilot
                 return [...this.Deployer.PilotBonuses, ...this.Bonuses];
             } else if (this.Deployer.Type == EntryType.MECH) {
-                // Get bonuses from mechg + pilot
+                // Get bonuses from mech + pilot
                 return [...this.Deployer.AllBonuses, ...this.Bonuses];
             }
         } 
@@ -144,19 +146,32 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         // In case of no deployer / deployer is npc, cannot compute any additional bonuses
         return this.Bonuses;
     }    
-    
+
+    // Cached version of above. Must be manually invalidated
+    private cached_bonuses: Bonus[] | null = null;
+
+    // Makes the cache need re-computation. Since we don't do any work ourselves, this is more about
+    // asking our deployer to recompute
+    public recompute_bonuses(include_deployer: boolean = true) {
+        this.cached_bonuses = null;
+        if(this.Deployer && include_deployer) {
+            this.Deployer.recompute_bonuses();
+        }
+    }
     
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
     private sum_bonuses(base_value: number, id: string): number {
+        // Filter down to only relevant bonuses
         let filtered = this.AllBonuses.filter(b => b.ID == id);
+
         let ctx: BonusContext = {};
         if (this.Deployer?.Type == EntryType.PILOT) {
             // Set pilot ctx if directly associated with a pilot
-            ctx = Bonus.PilotContext(this.Deployer);
+            ctx = Bonus.ContextFor(this.Deployer);
         } else if(this.Deployer?.Type == EntryType.MECH) {
             // If assoc with a mech, need to route through said mech
             if(this.Deployer.Pilot) {
-                ctx = Bonus.PilotContext(this.Deployer.Pilot);
+                ctx = Bonus.ContextFor(this.Deployer.Pilot);
             }
         }
 
