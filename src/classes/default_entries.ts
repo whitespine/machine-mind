@@ -597,6 +597,7 @@ export function PILOT_GEAR(): RegPilotGearData {
         bonuses: [],
         deployables: [],
         description,
+        uses: 0,
         id: "pg_" + nanoid(),
         name: "New Gear",
         synergies: [],

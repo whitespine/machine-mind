@@ -1,5 +1,5 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@src/class";
-import { defaults } from "@src/funcs";
+import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
     RegBonusData,
@@ -55,6 +55,7 @@ interface AllRegData {
     id: string;
     name: string; // v-html
     description: string;
+    uses: number; // Remaining uses, if applicable
     actions: IActionData[]; // these are only available to UNMOUNTED pilots
     bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies: ISynergyData[];
@@ -70,7 +71,8 @@ export interface RegPilotWeaponData extends AllRegData {
 
 export interface RegPilotArmorData extends AllRegData {}
 
-export interface RegPilotGearData extends AllRegData {}
+export interface RegPilotGearData extends AllRegData {
+}
 
 /////////////////////////////////////////////////////////
 // Classes
@@ -80,11 +82,16 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     ID!: string;
     Name!: string;
     Description!: string;
+    Uses!: number;
     Tags!: TagInstance[];
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
     Deployables!: Deployable[];
+
+    get MaxUses(): number | null {
+        return tag_util.limited_max(this);
+    }    
 
     public async load(data: RegPilotArmorData): Promise<void> {
         data = { ...defaults.PILOT_ARMOR(), ...data };
@@ -92,6 +99,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
+        this.Uses = data.uses;
 
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
     }
@@ -102,6 +110,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
             id: this.ID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
+            uses: this.Uses,
             ...SerUtil.save_commons(this),
         };
     }
@@ -134,12 +143,19 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
+    Uses!: number; // How many we got remaining. Max determined by tag
+    // Returns the base max uses
+    get MaxUses(): number | null {
+        return tag_util.limited_max(this);
+    }    
+
     public async load(data: RegPilotGearData): Promise<void> {
         data = { ...defaults.PILOT_GEAR(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
+        this.Uses = data.uses;
 
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
     }
@@ -150,6 +166,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
             id: this.ID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
+            uses: this.Uses,
             ...SerUtil.save_commons(this),
         };
     }
@@ -177,6 +194,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     ID!: string;
     Description!: string;
     Effect!: string;
+    Uses!: number;
     Tags!: TagInstance[];
     Range!: Range[];
     Damage!: Damage[];
@@ -185,12 +203,17 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
+    get MaxUses(): number | null {
+        return tag_util.limited_max(this);
+    }    
+
     public async load(data: RegPilotWeaponData): Promise<void> {
         data = { ...defaults.PILOT_WEAPON(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
         this.Effect = data.effect;
+        this.Uses = data.uses;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Damage = SerUtil.process_damages(data.damage);
         this.Range = SerUtil.process_ranges(data.range);
@@ -203,6 +226,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             description: this.Description,
             name: this.Name,
             effect: this.Effect,
+            uses: this.Uses,
             damage: SerUtil.save_all(this.Damage),
             range: SerUtil.save_all(this.Range),
             tags: SerUtil.save_all(this.Tags),

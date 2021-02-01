@@ -1,12 +1,9 @@
-import { MechWeapon, MechWeaponProfile } from "@src/class";
-import { TagInstance } from "../Tag";
-import { MechSystem } from "./MechSystem";
-import { WeaponMod } from "./WeaponMod";
+import { MechWeapon, TagInstance  } from "@src/class";
 
 // Returns all tags on a mech equippable
 // Mech weapons returns across all profiles. 
 // If you want more specific, provide a profile instead
-type TaggedEquippable = MechSystem | MechWeapon | WeaponMod | MechWeaponProfile
+type TaggedEquippable = MechWeapon | {Tags: TagInstance[]};
 function tags(item: TaggedEquippable): TagInstance[] {
     if (item instanceof MechWeapon) {
         return item.Profiles.flatMap(p => p.Tags);
