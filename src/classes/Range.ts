@@ -90,7 +90,7 @@ export class Range extends SimSer<RegRangeData> {
             let bonus_summary: BonusSummary;
             let base_as_num = parseInt(base_range.Value);
             let fallback_base: string; //
-            if(Number.isNaN(base_as_num)) {
+            if (Number.isNaN(base_as_num)) {
                 fallback_base = base_range.Value + " + ";
                 bonus_summary = Bonus.Accumulate(0, range_specific_bonuses, ctx);
             } else {
@@ -129,7 +129,7 @@ export class Range extends SimSer<RegRangeData> {
     public static unpack(r: PackedRangeData): RegRangeData {
         return {
             type: r.type,
-            val: ""+r.val
-        }
+            val: "" + r.val,
+        };
     }
 }

@@ -98,7 +98,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     public as_number(default_num: number = 0): number {
         let parsed = Number.parseInt(`${this.Value}`);
-        if(Number.isNaN(parsed)) {
+        if (Number.isNaN(parsed)) {
             return default_num;
         } else {
             return parsed;

@@ -10,7 +10,15 @@ import {
     PackedCounterData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, InventoriedRegEntry, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    InventoriedRegEntry,
+    OpCtx,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { ActivationType } from "../enums";
 import { BonusContext } from "./Bonus";
 import { Npc } from "./npc/Npc";
@@ -96,7 +104,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     Redeploy!: ActivationType;
 
     // HP and related "curr" state
-    CurrentHP!: number; 
+    CurrentHP!: number;
     CurrentHeat!: number;
     Overshield!: number;
     Burn!: number;
@@ -128,24 +136,23 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     // Ownership
     Deployer!: Pilot | Mech | Npc | null;
-    
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
     public get AllBonuses(): Bonus[] {
         // Get bonuses, prefering cached
         if (this.Deployer) {
-            if(this.Deployer.Type == EntryType.PILOT) {
+            if (this.Deployer.Type == EntryType.PILOT) {
                 // Get bonuses just from pilot
                 return [...this.Deployer.PilotBonuses, ...this.Bonuses];
             } else if (this.Deployer.Type == EntryType.MECH) {
                 // Get bonuses from mech + pilot
                 return [...this.Deployer.AllBonuses, ...this.Bonuses];
             }
-        } 
+        }
 
         // In case of no deployer / deployer is npc, cannot compute any additional bonuses
         return this.Bonuses;
-    }    
+    }
 
     // Cached version of above. Must be manually invalidated
     private cached_bonuses: Bonus[] | null = null;
@@ -154,11 +161,11 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     // asking our deployer to recompute
     public recompute_bonuses(include_deployer: boolean = true) {
         this.cached_bonuses = null;
-        if(this.Deployer && include_deployer) {
+        if (this.Deployer && include_deployer) {
             this.Deployer.recompute_bonuses();
         }
     }
-    
+
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
     private sum_bonuses(base_value: number, id: string): number {
         // Filter down to only relevant bonuses
@@ -168,9 +175,9 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         if (this.Deployer?.Type == EntryType.PILOT) {
             // Set pilot ctx if directly associated with a pilot
             ctx = Bonus.ContextFor(this.Deployer);
-        } else if(this.Deployer?.Type == EntryType.MECH) {
+        } else if (this.Deployer?.Type == EntryType.MECH) {
             // If assoc with a mech, need to route through said mech
-            if(this.Deployer.Pilot) {
+            if (this.Deployer.Pilot) {
                 ctx = Bonus.ContextFor(this.Deployer.Pilot);
             }
         }
@@ -201,7 +208,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get RepairCapacity(): number {
         return this.sum_bonuses(this.BaseRepairCapacity, "deployable_repcap");
     }
-    get SensorRange(): number { 
+    get SensorRange(): number {
         return this.sum_bonuses(this.BaseSize, "deployable_sensor_range");
     }
     get TechAttack(): number {
@@ -213,8 +220,6 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get Speed(): number {
         return this.sum_bonuses(this.BaseSpeed, "deployable_speed");
     }
-
-
 
     // They don't own anything yet, but statuses will maybe change this? or if they have systems? idk, they're actors so it made sense at the time
     protected enumerate_owned_items(): RegEntry<any>[] {
@@ -260,7 +265,9 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
 
-        this.Deployer = data.deployer ? await this.Registry.resolve(this.OpCtx, data.deployer) : null;
+        this.Deployer = data.deployer
+            ? await this.Registry.resolve(this.OpCtx, data.deployer)
+            : null;
     }
 
     protected save_imp(): RegDeployableData {

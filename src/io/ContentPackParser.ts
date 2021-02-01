@@ -15,7 +15,7 @@ import {
     PackedManufacturerData,
     PackedNpcTemplateData,
     PackedNpcClassData,
-    AnyPackedNpcFeatureData
+    AnyPackedNpcFeatureData,
 } from "@src/interface";
 import { ITagTemplateData } from "@src/classes/Tag";
 
@@ -102,7 +102,8 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
     const tags = generateIDs(await getZipData<ITagTemplateData>(zip, "tags.json"), "tg");
 
     const npcClasses = (await readZipJSON<PackedNpcClassData[]>(zip, "npc_classes.json")) || [];
-    const npcFeatures = (await readZipJSON<AnyPackedNpcFeatureData[]>(zip, "npc_features.json")) || [];
+    const npcFeatures =
+        (await readZipJSON<AnyPackedNpcFeatureData[]>(zip, "npc_features.json")) || [];
     const npcTemplates =
         (await readZipJSON<PackedNpcTemplateData[]>(zip, "npc_templates.json")) || [];
 

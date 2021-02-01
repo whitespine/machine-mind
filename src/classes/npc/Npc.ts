@@ -117,7 +117,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     */
 
     // We don't cache yet
-    public recompute_bonuses(){}
+    public recompute_bonuses() {}
 
     /* ------------- Class and feature filtering helpers ------------ */
     public get ActiveClass(): NpcClass | null {
@@ -164,13 +164,13 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         let val = wrapped.Stat(key, this.Tier);
 
         // Apply bonuses/overrides
-        for(let feature of this.Features) {
+        for (let feature of this.Features) {
             let bonus = feature.Bonus[key];
             let override = feature.Override[key];
-            if(override) {
+            if (override) {
                 return override as number;
             }
-            if(typeof bonus == "number") {
+            if (typeof bonus == "number") {
                 val += bonus;
             }
         }
@@ -294,7 +294,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             subtitle: this.Subtitle,
             tag: this.Tag,
             current_stress: this.CurrentStress,
-            current_structure: this.CurrentStructure
+            current_structure: this.CurrentStructure,
         };
     }
 }

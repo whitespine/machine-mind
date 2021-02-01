@@ -23,7 +23,7 @@ export enum NpcFeatureType {
 
 export enum NpcTechType {
     Quick = "Quick",
-    Full = "Full"
+    Full = "Full",
 }
 
 // Defaults to main

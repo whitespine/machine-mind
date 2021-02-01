@@ -1,7 +1,13 @@
 import { Damage, TagInstance, Range } from "@src/class";
 import { DamageType, NpcFeatureType, NpcTechType, RangeType } from "@src/enums";
 import { defaults } from "@src/funcs";
-import { PackedRangeData, PackedTagInstanceData, RegDamageData, RegRangeData, RegTagInstanceData } from "@src/interface";
+import {
+    PackedRangeData,
+    PackedTagInstanceData,
+    RegDamageData,
+    RegRangeData,
+    RegTagInstanceData,
+} from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 import { INpcClassStats } from "./NpcClassStats";
 import { INpcStats } from "./NpcStats";
@@ -20,7 +26,6 @@ export interface PackedNpcDamageData {
     type: string;
     damage: number[]; // The damage at each tier
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Packed main types
@@ -75,7 +80,13 @@ export interface PackedNpcTechData extends PackedNpcFeatureData {
 }
 
 // Combines all of our types
-export type AnyPackedNpcFeatureData = PackedNpcTechData | PackedNpcTraitData | PackedNpcWeaponData | PackedNpcSystemData | PackedNpcWeaponData | PackedNpcReactionData;
+export type AnyPackedNpcFeatureData =
+    | PackedNpcTechData
+    | PackedNpcTraitData
+    | PackedNpcWeaponData
+    | PackedNpcSystemData
+    | PackedNpcWeaponData
+    | PackedNpcReactionData;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Reg main types
@@ -125,8 +136,13 @@ export interface RegNpcTechData extends BaseRegNpcFeatureData {
     attack_bonus: number[];
 }
 
-export type AnyRegNpcFeatureData = RegNpcTechData | RegNpcTraitData | RegNpcWeaponData | RegNpcSystemData | RegNpcWeaponData | RegNpcReactionData;
-
+export type AnyRegNpcFeatureData =
+    | RegNpcTechData
+    | RegNpcTraitData
+    | RegNpcWeaponData
+    | RegNpcSystemData
+    | RegNpcWeaponData
+    | RegNpcReactionData;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Omnibus class implementations
@@ -136,17 +152,17 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Name!: string;
     public Origin!: IOriginData;
     public Effect!: string;
-    public Bonus!: Partial<Omit<INpcStats, "reactions" | "sizes">>
+    public Bonus!: Partial<Omit<INpcStats, "reactions" | "sizes">>;
     public Charged!: boolean;
     public Uses!: number;
-    public Override!: Partial<INpcStats>
+    public Override!: Partial<INpcStats>;
     // public Locked!: boolean;
     public Tags!: TagInstance[];
     public FeatureType!: NpcFeatureType;
 
     // Henceforth we have things that may or may not actually be there! Defaults are provided, but meaningless
     public Range: Range[] = [];
-    public Damage: Damage[][] = [[],[],[]];
+    public Damage: Damage[][] = [[], [], []];
     public Accuracy: number[] = [];
     public Trigger: string = "";
     public TechType: NpcTechType = NpcTechType.Quick;
@@ -157,7 +173,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     // Get max uses from tag
     public get MaxUses(): number {
         let tag = this.Tags.find(t => t.Tag.IsLimited);
-        if(tag) {
+        if (tag) {
             return tag.as_number(0);
         } else {
             return 0;
@@ -167,13 +183,13 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     // Get our recharge number, or 0 if none exists
     public get Recharge(): number {
         let tag = this.Tags.find(t => t.Tag.IsRecharging);
-        if(tag) {
+        if (tag) {
             return tag.as_number(0);
         } else {
             return 0;
         }
     }
-    
+
     // TODO: Hide these types via private
 
     public get FormattedEffect(): string {
@@ -210,7 +226,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         data = { ...defaults.NPC_FEATURE(), ...data };
         this.ID = data.id;
         this.Name = data.name;
-        this.Origin = {...data.origin};
+        this.Origin = { ...data.origin };
         this.Effect = data.effect;
         this.Bonus = data.bonus;
         this.Override = data.override;
@@ -220,19 +236,19 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.FeatureType = data.type;
 
         // Fetch whatever else is there
-        switch(data.type) {
-           case NpcFeatureType.Reaction:
-                data = {...defaults.NPC_REACTION(), ...data};
+        switch (data.type) {
+            case NpcFeatureType.Reaction:
+                data = { ...defaults.NPC_REACTION(), ...data };
                 this.Trigger = data.trigger;
                 return;
-            case NpcFeatureType.Tech: 
-                data = {...defaults.NPC_TECH(), ...data};
+            case NpcFeatureType.Tech:
+                data = { ...defaults.NPC_TECH(), ...data };
                 this.TechType = data.tech_type;
                 this.Accuracy = [...data.accuracy];
                 this.AttackBonus = [...data.attack_bonus];
                 return;
             case NpcFeatureType.Weapon:
-                data = {...defaults.NPC_WEAPON(), ...data};
+                data = { ...defaults.NPC_WEAPON(), ...data };
                 this.Accuracy = [...data.accuracy];
                 this.AttackBonus = [...data.attack_bonus];
                 this.WepType = data.weapon_type;
@@ -258,30 +274,30 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             tags: SerUtil.save_all(this.Tags),
             type: this.FeatureType,
             charged: this.Charged,
-            uses: this.Uses
+            uses: this.Uses,
         };
 
-        switch(this.FeatureType) {
+        switch (this.FeatureType) {
             case NpcFeatureType.Reaction:
                 let result_react: RegNpcReactionData = {
-                    ...base, 
+                    ...base,
                     trigger: this.Trigger,
-                    type: NpcFeatureType.Reaction
+                    type: NpcFeatureType.Reaction,
                 };
                 return result_react;
             case NpcFeatureType.System:
                 let result_sys: RegNpcSystemData = {
                     ...base,
-                    type: NpcFeatureType.System
+                    type: NpcFeatureType.System,
                 };
                 return result_sys;
-            case NpcFeatureType.Tech: 
+            case NpcFeatureType.Tech:
                 let result_tech: RegNpcTechData = {
                     ...base,
                     tech_type: this.TechType,
                     accuracy: [...this.Accuracy],
                     attack_bonus: [...this.AttackBonus],
-                    type: NpcFeatureType.Tech
+                    type: NpcFeatureType.Tech,
                 };
                 return result_tech;
             case NpcFeatureType.Weapon:
@@ -293,14 +309,14 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                     damage: this.Damage.map(s => SerUtil.save_all(s)),
                     range: SerUtil.save_all(this.Range),
                     on_hit: this.OnHit,
-                    type: NpcFeatureType.Weapon
+                    type: NpcFeatureType.Weapon,
                 };
                 return result_wep;
             default:
             case NpcFeatureType.Trait:
                 return {
                     ...base,
-                    type: NpcFeatureType.Trait
+                    type: NpcFeatureType.Trait,
                 };
         }
     }
@@ -313,40 +329,40 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     ): Promise<NpcFeature> {
         let tags = SerUtil.unpack_tag_instances(reg, data.tags);
         let result: AnyRegNpcFeatureData;
-        if(data.type == NpcFeatureType.Reaction) {
+        if (data.type == NpcFeatureType.Reaction) {
             let result_react: RegNpcReactionData = {
                 ...defaults.NPC_REACTION(),
-                ...data, 
-                tags
+                ...data,
+                tags,
             };
             result = result_react;
-        } else if(data.type == NpcFeatureType.System) {
+        } else if (data.type == NpcFeatureType.System) {
             let result_sys: RegNpcSystemData = {
                 ...defaults.NPC_SYSTEM(),
                 ...data,
-                tags
+                tags,
             };
             result = result_sys;
-        } else if(data.type == NpcFeatureType.Tech) {
+        } else if (data.type == NpcFeatureType.Tech) {
             let result_tech: RegNpcTechData = {
                 ...defaults.NPC_TECH(),
                 ...data,
                 tags,
                 tech_type: SerUtil.restrict_enum(NpcTechType, NpcTechType.Quick, data.tech_type),
                 accuracy: data.accuracy ?? [0, 0, 0],
-                attack_bonus: data.attack_bonus ?? [0, 0, 0]
+                attack_bonus: data.attack_bonus ?? [0, 0, 0],
             };
             result = result_tech;
-        } else if(data.type == NpcFeatureType.Weapon) {
+        } else if (data.type == NpcFeatureType.Weapon) {
             // Gotta adapt the damage to a proper RegDamageData array
-            let damage: RegDamageData[][] = []; 
-            for(let raw_dmg of (data.damage ?? [])) {
+            let damage: RegDamageData[][] = [];
+            for (let raw_dmg of data.damage ?? []) {
                 // Go through the numbers. Each damage type contains the value of that type at each tier
-                for(let tier=0; tier < raw_dmg.damage.length; tier++) {
+                for (let tier = 0; tier < raw_dmg.damage.length; tier++) {
                     let corr_dmg_tier_array = damage[tier] ?? [];
                     corr_dmg_tier_array.push({
                         type: SerUtil.restrict_enum(DamageType, DamageType.Kinetic, raw_dmg.type),
-                        val: `${raw_dmg.damage[tier]}`
+                        val: `${raw_dmg.damage[tier]}`,
                     });
                     damage[tier] = corr_dmg_tier_array; // No-op if already set. But sets if we hadn't yet
                 }
@@ -354,10 +370,10 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
             // Same with range. Thankfully much less complex
             let range: RegRangeData[] = [];
-            for(let raw_range of (data.range ?? [])) {
+            for (let raw_range of data.range ?? []) {
                 range.push({
                     type: SerUtil.restrict_enum(RangeType, RangeType.Range, raw_range.type),
-                    val: `${raw_range.val}`
+                    val: `${raw_range.val}`,
                 });
             }
 
@@ -368,21 +384,21 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
                 accuracy: data.accuracy ?? [0, 0, 0],
                 attack_bonus: data.attack_bonus ?? [0, 0, 0],
                 damage,
-                range
+                range,
             };
             result = result_wep;
         } else {
             let result_trait: RegNpcTraitData = {
                 ...defaults.NPC_TRAIT(),
                 ...data,
-                tags
+                tags,
             };
             result = result_trait;
         }
 
         // Last thing we do: Set uses based on tags. A bit rough, but serviceable
-        for(let t of tags) {
-            if(t.tag.fallback_mmid == "tg_limited") {
+        for (let t of tags) {
+            if (t.tag.fallback_mmid == "tg_limited") {
                 result.uses = Number.parseInt(`${t.val ?? 0}`);
             }
         }

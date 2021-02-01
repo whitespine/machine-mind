@@ -35,7 +35,7 @@ export {
     PackedWeaponSlotData,
     RegMechLoadoutData,
     RegSysMountData,
-    RegWepMountData
+    RegWepMountData,
 } from "./classes/mech/MechLoadout";
 export { RegWeaponModData, PackedWeaponModData } from "./classes/mech/WeaponMod";
 export { PackedPilotData, RegPilotData } from "./classes/pilot/Pilot";
@@ -67,7 +67,24 @@ export {
     ITalentItemData,
 } from "./classes/pilot/Talent";
 export { PackedSkillData, RegSkillData } from "./classes/pilot/Skill";
-export {IOriginData, PackedNpcReactionData, PackedNpcWeaponData, PackedNpcSystemData, PackedNpcTraitData, PackedNpcTechData, NpcFeature, AnyPackedNpcFeatureData , AnyRegNpcFeatureData , PackedNpcDamageData , BaseRegNpcFeatureData, RegNpcReactionData, RegNpcSystemData, RegNpcTechData, RegNpcTraitData, RegNpcWeaponData} from "./classes/npc/NpcFeature";
+export {
+    IOriginData,
+    PackedNpcReactionData,
+    PackedNpcWeaponData,
+    PackedNpcSystemData,
+    PackedNpcTraitData,
+    PackedNpcTechData,
+    NpcFeature,
+    AnyPackedNpcFeatureData,
+    AnyRegNpcFeatureData,
+    PackedNpcDamageData,
+    BaseRegNpcFeatureData,
+    RegNpcReactionData,
+    RegNpcSystemData,
+    RegNpcTechData,
+    RegNpcTraitData,
+    RegNpcWeaponData,
+} from "./classes/npc/NpcFeature";
 export { RegNpcData, PackedNpcData } from "./classes/npc/Npc";
 export { RegNpcTemplateData, PackedNpcTemplateData } from "./classes/npc/NpcTemplate";
 export { RegNpcClassData, PackedNpcClassData } from "./classes/npc/NpcClass";

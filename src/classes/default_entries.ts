@@ -186,7 +186,7 @@ export function DEPLOYABLE(): RegDeployableData {
         avail_unmounted: false,
         avail_mounted: true,
         deployer: null,
-        burn: 0
+        burn: 0,
     };
 }
 
@@ -407,7 +407,7 @@ export function NPC(): RegNpcData {
         tag: "",
         tier: 1,
         current_stress: 1,
-        current_structure: 1
+        current_structure: 1,
     };
 }
 
@@ -446,7 +446,7 @@ function npc_feature_commons(): BaseRegNpcFeatureData {
         effect: "No Effect",
         override: {},
         charged: true,
-        uses: 0
+        uses: 0,
     };
 }
 
@@ -457,7 +457,7 @@ export function NPC_TECH(): RegNpcTechData {
         type: NpcFeatureType.Tech,
         accuracy: [0, 0, 0],
         attack_bonus: [0, 0, 0],
-        tech_type: NpcTechType.Quick
+        tech_type: NpcTechType.Quick,
     };
 }
 
@@ -470,18 +470,24 @@ export function NPC_WEAPON(): RegNpcWeaponData {
         attack_bonus: [0, 0, 0],
         weapon_type: "Unknown",
         damage: [
-            [{
-                type: DamageType.Kinetic,
-                val: "1"
-            }],
-            [{
-                type: DamageType.Kinetic,
-                val: "2"
-            }],
-            [{
-                type: DamageType.Kinetic,
-                val: "3"
-            }],
+            [
+                {
+                    type: DamageType.Kinetic,
+                    val: "1",
+                },
+            ],
+            [
+                {
+                    type: DamageType.Kinetic,
+                    val: "2",
+                },
+            ],
+            [
+                {
+                    type: DamageType.Kinetic,
+                    val: "3",
+                },
+            ],
         ],
         range: [
             {
@@ -575,8 +581,8 @@ export function NPC_STATS(): Required<INpcStats> {
         systems: 0,
         stress: 0,
         structure: 0,
-        sizes: [1,1,1],
-        reactions: []
+        sizes: [1, 1, 1],
+        reactions: [],
     };
 }
 
@@ -676,7 +682,7 @@ export function PILOT(): RegPilotData {
         sort_index: 0,
         status: "",
         text_appearance: "",
-        current_overshield: 0
+        current_overshield: 0,
     };
 }
 

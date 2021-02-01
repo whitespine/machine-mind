@@ -71,8 +71,7 @@ export interface RegPilotWeaponData extends AllRegData {
 
 export interface RegPilotArmorData extends AllRegData {}
 
-export interface RegPilotGearData extends AllRegData {
-}
+export interface RegPilotGearData extends AllRegData {}
 
 /////////////////////////////////////////////////////////
 // Classes
@@ -91,7 +90,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
 
     get MaxUses(): number | null {
         return tag_util.limited_max(this);
-    }    
+    }
 
     public async load(data: RegPilotArmorData): Promise<void> {
         data = { ...defaults.PILOT_ARMOR(), ...data };
@@ -147,7 +146,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     // Returns the base max uses
     get MaxUses(): number | null {
         return tag_util.limited_max(this);
-    }    
+    }
 
     public async load(data: RegPilotGearData): Promise<void> {
         data = { ...defaults.PILOT_GEAR(), ...data };
@@ -205,7 +204,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     get MaxUses(): number | null {
         return tag_util.limited_max(this);
-    }    
+    }
 
     public async load(data: RegPilotWeaponData): Promise<void> {
         data = { ...defaults.PILOT_WEAPON(), ...data };
@@ -244,7 +243,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             damage: data.damage.map(d => Damage.unpack(d)),
-            range: data.range.map(Range.unpack)
+            range: data.range.map(Range.unpack),
         };
         return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata);
     }

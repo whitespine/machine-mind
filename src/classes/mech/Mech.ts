@@ -496,7 +496,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     private cached_bonuses: Bonus[] | null = null;
     public get MechBonuses(): Bonus[] {
-        if(!this.cached_bonuses) {
+        if (!this.cached_bonuses) {
             this.cached_bonuses = this.mech_feature_sources(false).flatMap(x => x.Bonuses ?? []);
         }
         return this.cached_bonuses;
@@ -505,7 +505,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // Force a recompute of bonuses. Only needed if items/loadout are modified
     public recompute_bonuses(include_pilot: boolean = true): void {
         this.cached_bonuses = null;
-        if(this.Pilot && include_pilot) {
+        if (this.Pilot && include_pilot) {
             this.Pilot.recompute_bonuses();
         }
     }
@@ -574,7 +574,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentRepairs = data.current_repairs;
         this.CurrentOvercharge = data.current_overcharge;
         this.CurrentCoreEnergy = data.current_core_energy;
-        this.Resistances = {...data.resistances};
+        this.Resistances = { ...data.resistances };
         this.Reactions = data.reactions;
         this.Burn = data.burn;
         this.Ejected = data.ejected || false;
@@ -623,7 +623,10 @@ export async function mech_cloud_sync(
     let ctx = mech.OpCtx;
     let stack: RegFallback;
     if (mech.Pilot) {
-        stack = { base: mech_inv, fallbacks: [await mech.Pilot.get_inventory(), ...gather_source_regs] };
+        stack = {
+            base: mech_inv,
+            fallbacks: [await mech.Pilot.get_inventory(), ...gather_source_regs],
+        };
     } else {
         stack = { base: mech_inv, fallbacks: [...gather_source_regs] };
     }

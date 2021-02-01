@@ -205,7 +205,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // Sibling to the above
     async AddEmptySystemMount(): Promise<SystemMount> {
-        let mount = new SystemMount(this.Registry, this.OpCtx, {system: null});
+        let mount = new SystemMount(this.Registry, this.OpCtx, { system: null });
         await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
         this.SysMounts.push(mount);
         return mount;

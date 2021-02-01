@@ -576,7 +576,7 @@ export interface MidInsinuationRecord<T extends EntryType> {
     from: RegRef<T>; // Ref to entry this was insinuated from
     // The intermediate product, which has been achieved by telling the original item that it lives elsewhere than where it came from
     // This item is, at the time of this object being yielded, about to be written to the destination registry. Making any final changes here, while you can
-    pending: LiveEntryTypes<T>; 
+    pending: LiveEntryTypes<T>;
 }
 export interface InsinuationRecord<T extends EntryType> {
     type: T;
@@ -672,7 +672,7 @@ export abstract class RegEntry<T extends EntryType> {
     public async insinuate(to_new_reg: Registry, ctx?: OpCtx): Promise<LiveEntryTypes<T>> {
         // The public exposure of insinuate, which ensures it is safe by refreshing before and after all operations
 
-        // Create a fresh copy, free of any other context. This will be heavily mutated in order to migrate 
+        // Create a fresh copy, free of any other context. This will be heavily mutated in order to migrate
         let fresh = await this.refreshed();
 
         // If fresh fails to create - implying deletion of target while we try to insinuate - we abort the operation
@@ -706,10 +706,10 @@ export abstract class RegEntry<T extends EntryType> {
                 );
             }
             let final_record = {
-                from: {...record.from},
+                from: { ...record.from },
                 type: record.type,
-                new_item: new_v!
-            }
+                new_item: new_v!,
+            };
             await to_new_reg.hook_post_insinuate(final_record);
         }
 
@@ -966,11 +966,11 @@ export abstract class RegCat<T extends EntryType> {
     // If trim is specified (which we usually want when unpacking but rarely otherwise), cut off all unexpected keys
     async create_live(
         ctx: OpCtx,
-        val: RegEntryTypes<T>,
+        val: RegEntryTypes<T>
         // trim: boolean = false
     ): Promise<LiveEntryTypes<T>> {
         // if (trim) {
-            // val = trimmed(this.cat, val);
+        // val = trimmed(this.cat, val);
         // }
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
@@ -1111,14 +1111,15 @@ export abstract class Registry {
         let result: LiveEntryTypes<any> | null = null;
 
         // First try standard by id
-        if(ref.id && ref.type) {
+        if (ref.id && ref.type) {
             result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
         }
 
         // Failing that try fallback mmid
         if (!result && ref.fallback_mmid) {
             if (ref.type) {
-                result = await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid) ?? null;
+                result =
+                    (await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid)) ?? null;
             } else {
                 result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
             }
@@ -1152,7 +1153,9 @@ export abstract class Registry {
     public abstract switch_reg(selector: string): Registry | null | Promise<Registry | null>;
 
     // Wraps switch_reg. Provides an inventory for the given inventoried unit
-    public abstract switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry | Promise<Registry>;
+    public abstract switch_reg_inv(
+        for_inv_item: InventoriedRegEntry<EntryType>
+    ): Registry | Promise<Registry>;
 
     // Returns the name by which this reg would be fetched via switch_reg
     public abstract name(): string;
@@ -1160,10 +1163,11 @@ export abstract class Registry {
     // Hook called upon insinuation targets immediately prior to their final write to the destination reg.
     // At this points, the entire object structure should be in place, though it has not been committed to memory
     // Overriding this is necessary if we have other requirements in our insinuation process. Edit the object in place
-    public hook_insinuate_pre_final_write<T extends EntryType>(_record: MidInsinuationRecord<T>):  Promise<void> | void {
+    public hook_insinuate_pre_final_write<T extends EntryType>(
+        _record: MidInsinuationRecord<T>
+    ): Promise<void> | void {
         /* override */
     }
-
 
     // Hook called upon completion of an insinutation. NOTE: called on the _destination_ reg
     public hook_post_insinuate<T extends EntryType>(

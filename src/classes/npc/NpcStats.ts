@@ -1,4 +1,4 @@
-export interface INpcStats  {
+export interface INpcStats {
     activations: number;
     armor: number;
     hp: number;
