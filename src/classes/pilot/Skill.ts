@@ -60,7 +60,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
     protected save_imp(): RegSkillData {
         return {
             description: this.Description,
-            detail: this.Description,
+            detail: this.Detail,
             family: this.Family,
             id: this.ID,
             name: this.Name,
