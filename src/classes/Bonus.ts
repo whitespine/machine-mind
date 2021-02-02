@@ -33,19 +33,19 @@ export interface RegBonusData {
     replace: boolean;
 }
 
-interface BonusSummaryItem {
+interface BonusSummaryItem<T extends string | number> {
     bonus: Bonus; // The bonus that contributed this item
-    value: number; // The computed result of the bonus
+    value: T; // The computed result of the bonus
     included: boolean; // True if this value was actually included (false in cases of overwrites, or in the case of the base item being replaced)
 }
 
-export interface BonusSummary {
-    base_value: number; // Self descriptive. Dropped in favor of base_replacements should base_replacements exist
-    base_replacements: BonusSummaryItem[] | null;
-    final_value: number; // What number should be used when all is said and done
+export interface BonusSummary<T extends string | number> {
+    base_value: T; // Self descriptive. Dropped in favor of base_replacements should base_replacements exist
+    base_replacements: BonusSummaryItem<T>[] | null; 
+    final_value: T; // What number should be used when all is said and done
     replace: boolean; // Whether replacement logic item(s) overrode the base
     overwrite: boolean; // Whether override logic overrode all other logic. 
-    contributors: BonusSummaryItem[]; // All the contributing bonuses, included or no, used to tabulate this value. Doesn't include replacements
+    contributors: BonusSummaryItem<T>[]; // All the contributing bonuses, included or no, used to tabulate this value. Doesn't include replacements
 }
 
 // Maps things like ll to the value we expect. Missing values are assumed to be zero
@@ -66,7 +66,8 @@ export class Bonus extends SimSer<RegBonusData> {
 
     // Cached compiled thingies
     private _value!: string;
-    private _value_func!: (v: BonusContext) => number;
+    private num_value_func!: (v: BonusContext) => number; // Tries to produce strings
+    private str_value_func!: (v: BonusContext) => string; // Tries to produce numbers
 
     // An ephemeral label
     Source: string = "???";
@@ -116,9 +117,11 @@ export class Bonus extends SimSer<RegBonusData> {
 
         // Then compile
         try {
-            this._value_func = filtrex.compileExpression(val);
+            this.str_value_func = filtrex.compileExpression(val);
+            this.num_value_func = filtrex.compileExpression(val);
         } catch (e) {
-            this._value_func = x => 666;
+            this.str_value_func = x => ""; // An error expression - just zero it
+            this.num_value_func = x => 0; // An error expression - just blank it
         }
     }
 
@@ -152,8 +155,10 @@ export class Bonus extends SimSer<RegBonusData> {
 
     // Formats our detail string to properly show weapon types, damage types, value, etc
     private parse_detail(str: string): string {
+        let parsed = parseInt(this.Value);
+        let mod = isNaN(parsed) ? "Modifies" : parsed < 0 ? "Decreases" : "Increases";
         str = str.replace(/{VAL}/g, "" + this.Value);
-        str = str.replace(/{INC_DEC}/g, parseInt(this.Value) > -1 ? "Increases" : "Decreases");
+        str = str.replace(/{INC_DEC}/g, mod);
         str = str.replace(/{RANGE_TYPES}/g, list_truthy_keys(this.RangeTypes).join("/"));
         str = str.replace(/{DAMAGE_TYPES}/g, list_truthy_keys(this.DamageTypes).join("/"));
         str = str.replace(/{WEAPON_TYPES}/g, list_truthy_keys(this.WeaponTypes).join("/"));
@@ -161,6 +166,17 @@ export class Bonus extends SimSer<RegBonusData> {
 
         return str;
     }
+
+    // Formats our detail string further with a pilot context
+    /*
+    public contextualized_detail(ctx: BonusContext): string {
+        let s = this.Detail;
+        for(let key of Object.keys(ctx)) {
+            s = s.
+        }
+
+    }
+    */
 
     // For npcs
     public evaluate_tier(number: number): number {
@@ -179,17 +195,17 @@ export class Bonus extends SimSer<RegBonusData> {
         }
 
         // Check size
-        if (this.WeaponSizes[weapon.Size]) {
+        if (!this.WeaponSizes[weapon.Size]) {
             return false; // Does not apply - wrong size
         }
 
         // Check damage type. Basically just check intersection of our damage type keys with
-        if(profile.BaseDamage.some(bd => this.DamageTypes[bd.DamageType])) {
+        if(!profile.BaseDamage.some(bd => this.DamageTypes[bd.DamageType])) {
             return false; // Does not apply - wrong damage type
         }
 
         // Check range type. Would be same deal, but we typically want to check for specific ranges
-        if (this.RangeTypes[range.RangeType]) {
+        if (!this.RangeTypes[range.RangeType]) {
             return false; // Does not apply - wrong range type
         }
 
@@ -222,29 +238,45 @@ export class Bonus extends SimSer<RegBonusData> {
 
 
     // The canonical way to sum bonuses. Includes logic for handling the "overwrite" and "replace" flags
-    public static Accumulate(base_value: number, bonuses: Bonus[], context: BonusContext): BonusSummary {
+    public static Accumulate<T extends number | string>(base_value: T, bonuses: Bonus[], context: BonusContext): BonusSummary<T> {
+        let start: T;
+        let is_string: boolean;
+        if(typeof base_value == "string") {
+            start = "" as T;
+            is_string = true;
+        } else {
+            start = 0 as T;
+            is_string = false;
+        }
+
         // Init with some generic values
-        let result: BonusSummary = {
+        let result: BonusSummary<T> = {
             base_value: base_value,
             base_replacements: null,
             contributors: [],
-            final_value: 0,
+            final_value: start,
             overwrite: false,
             replace: false
         };
 
         // Groups
-        let norm: BonusSummaryItem[] = [];
-        let repl: BonusSummaryItem[] = [];
-        let over: BonusSummaryItem[] = [];
-        let over_repl: BonusSummaryItem[] = [];
+        let norm: BonusSummaryItem<T>[] = [];
+        let repl: BonusSummaryItem<T>[] = [];
+        let over: BonusSummaryItem<T>[] = [];
+        let over_repl: BonusSummaryItem<T>[] = [];
 
         // Process initial 
         for(let b of bonuses) {
-            let as_item: BonusSummaryItem = {
+            let value: T;
+            if(is_string) {
+                value = b.str_value_func(context) as T;
+            } else {
+                value = b.num_value_func(context) as T;
+            }
+            let as_item: BonusSummaryItem<T> = {
                 bonus: b,
                 included: true, // We mark false as appropriate later
-                value: b._value_func(context)
+                value
             }
 
             // Update flags
@@ -277,35 +309,64 @@ export class Bonus extends SimSer<RegBonusData> {
             result.final_value = highest.value;
         } else {
             // We aren't just nuking everything in favor of a single item
-            let contrib = 0;
+            let contrib_bonuses: T = (is_string ? "" : 0) as T; // All the +'s totaled up
             let base = base_value;
 
-            // Handle if we have one or more replaces
+            // Handle if we have one or more replaces. Need to replace `base` with the sum of them
             if(repl.length) {
                 // Re-compute base by summing the replaces
-                base = 0;
-                for(let r of repl) {
-                    base += r.value;                    
+                if(is_string) {
+                    let new_base = "";
+                    for(let r of repl) {
+                        if(new_base && r.value) {
+                            new_base += " + ";
+                        }
+                        new_base += r.value as string;
+                    }
+                    base = new_base as T;
+                } else {
+                    let new_base = 0;
+                    for(let r of repl) {
+                        new_base += r.value as number;
+                    }
+                    base = new_base as T;
                 }
             }
 
-            // Handle if we have one or more overwrites
+            // Handle if we have one or more overwrites. Need to replace `contribu_bonuses` with the highest of them
             if(over.length) {
                 // Only over will be counted here. We nuke all other non-replace contribs
                 norm.forEach(x => x.included = false);
                 over.forEach(x => x.included = false);
                 let highest = find_max(over)!;
                 highest.included = true;
-                contrib = highest.value;
+                contrib_bonuses = highest.value;
             } else {
                 // If we have no overwrites then we still need to sum up contribs
-                for(let c of norm) {
-                    contrib += c.value;
+                if(is_string) {
+                    let new_contrib = "";
+                    for(let c of norm) {
+                        if(new_contrib && c.value) {
+                            new_contrib += " + ";
+                        }
+                        new_contrib += c.value as string;
+                    }
+                    contrib_bonuses = new_contrib as T;
+                } else {
+                    let new_contrib = 0;
+                    for(let c of norm) {
+                        new_contrib += c.value as number;
+                    }
+                    contrib_bonuses = new_contrib as T;
                 }
             }
 
             // Set the final by summing the above two
-            result.final_value = base + contrib;
+            if(is_string) {
+                result.final_value = (contrib_bonuses ? `${base} + ${contrib_bonuses}` : `${base}`) as T;
+            } else {
+                result.final_value = ((base as number) + (contrib_bonuses as number)) as T;
+            }
         }
 
 
@@ -318,14 +379,21 @@ export class Bonus extends SimSer<RegBonusData> {
     }
 }
 
-// Find highest valued item of provided array
-function find_max(items: BonusSummaryItem[]): BonusSummaryItem | null {
+// Find highest valued item of provided array. Used for overrides
+function find_max<T extends string | number>(items: BonusSummaryItem<T>[]): BonusSummaryItem<T> | null {
     let highest_val = 0;
-    let highest: BonusSummaryItem | null = null;
-    for(let v of items) {
-        if(v.value > highest_val) {
-            highest = v;
-            highest_val = v.value;
+    let highest: BonusSummaryItem<T> | null = null;
+    for(let raw_v of items) {
+        let val: number;
+        if(typeof raw_v.value == "string") {
+            val = Number.parseInt(raw_v.value) || 0;
+        } else {
+            val = raw_v.value as number;
+        }
+
+        if(val > highest_val) {
+            highest = raw_v;
+            highest_val = val;
         }
     }
     return highest;

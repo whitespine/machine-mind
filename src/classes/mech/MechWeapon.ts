@@ -235,6 +235,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             deployables: parent_deployables,
             selected_profile: 0,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, dat.source),
+            size: SerUtil.restrict_enum(WeaponSize, WeaponSize.Main, dat.mount)
         };
 
         // Get profiles - depends on if array is provided, but we tend towards the default

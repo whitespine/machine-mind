@@ -87,7 +87,7 @@ export class Range extends SimSer<RegRangeData> {
             );
 
             // Compute them vals
-            let bonus_summary: BonusSummary;
+            let bonus_summary: BonusSummary<number>;
             let base_as_num = parseInt(base_range.Value);
             let fallback_base: string; //
             if (Number.isNaN(base_as_num)) {
