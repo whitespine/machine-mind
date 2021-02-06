@@ -49,9 +49,17 @@ export interface PackedMechWeaponData {
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
-    skirmish_cost?: number;
-    barrage_cost?: number;
+    cost?: number; // How many limited uses to consume per firing?
+    skirmish?: boolean; // Can we fire this weapon as part of a skirmish? Default true
+    barrage?: boolean; // Can we fire this weapon as part of a barrage? Default true
     profiles: PackedMechWeaponProfile[];
+
+    // Some weapons don't like nice things
+    no_attack?: boolean;
+    no_bonus?: boolean;
+    no_synergy?: boolean;
+    no_mods?: boolean;
+    no_core_bonus?: boolean;
 }
 export type PackedMechWeaponProfile = Omit<
     PackedMechWeaponData,
@@ -73,6 +81,13 @@ export interface RegMechWeaponData {
     uses: number;
     profiles: RegMechWeaponProfile[];
 
+    // Does this weapon HATE FUN? Pegasus autogun/mimic gun are good examples
+    no_core_bonuses: boolean;
+    no_mods: boolean;
+    no_bonuses: boolean;
+    no_synergies: boolean;
+    no_attack: boolean; // See: Autopod, vorpal, etc
+
     destroyed: boolean;
     cascading: boolean;
     loaded: boolean;
@@ -93,6 +108,15 @@ export interface RegMechWeaponProfile {
     on_attack: string; // v-html
     on_hit: string; // v-html
     on_crit: string; // v-html
+
+    // How many limited uses it consumes
+    cost: number;
+
+    // When can we use this profile
+    skirmishable: boolean;
+    barrageable: boolean;
+
+    // basc
     actions: IActionData[];
     bonuses: RegBonusData[];
     synergies: ISynergyData[];
@@ -123,6 +147,13 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
     Cascading!: boolean; // In case GRAND-UNCLE ever exists
     Uses!: number;
 
+    // What can this weapon NOT do. TODO - make the "NoBonuses" one do something
+    NoAttack!: boolean; // This weapon doesn't conventionally attack
+    NoBonuses!: boolean; // Cannot benefit from any bonuses, generally
+    NoCoreBonuses!: boolean; // Cannot benefit from core bonuses. Dunno when this wouldn't be covered by Bonuses but w/e
+    NoMods!: boolean; // No mods allowed
+    NoSynergies!: boolean; // We should not collect/display synergies when using/displaying this weapon
+
     public async load(data: RegMechWeaponData): Promise<void> {
         data = { ...defaults.MECH_WEAPON(), ...data };
         this.ID = data.id;
@@ -140,6 +171,12 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         this.Destroyed = data.destroyed;
         this.Cascading = data.cascading;
         this.Uses = data.uses;
+
+        this.NoAttack = data.no_attack;
+        this.NoBonuses = data.no_bonuses;
+        this.NoCoreBonuses = data.no_core_bonuses;
+        this.NoMods = data.no_mods;
+        this.NoSynergies = data.no_synergies;
 
         this.SelectedProfileIndex = data.selected_profile;
         // The big one
@@ -190,6 +227,11 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             cascading: this.Cascading,
             destroyed: this.Destroyed,
             uses: this.Uses,
+            no_attack: this.NoAttack,
+            no_bonuses: this.NoBonuses,
+            no_core_bonuses: this.NoCoreBonuses,
+            no_mods: this.NoMods,
+            no_synergies: this.NoSynergies
         };
     }
 
@@ -261,6 +303,26 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             parent_integrated.push(...int_refs);
             parent_deployables.push(...dep_refs);
 
+            // Barrageable have a weird interaction.
+            let barrageable: boolean;
+            let skirmishable: boolean;
+            if(p.barrage == undefined && p.skirmish == undefined) {
+                // Neither set. Go with defaults
+                barrageable = true;
+                skirmishable = unpacked.size != WeaponSize.Superheavy;
+            } else if(p.barrage == undefined) {
+                // Only skirmish set. We assume barrage to be false, in this case. (should we? the data spec is unclear)
+                skirmishable = p.skirmish!;
+                barrageable = false;
+            } else if(p.skirmish == undefined) {
+                // Only barrage set. We assume skirmish to be false, in this case.
+                skirmishable = false;
+                barrageable = p.barrage!;
+            } else {
+                skirmishable = p.skirmish!;
+                barrageable = p.barrage!;
+            }
+
             // The rest is left to the profile
             let tags = SerUtil.unpack_tag_instances(reg, p.tags);
             let unpacked_profile: RegMechWeaponProfile = {
@@ -271,6 +333,9 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
                 on_attack: p.on_attack || "",
                 on_crit: p.on_crit || "",
                 on_hit: p.on_hit || "",
+                cost: p.cost ?? 1,
+                barrageable,
+                skirmishable,
                 actions: p.actions || [],
                 bonuses: (p.bonuses ?? []).map(Bonus.unpack),
                 counters: SerUtil.unpack_counters_default(p.counters),
@@ -327,6 +392,9 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile> {
     OnAttack!: string;
     OnHit!: string;
     OnCrit!: string;
+    Barrageable!: boolean; // If set and skirmishable isn't we assume this takes the entire barrage action
+    Skirmishable!: boolean; // This will be true for most non-superheavies. Some weapons, however, cannot be skirmished (see vorpal blade). This is different from "no_attack" (see autopod), which more means auto-hit
+    Cost!: number; // How much does shooting this bad-boi cost
     Actions!: Action[];
     Bonuses!: Bonus[];
     Synergies!: Synergy[];
@@ -345,6 +413,9 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile> {
         this.OnAttack = data.on_attack;
         this.OnHit = data.on_hit;
         this.OnCrit = data.on_crit;
+        this.Cost = data.cost;
+        this.Barrageable = data.barrageable;
+        this.Skirmishable = data.skirmishable;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, `Profile: ${this.Name}`);
         this.Synergies = SerUtil.process_synergies(data.synergies);
@@ -361,6 +432,9 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile> {
             on_attack: this.OnAttack,
             on_hit: this.OnHit,
             on_crit: this.OnCrit,
+            cost: this.Cost,
+            barrageable: this.Barrageable,
+            skirmishable: this.Skirmishable,
             damage: SerUtil.save_all(this.BaseDamage),
             range: SerUtil.save_all(this.BaseRange),
             actions: SerUtil.save_all(this.Actions),

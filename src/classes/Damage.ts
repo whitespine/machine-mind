@@ -1,8 +1,6 @@
 import { SerUtil, SimSer } from "@src/registry";
 import { DamageType } from "../enums";
 
-//TODO: getDamage(mech?: Mech, mount?: Mount) to collect all relevant bonuses
-
 export interface PackedDamageData {
     type: DamageType;
     val: string | number;
@@ -20,13 +18,11 @@ export type DamageTypeChecklist = { [key in DamageType]: boolean };
 export class Damage extends SimSer<RegDamageData> {
     DamageType!: DamageType;
     Value!: string;
-    // RawValue: string | number; -- we don't really case. We're just going to parse them all into a string. if someone gives us trash then they can frig off
-    // Override: boolean; - this is encapsulated by the fact
 
     // Methods / getters
     // Computes the maximum damage of this weapon (e.g. for brutal)
 
-    // Vaarious formatting options
+    // Various formatting options
     get Icon(): string {
         return Damage.icon_for(this.DamageType);
     }
@@ -62,11 +58,16 @@ export class Damage extends SimSer<RegDamageData> {
         this.DamageType = SerUtil.restrict_enum(DamageType, DamageType.Kinetic, data.type);
         this.Value = "" + data.val;
     }
+
     public save(): RegDamageData {
         return {
             type: this.DamageType,
             val: this.Value,
         };
+    }
+
+    public copy(): Damage {
+        return new Damage(this.save());
     }
 
     public static unpack(dat: PackedDamageData): RegDamageData {
@@ -87,6 +88,26 @@ export class Damage extends SimSer<RegDamageData> {
             Kinetic: override || damages.includes(DamageType.Kinetic),
             Variable: override || damages.includes(DamageType.Variable),
         };
+    }
+
+    // Combine two arrays of damage. Does not edit originals
+    public static CombineLists(a: Damage[], b: Damage[]): Damage[] {
+        // Make a copy of a.
+        let result = a.map(d => d.copy());
+
+        // For each b, try to find a matching a and add them together
+        for(let db of b) {
+            // Get a match on 
+            let to_be_modified = result.find(result_d => result_d.DamageType == db.DamageType);
+            if(to_be_modified) {
+                // We found existing damage of that type. Sum on the new stuff
+                to_be_modified.Value += ` + ${db.Value}`;
+            } else {
+                // Did not already have that damage type. Add it
+                result.push(db.copy());
+            }
+        }
+        return result;
     }
 }
 

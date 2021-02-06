@@ -3,14 +3,13 @@ import { SimSer } from "@src/registry";
 import { MechWeapon, MechWeaponProfile } from "./mech/MechWeapon";
 import { Bonus, Mech } from "@src/class";
 import { BonusSummary } from "./Bonus";
+import { WeaponMod } from "./mech/WeaponMod";
 
 //TODO: getRange(mech?: Mech, mount?: Mount) to collect all relevant bonuses
 
 export interface PackedRangeData {
     type: RangeType;
     val: number;
-    override?: boolean;
-    bonus?: number;
 }
 
 export interface RegRangeData {
@@ -37,6 +36,10 @@ export class Range extends SimSer<RegRangeData> {
             type: this.RangeType,
             val: this.Value,
         };
+    }
+
+    public copy(): Range {
+        return new Range(this.save());
     }
 
     public get Icon(): string {
@@ -72,10 +75,11 @@ export class Range extends SimSer<RegRangeData> {
     public static calc_range_with_bonuses(
         weapon: MechWeapon,
         profile: MechWeaponProfile,
-        mech: Mech
+        mech: Mech,
+        mod?: WeaponMod
     ): Range[] {
         // cut down to bonuses that affect ranges
-        let all_bonuses = mech.AllBonuses.filter(x => x.ID === "range");
+        let all_bonuses = mech.AllBonuses.concat(mod?.Bonuses ?? []).filter(x => x.ID === "range");
 
         // Start building our output
         const output: Range[] = [];
@@ -131,5 +135,25 @@ export class Range extends SimSer<RegRangeData> {
             type: r.type,
             val: "" + r.val,
         };
+    }
+
+    // Combine two arrays of damage. Does not edit originals
+    public static CombineLists(a: Range[], b: Range[]): Range[] {
+        // Make a copy of a.
+        let result = a.map(d => d.copy());
+
+        // For each b, try to find a matching a and add them together
+        for(let db of b) {
+            // Get a match on 
+            let to_be_modified = result.find(result_d => result_d.RangeType == db.RangeType);
+            if(to_be_modified) {
+                // We found existing damage of that type. Sum on the new stuff
+                to_be_modified.Value += ` + ${db.Value}`;
+            } else {
+                // Did not already have that damage type. Add it
+                result.push(db.copy());
+            }
+        }
+        return result;
     }
 }

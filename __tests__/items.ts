@@ -3,10 +3,10 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { CoreBonus, Counter, Frame, Range, MechSystem, MechWeapon } from "../src/class";
+import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
-import { RangeType, WeaponSize } from "../src/enums";
+import { DamageType, RangeType, WeaponSize } from "../src/enums";
 
 type DefSetup = {
     reg: StaticReg;
@@ -86,5 +86,85 @@ describe("Items Miscellania", () => {
         expect(tk_ranges.length).toEqual(1);
         expect(tk_ranges[0].RangeType).toEqual(RangeType.Threat);
         expect(tk_ranges[0].Value).toEqual("1");
+    });
+
+    it("Autopod isn't working but hopefully this test will tell us why", async () => {
+        expect.assertions(1);
+        let s = await init_basic_setup(true);
+        let guns = s.reg.get_cat(EntryType.MECH_WEAPON);
+        let ctx = new OpCtx();
+
+        let autopod = await guns.lookup_mmid(ctx, "mw_autopod");
+
+        expect(!!autopod).toBeTruthy();
+    });
+
+    it("Damages combine properly", async () => {
+        let a = [
+            new Damage({
+                type: DamageType.Kinetic,
+                val: "2d6 + 3"
+            }), 
+            new Damage({
+                type: DamageType.Energy,
+                val: "1d6"
+            })
+        ];
+
+        let b = [
+            new Damage({
+                type: DamageType.Energy,
+                val: "1d6"
+            }), 
+            new Damage({
+                type: DamageType.Burn,
+                val: "1d6"
+            })
+        ];
+
+        let c = Damage.CombineLists(a, b);
+        expect(c[0].DamageType).toEqual(DamageType.Kinetic);
+        expect(c[1].DamageType).toEqual(DamageType.Energy);
+        expect(c[2].DamageType).toEqual(DamageType.Burn);
+        expect(c[0].Value).toEqual("2d6 + 3");
+        expect(c[1].Value).toEqual("1d6 + 1d6");
+        expect(c[2].Value).toEqual("1d6");
+
+    });
+
+    it("Ranges combine properly", async () => {
+        let a = [
+            new Range({
+                type: RangeType.Range,
+                val: "10"
+            }), 
+            new Range({
+                type: RangeType.Blast,
+                val: "2"
+            })
+        ];
+
+        let b = [
+            new Range({
+                type: RangeType.Range,
+                val: "5"
+            }), 
+            new Range({
+                type: RangeType.Blast,
+                val: "1"
+            }), 
+            new Range({
+                type: RangeType.Threat,
+                val: "3"
+            })
+        ];
+
+        let c = Range.CombineLists(a, b);
+        expect(c[0].RangeType).toEqual(RangeType.Range);
+        expect(c[1].RangeType).toEqual(RangeType.Blast);
+        expect(c[2].RangeType).toEqual(RangeType.Threat);
+        expect(c[0].Value).toEqual("10 + 5");
+        expect(c[1].Value).toEqual("2 + 1");
+        expect(c[2].Value).toEqual("3");
     });
 });

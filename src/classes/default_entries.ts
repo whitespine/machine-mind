@@ -337,24 +337,12 @@ export function MECH_WEAPON(): RegMechWeaponData {
         source: null,
         sp: 0,
         uses: 0,
-        profiles: [
-            {
-                actions: [],
-                bonuses: [],
-                synergies: [],
-                description,
-                type: WeaponType.Rifle,
-                counters: [],
-                damage: [{ type: DamageType.Kinetic, val: "1d6" }],
-                effect: "Shoots enemies",
-                name: "Default Profile",
-                on_attack: "",
-                on_crit: "",
-                on_hit: "",
-                range: [{ type: RangeType.Range, val: "8" }],
-                tags: [],
-            },
-        ],
+        profiles: [ WEAPON_PROFILE() ],
+        no_attack: false,
+        no_bonuses: false,
+        no_core_bonuses: false,
+        no_mods: false,
+        no_synergies: false,
         loaded: false,
         selected_profile: 0,
         size: WeaponSize.Main,
@@ -827,6 +815,9 @@ export function WEAPON_PROFILE(): RegMechWeaponProfile {
         synergies: [],
         tags: [],
         type: WeaponType.Rifle,
+        barrageable: true,
+        cost: 1,
+        skirmishable: true
     };
 }
 
