@@ -168,7 +168,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             let bonus = feature.Bonus[key];
             let override = feature.Override[key];
             if (override) {
-                return override as number;
+                return override as number; // Decision to make this return immediately made purely on the example case of grunts
             }
             if (typeof bonus == "number") {
                 val += bonus;

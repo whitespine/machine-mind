@@ -596,7 +596,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
     public get AllBonuses(): Bonus[] {
         if (this.Pilot) {
-            return [...this.Pilot.PilotBonuses, ...this.MechBonuses];
+            return [...this.Pilot.AllBonuses, ...this.MechBonuses];
         } else {
             return this.MechBonuses;
         }

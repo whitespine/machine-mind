@@ -167,4 +167,15 @@ describe("Items Miscellania", () => {
         expect(c[1].Value).toEqual("2 + 1");
         expect(c[2].Value).toEqual("3");
     });
+
+    it("Frames shouldn't actually have tags anymore, weirdly enough", async () => {
+        expect.assertions(1);
+        let s = await init_basic_setup(true);
+        let frames = s.reg.get_cat(EntryType.FRAME);
+        let ctx = new OpCtx();
+
+        let balor: Frame = await frames.lookup_mmid(ctx, "mf_balor");
+
+        expect(balor.CoreSystem.Tags.length).toEqual(0);
+    });
 });

@@ -141,11 +141,11 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     public get AllBonuses(): Bonus[] {
         // Get bonuses, prefering cached
         if (this.Deployer) {
-            if (this.Deployer.Type == EntryType.PILOT) {
+            if (
+                this.Deployer.Type == EntryType.PILOT ||
+                this.Deployer.Type == EntryType.MECH
+            ) {
                 // Get bonuses just from pilot
-                return [...this.Deployer.PilotBonuses, ...this.Bonuses];
-            } else if (this.Deployer.Type == EntryType.MECH) {
-                // Get bonuses from mech + pilot
                 return [...this.Deployer.AllBonuses, ...this.Bonuses];
             }
         }
