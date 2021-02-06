@@ -61,6 +61,7 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
+import { exception } from "console";
 import { trimmed } from "./classes/key_util";
 import { AnyPackedNpcFeatureData, AnyRegNpcFeatureData } from "./classes/npc/NpcFeature";
 import {
@@ -1097,35 +1098,50 @@ export abstract class Registry {
         ctx: OpCtx,
         ref: RegRef<any>
     ): Promise<LiveEntryTypes<EntryType> | null> {
-        // Check name
-        if (ref.reg_name != this.name()) {
-            let appropriate_reg = await this.switch_reg(ref.reg_name);
-            if (appropriate_reg) {
-                return appropriate_reg.resolve_rough(ctx, ref);
-            } else {
+        // It's the damn wild west out there, so we first do a check that ref is a real ref, as best as we can tell
+        if(!ref || !ref.reg_name) {
+            return null;
+        }
+
+        // Either way, generally wrap this in a try catch because an error while retrieving is more of a "failed to retrieve" than an error, yeah?
+        try {
+            // Check name
+            if (ref.reg_name != this.name()) {
+                let appropriate_reg = await this.switch_reg(ref.reg_name);
+                if (appropriate_reg) {
+                    return appropriate_reg.resolve_rough(ctx, ref);
+                } else {
+                    return null;
+                }
+            }
+
+            // Haven't resolved this yet
+            let result: LiveEntryTypes<any> | null = null;
+
+            // First try standard by id
+            if (ref.id && ref.type) {
+                result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
+            }
+
+            // Failing that try fallback mmid
+            if (!result && ref.fallback_mmid) {
+                if (ref.type) {
+                    result =
+                        (await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid)) ?? null;
+                } else {
+                    result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
+                }
+            }
+            return result;
+        } catch (e: any) {
+            if(e instanceof Error) {
+                Error.prepareStackTrace
+                console.error(`Error '${e.name}: ${e.message}' while resolving ref:`, ref, e);
                 return null;
-            }
-        }
-
-        // Haven't resolved this yet
-        let result: LiveEntryTypes<any> | null = null;
-
-        // First try standard by id
-        if (ref.id && ref.type) {
-            result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
-        }
-
-        // Failing that try fallback mmid
-        if (!result && ref.fallback_mmid) {
-            if (ref.type) {
-                result =
-                    (await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid)) ?? null;
             } else {
-                result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
+                throw e; // What the hell is this
             }
         }
-
-        return result;
     }
 
     // Similar to resolve above, this is just for type flavoring basically
