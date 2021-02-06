@@ -104,6 +104,9 @@ export interface BaseRegNpcFeatureData {
     // State tracking. Not always used
     charged: boolean;
     uses: number;
+
+    // If we want this feature to have a distinct tier fixed regardless of underlying npc tier
+    tier_override: number;
 }
 
 export interface RegNpcWeaponData extends BaseRegNpcFeatureData {
@@ -159,6 +162,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     // public Locked!: boolean;
     public Tags!: TagInstance[];
     public FeatureType!: NpcFeatureType;
+    public TierOverride!: number;
 
     // Henceforth we have things that may or may not actually be there! Defaults are provided, but meaningless
     public Range: Range[] = [];
@@ -234,6 +238,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.Uses = data.uses;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.FeatureType = data.type;
+        this.TierOverride = data.tier_override;
 
         // Fetch whatever else is there
         switch (data.type) {
@@ -275,6 +280,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             type: this.FeatureType,
             charged: this.Charged,
             uses: this.Uses,
+            tier_override: this.TierOverride
         };
 
         switch (this.FeatureType) {

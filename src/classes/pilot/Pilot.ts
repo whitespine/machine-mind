@@ -567,7 +567,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
-    gather_source_regs: Registry[] // 
+    gather_source_regs: Registry[] 
 ): Promise<{pilot: Pilot, pilot_mechs: Mech[]} | null> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();

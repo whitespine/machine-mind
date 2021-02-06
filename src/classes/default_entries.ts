@@ -435,6 +435,7 @@ function npc_feature_commons(): BaseRegNpcFeatureData {
         override: {},
         charged: true,
         uses: 0,
+        tier_override: 0
     };
 }
 
