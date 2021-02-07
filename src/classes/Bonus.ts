@@ -55,8 +55,8 @@ export interface BonusContext {
 
 export class Bonus extends SimSer<RegBonusData> {
     ID!: string;
-    Title!: string | number;
-    Detail!: string | number;
+    Title!: string;
+    Detail!: string;
     DamageTypes!: DamageTypeChecklist;
     RangeTypes!: RangeTypeChecklist;
     WeaponTypes!: WeaponTypeChecklist;
