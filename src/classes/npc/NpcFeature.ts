@@ -280,7 +280,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             type: this.FeatureType,
             charged: this.Charged,
             uses: this.Uses,
-            tier_override: this.TierOverride
+            tier_override: this.TierOverride,
         };
 
         switch (this.FeatureType) {

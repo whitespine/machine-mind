@@ -44,9 +44,14 @@ import { PackedPilotEquipmentState, RegPilotLoadoutData } from "./PilotLoadout";
 import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
 import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
-import { CC_VERSION } from '../../enums';
-import { finding_iterate, finding_resolve_mmid, gathering_resolve_mmid, RegFallback } from '../regstack';
-import { BonusSummary } from '../Bonus';
+import { CC_VERSION } from "../../enums";
+import {
+    finding_iterate,
+    finding_resolve_mmid,
+    gathering_resolve_mmid,
+    RegFallback,
+} from "../regstack";
+import { BonusSummary } from "../Bonus";
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -77,7 +82,7 @@ interface BothPilotData {
 // The compcon export format. This stuff just gets converted into owned items.
 export interface PackedPilotData extends BothPilotData {
     licenses: IRankedData[];
-    skills: Array<IRankedData | (PackedSkillData & {custom: true})>;
+    skills: Array<IRankedData | (PackedSkillData & { custom: true })>;
     talents: IRankedData[];
     reserves: PackedReserveData[];
     orgs: IOrganizationData[];
@@ -143,7 +148,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
     MechSkills!: MechSkills;
 
-
     // Mechs!: Mech[];
     CustomCounters!: Counter[];
     // The version of compcon that produced this
@@ -185,7 +189,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     public get Orgs(): Organization[] {
         return [...this._orgs];
     }
-    
+
     private _skills!: Skill[];
     public get Skills(): Skill[] {
         return [...this._skills];
@@ -201,13 +205,24 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [...this._licenses];
     }
 
-   private _quirks!: Quirk[];
+    private _quirks!: Quirk[];
     public get Quirks(): Quirk[] {
         return [...this._quirks];
     }
 
     protected enumerate_owned_items(): RegEntry<any>[] {
-        return [...this._owned_weapons, ...this._owned_armor, ...this._owned_gear, ...this._core_bonuses, ...this._factions, ...this._skills, ...this._talents, ...this._reserves, ...this._orgs, ...this._licenses];
+        return [
+            ...this._owned_weapons,
+            ...this._owned_armor,
+            ...this._owned_gear,
+            ...this._core_bonuses,
+            ...this._factions,
+            ...this._skills,
+            ...this._talents,
+            ...this._reserves,
+            ...this._orgs,
+            ...this._licenses,
+        ];
     }
 
     public async get_assoc_entries(): Promise<RegEntry<any>[]> {
@@ -342,7 +357,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return this.CurrentSkillPoints === this.MaxSkillPoints;
     }
 
-
     // -- Talents -----------------------------------------------------------------------------------
     public get CurrentTalentPoints(): number {
         return this.Talents.reduce((sum, talent) => sum + talent.CurrentRank, 0);
@@ -418,7 +432,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return index?.CurrentRank ?? 0;
     }
 
-
     // -- Mech Skills -------------------------------------------------------------------------------
     public get MaxHASEPoints(): number {
         return this.sum_bonuses("mech_skill_point");
@@ -456,7 +469,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // Lists all of the bonuses this unmounted pilot is receiving. Uses cache, as operation can be expensive
     private cached_bonuses: Bonus[] | null = null;
     public get AllBonuses(): Bonus[] {
-        if(!this.cached_bonuses) {
+        if (!this.cached_bonuses) {
             this.cached_bonuses = [
                 ...this.Talents.flatMap(t => t.Bonuses),
                 ...this.CoreBonuses.flatMap(cb => cb.Bonuses),
@@ -475,7 +488,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.cached_bonuses = null;
     }
 
-
     // Sum our pilot bonuses for the specified id, return the number
     private sum_bonuses(id: string): number {
         let filtered = this.AllBonuses.filter(b => b.ID == id);
@@ -484,9 +496,11 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public async load(data: RegPilotData): Promise<void> {
-        data = {...defaults.PILOT(), ...data};
+        data = { ...defaults.PILOT(), ...data };
         let subreg = await this.get_inventory();
-        this.ActiveMech = data.active_mech ? await subreg.resolve(this.OpCtx, data.active_mech) : null;
+        this.ActiveMech = data.active_mech
+            ? await subreg.resolve(this.OpCtx, data.active_mech)
+            : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
         this.Campaign = data.campaign;
@@ -501,7 +515,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.ID = data.id;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
-        this.Loadout = await (new PilotLoadout(subreg, this.OpCtx, data.loadout)).ready();
+        this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
         // this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
         this.Mounted = data.mounted;
@@ -567,11 +581,11 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
-    gather_source_regs: Registry[] 
-): Promise<{pilot: Pilot, pilot_mechs: Mech[]} | null> {
+    gather_source_regs: Registry[]
+): Promise<{ pilot: Pilot; pilot_mechs: Mech[] } | null> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();
-    if(!tmp_pilot) {
+    if (!tmp_pilot) {
         return null; // This is fairly catastrophic
     }
     pilot = tmp_pilot;
@@ -582,7 +596,7 @@ export async function cloud_sync(
     // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
     let stack: RegFallback = {
         base: pilot_inv,
-        fallbacks: gather_source_regs
+        fallbacks: gather_source_regs,
     };
     let ctx = pilot.OpCtx;
     // Identity
@@ -596,22 +610,22 @@ export async function cloud_sync(
     pilot.Portrait = data.portrait; // Should this be a link or something? Mayabe just not sync it?
     pilot.TextAppearance = data.text_appearance;
 
-    // Fetch machine-mind stored licenses. 
-    const stack_licenses: License[] =[]; 
-    for await(const i of finding_iterate(stack, ctx, EntryType.LICENSE)) {
-        stack_licenses.push(i); 
+    // Fetch machine-mind stored licenses.
+    const stack_licenses: License[] = [];
+    for await (const i of finding_iterate(stack, ctx, EntryType.LICENSE)) {
+        stack_licenses.push(i);
     }
 
     // Then, do lookups almost-as-normal. Can't just do gathering resolve because we dunno what the license will actually be called
-    for(let cc_pilot_license of data.licenses) {
+    for (let cc_pilot_license of data.licenses) {
         // Do a lazy convert of the id. Due to the way compcon stores licenses we can't just do by ID, though I expect with the release of alt frames this will change. Sort of TODO
         // Find the corresponding license
-        for(let sl of stack_licenses) {
+        for (let sl of stack_licenses) {
             let found_corr_item = sl.FlatUnlocks.find(x => x.ID == cc_pilot_license.id);
-            if(found_corr_item) {
+            if (found_corr_item) {
                 // We have found a local license corresponding to the new license.
                 // First, check if owned by pilot
-                if(sl.Registry.name() != pilot_inv.name()) {
+                if (sl.Registry.name() != pilot_inv.name()) {
                     // Grab a copy for our pilot
                     sl = await sl.insinuate(pilot_inv, ctx);
                 }
@@ -649,7 +663,7 @@ export async function cloud_sync(
     // Try to find a quirk that matches, or create if not present
     // TODO: this is weird. compcon doesn't really do quirks. For now we just make new quirk if the quirk descriptions don't match?
     if (data.quirk) {
-        if(!pilot.Quirks.find(q => q.Description  == data.quirk)) {
+        if (!pilot.Quirks.find(q => q.Description == data.quirk)) {
             Quirk.unpack(data.quirk, pilot_inv, ctx);
             // Nothing else needs to be done
         }
@@ -662,7 +676,7 @@ export async function cloud_sync(
 
     // Look for faction. Create if not present
     if (data.factionID) {
-        if(!pilot.Factions.find(f => f.ID == data.factionID)) {
+        if (!pilot.Factions.find(f => f.ID == data.factionID)) {
             let new_faction = await pilot_inv.create_live(EntryType.FACTION, ctx);
             new_faction.ID = data.factionID;
             new_faction.writeback();
@@ -686,28 +700,28 @@ export async function cloud_sync(
     );
 
     // Core bonuses. Does not delete. All we care about is that we have them
-    for(let cb of data.core_bonuses) {
+    for (let cb of data.core_bonuses) {
         await gathering_resolve_mmid(stack, ctx, EntryType.CORE_BONUS, cb);
     }
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // For reserves, as they lack a meaningful way of identification we just clobber.
-    for(let r of data.reserves) {
+    for (let r of data.reserves) {
         // Though we could ref, almost always better to unpack due to custom data
         // TODO - don't clobber?
-        for(let ur of pilot.Reserves) {
+        for (let ur of pilot.Reserves) {
             ur.destroy_entry();
         }
         await Reserve.unpack(r, pilot_inv, ctx);
     }
 
     // Skills, we try to find and if not create
-    for(let s of data.skills) {
+    for (let s of data.skills) {
         // Try to get/fetch pre-existing
         let found = await gathering_resolve_mmid(stack, ctx, EntryType.SKILL, s.id);
-        if(!found) {
+        if (!found) {
             // Make if we can
-            if((s as PackedSkillData).custom) {
+            if ((s as PackedSkillData).custom) {
                 found = await Skill.unpack(s as PackedSkillData, pilot_inv, ctx);
             } else {
                 // Nothing we can do for this one - ignore
@@ -720,9 +734,9 @@ export async function cloud_sync(
         found.CurrentRank = s.rank ?? found.CurrentRank;
 
         // Details require custom
-        if((s as PackedSkillData).custom) {
+        if ((s as PackedSkillData).custom) {
             let ss = s as PackedSkillData;
-            found.Description = ss.custom_desc ?? found.Description ;
+            found.Description = ss.custom_desc ?? found.Description;
             found.Detail = ss.custom_detail ?? found.Detail;
         }
 
@@ -731,22 +745,22 @@ export async function cloud_sync(
     }
 
     // Fetch talents. Also need to update rank. Due nothing to missing
-    for(let t of data.talents) {
+    for (let t of data.talents) {
         let found = await gathering_resolve_mmid(stack, ctx, EntryType.TALENT, t.id);
-        if(found) {
+        if (found) {
             // Update rank
-            found.CurrentRank= t.rank;
+            found.CurrentRank = t.rank;
             found.writeback();
         }
     }
 
     // Look for org matching existing orgs. Create if not present. Do nothing to unmatched
-    for(let org of data.orgs) {
+    for (let org of data.orgs) {
         let corr_org = pilot.Orgs.find(o => o.Name == org.name);
         if (!corr_org) {
             // Make a new one
             corr_org = await pilot_inv.get_cat(EntryType.ORGANIZATION).create_default(ctx);
-        } 
+        }
 
         // Update / init
         corr_org.Actions ??= org.actions;
@@ -764,29 +778,27 @@ export async function cloud_sync(
     }
 
     // Fetch all weapons, armor, gear we will need
-    for(let a of data.loadout.armor) {
-        if(a) {
+    for (let a of data.loadout.armor) {
+        if (a) {
             await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_ARMOR, a.id);
         }
     }
-    for(let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
-        if(w) {
+    for (let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
+        if (w) {
             await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_WEAPON, w.id);
         }
     }
-    for(let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
-        if(g) {
+    for (let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
+        if (g) {
             await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_GEAR, g.id);
         }
     }
-;
-
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech) // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
     await pilot.Loadout.ready();
 
     // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();
-    return {pilot, pilot_mechs};
+    return { pilot, pilot_mechs };
 }

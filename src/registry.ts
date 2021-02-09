@@ -1099,7 +1099,7 @@ export abstract class Registry {
         ref: RegRef<any>
     ): Promise<LiveEntryTypes<EntryType> | null> {
         // It's the damn wild west out there, so we first do a check that ref is a real ref, as best as we can tell
-        if(!ref || !ref.reg_name) {
+        if (!ref || !ref.reg_name) {
             return null;
         }
 
@@ -1127,15 +1127,16 @@ export abstract class Registry {
             if (!result && ref.fallback_mmid) {
                 if (ref.type) {
                     result =
-                        (await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid)) ?? null;
+                        (await this.try_get_cat(ref.type)?.lookup_mmid(ctx, ref.fallback_mmid)) ??
+                        null;
                 } else {
                     result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
                 }
             }
             return result;
-        } catch (e: any) {
-            if(e instanceof Error) {
-                Error.prepareStackTrace
+        } catch (e) {
+            if (e instanceof Error) {
+                Error.prepareStackTrace;
                 console.error(`Error '${e.name}: ${e.message}' while resolving ref:`, ref, e);
                 return null;
             } else {

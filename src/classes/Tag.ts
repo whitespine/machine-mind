@@ -33,16 +33,16 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     ID!: string;
     Name!: string;
     Description!: string;
+    Hidden!: boolean;
     _filter_ignore!: boolean | null; // Whether to ignore this tags data when filtering
-    _hidden!: boolean | null;
 
     public async load(data: ITagTemplateData): Promise<void> {
         data = { ...defaults.TAG_TEMPLATE(), ...data };
         this.ID = data.id;
         this.Name = data.name;
         this.Description = data.description;
+        this.Hidden = data.hidden || false; // Whether to show this tag
         this._filter_ignore = data.filter_ignore || null;
-        this._hidden = data.hidden || null; // Whether to show this tag
     }
 
     protected save_imp(): ITagTemplateData {
@@ -51,7 +51,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
             name: this.Name,
             description: this.Description,
             filter_ignore: this._filter_ignore || undefined,
-            hidden: this._hidden || undefined,
+            hidden: this.Hidden,
         };
     }
     public static async unpack(
@@ -62,12 +62,8 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         return reg.get_cat(EntryType.TAG).create_live(ctx, dep);
     }
 
-    // Helpers for quickly checking common tags
-    get IsHidden(): boolean {
-        return this._hidden || false;
-    }
     get FilterIgnore(): boolean {
-        return this._filter_ignore || this.IsHidden;
+        return this._filter_ignore || this.Hidden;
     }
     get IsUnique(): boolean {
         return this.ID === "tg_unique";

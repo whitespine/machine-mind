@@ -337,7 +337,7 @@ export function MECH_WEAPON(): RegMechWeaponData {
         source: null,
         sp: 0,
         uses: 0,
-        profiles: [ WEAPON_PROFILE() ],
+        profiles: [WEAPON_PROFILE()],
         no_attack: false,
         no_bonuses: false,
         no_core_bonuses: false,
@@ -435,7 +435,7 @@ function npc_feature_commons(): BaseRegNpcFeatureData {
         override: {},
         charged: true,
         uses: 0,
-        tier_override: 0
+        tier_override: 0,
     };
 }
 
@@ -444,8 +444,8 @@ export function NPC_TECH(): RegNpcTechData {
         ...npc_feature_commons(),
         name: "New NPC Tech",
         type: NpcFeatureType.Tech,
-        accuracy: [0, 0, 0],
-        attack_bonus: [0, 0, 0],
+        accuracy: [],
+        attack_bonus: [],
         tech_type: NpcTechType.Quick,
     };
 }
@@ -818,7 +818,7 @@ export function WEAPON_PROFILE(): RegMechWeaponProfile {
         type: WeaponType.Rifle,
         barrageable: true,
         cost: 1,
-        skirmishable: true
+        skirmishable: true,
     };
 }
 

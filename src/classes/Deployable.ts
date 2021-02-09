@@ -31,6 +31,8 @@ export interface PackedDeployableData {
     deactivation?: ActivationType;
     recall?: ActivationType;
     redeploy?: ActivationType;
+    range?: Range[];
+
     size: number;
     instances?: number;
     cost?: number;
@@ -141,10 +143,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     public get AllBonuses(): Bonus[] {
         // Get bonuses, prefering cached
         if (this.Deployer) {
-            if (
-                this.Deployer.Type == EntryType.PILOT ||
-                this.Deployer.Type == EntryType.MECH
-            ) {
+            if (this.Deployer.Type == EntryType.PILOT || this.Deployer.Type == EntryType.MECH) {
                 // Get bonuses just from pilot
                 return [...this.Deployer.AllBonuses, ...this.Bonuses];
             }

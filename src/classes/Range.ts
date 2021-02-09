@@ -143,10 +143,10 @@ export class Range extends SimSer<RegRangeData> {
         let result = a.map(d => d.copy());
 
         // For each b, try to find a matching a and add them together
-        for(let db of b) {
-            // Get a match on 
+        for (let db of b) {
+            // Get a match on
             let to_be_modified = result.find(result_d => result_d.RangeType == db.RangeType);
-            if(to_be_modified) {
+            if (to_be_modified) {
                 // We found existing damage of that type. Sum on the new stuff
                 to_be_modified.Value += ` + ${db.Value}`;
             } else {

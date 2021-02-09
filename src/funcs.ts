@@ -23,10 +23,10 @@ export function bound_int(x: number, min: number, max: number) {
 }
 
 // Useful for just showing the true values of checklists
-export function list_truthy_keys(of_dict: {[key: string]: any}): string[] {
+export function list_truthy_keys(of_dict: { [key: string]: any }): string[] {
     let result: string[] = [];
-    for(let k of Object.keys(of_dict)) {
-        if(of_dict[k]) {
+    for (let k of Object.keys(of_dict)) {
+        if (of_dict[k]) {
             result.push(k);
         }
     }
