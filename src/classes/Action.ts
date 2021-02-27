@@ -34,7 +34,6 @@ export class Action extends SimSer<IActionData> {
     Name!: string;
     Activation!: ActivationType;
     Cost!: number | null;
-    Frequency!: Frequency;
     Init!: string | null; // This describes the conditions under which this action becomes available (e.g. activate mimic mesh to get battlefield awareness
     Trigger!: string | null; // What sets this reaction off, if anything
     Terse!: string | null;
@@ -43,6 +42,22 @@ export class Action extends SimSer<IActionData> {
     AvailableUnmounted!: boolean;
     HeatCost!: number;
     // We don't handle other fields yet - they're almost purely for flavor. Synergies, maybe someday
+
+    // Frequency we set as string
+    _raw_frequency!: string;
+    _frequency!: Frequency;
+    public get RawFrequency(): string {
+        return this._raw_frequency;
+    }
+
+    public set RawFrequency(nv: string) {
+        this._raw_frequency = nv;
+        this._frequency = new Frequency(nv);
+    }
+
+    get Frequency(): Frequency {
+        return this._frequency;
+    }
 
     public load(data: IActionData): void {
         this.ID;
@@ -55,7 +70,7 @@ export class Action extends SimSer<IActionData> {
         this.Terse = data.terse || null;
         this.Detail = data.detail;
         this.Cost = data.cost || null;
-        this.Frequency = new Frequency(data.frequency || "");
+        this._raw_frequency = data.frequency || "";
         this.Init = data.init || null;
         this.Trigger = data.trigger || null;
         this.AvailableUnmounted = data.pilot ?? false;
