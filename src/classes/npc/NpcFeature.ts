@@ -232,8 +232,8 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.Name = data.name;
         this.Origin = { ...data.origin };
         this.Effect = data.effect;
-        this.Bonus = data.bonus;
-        this.Override = data.override;
+        this.Bonus = {...data.bonus};
+        this.Override = {...data.override};
         this.Charged = data.charged;
         this.Uses = data.uses;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);

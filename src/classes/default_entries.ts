@@ -63,6 +63,7 @@ import {
     MountType,
     NpcTechType,
 } from "../enums";
+import { IActionData } from "./Action";
 
 // Some general defaults
 const description = "No description";
@@ -110,6 +111,16 @@ export function BONUS(): RegBonusData {
         },
     };
 }
+
+export function ACTION(): IActionData {
+    return {
+        id: nanoid(),
+        activation: ActivationType.Quick,
+        detail: description,
+        name: "New Action",
+    };
+}
+
 export function CORE_BONUS(): RegCoreBonusData {
     return {
         actions: [],
