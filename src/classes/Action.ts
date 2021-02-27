@@ -44,8 +44,8 @@ export class Action extends SimSer<IActionData> {
     // We don't handle other fields yet - they're almost purely for flavor. Synergies, maybe someday
 
     // Frequency we set as string
-    _raw_frequency!: string;
-    _frequency!: Frequency;
+    private _raw_frequency!: string;
+    private _frequency!: Frequency;
     public get RawFrequency(): string {
         return this._raw_frequency;
     }
@@ -70,7 +70,7 @@ export class Action extends SimSer<IActionData> {
         this.Terse = data.terse || null;
         this.Detail = data.detail;
         this.Cost = data.cost || null;
-        this._raw_frequency = data.frequency || "";
+        this.RawFrequency = data.frequency || "";
         this.Init = data.init || null;
         this.Trigger = data.trigger || null;
         this.AvailableUnmounted = data.pilot ?? false;
