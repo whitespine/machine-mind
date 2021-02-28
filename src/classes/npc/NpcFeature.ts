@@ -194,8 +194,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         }
     }
 
-    // TODO: Hide these types via private
-
+    // Converts any {2/3/4} tier blocks into a nicer looking version of the same thing, basically
     public get FormattedEffect(): string {
         if (!this.Effect) return "";
         const perTier = /(\{.*?\})/;
@@ -209,19 +208,28 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         return this.Effect;
     }
 
+    // Effect is our most accessed value, so we provide a quick accesser for it scaled by tier
     public FormattedEffectByTier(tier: number): string {
         if (!this.Effect) return "";
-        let fmt = this.Effect;
+        return NpcFeature.format_tiered_string(this.Effect, tier);
+    }
+
+    // Formats any {2/3/4} style blocks in fmt into just a bolded version of one of the values
+    public static format_tiered_string(fmt: string, tier: number): string {
         const perTier = /(\{.*?\})/g;
-        const m = this.Effect.match(perTier);
-        if (m) {
-            m.forEach(x => {
-                const tArr = x
-                    .replace("{", "")
-                    .replace("}", "")
-                    .split("/");
-                fmt = fmt.replace(x, `<b class="accent--text">${tArr[tier - 1]}</b>`);
-            });
+        while(true) {
+            const m = fmt.match(perTier);
+            if (m) {
+                m.forEach(x => {
+                    const tArr = x
+                        .replace("{", "")
+                        .replace("}", "")
+                        .split("/");
+                    fmt = fmt.replace(x, `<b class="accent--text">${tArr[tier - 1]}</b>`);
+                });
+            } else {
+                break;
+            }
         }
         return fmt;
     }
