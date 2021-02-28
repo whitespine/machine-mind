@@ -1,4 +1,5 @@
 import { SerUtil, SimSer } from "@src/registry";
+import { typed_lancer_data } from "..";
 import { ActivationType } from "../enums";
 
 export interface IActionData {
@@ -145,4 +146,10 @@ class Frequency {
         if (this._unlimited) return this.Duration;
         return `${this.Uses}/${this.Duration}`;
     }
+}
+
+// There are some default actions defined as well. We make accessing them simpler here
+export const BaseActionsMap: Map<string, Action> = new Map();
+for(let t of typed_lancer_data.actions) {
+    BaseActionsMap.set(t.id!, new Action(t));
 }
