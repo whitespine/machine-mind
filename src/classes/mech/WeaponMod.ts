@@ -8,6 +8,8 @@ import {
     Deployable,
     Counter,
     MechWeapon,
+    Manufacturer,
+    TagInstance,
 } from "@src/class";
 import { defaults, tag_util } from "@src/funcs";
 import {
@@ -35,8 +37,6 @@ import {
     SerUtil,
 } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "../../enums";
-import { Manufacturer } from "../Manufacturer";
-import { TagInstance } from "../Tag";
 
 export interface AllWeaponModData {
     id: string;

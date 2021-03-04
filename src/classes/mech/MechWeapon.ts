@@ -4,6 +4,7 @@ import {
     Counter,
     Damage,
     Deployable,
+    Manufacturer,
     Range,
     Synergy,
     TagInstance,
@@ -22,7 +23,6 @@ import {
     SerUtil,
 } from "@src/registry";
 import { defaults, tag_util } from "@src/funcs";
-import { Manufacturer } from "../Manufacturer";
 // TODO:
 // class WeaponAmmo {}
 

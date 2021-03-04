@@ -6,11 +6,9 @@
 
 export * from "@src/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
-// export { ItemFilter, ItemFilterParam } from "./classes/utility/ItemFilter";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Deployable } from "./classes/Deployable";
-// export { LicensedItem } from "./classes/LicensedItem";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
 export { Damage } from "./classes/Damage";
 export { Range } from "./classes/Range";

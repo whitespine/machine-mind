@@ -24,7 +24,7 @@ import {
     talents as _talents,
     weapons as _weapons,
 } from "lancer-data";
-import {
+import type {
     IBackground,
     PackedReserveData,
     PackedCoreBonusData,

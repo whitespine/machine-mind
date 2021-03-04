@@ -2,6 +2,7 @@ import { Damage, TagInstance, Range } from "@src/class";
 import { DamageType, NpcFeatureType, NpcTechType, RangeType } from "@src/enums";
 import { defaults } from "@src/funcs";
 import {
+    INpcStats,
     PackedRangeData,
     PackedTagInstanceData,
     RegDamageData,
@@ -9,8 +10,6 @@ import {
     RegTagInstanceData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
-import { INpcClassStats } from "./NpcClassStats";
-import { INpcStats } from "./NpcStats";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rider types

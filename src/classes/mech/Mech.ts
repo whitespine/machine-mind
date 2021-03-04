@@ -1,7 +1,6 @@
 import {
     Action,
     Bonus,
-    CoreBonus,
     Counter,
     Damage,
     Deployable,
@@ -13,26 +12,21 @@ import {
     Rules,
     Status,
     Synergy,
+    WeaponMod,
 } from "@src/class";
 import { bound_int, defaults } from "@src/funcs";
-import { PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
+import { BonusContext, DamageTypeChecklist, PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
 import {
     EntryType,
     InventoriedRegEntry,
-    LiveEntryTypes,
-    OpCtx,
-    quick_local_ref,
     RegEntry,
     Registry,
     RegRef,
     SerUtil,
 } from "@src/registry";
 import { CC_VERSION, DamageType } from "../../enums";
-import { BonusContext, BonusSummary } from "../Bonus";
-import { DamageTypeChecklist } from "../Damage";
 import { gathering_resolve_mmid, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
-import { WeaponMod } from "./WeaponMod";
 
 interface AllMechData {
     id: string;

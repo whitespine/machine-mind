@@ -1,6 +1,5 @@
-import { Rules } from "@src/class";
+import { Bonus, Rules } from "@src/class";
 import { SimSer } from "@src/registry";
-import { Bonus } from "../Bonus";
 import { HASE } from "../../enums";
 
 // It's HASE, baby!

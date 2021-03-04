@@ -1,3 +1,4 @@
+import { Frame, Manufacturer } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
     EntryType,
@@ -8,8 +9,6 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { Manufacturer } from "./Manufacturer";
-import { Frame } from "./mech/Frame";
 
 export type LicensedItemType =
     | EntryType.FRAME

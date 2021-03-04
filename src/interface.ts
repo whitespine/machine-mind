@@ -6,12 +6,12 @@
 // first in this file.
 export { IActionData } from "@src/classes/Action";
 export { IBackground } from "@src/classes/Background";
-export { PackedBonusData, RegBonusData, BonusSummary } from "@src/classes/Bonus";
+export { PackedBonusData, RegBonusData, BonusSummary, BonusContext } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
 
-export { ISynergyData } from "@src/classes/Synergy";
+export { ISynergyData, SynergyLocation } from "@src/classes/Synergy";
 export { LicensedItem, LicensedItemType, RegLicenseData } from "./classes/License";
 export { PackedCoreSystemData, RegCoreSystemData } from "./classes/mech/CoreSystem";
 export { PackedDeployableData, RegDeployableData } from "./classes/Deployable";
@@ -89,7 +89,7 @@ export { RegNpcData, PackedNpcData } from "./classes/npc/Npc";
 export { RegNpcTemplateData, PackedNpcTemplateData } from "./classes/npc/NpcTemplate";
 export { RegNpcClassData, PackedNpcClassData } from "./classes/npc/NpcClass";
 export { INpcClassStats } from "./classes/npc/NpcClassStats";
-export { INpcStats } from "./classes/npc/NpcStats";
+export { INpcStats, INpcStatComposite } from "./classes/npc/NpcStats";
 // export { IEncounterData } from "./classes/encounter/Encounter.dts";
 // export { IMissionData } from "./classes/encounter/Mission";
 // export { IMissionStep } from "./classes/encounter/IMissionStep";

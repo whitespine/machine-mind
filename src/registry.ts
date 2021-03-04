@@ -50,7 +50,6 @@ import {
     WeaponMod,
     Damage,
     Synergy,
-    CoreSystem,
     Mech,
     Counter,
     TagInstance,
@@ -61,9 +60,6 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
-import { exception } from "console";
-import { trimmed } from "./classes/key_util";
-import { AnyPackedNpcFeatureData, AnyRegNpcFeatureData } from "./classes/npc/NpcFeature";
 import {
     IActionData,
     RegBonusData,
@@ -71,18 +67,15 @@ import {
     IEnvironmentData,
     IFactionData,
     IOrganizationData,
-    PackedRangeData,
     RegRangeData,
     ISitrepData,
     IStatusData,
     ISynergyData,
     ITagTemplateData,
     PackedCoreBonusData,
-    PackedCoreSystemData,
     PackedCounterData,
     PackedDeployableData,
     PackedFrameData,
-    PackedFrameTraitData,
     PackedManufacturerData,
     PackedMechData,
     PackedMechSystemData,
@@ -99,12 +92,10 @@ import {
     PackedTalentData,
     PackedWeaponModData,
     RegCoreBonusData,
-    RegCoreSystemData,
     RegCounterData,
     RegDamageData,
     RegDeployableData,
     RegFrameData,
-    RegFrameTraitData,
     RegLicenseData,
     RegManufacturerData,
     RegMechData,
@@ -123,6 +114,8 @@ import {
     RegTagInstanceData,
     RegTalentData,
     RegWeaponModData,
+    AnyRegNpcFeatureData,
+    AnyPackedNpcFeatureData,
 } from "./interface";
 
 ////////////////////////////////////////////////////////////////////////

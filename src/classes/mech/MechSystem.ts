@@ -1,4 +1,4 @@
-import { Deployable, Synergy, Bonus, Action, TagInstance, Counter } from "@src/class";
+import { Deployable, Synergy, Bonus, Action, TagInstance, Counter, Manufacturer } from "@src/class";
 import { defaults, tag_util } from "@src/funcs";
 import {
     IActionData,
@@ -22,7 +22,6 @@ import {
     SerUtil,
 } from "@src/registry";
 import { SystemType } from "../../enums";
-import { Manufacturer } from "../Manufacturer";
 
 interface AllMechSystemData {
     id: string;

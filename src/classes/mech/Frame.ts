@@ -1,6 +1,6 @@
-import { CoreSystem, FrameTrait } from "@src/class";
+import { CoreSystem, FrameTrait, Manufacturer } from "@src/class";
 import { defaults } from "@src/funcs";
-import { PackedCoreSystemData, PackedFrameTraitData } from "@src/interface";
+import { PackedCoreSystemData, PackedFrameTraitData, RegCoreSystemData, RegFrameTraitData } from "@src/interface";
 import {
     EntryType,
     OpCtx,
@@ -12,9 +12,6 @@ import {
 } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "../../enums";
-import { Manufacturer } from "../Manufacturer";
-import { RegFrameTraitData } from "./FrameTrait";
-import { RegCoreSystemData } from "./CoreSystem";
 
 // The raw stat information
 export interface IFrameStats {

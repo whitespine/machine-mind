@@ -1,4 +1,3 @@
-import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 import { NpcFeature } from "@src/class";
 import {
     EntryType,
@@ -10,6 +9,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { defaults } from "@src/funcs";
+import { INpcClassStats } from "@src/interface";
 
 interface AllNpcClassData {
     id: string;

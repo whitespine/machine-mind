@@ -1,8 +1,7 @@
 import { Bonus } from "@src/class";
-import {
+import type {
     AnyRegNpcFeatureData,
     BaseRegNpcFeatureData,
-    DamageTypeChecklist,
     IEnvironmentData,
     IFactionData,
     INpcClassStats,

@@ -13,6 +13,9 @@ import {
     License,
     Skill,
     Bonus,
+    PilotArmor,
+    PilotGear,
+    PilotWeapon,
 } from "@src/class";
 import * as gistApi from "@src/io/apis/gist";
 import {
@@ -27,31 +30,24 @@ import {
     PackedPilotLoadoutData,
     RegCounterData,
     PackedSkillData,
+    RegPilotLoadoutData,
 } from "@src/interface";
 import {
     EntryType,
     InventoriedRegEntry,
-    LiveEntryTypes,
-    OpCtx,
-    quick_local_ref,
     RegEntry,
     Registry,
     RegRef,
-    RegSer,
     SerUtil,
 } from "@src/registry";
-import { PackedPilotEquipmentState, RegPilotLoadoutData } from "./PilotLoadout";
 import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
-import { PilotArmor, PilotEquipment, PilotGear, PilotWeapon } from "./PilotEquipment";
 import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from "../../enums";
 import {
     finding_iterate,
-    finding_resolve_mmid,
     gathering_resolve_mmid,
     RegFallback,
 } from "../regstack";
-import { BonusSummary } from "../Bonus";
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 

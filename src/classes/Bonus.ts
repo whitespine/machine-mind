@@ -1,11 +1,11 @@
 import { Damage, Mech, MechWeapon, Npc, Pilot, Range} from "@src/class";
-import { BonusDict, BonusList } from "./BonusDict";
+import { BonusDict } from "./BonusDict";
 import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
 import { EntryType, SerUtil, SimSer } from "@src/registry";
 import * as filtrex from "filtrex";
 import { DamageTypeChecklist, RangeTypeChecklist, WeaponSizeChecklist, WeaponTypeChecklist } from "@src/interface";
 import { defaults, list_truthy_keys } from "@src/funcs";
-import { MechWeaponProfile } from "./mech/MechWeapon";
+import { MechWeaponProfile } from "@src/class";
 
 export interface PackedBonusData {
     id: string;

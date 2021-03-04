@@ -1,5 +1,5 @@
 import { rules, actions } from "lancer-data";
-import { IActionData } from "@src/interface";
+import type { IActionData } from "@src/interface";
 
 export class Rules {
     public static get BaseStructure(): number {

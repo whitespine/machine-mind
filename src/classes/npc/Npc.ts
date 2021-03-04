@@ -1,11 +1,9 @@
 import { nanoid } from "nanoid";
 
-import { Counter, NpcClass, NpcFeature, NpcTemplate } from "@src/class";
-import { PackedCounterSaveData, RegCounterData } from "@src/interface";
-import { INpcStatComposite, INpcStats } from "./NpcStats";
+import { Counter, NpcClass, NpcClassStats, NpcFeature, NpcTemplate } from "@src/class";
+import { INpcClassStats, INpcStatComposite, PackedCounterSaveData, RegCounterData } from "@src/interface";
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
-import { INpcClassStats, NpcClassStats } from "./NpcClassStats";
 
 interface INpcItemSaveData {
     // unsure if we really need this

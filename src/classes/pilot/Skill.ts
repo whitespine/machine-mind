@@ -1,7 +1,6 @@
 import { Rules } from "@src/class";
 import { defaults } from "@src/funcs";
-import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
-import { IRankedData } from "../GeneralInterfaces";
+import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
 
 /*
 This is serialized and deserialized very simply.
