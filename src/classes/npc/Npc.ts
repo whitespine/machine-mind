@@ -1,7 +1,12 @@
 import { nanoid } from "nanoid";
 
 import { Counter, NpcClass, NpcClassStats, NpcFeature, NpcTemplate } from "@src/class";
-import { INpcClassStats, INpcStatComposite, PackedCounterSaveData, RegCounterData } from "@src/interface";
+import {
+    INpcClassStats,
+    INpcStatComposite,
+    PackedCounterSaveData,
+    RegCounterData,
+} from "@src/interface";
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 

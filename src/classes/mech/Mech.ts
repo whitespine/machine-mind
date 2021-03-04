@@ -15,15 +15,13 @@ import {
     WeaponMod,
 } from "@src/class";
 import { bound_int, defaults } from "@src/funcs";
-import { BonusContext, DamageTypeChecklist, PackedMechLoadoutData, RegMechLoadoutData } from "@src/interface";
 import {
-    EntryType,
-    InventoriedRegEntry,
-    RegEntry,
-    Registry,
-    RegRef,
-    SerUtil,
-} from "@src/registry";
+    BonusContext,
+    DamageTypeChecklist,
+    PackedMechLoadoutData,
+    RegMechLoadoutData,
+} from "@src/interface";
+import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { CC_VERSION, DamageType } from "../../enums";
 import { gathering_resolve_mmid, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';

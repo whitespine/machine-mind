@@ -1,6 +1,11 @@
 import { CoreSystem, FrameTrait, Manufacturer } from "@src/class";
 import { defaults } from "@src/funcs";
-import { PackedCoreSystemData, PackedFrameTraitData, RegCoreSystemData, RegFrameTraitData } from "@src/interface";
+import {
+    PackedCoreSystemData,
+    PackedFrameTraitData,
+    RegCoreSystemData,
+    RegFrameTraitData,
+} from "@src/interface";
 import {
     EntryType,
     OpCtx,

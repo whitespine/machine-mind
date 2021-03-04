@@ -216,7 +216,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     // Formats any {2/3/4} style blocks in fmt into just a bolded version of one of the values
     public static format_tiered_string(fmt: string, tier: number): string {
         const perTier = /(\{.*?\})/g;
-        while(true) {
+        while (true) {
             const m = fmt.match(perTier);
             if (m) {
                 m.forEach(x => {
@@ -239,8 +239,8 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.Name = data.name;
         this.Origin = { ...data.origin };
         this.Effect = data.effect;
-        this.Bonus = {...data.bonus};
-        this.Override = {...data.override};
+        this.Bonus = { ...data.bonus };
+        this.Override = { ...data.override };
         this.Charged = data.charged;
         this.Uses = data.uses;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);

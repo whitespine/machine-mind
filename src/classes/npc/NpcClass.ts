@@ -79,7 +79,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         let rdata: RegNpcClassData = {
             ...defaults.NPC_CLASS(),
             ...data,
-            base_stats: {...data.stats},
+            base_stats: { ...data.stats },
 
             base_features: data.base_features.map(f =>
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)

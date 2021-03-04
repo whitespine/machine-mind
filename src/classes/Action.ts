@@ -79,7 +79,7 @@ export class Action extends SimSer<IActionData> {
         this.AvailableUnmounted = data.pilot ?? false;
         this.AvailableMounted = data.mech ?? (data.pilot ? false : true); // If undefined, guess that we should only allow if pilot is unset/set false
         this.HeatCost = data.heat_cost ?? 0;
-        this.SynergyLocations = data.synergy_locations as SynergyLocation[] ?? [];
+        this.SynergyLocations = (data.synergy_locations as SynergyLocation[]) ?? [];
     }
 
     public save(): IActionData {
@@ -96,7 +96,7 @@ export class Action extends SimSer<IActionData> {
             pilot: this.AvailableUnmounted,
             mech: this.AvailableMounted,
             heat_cost: this.HeatCost,
-            synergy_locations: this.SynergyLocations
+            synergy_locations: this.SynergyLocations,
         };
     }
 }
@@ -155,9 +155,9 @@ class Frequency {
 // There are some default actions defined as well. We make accessing them simpler here
 let _cached_bam: Map<string, Action> | null = null;
 export function BaseActionsMap(): Map<string, Action> {
-    if(!_cached_bam) {
+    if (!_cached_bam) {
         _cached_bam = new Map();
-        for(let t of typed_lancer_data.actions) {
+        for (let t of typed_lancer_data.actions) {
             _cached_bam.set(t.id!, new Action(t));
         }
     }
