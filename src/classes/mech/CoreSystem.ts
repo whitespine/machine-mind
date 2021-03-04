@@ -12,7 +12,7 @@ import {
     RegBonusData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
-import { ActivationType, FrameEffectUse } from "../../enums";
+import { ActivationType, FrameEffectUse } from "@src/enums";
 
 export interface AllCoreSystemData {
     name: string;

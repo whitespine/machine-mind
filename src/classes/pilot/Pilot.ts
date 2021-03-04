@@ -42,7 +42,7 @@ import {
 } from "@src/registry";
 import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
 import { get_user_id } from "@src/hooks";
-import { CC_VERSION } from "../../enums";
+import { CC_VERSION } from "@src/enums";
 import {
     finding_iterate,
     gathering_resolve_mmid,

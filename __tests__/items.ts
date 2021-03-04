@@ -6,7 +6,7 @@ import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "
 import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
-import { DamageType, RangeType, WeaponSize } from "../src/enums";
+import { DamageType, RangeType, WeaponSize } from "@src/enums";
 
 type DefSetup = {
     reg: StaticReg;

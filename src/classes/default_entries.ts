@@ -61,7 +61,7 @@ import {
     NpcFeatureType,
     MountType,
     NpcTechType,
-} from "../enums";
+} from "@src/enums";
 import { IActionData } from "./Action";
 
 // Some general defaults

@@ -11,7 +11,7 @@ import {
     WeaponMod,
 } from "@src/class";
 import type {PackedRangeData, RegRangeData, IActionData,  ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData, PackedBonusData, RegBonusData } from "@src/interface";
-import { WeaponSize, WeaponType } from "../../enums";
+import { WeaponSize, WeaponType } from "@src/enums";
 import {
     EntryType,
     OpCtx,

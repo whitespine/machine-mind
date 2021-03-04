@@ -10,7 +10,7 @@ import {
     SerUtil,
     SimSer,
 } from "@src/registry";
-import { FittingSize, MountType, WeaponSize } from "../../enums";
+import { FittingSize, MountType, WeaponSize } from "@src/enums";
 import { gathering_resolve_mmid, RegFallback as RegFallbackStack } from "../regstack";
 
 //todo: superheavies :<

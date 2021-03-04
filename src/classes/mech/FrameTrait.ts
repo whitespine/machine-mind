@@ -10,7 +10,7 @@ import {
     RegCounterData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
-import { FrameEffectUse } from "../../enums";
+import { FrameEffectUse } from "@src/enums";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
 

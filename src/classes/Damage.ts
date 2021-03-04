@@ -1,5 +1,5 @@
 import { SerUtil, SimSer } from "@src/registry";
-import { DamageType } from "../enums";
+import { DamageType } from "@src/enums";
 
 export interface PackedDamageData {
     type: DamageType;

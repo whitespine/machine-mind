@@ -1,6 +1,6 @@
 import { MechEquipment, MechWeapon, MechSystem, Frame } from "@src/class";
 import { SimSer, EntryType } from "@src/registry";
-import { WeaponType, WeaponSize, SystemType } from "../enums";
+import { WeaponType, WeaponSize, SystemType } from "@src/enums";
 
 export type SynergyLocation =
     | "any"

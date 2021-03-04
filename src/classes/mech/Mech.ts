@@ -22,7 +22,7 @@ import {
     RegMechLoadoutData,
 } from "@src/interface";
 import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { CC_VERSION, DamageType } from "../../enums";
+import { CC_VERSION, DamageType } from "@src/enums";
 import { gathering_resolve_mmid, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
 

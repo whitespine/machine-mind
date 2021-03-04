@@ -11,7 +11,7 @@ describe("Actions", () => {
     });
 
     it("Loads a simple base action successfully", () => {
-        const boost = BaseActionsMap().get("act_boost");
+        const boost = BaseActionsMap.get("act_boost");
         expect(boost.Name).toEqual("BOOST");
         expect(boost.Activation).toEqual(ActivationType.Quick);
         expect(boost.AvailableMounted).toBeTruthy();

@@ -21,7 +21,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { SystemType } from "../../enums";
+import { SystemType } from "@src/enums";
 
 interface AllMechSystemData {
     id: string;

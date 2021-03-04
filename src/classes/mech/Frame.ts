@@ -16,7 +16,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { IArtLocation } from "../Art";
-import { MechType, MountType } from "../../enums";
+import { MechType, MountType } from "@src/enums";
 
 // The raw stat information
 export interface IFrameStats {

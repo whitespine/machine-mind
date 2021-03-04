@@ -19,7 +19,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { ActivationType } from "../enums";
+import { ActivationType } from "@src/enums";
 import { BonusContext } from "./Bonus";
 import { Npc } from "./npc/Npc";
 

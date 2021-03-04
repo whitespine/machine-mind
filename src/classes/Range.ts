@@ -1,4 +1,4 @@
-import { RangeType } from "../enums";
+import { RangeType } from "@src/enums";
 import { SimSer } from "@src/registry";
 import { Bonus, Mech, MechWeapon, MechWeaponProfile, WeaponMod } from "@src/class";
 import { BonusSummary } from "@src/interface";

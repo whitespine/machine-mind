@@ -1,6 +1,6 @@
 import { SerUtil, SimSer } from "@src/registry";
-import { typed_lancer_data } from "..";
-import { ActivationType } from "../enums";
+import { typed_lancer_data } from "@src/data";
+import { ActivationType } from "@src/enums";
 import { SynergyLocation } from "@src/interface";
 
 export interface IActionData {
@@ -153,13 +153,7 @@ class Frequency {
 }
 
 // There are some default actions defined as well. We make accessing them simpler here
-let _cached_bam: Map<string, Action> | null = null;
-export function BaseActionsMap(): Map<string, Action> {
-    if (!_cached_bam) {
-        _cached_bam = new Map();
-        for (let t of typed_lancer_data.actions) {
-            _cached_bam.set(t.id!, new Action(t));
-        }
-    }
-    return _cached_bam;
+export const BaseActionsMap: Map<string, Action> = new Map();
+for (let t of typed_lancer_data.actions) {
+    BaseActionsMap.set(t.id!, new Action(t));
 }

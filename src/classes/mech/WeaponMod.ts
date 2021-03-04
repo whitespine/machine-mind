@@ -36,7 +36,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { SystemType, WeaponSize, WeaponType } from "../../enums";
+import { SystemType, WeaponSize, WeaponType } from "@src/enums";
 
 export interface AllWeaponModData {
     id: string;

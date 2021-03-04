@@ -1,6 +1,6 @@
 import { Damage, Mech, MechWeapon, Npc, Pilot, Range} from "@src/class";
 import { BonusDict } from "./BonusDict";
-import { DamageType, RangeType, WeaponSize, WeaponType } from "../enums";
+import { DamageType, RangeType, WeaponSize, WeaponType } from "@src/enums";
 import { EntryType, SerUtil, SimSer } from "@src/registry";
 import * as filtrex from "filtrex";
 import { DamageTypeChecklist, RangeTypeChecklist, WeaponSizeChecklist, WeaponTypeChecklist } from "@src/interface";

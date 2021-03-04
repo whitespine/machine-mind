@@ -1,7 +1,7 @@
 /*
 import { Mission, Pilot, Npc, MissionStepType, Encounter } from "@src/class";
 import { IMissionData, INpcData, IMissionStep } from "@src/interface";
-import { EncounterSide } from "../enums";
+import { EncounterSide } from "@src/enums";
 import { store, logger } from "@src/hooks";
 
 export interface IActiveMissionData {

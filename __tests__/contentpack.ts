@@ -6,7 +6,7 @@ import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackPa
 import { IContentPack, intake_pack } from '../src/classes/ContentPack';
 import * as fs from "fs";
 import { Damage } from "../src/class";
-import { DamageType } from "../src/enums";
+import { DamageType } from "@src/enums";
 
 type DefSetup = {
     reg: StaticReg;
