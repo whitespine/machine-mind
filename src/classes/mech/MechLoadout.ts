@@ -506,7 +506,10 @@ export class WeaponMount extends RegSer<RegWepMountData> {
 
     // Adds weapon to next available fitting, if possible. Returns success
     public try_add_weapon(wep: MechWeapon): boolean {
-        for (let s of this.Slots) {
+        // Sort them smallest to largest. We prefer filling a smaller mount over a larger one
+        let sorted_slots = [...this.Slots].sort((a, b) => weapon_size_magnitude(a.Size) - weapon_size_magnitude(b.Size));
+
+        for (let s of sorted_slots) {
             if (s.check_can_take(wep) === null) {
                 // Put it
                 s.Weapon = wep;
