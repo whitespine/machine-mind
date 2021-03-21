@@ -372,7 +372,7 @@ export class WeaponSlot {
             return "Mod without weapon";
         } else if (!wep) {
             return null; // Empty is fine
-        } else if (size_num(wep.Size) > size_num(this.Size)) {
+        } else if (weapon_size_magnitude(wep.Size) > weapon_size_magnitude(this.Size)) {
             return "Weapon too large to fit";
         } else if (this.Mount.Integrated && mod) {
             return "Cannot mod integrated weapons";
@@ -596,25 +596,33 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 }
 
-function size_num(size: WeaponSize | FittingSize) {
+/**
+ * Yields a number suitable for sowrting weapons/mounts by their size. 
+ * If a fitting size is >= a weapon size, then that fitting can hold that weapon
+ * Higher = bigger. Useful to determine slot fill priority, as filling largest weapons first to largest slots gives a higher likelihood of proper fit.
+ * @param size  The size to rank
+ */
+export function weapon_size_magnitude(size: WeaponSize | FittingSize): number {
     switch (size) {
         case WeaponSize.Aux:
         case FittingSize.Auxiliary:
             return 1;
 
         case WeaponSize.Main:
-        case FittingSize.Main:
         case FittingSize.Flex:
             return 2;
 
-        case WeaponSize.Heavy:
-        case FittingSize.Heavy:
+        case FittingSize.Main: // We'd prefer to fill a main fitting before a flex
             return 3;
 
-        case WeaponSize.Superheavy:
+        case WeaponSize.Heavy:
+        case FittingSize.Heavy:
             return 4;
 
+        case WeaponSize.Superheavy:
+            return 5;
+
         case FittingSize.Integrated:
-            return 5; // can hold anything
+            return 6; 
     }
 }

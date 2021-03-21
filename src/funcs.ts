@@ -10,6 +10,7 @@ export { mech_cloud_sync } from "@src/classes/mech/Mech";
 export { validate_props } from "@src/classes/key_util";
 export * as defaults from "@src/classes/default_entries";
 export * as tag_util from "@src/classes/mech/EquipUtil";
+export { weapon_size_magnitude } from "@src/classes/mech/MechLoadout";
 
 // We oftentimes need to make sure we don't go outside of allowed ranges
 export function bound_int(x: number, min: number, max: number) {
