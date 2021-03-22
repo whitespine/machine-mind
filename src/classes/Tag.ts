@@ -95,6 +95,9 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     get IsInaccurate(): boolean {
         return this.ID === "tg_inaccurate";
     }
+    get IsReliable(): boolean {
+        return this.ID === "tg_reliable";
+    }
 }
 
 export class TagInstance extends RegSer<RegTagInstanceData> {

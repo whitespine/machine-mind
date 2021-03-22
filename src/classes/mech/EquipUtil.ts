@@ -16,6 +16,10 @@ export function is_loading(item: TaggedEquippable): boolean {
     return !!tags(item).find(t => t.Tag.IsLoading);
 }
 
+export function is_limited(item: TaggedEquippable): boolean {
+    return !!tags(item).find(t => t.Tag.IsLimited);
+}
+
 export function is_ai(item: TaggedEquippable): boolean {
     return !!tags(item).find(t => t.Tag.IsAI);
 }
@@ -40,3 +44,13 @@ export function limited_max(item: TaggedEquippable): number {
     }
     return lim_tag.as_number(0);
 }
+
+// Returns 0 if not reliable
+export function get_reliable(item: TaggedEquippable): number {
+    let rel_tag = tags(item).find(t => t.Tag.IsReliable);
+    if (!rel_tag) {
+        return 0;
+    }
+    return rel_tag.as_number(0);
+}
+
