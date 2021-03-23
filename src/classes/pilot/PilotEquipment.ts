@@ -67,6 +67,7 @@ export interface RegPilotWeaponData extends AllRegData {
     effect: string;
     damage: RegDamageData[];
     range: RegRangeData[];
+    loaded: boolean;
 }
 
 export interface RegPilotArmorData extends AllRegData {}
@@ -194,6 +195,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Description!: string;
     Effect!: string;
     Uses!: number;
+    Loaded!: boolean;
     Tags!: TagInstance[];
     Range!: Range[];
     Damage!: Damage[];
@@ -213,6 +215,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         this.Description = data.description;
         this.Effect = data.effect;
         this.Uses = data.uses;
+        this.Loaded = data.loaded;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Damage = SerUtil.process_damages(data.damage);
         this.Range = SerUtil.process_ranges(data.range);
@@ -226,6 +229,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             name: this.Name,
             effect: this.Effect,
             uses: this.Uses,
+            loaded: this.Loaded,
             damage: SerUtil.save_all(this.Damage),
             range: SerUtil.save_all(this.Range),
             tags: SerUtil.save_all(this.Tags),

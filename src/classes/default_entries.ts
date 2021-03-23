@@ -644,6 +644,7 @@ export function PILOT_WEAPON(): RegPilotWeaponData {
             },
         ],
         effect: "",
+        loaded: true,
     };
 }
 
