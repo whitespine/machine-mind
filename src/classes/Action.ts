@@ -2,6 +2,7 @@ import { SerUtil, SimSer } from "@src/registry";
 import { typed_lancer_data } from "@src/data";
 import { ActivationType } from "@src/enums";
 import { SynergyLocation } from "@src/interface";
+import { defaults } from "@src/funcs";
 
 export interface IActionData {
     id?: string;
@@ -63,6 +64,7 @@ export class Action extends SimSer<IActionData> {
     }
 
     public load(data: IActionData): void {
+        data = {...defaults.ACTION(), ...data};
         this.ID;
         this.Name = data.name;
         this.Activation = SerUtil.restrict_enum(
