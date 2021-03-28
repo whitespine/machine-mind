@@ -68,11 +68,10 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
             .toLowerCase();
         if (manifest.item_prefix) {
             // return `${manifest.item_prefix}__${type}_${sanitizedName}`;
-            return `${manifest.item_prefix}__${sanitizedName}`;
-        } else {
-            return sanitizedName;
-            // return `${type}_${sanitizedName}`;
+            // return `${manifest.item_prefix}__${sanitizedName}`;
         }
+        return sanitizedName;
+        // return `${type}_${sanitizedName}`;
     };
 
     function generateIDs<T extends { id: string }>(data: T[], dataPrefix?: string): T[] {
