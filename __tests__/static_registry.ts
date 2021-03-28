@@ -1,7 +1,7 @@
 // @ts-nocheck
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
-import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
+import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx, quick_relinker } from "../src/registry";
 import { CoreBonus, Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
@@ -587,4 +587,47 @@ describe("Static Registry Reference implementation", () => {
         expect(pilots_weapons[0].length).toEqual(1);
         expect(pilots_weapons[1].length).toEqual(2); // Note: ordering not usually guaranteed. Fine for a static test, though
      });
+
+    it("Quick relinkers work as expected", async () => {
+        expect.assertions(3);
+
+        // Create two setups
+        let setup_source = await init_basic_setup(true);
+        let setup_dest = await init_basic_setup(true);
+
+        // Moving a system from one to the other with proper relinking should not increment count
+        let ctx = new OpCtx();
+        let system = await setup_source.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_neurospike");
+
+        const get_dest_listing = async () => setup_dest.reg.get_cat(EntryType.MECH_SYSTEM).list_live(new OpCtx());
+        const orig = await get_dest_listing();
+
+        // Insinuate three ways. One using a quickrelinker targeting ids at the func call level. Then, modifying setup_dest to have an inbuilt relinking hook targeting names. Finally, one which deliberately blacklists the key(s)
+        let id_relinker = quick_relinker({
+            key_pairs: [["ID", "id"]]
+        });
+        await system.insinuate(setup_dest.reg, null, {relinker: id_relinker});
+        const p1 = await get_dest_listing();
+
+        let name_relinker = quick_relinker({
+            key_pairs: [["Name", "name"]]
+        });
+        setup_dest.reg.hooks.relinker = name_relinker;
+        await system.insinuate(setup_dest.reg);
+        const p2 = await get_dest_listing();
+
+        let blacklist_id_relinker = quick_relinker({
+            key_pairs: [["Name", "name"], ["ID", "id"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
+            blacklist: ["ms_neurospike"]
+        });
+        setup_dest.reg.hooks.relinker = blacklist_id_relinker;
+        await system.insinuate(setup_dest.reg);
+        const p3 = await get_dest_listing();
+
+        // Only p3 should've gotten a new item, since it deliberately blocked relinking via the blacklist.
+        // Though this is a contrived example, blacklisting can be useful if you want to relink everything except certain items (like integrated weaponry, if you are making duplicates of an item)
+        expect(p1.length).toEqual(orig.length);
+        expect(p2.length).toEqual(orig.length);
+        expect(p3.length).toEqual(orig.length + 1);
+    });
 });

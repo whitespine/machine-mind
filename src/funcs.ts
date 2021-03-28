@@ -1,4 +1,5 @@
 import { Bonus, Mech } from "./class";
+import { InsinuateHooks } from "./registry";
 
 // Same logic as interfaces, classes, etc.
 export { parseContentPack } from "@src/io/ContentPackParser";

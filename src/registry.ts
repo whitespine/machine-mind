@@ -579,6 +579,8 @@ export interface InsinuationRecord<T extends EntryType> {
 }
 
 
+// Shorthand for the relinker type of _InsinuateHooks. Useful for function factories
+export type RelinkHook<T extends EntryType> = (source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
 interface _InsinuateHooks {
     // Used during insinuation procedures to dedup/consolidate entities by finding pre-existing entities to use instead (or overriding entity creation process
     relinker<T extends EntryType>(source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
@@ -1275,3 +1277,41 @@ export function quick_local_ref<T extends EntryType>(
         reg_name: reg.name(),
     };
 }
+
+
+interface QuickRelinkParams<T extends EntryType> {
+    key_pairs:  Array<[keyof LiveEntryTypes<T>, keyof RegEntryTypes<T>]>; // Left will be read from src_item, right from the reg entry data. If both exist and equal, then that will be relinked. Checked in order
+    blacklist?: Array<any>; // If the value read from src_item is in (checked via ==) this array, then that source item will not be considered for relinking
+};
+
+/**
+ * A utility function for quickly creating relinking functions that associate by one or more property names
+ */
+export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>): RelinkHook<T> {
+    return async (src_item, dest_reg, dest_cat) => {
+        // First check blacklist
+        for(let forbidden of params.blacklist ?? []) {
+            for(let kp of params.key_pairs) {
+                let src_item_val = src_item[kp[0]];
+                if(src_item_val == forbidden) {
+                    return null;
+                }
+            }
+        }
+
+        // Ok, none of the kvp items seem to have been blacklisted. Now we process them in order
+        for(let kp of params.key_pairs) {
+            let src_item_val = src_item[kp[0]];
+            if(src_item_val) {
+                let found = await dest_cat.lookup_live(src_item.OpCtx, (v) => v[kp[1]] as any == src_item_val);
+                if(found) {
+                    return found;
+                }
+            }
+        }
+
+        // No kvp worked
+        return null;
+    }
+}
+
