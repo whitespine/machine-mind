@@ -679,7 +679,14 @@ export abstract class RegEntry<T extends EntryType> {
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
     // Generates a new opctx if none is provided, otherwise behaves just like getLive() on this items reg
     public async refreshed(ctx?: OpCtx): Promise<LiveEntryTypes<T> | null> {
-        return this.Registry.get_cat(this.Type).get_live(ctx ?? new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
+        if(ctx && this.OpCtx == ctx) {
+            console.warn("Refreshing an item into its selfsame OpCtx can lead to data incoherence.");
+        }
+        let refreshed = this.Registry.get_cat(this.Type).get_live(ctx ?? new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
+        if(!refreshed) {
+            console.error("Refresh failed - item was deleted from under MM");
+        }
+        return refreshed;
     }
 
     // List all associated items of this item. We assume none by default
