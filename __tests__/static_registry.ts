@@ -63,8 +63,8 @@ describe("Static Registry Reference implementation", () => {
         expect(raw!.id).toEqual("bmw");
 
         // Try retrieving by mmid
-        expect(await c.lookup_mmid(ctx, "bmw")).toBeTruthy();
-        expect(await c.lookup_mmid(ctx, "zoop")).toBeNull(); // 5
+        expect(await c.lookup_mmid_live(ctx, "bmw")).toBeTruthy();
+        expect(await c.lookup_mmid_live(ctx, "zoop")).toBeNull(); // 5
 
         // Check listing of both types
         expect(Array.from(await c.iter_raw()).length).toEqual(1);
@@ -108,7 +108,7 @@ describe("Static Registry Reference implementation", () => {
         let env = await init_basic_setup();
         let ctx = new OpCtx();
 
-        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_standard_pattern_i_everest")
+        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_standard_pattern_i_everest")
         expect(ever).toBeTruthy();
         expect(ever.Name).toEqual("EVEREST")
 
@@ -122,7 +122,7 @@ describe("Static Registry Reference implementation", () => {
         expect(ever.Traits[1].Bonuses[0].Title).toEqual("Half Cost for Structure Repairs");
 
         // Check a lancaster - should have an integrated
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster")
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster")
         expect(lanny.CoreSystem).toBeTruthy();
         expect(lanny.CoreSystem.Integrated.length).toEqual(1);
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
@@ -177,9 +177,9 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
         // Regardless of id resolution method we expect these to be the same
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster");
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster");
         lanny.flags = "alpha"; // for later test
-        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster"); // Double identical lookup via mmid
+        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster"); // Double identical lookup via mmid
         expect(lanny === lenny).toBeTruthy();
         let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx, lanny.RegistryID); // Repeat lookup by reg iD
         expect(lanny === larry).toBeTruthy();
@@ -207,7 +207,7 @@ describe("Static Registry Reference implementation", () => {
         // Insinuate the lancaster from the full to the empty, using a refresh to ensure things remain cool
         let ctx = new OpCtx();
         let moved_ctx = new OpCtx();
-        let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_lancaster")
+        let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster")
         lanny.flags = "alpha";
         let moved_lanny = await lanny.insinuate(empty_env.reg, moved_ctx);
         
@@ -294,7 +294,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0); // 2
 
         // Take the sherman, which has a native weapon
-        let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_mmid(new OpCtx(), "mf_sherman");
+        let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(new OpCtx(), "mf_sherman");
         expect(sherman.CoreSystem.Integrated.length).toEqual(1); // 3
 
         // Send it over
@@ -322,7 +322,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0); // 2
 
         // Take the sherman, which has a native weapon, and send it over.
-        let solidcore = await source_env.reg.get_cat(EntryType.MECH_WEAPON).lookup_mmid(new OpCtx(), "mw_sherman_integrated");
+        let solidcore = await source_env.reg.get_cat(EntryType.MECH_WEAPON).lookup_mmid_live(new OpCtx(), "mw_sherman_integrated");
         await solidcore.insinuate(dest_env.reg);
 
         // Dest env should have just the weapon. 
@@ -335,33 +335,33 @@ describe("Static Registry Reference implementation", () => {
     
     it("Calls insinuation hooks (simple)", async () => {
         expect.assertions(5);
-        class HookyReg extends StaticReg {
-            hook_post_insinuate(record) {
+        const hooks =  {
+            post_final_write(record, reg) {
                 expect(record.type).toEqual(EntryType.MECH_SYSTEM);
                 expect(old_sys.Name).toEqual("ns");
                 expect(old_sys.Description).toEqual("alpha");
                 expect(record.new_item.Name).toEqual("ns");
                 expect(record.new_item.Description).toEqual("beta"); // Note the change from our other hook!
-            }
+            },
 
-            hook_insinuate_pre_final_write(record) {
+            pre_final_write(record, reg) {
                 // We can sorta do anything we want to finalize our conversion
                 record.pending.Description = "beta";
             }
-        }
+        };
 
         let env = new RegEnv();
         let reg1 = new StaticReg(env);
-        let reg2 = new HookyReg(env);
+        let reg2 = new StaticReg(env);
         let ctx = new OpCtx();
         let old_sys = await reg1.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns", description: "alpha"});
-        let new_sys = await old_sys.insinuate(reg2);
+        let new_sys = await old_sys.insinuate(reg2, null, hooks);
     });
 
     it("Calls insinuation hooks (insinuated)", async () => {
         expect.assertions(5 + 3);
-        class HookyReg extends StaticReg {
-            hook_post_insinuate(record) {
+        const hooks = {
+            post_final_write(record, reg) {
                 expect(true).toBeTruthy(); // Will be hit 5 times from insinuations
 
                 // A bit more: if it is a frame, make sure it has its stuff
@@ -371,15 +371,15 @@ describe("Static Registry Reference implementation", () => {
                     expect(record.new_item.CoreSystem).toBeTruthy();
                 }
             }
-        }
+        };
 
         let src = await init_basic_setup(true);
-        let dest = new HookyReg(src.env);
+        let dest = new StaticReg(src.env);
         let ctx = new OpCtx();
 
         // We plan on moving a frame, specifically the hydra. The hydra has 4 deployables, so totaling 5 expected insinuate hooks
-        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_hydra");
-        await drake.insinuate(dest);
+        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_hydra");
+        await drake.insinuate(dest, null, hooks);
     });
 
     it("Preserves misc original data", async () => {
@@ -442,11 +442,11 @@ describe("Static Registry Reference implementation", () => {
         // Delete the sherman from beta
         let ctx = new OpCtx();
         let beta_frames = await setup_beta.reg.get_cat(EntryType.FRAME).list_live(ctx);
-        let beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_sherman");
+        let beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_sherman");
         await beta_sherman.destroy_entry();
 
         // We take the sherman from alpha and place its data (raw, unaffected) in beta
-        let alpha_sherman = await setup_alpha.reg.get_cat(EntryType.FRAME).lookup_mmid(ctx, "mf_sherman");
+        let alpha_sherman = await setup_alpha.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_sherman");
 
         let new_beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).create_live(ctx, alpha_sherman.save());
 
@@ -472,4 +472,119 @@ describe("Static Registry Reference implementation", () => {
         // NOTE: We don't test deployables, because they don't work. And they can't! Because compcon spec doesn't provide any mechanism to specify a deployable id.
         // Could maybe gen some ourselves, but I'm holding off on that for now
     });
+
+    it("Properly utilizes relinker", async () => {
+        expect.assertions(8);
+
+        // Create two setups
+        let setup_source = new StaticReg(new RegEnv());
+        let setup_dest = new StaticReg(new RegEnv());
+
+        // Our experiment is as follows: We will have a pilot owning a gun and a free-floating system in source
+        // We will insinuate them to dest, using a relinker callback that attempts to find pre-existing entries by name
+        let ctx = new OpCtx();
+        let source_pilot = await setup_source.create_live(EntryType.PILOT, ctx, {name: "steve"})
+        let source_pilot_gun = await source_pilot.get_inventory().then(i => i.create_live(EntryType.PILOT_WEAPON, ctx, {name: "mr. gun"}));
+        let source_system = await setup_source.create_live(EntryType.MECH_SYSTEM, ctx, {name: "mechsys"});
+        source_pilot = await source_pilot.refreshed();
+
+        // Insinuate them all to dest. This should produce a very mundane initial result.
+        await source_pilot.refreshed().then(r => r.insinuate(setup_dest)); // Refresh so we know we own a weapon
+        await source_system.insinuate(setup_dest);
+
+        // We now expect one pilot, one system, and zero pilot weapons in the global space
+        let dest_pilots = await setup_dest.get_cat(EntryType.PILOT).list_live(ctx);
+        let dest_systems = await setup_dest.get_cat(EntryType.MECH_SYSTEM).list_live(ctx);
+        let dest_weapons = await setup_dest.get_cat(EntryType.PILOT_WEAPON).list_live(ctx);
+        expect(dest_pilots.length).toEqual(1);
+        expect(dest_systems.length).toEqual(1);
+        expect(dest_weapons.length).toEqual(0);
+
+        // We also expect the pilot's inventory to contain exactly one weapon
+        let pilots_weapons = await dest_pilots[0].get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx));
+        expect(pilots_weapons.length).toEqual(1);
+
+        // -------------------------------------
+        // To make matters more interesting, we give source pilot a second weapon with a different name. This one shouldn't get deduplicated, because it is new, even if the pilot and their first weapon are deduplicated!
+        let source_pilot_second_gun = await source_pilot.get_inventory().then(i => i.create_live(EntryType.PILOT_WEAPON, ctx, {name: "mrs. gun"}));
+        source_pilot = await source_pilot.refreshed();
+
+        // Ok, now we do it again, with gusto! And by gusto i mean a relinker that attempts to find pre-existing items with the same name
+        let hooks = {
+            relinker: (orig, _, dest_cat) => {
+                return dest_cat.lookup_live(orig.OpCtx, (v) => v.name == orig.Name);
+            }
+        };
+
+        await source_pilot.insinuate(setup_dest, null, hooks);
+        await source_system.insinuate(setup_dest, null, hooks);
+
+        // We expect the same number of things as before in the global scope
+        dest_pilots = await setup_dest.get_cat(EntryType.PILOT).list_live(ctx);
+        dest_systems = await setup_dest.get_cat(EntryType.MECH_SYSTEM).list_live(ctx);
+        dest_weapons = await setup_dest.get_cat(EntryType.PILOT_WEAPON).list_live(ctx);
+        expect(dest_pilots.length).toEqual(1);
+        expect(dest_systems.length).toEqual(1);
+        expect(dest_weapons.length).toEqual(0);
+
+        // Pilot should have exactly 2 weapons
+        let pilots_weapons = await dest_pilots[0].get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx));
+        expect(pilots_weapons.length).toEqual(2);
+    });
+
+    it("Duplicates if not using relinker", async () => {
+        expect.assertions(9);
+
+        // Create two setups
+        let setup_source = new StaticReg(new RegEnv());
+        let setup_dest = new StaticReg(new RegEnv());
+
+        // Our experiment is as follows: We will have a pilot owning a gun and a free-floating system in source
+        // We will insinuate them to dest, using a relinker callback that attempts to find pre-existing entries by name
+        let ctx = new OpCtx();
+        let source_pilot = await setup_source.create_live(EntryType.PILOT, ctx, {name: "steve"})
+        let source_pilot_gun = await source_pilot.get_inventory().then(i => i.create_live(EntryType.PILOT_WEAPON, ctx, {name: "mr. gun"}));
+        let source_system = await setup_source.create_live(EntryType.MECH_SYSTEM, ctx, {name: "mechsys"});
+        source_pilot = await source_pilot.refreshed();
+
+        // Insinuate them all to dest. This should produce a very mundane initial result.
+        await source_pilot.refreshed().then(r => r.insinuate(setup_dest)); // Refresh so we know we own a weapon
+        await source_system.insinuate(setup_dest);
+
+        // We now expect one pilot, one system, and zero pilot weapons in the global space
+        let dest_pilots = await setup_dest.get_cat(EntryType.PILOT).list_live(ctx);
+        let dest_systems = await setup_dest.get_cat(EntryType.MECH_SYSTEM).list_live(ctx);
+        let dest_weapons = await setup_dest.get_cat(EntryType.PILOT_WEAPON).list_live(ctx);
+        expect(dest_pilots.length).toEqual(1);
+        expect(dest_systems.length).toEqual(1);
+        expect(dest_weapons.length).toEqual(0);
+
+        // We also expect the pilot's inventory to contain exactly one weapon
+        let pilots_weapons = await dest_pilots[0].get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx));
+        expect(pilots_weapons.length).toEqual(1);
+
+        // -------------------------------------
+        // To make matters more interesting, we give source pilot a second weapon with a different name. This one shouldn't get deduplicated, because it is new, even if the pilot and their first weapon are deduplicated!
+        let source_pilot_second_gun = await source_pilot.get_inventory().then(i => i.create_live(EntryType.PILOT_WEAPON, ctx, {name: "mrs. gun"}));
+        source_pilot = await source_pilot.refreshed();
+
+        // THIS TIME: NO HOOKS!
+        let hooks = {};
+
+        await source_pilot.insinuate(setup_dest, null, hooks);
+        await source_system.insinuate(setup_dest, null, hooks);
+
+        // We expect the same number of things as before in the global scope
+        dest_pilots = await setup_dest.get_cat(EntryType.PILOT).list_live(ctx);
+        dest_systems = await setup_dest.get_cat(EntryType.MECH_SYSTEM).list_live(ctx);
+        dest_weapons = await setup_dest.get_cat(EntryType.PILOT_WEAPON).list_live(ctx);
+        expect(dest_pilots.length).toEqual(2);
+        expect(dest_systems.length).toEqual(2);
+        expect(dest_weapons.length).toEqual(0);
+
+        // Pilots should have 1 and 2 weapons, respectively.
+        let pilots_weapons = await Promise.all(dest_pilots.map(p => p.get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx))));
+        expect(pilots_weapons[0].length).toEqual(1);
+        expect(pilots_weapons[1].length).toEqual(2); // Note: ordering not usually guaranteed. Fine for a static test, though
+     });
 });

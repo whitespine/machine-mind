@@ -16,6 +16,7 @@ export type LicensedItemType =
     | EntryType.MECH_SYSTEM
     | EntryType.WEAPON_MOD;
 export type LicensedItem = LiveEntryTypes<LicensedItemType>;
+// export type LicensedItem = RegEntry<LicensedItemType>;
 
 export interface RegLicenseData {
     // What's it called

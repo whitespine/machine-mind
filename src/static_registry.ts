@@ -197,12 +197,13 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         }
     }
 
-    async lookup_mmid(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null> {
-        // lil' a bit janky, but serviceable
+    async lookup_raw(criteria: (x: RegEntryTypes<T>) => boolean): Promise<{id: string, val: RegEntryTypes<T>} | null> {
         for (let [reg_id, reg_raw] of this.reg_data.entries()) {
-            let reg_mmid = (reg_raw as any).id;
-            if (reg_mmid == mmid) {
-                return this.revive_func(this.parent, ctx, reg_id, reg_raw); // Be sure to use the proper id, here!
+            if(criteria(reg_raw)) {
+                return {
+                    id: reg_id,
+                    val: reg_raw
+                };
             }
         }
         return null;

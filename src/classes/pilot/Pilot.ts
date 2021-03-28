@@ -638,18 +638,16 @@ export async function cloud_sync(
     // Then do mechs
     let pilot_mechs = await pilot.Mechs();
     for (let md of data.mechs) {
-        // Look up one the a matching compcon id
+        // For each imported mech entry, find the corrseponding mech actor entity by matching compcon id
         let corr_mech = pilot_mechs.find(m => m.ID == md.id);
 
         if (!corr_mech) {
-            // Make a new one
+            // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one and add it to our tracker
             corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
-
-            // Add it to our temporary tracker
             pilot_mechs.push(corr_mech);
         }
 
-        // Tell it we own it
+        // Tell it we own/pilot it
         corr_mech.Pilot = pilot;
 
         // Apply
@@ -790,7 +788,7 @@ export async function cloud_sync(
         }
     }
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid_live(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
     await pilot.Loadout.ready();
 
