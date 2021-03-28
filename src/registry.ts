@@ -579,22 +579,34 @@ export interface InsinuationRecord<T extends EntryType> {
 }
 
 
-export interface InsinuateHooks<T extends EntryType> {
+type Relinker<T extends EntryType> = (source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<LiveEntryTypes<T>> | LiveEntryTypes<T> | null;
+interface _InsinuateHooks {
     // Used during insinuation procedures to dedup/consolidate entities by finding pre-existing entities to use instead (or overriding entity creation process
-    relinker?: (source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<LiveEntryTypes<T>> | LiveEntryTypes<T> | null;
+    relinker<T extends EntryType>(source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<LiveEntryTypes<T>> | LiveEntryTypes<T> | null;
     skip_relinked_inventories?: boolean; // Default faulse. If true, we will not attempt to insinuate inventory items if the Inventoried actor entry was relinked
 
-    // Hook called upon completion of an insinuation. NOTE: called on the _destination_ registry. 
-    // Provided with information about the old and new item
-    post_final_write?: (record: InsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<void> | void;
+    /* Hook called upon completion of an insinuation. 
+     * Provided with information about the old and new item
+
+     * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
+     */
+    post_final_write<T extends EntryType>(record: InsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<void> | void;
 
     /* Hook called upon insinuation targets immediately prior to their final write to the destination reg.
      * At this points, the entire object structure should be in place, though it has not been committed to memory
      * Overriding this is necessary if we have other requirements in our insinuation process. Edit the object in place.
      * Note that at this point the entry has already been created -- you cannot change anything at this point except what is finally written to the entry.
+     * 
+     * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
      */
-     pre_final_write?: (record: MidInsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<void> | void;
+     pre_final_write<T extends EntryType>(record: MidInsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<void> | void;
 }
+
+// Let all the functions be optional
+export type InsinuateHooks = Partial<_InsinuateHooks>;
+
+// Registrys can have these inbuilt. They will be called after the insinuate hooks if present
+export type RegistryInsinuateHooks = Pick<InsinuateHooks, "post_final_write" | "pre_final_write">;
 
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
@@ -689,7 +701,7 @@ export abstract class RegEntry<T extends EntryType> {
      *                  If it returns an Entry, then we will link against that entry instead of creating a new item.
      *                  Note that this cannot change the type of an item. Items relinked in this way will not have their children insinuated.
      */
-    public async insinuate(to_new_reg: Registry, ctx?: OpCtx | null, hooks?: InsinuateHooks<any>): Promise<LiveEntryTypes<T>> {
+    public async insinuate(to_new_reg: Registry, ctx?: OpCtx | null, hooks?: InsinuateHooks): Promise<LiveEntryTypes<T>> {
         // The public exposure of insinuate, which ensures it is safe by refreshing before and after all operations
 
         // Create a fresh copy, free of any other context. This will be heavily mutated in order to migrate
@@ -708,10 +720,16 @@ export abstract class RegEntry<T extends EntryType> {
         // However, what _hasn't_ yet been processed / updated are our reg entry references - they're still saved as their original ids
         // So we write all back once more with the new reference structure established
         for (let record of hitlist.values()) {
-            // Call pre-write-sav hooks
+            // Call pre-write-save hooks. Callsite provided go first, then registry defined
+            let dest_reg = record.pending.Registry;
+            let dest_cat = dest_reg.get_cat(record.type);
             if(hooks?.pre_final_write) {
-                await hooks?.pre_final_write(record, to_new_reg, to_new_reg.get_cat(record.type));
+                await hooks?.pre_final_write(record, dest_reg, dest_cat);
             }
+            if(dest_reg.hooks.pre_final_write) {
+                await dest_reg.hooks.pre_final_write(record, dest_reg, dest_cat);
+            }
+
             // Then writeback. Even if the above hook doesn't exist, this is necessary to fix RegRefs
             await record.pending.writeback();
         }
@@ -726,16 +744,24 @@ export abstract class RegEntry<T extends EntryType> {
             let new_v = await record.pending.refreshed(ctx);
             if (!new_v) {
                 console.error(
-                    "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted."
+                    "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted during insinuation."
                 );
+                continue
             }
             let final_record = {
                 from: { ...record.from },
                 type: record.type,
-                new_item: new_v!,
+                new_item: new_v,
             };
+
+            // Call post-write-save hooks. Callsite provided go first, then registry defined
+            let dest_reg = new_v.Registry;
+            let dest_cat = dest_reg.get_cat(final_record.type);
             if(hooks?.post_final_write) {
-                hooks.post_final_write(final_record, to_new_reg, to_new_reg.get_cat(final_record.type));
+                hooks.post_final_write(final_record, dest_reg, dest_cat);
+            }
+            if(dest_reg.hooks.post_final_write) {
+                dest_reg.hooks.post_final_write(final_record, dest_reg, dest_cat);
             }
         }
 
@@ -751,7 +777,7 @@ export abstract class RegEntry<T extends EntryType> {
     public async _insinuate_imp(
         to_new_reg: Registry,
         insinuation_hit_list: Map<RegEntry<any>, MidInsinuationRecord<any>>,
-        hooks?: InsinuateHooks<any>
+        hooks?: InsinuateHooks
     ): Promise<LiveEntryTypes<T> | null> {
         // Check if we've been hit to avoid circular problems
         if (insinuation_hit_list.has(this)) {
@@ -849,7 +875,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
     public async _insinuate_imp(
         to_new_reg: Registry,
         insinuation_hit_list: Map<RegEntry<EntryType>, MidInsinuationRecord<EntryType>>,
-        hooks?: InsinuateHooks<any>
+        hooks?: InsinuateHooks
     ): Promise<LiveEntryTypes<T> | null> {
         // Get our super call. Since new entry is of same type, then it should also have an inventory
         let new_reg_entry = (await super._insinuate_imp(
@@ -1057,6 +1083,9 @@ export abstract class Registry {
      */
     // This just maps to the other cats below
     private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
+
+    // Our hooks, if we want them. Subclass constructors should populate as they see fit
+    public hooks: RegistryInsinuateHooks = {};
 
     // Use at initialization. Sets the provided category to its appropriate place in the cat map
     public init_set_cat<T extends EntryType>(cat: RegCat<T>) {
