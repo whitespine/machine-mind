@@ -270,13 +270,13 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     // Just a simple .set call. Check if ID exists first
-    async update_many_raw(items: Array<{ id: string; data: RegEntryTypes<T> }>): Promise<void> {
+    async update(...items: LiveEntryTypes<T>[]): Promise<void> {
         for (let i of items) {
-            if (!this.reg_data.has(i.id)) {
+            if (!this.reg_data.has(i.RegistryID)) {
                 console.warn("Tried to update a destroyed/nonexistant/non-owned item");
                 continue;
             }
-            this.reg_data.set(i.id, i.data);
+            this.reg_data.set(i.RegistryID, i.save() as RegEntryTypes<T>);
         }
     }
 
