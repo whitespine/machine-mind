@@ -1,15 +1,12 @@
 import {
-    Rules,
     PilotArmor,
     PilotWeapon,
     PilotGear,
     PilotEquipment,
-    Counter,
     Bonus,
     Synergy,
 } from "@src/class";
 import { defaults } from "@src/funcs";
-import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "@src/interface";
 import {
     EntryType,
     LiveEntryTypes,
@@ -17,8 +14,6 @@ import {
     Registry,
     RegRef,
     RegSer,
-    SerUtil,
-    SimSer,
 } from "@src/registry";
 
 // This is what is actually in the loadouts. The id's ref actual weapons

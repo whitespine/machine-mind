@@ -579,10 +579,9 @@ export interface InsinuationRecord<T extends EntryType> {
 }
 
 
-type Relinker<T extends EntryType> = (source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<LiveEntryTypes<T>> | LiveEntryTypes<T> | null;
 interface _InsinuateHooks {
     // Used during insinuation procedures to dedup/consolidate entities by finding pre-existing entities to use instead (or overriding entity creation process
-    relinker<T extends EntryType>(source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<LiveEntryTypes<T>> | LiveEntryTypes<T> | null;
+    relinker<T extends EntryType>(source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
     skip_relinked_inventories?: boolean; // Default faulse. If true, we will not attempt to insinuate inventory items if the Inventoried actor entry was relinked
 
     /* Hook called upon completion of an insinuation. 
