@@ -88,7 +88,7 @@ function simple_cat_builder<T extends EntryType>(
             ctx.set(id, new_item);
 
             // Flag with the some junk, doesn't really matter
-            new_item.flags = { test: "itworks" };
+            new_item.Flags = { test: "itworks" };
             await new_item.ready();
 
             // And we're done
@@ -213,7 +213,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         // We don't really need async, but we would in a normal situation like foundry
         let result: Promise<LiveEntryTypes<T>>[] = [];
         for (let [id, val] of this.reg_data.entries()) {
-            result.push(this.revive_func(this.parent, ctx, id, val));
+            result.push(this.revive_func(this.parent, ctx, id, val, null));
         }
         return Promise.all(result);
     }
@@ -225,7 +225,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         for (let raw of vals) {
             let new_id = nanoid();
             this.reg_data.set(new_id, raw); // It's just that easy!
-            let viv = this.revive_func(this.parent, ctx, new_id, raw);
+            let viv = this.revive_func(this.parent, ctx, new_id, raw, null);
             revived.push(viv);
         }
 
@@ -266,7 +266,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         if (!raw) {
             return null;
         }
-        return this.revive_func(this.parent, ctx, id, raw);
+        return this.revive_func(this.parent, ctx, id, raw, null);
     }
 
     // Just a simple .set call. Check if ID exists first

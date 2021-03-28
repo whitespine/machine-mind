@@ -616,6 +616,7 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
     public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
+    public Flags: any = null; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
     private _load_promise: Promise<any>;
 
     // This constructor assumes that we've already got an entry in this registry.
@@ -839,15 +840,6 @@ export abstract class RegEntry<T extends EntryType> {
             return new_entry;
         } 
     }
-
-    // Get the session specific data for this item. This is ephemeral and context specific. In foundry, we use it to track the corresponding Foundry Actor/Item
-    public get flags(): any | null {
-        return this.OpCtx.get_flags(this.RegistryID);
-    }
-
-    public set flags(nv: any) {
-        this.OpCtx.set_flags(this.RegistryID, nv);
-    }
 }
 
 export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<T> {
@@ -921,7 +913,8 @@ export type ReviveFunc<T extends EntryType> = (
     reg: Registry,
     ctx: OpCtx,
     id: string,
-    raw: RegEntryTypes<T>
+    raw: RegEntryTypes<T>,
+    init_flags: any // The initial flag values are set ere. If you don't want them to be anything, just leave as undefined
 ) => Promise<LiveEntryTypes<T>>;
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
@@ -947,23 +940,6 @@ export class OpCtx {
     // Removes a quantity from a ctx, e.g. in case of deletion or migration (? not sure on migration. they maybe need to re-create selves????)
     delete(id: string) {
         this.resolved.delete(id);
-    }
-
-    // Flags are ephemeral data stored on objects, that we would _typically_ expect to be set by RegCats. Entirely optional, just there to provide some flex functionality
-    private flags: Map<string, any> = new Map();
-
-    // Sets the flags for a specific item. Flags are ephemeral data stored on objects. (PS: they're pretty useful for foundry)
-    public set_flags(for_item_id: string, flag_data: any) {
-        this.flags.set(for_item_id, flag_data);
-    }
-
-    // Retrieves the flags for a specific item. Flags are ephemeral data stored on objects
-    public get_flags(for_item_id: string): any | null {
-        if (this.flags.has(for_item_id)) {
-            return this.flags.get(for_item_id);
-        } else {
-            return null;
-        }
     }
 }
 

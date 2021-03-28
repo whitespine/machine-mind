@@ -55,7 +55,7 @@ describe("Static Registry Reference implementation", () => {
         expect(man).toBeTruthy();
 
         // Make sure it has flags
-        expect(man.flags?.test).toEqual("itworks");
+        expect(man.Flags?.test).toEqual("itworks");
 
         // Try retreiving raw 
         let raw = await c.get_raw(man.RegistryID);
@@ -178,20 +178,20 @@ describe("Static Registry Reference implementation", () => {
 
         // Regardless of id resolution method we expect these to be the same
         let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster");
-        lanny.flags = "alpha"; // for later test
+        lanny.Flags = "alpha"; // for later test
         let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster"); // Double identical lookup via mmid
         expect(lanny === lenny).toBeTruthy();
         let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx, lanny.RegistryID); // Repeat lookup by reg iD
         expect(lanny === larry).toBeTruthy();
         let harry: Frame = await env.reg.resolve_wildcard_mmid(ctx, "mf_lancaster");
-        harry.flags = "beta"; // for later test
+        harry.Flags = "beta"; // for later test
         expect(lanny === harry).toBeTruthy();
         let terry: Frame = await env.reg.resolve(ctx, lanny.as_ref());
         expect(lanny === terry).toBeTruthy();
 
         // Do they all have the same flags? They should, and it should reflect our modification to harry
-        expect(lanny.flags == lenny.flags && lanny.flags == larry.flags && lanny.flags == harry.flags && lanny.flags == terry.flags).toBeTruthy();
-        expect(lanny.flags).toEqual("beta");
+        expect(lanny.Flags == lenny.Flags && lanny.Flags == larry.Flags && lanny.Flags == harry.Flags && lanny.Flags == terry.Flags).toBeTruthy();
+        expect(lanny.Flags).toEqual("beta");
 
         // Does changing the ctx break it? (it should)
         let ctx_2 = new OpCtx();
@@ -208,11 +208,11 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
         let moved_ctx = new OpCtx();
         let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster")
-        lanny.flags = "alpha";
+        lanny.Flags = "alpha";
         let moved_lanny = await lanny.insinuate(empty_env.reg, moved_ctx);
         
         // Modified shouldn't have carried over
-        expect(moved_lanny.flags).not.toEqual("alpha");
+        expect(moved_lanny.Flags).not.toEqual("alpha");
 
         // Should share nothing in common
         expect(lanny === moved_lanny).toBeFalsy(); // 2
