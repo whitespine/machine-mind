@@ -603,9 +603,8 @@ interface _InsinuateHooks {
 
 // Let all the functions be optional
 export type InsinuateHooks = Partial<_InsinuateHooks>;
+// Note: Registrys can have these inbuilt. They will be called after the function-call-specific insinuate hooks if present
 
-// Registrys can have these inbuilt. They will be called after the insinuate hooks if present
-export type RegistryInsinuateHooks = Pick<InsinuateHooks, "post_final_write" | "pre_final_write">;
 
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
@@ -795,10 +794,17 @@ export abstract class RegEntry<T extends EntryType> {
 
         // If we have a relink hook, apply it now
         let new_entry: LiveEntryTypes<T> | null = null;
-        let relinked = false;
+        let fun_relinked = false;
+        let reg_relinked = false;
         if(hooks?.relinker) {
             new_entry = await hooks.relinker(this as unknown as LiveEntryTypes<T>, to_new_reg, to_new_reg.get_cat(this.Type));
-            relinked = !!new_entry;
+            fun_relinked = !!new_entry;
+        }
+
+        // Also try relinking using registry relinker if possible
+        if(to_new_reg.hooks.relinker && !fun_relinked) {
+            new_entry = await to_new_reg.hooks.relinker(this as unknown as LiveEntryTypes<T>, to_new_reg, to_new_reg.get_cat(this.Type));
+            reg_relinked = !!new_entry;
         }
 
         // If no relink hook / relink hook didn't produce anything useful
@@ -825,14 +831,18 @@ export abstract class RegEntry<T extends EntryType> {
             type: this.Type,
         });
 
-        // Ask all of our live children to insinuate themselves. They will insinuate recursively. Don't if relinking
-        if(!relinked) {
+        // Ask all of our live children to insinuate themselves. They will insinuate recursively. Don't if relinking, as we assume the relink target already has this basically handled.
+        // If the user wants it to be regenerated, they can just delete the item
+        if(!fun_relinked && !reg_relinked) {
             for (let child of assoc) {
                 await child._insinuate_imp(to_new_reg, insinuation_hit_list, hooks); // Ensure that they don't get root call true. This prevents dumb save-thrashing
             }
         }
-        if(relinked && hooks?.skip_relinked_inventories) {
+
+        if(fun_relinked && hooks?.skip_relinked_inventories) {
             return null; // Essentially drops the inventory
+        } else if(reg_relinked && to_new_reg.hooks.skip_relinked_inventories) {
+            return null; // Ditto
         } else {
             // Even if this didn't produce a new item, we still wish to return. 
             // This return (right now) exclusively controls if we want to do inventory transfer or not. We do, unless relinker options say otherwise
@@ -1040,7 +1050,7 @@ export abstract class Registry {
     private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
 
     // Our hooks, if we want them. Subclass constructors should populate as they see fit
-    public hooks: RegistryInsinuateHooks = {};
+    public hooks: InsinuateHooks = {};
 
     // Use at initialization. Sets the provided category to its appropriate place in the cat map
     public init_set_cat<T extends EntryType>(cat: RegCat<T>) {
