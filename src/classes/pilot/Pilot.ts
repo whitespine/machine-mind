@@ -34,6 +34,7 @@ import {
 } from "@src/interface";
 import {
     EntryType,
+    InsinuateHooks,
     InventoriedRegEntry,
     RegEntry,
     Registry,
@@ -45,7 +46,7 @@ import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from "@src/enums";
 import {
     finding_iterate,
-    gathering_resolve_mmid,
+    fallback_obtain_ref,
     RegFallback,
 } from "../regstack";
 
@@ -572,12 +573,12 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
 // Due to the nature of pilot data, and the fact that we generally desire to use this for synchronization of an existing pilot rather than as a one off compendium import,
 // we define this separately. gather_source_regs is where we look if we can't find an item in the pilot that we expected - it will be added to the pilot
-// TODO: Figure out a way to handle cases where the pilot has multiple copies of the same system by mmid (e.g. "lefty" and "righty" on knives or something)- in this case it will always just pick the first it finds
-// TODO: Don't just nuke reserves, do something fancier
+// If custom_pilot_inv, it will be used as the pilot's inventory registry. 
 export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
-    gather_source_regs: Registry[]
+    fallback_source_regs: Registry[],
+    hooks?: InsinuateHooks,
 ): Promise<{ pilot: Pilot; pilot_mechs: Mech[] } | null> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();
@@ -585,14 +586,14 @@ export async function cloud_sync(
         return null; // This is fairly catastrophic
     }
     pilot = tmp_pilot;
+    let pilot_inv = await tmp_pilot.get_inventory();
+    hooks = hooks ?? {};
 
     // The simplest way to do this is to, for each entry, just look in a regstack and insinuate to the pilot inventory.
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
-    let pilot_inv = await pilot.get_inventory();
-    // let reg_stack = new RegStack([pilot_inv, compendium_reg]);
     let stack: RegFallback = {
         base: pilot_inv,
-        fallbacks: gather_source_regs,
+        fallbacks: fallback_source_regs,
     };
     let ctx = pilot.OpCtx;
     // Identity
@@ -623,7 +624,7 @@ export async function cloud_sync(
                 // First, check if owned by pilot
                 if (sl.Registry.name() != pilot_inv.name()) {
                     // Grab a copy for our pilot
-                    sl = await sl.insinuate(pilot_inv, ctx);
+                    sl = await sl.insinuate(pilot_inv, ctx, hooks);
                 }
 
                 // Then update lvl and save
@@ -651,7 +652,7 @@ export async function cloud_sync(
         corr_mech.Pilot = pilot;
 
         // Apply
-        await mech_cloud_sync(md, corr_mech, gather_source_regs);
+        await mech_cloud_sync(md, corr_mech, fallback_source_regs, hooks);
     }
 
     // Try to find a quirk that matches, or create if not present
@@ -695,7 +696,11 @@ export async function cloud_sync(
 
     // Core bonuses. Does not delete. All we care about is that we have them
     for (let cb of data.core_bonuses) {
-        await gathering_resolve_mmid(stack, ctx, EntryType.CORE_BONUS, cb);
+        await fallback_obtain_ref(stack, ctx, {
+            fallback_mmid: cb,
+            id: "",
+            type: EntryType.CORE_BONUS,
+        }, hooks);
     }
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
@@ -712,7 +717,11 @@ export async function cloud_sync(
     // Skills, we try to find and if not create
     for (let s of data.skills) {
         // Try to get/fetch pre-existing
-        let found = await gathering_resolve_mmid(stack, ctx, EntryType.SKILL, s.id);
+        let found = await fallback_obtain_ref(stack, ctx, {
+            fallback_mmid: s.id,
+            id: "",
+            type: EntryType.SKILL
+        }, hooks);
         if (!found) {
             // Make if we can
             if ((s as PackedSkillData).custom) {
@@ -740,7 +749,11 @@ export async function cloud_sync(
 
     // Fetch talents. Also need to update rank. Due nothing to missing
     for (let t of data.talents) {
-        let found = await gathering_resolve_mmid(stack, ctx, EntryType.TALENT, t.id);
+        let found = await fallback_obtain_ref(stack, ctx, {
+            type: EntryType.TALENT,
+            fallback_mmid: t.id,
+            id: ""
+        }, hooks);
         if (found) {
             // Update rank
             found.CurrentRank = t.rank;
@@ -774,17 +787,17 @@ export async function cloud_sync(
     // Fetch all weapons, armor, gear we will need
     for (let a of data.loadout.armor) {
         if (a) {
-            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_ARMOR, a.id);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_mmid: a.id, id: ""}, hooks);
         }
     }
     for (let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
         if (w) {
-            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_WEAPON, w.id);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_mmid: w.id, id: ""}, hooks);
         }
     }
     for (let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
         if (g) {
-            await gathering_resolve_mmid(stack, ctx, EntryType.PILOT_GEAR, g.id);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_mmid: g.id, id: ""}, hooks);
         }
     }
     // Do loadout stuff

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
-import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
+import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx , quick_relinker} from "../src/registry";
 import { Counter, Frame, MechWeapon, Pilot, Talent } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
@@ -9,6 +9,7 @@ import { gist_io, cloud_sync } from "../src/funcs";
 import { validate_props } from "../src/classes/key_util";
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
+let DEPLOYABLE_GUY = "674a75a9be41eaa32e0d4514b61af461";
 
 type DefSetup = {
     reg: StaticReg;
@@ -147,4 +148,41 @@ describe("Pilots", () => {
         expect(lanny_frames.length).toEqual(1);
         expect(lanny_weapons.length).toEqual(3); // 5
     });
+
+    it("Will not create duplicate deployables", async () => {
+        expect.assertions(3);
+        let compendium = await init_basic_setup(true);
+        let world = await init_basic_setup(false);
+
+        // Create a few pilots to work with. Re-doing the same pilot will have nothing because after the first time nothing will really change
+        let ctx = new OpCtx();
+        let pilots: Pilot[] = await Promise.all([0,1,2].map(_ => world.reg.create_live(EntryType.PILOT, ctx)));
+        let pilot_data = await gist_io.download_pilot(DEPLOYABLE_GUY);
+        await cloud_sync(pilot_data, pilots[0], [compendium.reg]);
+
+        // We should have 3 deployables in our world right now
+        // p = await p.refreshed(ctx);
+        let all_deployables = await world.reg.get_cat(EntryType.DEPLOYABLE).list_live(ctx);
+        expect(all_deployables.length).toEqual(3);
+
+        // If we sync again with a proper relinker, then we shouldn't get any more duplicates
+        let hooks = {
+            relinker: quick_relinker({
+                key_pairs: [["ID", "id"], ["Name", "name"]]
+            })
+        }
+        await cloud_sync(pilot_data, pilots[1], [compendium.reg], hooks);
+
+        // Check again - it's the same!
+        all_deployables = await world.reg.get_cat(EntryType.DEPLOYABLE).list_live(ctx);
+        expect(all_deployables.length).toEqual(3);
+
+        // Now the contra-positive I guess - sync a 3rd time with no hooks, should end up with 6 deployables
+        await cloud_sync(pilot_data, pilots[2], [compendium.reg]);
+
+        // Oh no!
+        all_deployables = await world.reg.get_cat(EntryType.DEPLOYABLE).list_live(ctx);
+        expect(all_deployables.length).toEqual(6);
+    });
+
 });

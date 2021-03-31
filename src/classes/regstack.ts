@@ -1,29 +1,34 @@
 import {
     EntryType,
+    InsinuateHooks,
     LiveEntryTypes,
     OpCtx,
     quick_local_ref,
     RegEntry,
     Registry,
+    RegRef,
 } from "@src/registry";
 
+// Represents a "target" registry and a set of registries that will be used as backup data sources, in order
 export interface RegFallback {
     base: Registry; // The registry we should check first, and insinuate any resolved data to
     fallbacks: Registry[]; // Checked in order
 }
 
-// Look in each registry in turn, returning the first that satisfies the reference
-export async function finding_resolve_mmid<T extends EntryType>(
+// Look in each registry in turn, returning the first that satisfies the reference.
+// Ignored the registry name specified on the ref
+export async function fallback_resolve_ref<T extends EntryType>(
     from: RegFallback,
     ctx: OpCtx,
-    cat: T,
-    mmid: string
+    ref: Omit<RegRef<T>, "reg_name">
 ): Promise<LiveEntryTypes<T> | null> {
-    let d = await from.base.resolve_rough(ctx, quick_local_ref(from.base, cat, mmid));
+    let rcp: RegRef<T> = {...ref, reg_name: from.base.name()};
+    let d = await from.base.resolve_rough(ctx, rcp);
     if (!d) {
         // Try all fallbacks
         for (let f of from.fallbacks) {
-            d = await f.resolve_rough(ctx, quick_local_ref(f, cat, mmid));
+            rcp.reg_name = f.name();
+            d = await f.resolve_rough(ctx, rcp);
             if (d) {
                 break;
             }
@@ -33,48 +38,16 @@ export async function finding_resolve_mmid<T extends EntryType>(
 }
 
 // Look in each registry in turn, returning the first that satisfies the reference after insinuating it into the base
-export async function gathering_resolve_mmid<T extends EntryType>(
+// Ignored the registry name specified on the ref
+export async function fallback_obtain_ref<T extends EntryType>(
     from: RegFallback,
     ctx: OpCtx,
-    cat: T,
-    mmid: string
+    ref: Omit<RegRef<T>, "reg_name">,
+    hooks?: InsinuateHooks
 ): Promise<LiveEntryTypes<T> | null> {
-    let found = await finding_resolve_mmid(from, ctx, cat, mmid);
+    let found = await fallback_resolve_ref(from, ctx, ref);
     if (found && found.Registry.name() != from.base.name()) {
-        found = (await found.insinuate(from.base, ctx)) as LiveEntryTypes<T>;
-    }
-    return found;
-}
-
-// Look in each registry in turn, returning the first that satisfies the reference
-export async function finding_wildcard_mmid(
-    from: RegFallback,
-    ctx: OpCtx,
-    mmid: string
-): Promise<RegEntry<any> | null> {
-    let d = await from.base.resolve_wildcard_mmid(ctx, mmid);
-    if (!d) {
-        // Try all fallbacks
-        for (let f of from.fallbacks) {
-            d = await f.resolve_wildcard_mmid(ctx, mmid);
-            if (d) {
-                d = await d.insinuate(from.base, ctx);
-                break;
-            }
-        }
-    }
-    return d;
-}
-
-// Look in each registry in turn, returning the first that satisfies the reference after insinuating it into the base
-export async function gathering_wildcard_mmid(
-    from: RegFallback,
-    ctx: OpCtx,
-    mmid: string
-): Promise<RegEntry<any> | null> {
-    let found = await finding_wildcard_mmid(from, ctx, mmid);
-    if (found && found.Registry != from.base) {
-        found = await found.insinuate(from.base);
+        found = (await found.insinuate(from.base, ctx, hooks)) as LiveEntryTypes<T>;
     }
     return found;
 }

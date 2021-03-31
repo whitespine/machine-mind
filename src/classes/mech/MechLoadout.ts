@@ -2,6 +2,7 @@ import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment, Frame } from "@
 import { defaults } from "@src/funcs";
 import {
     EntryType,
+    InsinuateHooks,
     OpCtx,
     quick_local_ref,
     Registry,
@@ -11,7 +12,8 @@ import {
     SimSer,
 } from "@src/registry";
 import { FittingSize, MountType, WeaponSize } from "@src/enums";
-import { gathering_resolve_mmid, RegFallback as RegFallbackStack } from "../regstack";
+import { fallback_obtain_ref, RegFallback as RegFallbackStack } from "../regstack";
+import { createHook } from "async_hooks";
 
 //todo: superheavies :<
 
@@ -216,10 +218,15 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     public async sync(
         mech_frame_id: string,
         mech_loadout: PackedMechLoadoutData,
-        stack: RegFallbackStack
+        stack: RegFallbackStack,
+        hooks?: InsinuateHooks
     ): Promise<void> {
         // Find the frame
-        let frame = await gathering_resolve_mmid(stack, this.OpCtx, EntryType.FRAME, mech_frame_id);
+        let frame = await fallback_obtain_ref(stack, this.OpCtx, {
+            type: EntryType.FRAME,
+            fallback_mmid: mech_frame_id,
+            id: ""
+        }, hooks);
 
         // Reconstruct the mount setup
         this.WepMounts = [];
@@ -280,11 +287,14 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 sys = corr.System;
             } else {
                 // Look it up
-                sys = await gathering_resolve_mmid(
+                sys = await fallback_obtain_ref(
                     stack,
-                    this.OpCtx,
-                    EntryType.MECH_SYSTEM,
-                    mls.id
+                    this.OpCtx, {
+                        type: EntryType.MECH_SYSTEM,
+                        fallback_mmid: mls.id,
+                        id: "",
+                    },
+                    hooks
                 );
             }
 
@@ -409,7 +419,7 @@ export class WeaponSlot {
     }
 
     // Take in the specified data
-    async sync(dat: PackedWeaponSlotData, stack: RegFallbackStack, ctx: OpCtx): Promise<void> {
+    async sync(dat: PackedWeaponSlotData, stack: RegFallbackStack, ctx: OpCtx, hooks?: InsinuateHooks): Promise<void> {
         // First we resolve the weapon
         if (dat.weapon) {
             // See if we already have that weapon mounted
@@ -417,11 +427,13 @@ export class WeaponSlot {
                 // Do nothing. Weapon is unchanged
             } else {
                 // Otherwise attempt to resolve
-                this.Weapon = await gathering_resolve_mmid(
+                this.Weapon = await fallback_obtain_ref(
                     stack,
-                    ctx,
-                    EntryType.MECH_WEAPON,
-                    dat.weapon.id
+                    ctx, {
+                        type: EntryType.MECH_WEAPON,
+                        fallback_mmid: dat.weapon.id,
+                        id: ""
+                    }, hooks
                 );
             }
 
@@ -442,11 +454,14 @@ export class WeaponSlot {
                         // Do nothing. Mod is unchanged
                     } else {
                         // Attempt to resolve mod
-                        this.Mod = await gathering_resolve_mmid(
+                        this.Mod = await fallback_obtain_ref(
                             stack,
-                            ctx,
-                            EntryType.WEAPON_MOD,
-                            mod.id
+                            ctx, {
+                                type: EntryType.WEAPON_MOD,
+                                fallback_mmid: mod.id,
+                                id: "",
+                            },
+                            hooks
                         );
                     }
 

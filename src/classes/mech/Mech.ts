@@ -21,9 +21,9 @@ import {
     PackedMechLoadoutData,
     RegMechLoadoutData,
 } from "@src/interface";
-import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { EntryType, InsinuateHooks, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { CC_VERSION, DamageType } from "@src/enums";
-import { gathering_resolve_mmid, RegFallback } from "../regstack";
+import { fallback_obtain_ref, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
@@ -608,7 +608,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 export async function mech_cloud_sync(
     data: PackedMechData,
     mech: Mech,
-    gather_source_regs: Registry[]
+    fallback_source_regs: Registry[],
+    hooks?: InsinuateHooks
 ): Promise<void> {
     // Reg stuff
     let mech_inv = await mech.get_inventory();
@@ -617,10 +618,10 @@ export async function mech_cloud_sync(
     if (mech.Pilot) {
         stack = {
             base: mech_inv,
-            fallbacks: [await mech.Pilot.get_inventory(), ...gather_source_regs],
+            fallbacks: [await mech.Pilot.get_inventory(), ...fallback_source_regs],
         };
     } else {
-        stack = { base: mech_inv, fallbacks: [...gather_source_regs] };
+        stack = { base: mech_inv, fallbacks: [...fallback_source_regs] };
     }
 
     // All of this is trivial
@@ -650,12 +651,10 @@ export async function mech_cloud_sync(
     // We only take one loadout - whichever is active
     let packed_loadout = data.loadouts[data.active_loadout_index];
 
-    // The unpacking process does basically everything we need, including insinuation (thank you covetous ref!)
-    await mech.Loadout.sync(data.frame, packed_loadout, stack);
-    // Resolve the frame and set it
-    // mech.Loadout.unpack(packed_loadout,
+    // The loadout sync process does basically everything we need for items
+    await mech.Loadout.sync(data.frame, packed_loadout, stack, hooks);
 
-    // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects thaat compcon produces, so as not to destroy custom active effects)
+    // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects that compcon produces, so as not to destroy custom active effects)
     for (let s of mech.StatusesAndConditions) {
         await s.destroy_entry();
     }
@@ -663,7 +662,11 @@ export async function mech_cloud_sync(
 
     // And re-resolve from compendium. Again, just want the fetch
     for (let snc of snc_names) {
-        await gathering_resolve_mmid(stack, ctx, EntryType.STATUS, snc);
+        await fallback_obtain_ref(stack, ctx, {
+            fallback_mmid: snc,
+            id: "",
+            type: EntryType.STATUS
+        }, hooks);
     }
 
     // We always want to insinuate and writeback to be sure we own all of these items
