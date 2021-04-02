@@ -142,6 +142,7 @@ export enum ActivationType {
     Passive = "Passive",
     Quick = "Quick",
     QuickTech = "Quick Tech",
+    Invade = "Invade",
     Full = "Full",
     FullTech = "Full Tech",
     Other = "Other",
