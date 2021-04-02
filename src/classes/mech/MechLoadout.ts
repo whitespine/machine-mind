@@ -502,7 +502,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         }
 
         // Check that if we are flex, they aren't trying to main-aux
-        if (this.MountType == MountType.Flex && this.Slots[1].Weapon !== null) {
+        if (this.MountType == MountType.Flex && this.Slots[0]?.Weapon?.Size == WeaponSize.Main && this.Slots[1].Weapon !== null) {
             return "Flex cannot have Main & Aux. Acceptable configurations are Aux/Aux and Main";
         }
 
