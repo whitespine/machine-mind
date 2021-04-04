@@ -535,6 +535,7 @@ export function NPC_SYSTEM(): RegNpcSystemData {
 
 export function NPC_TEMPLATE(): RegNpcTemplateData {
     return {
+        id: "npct_" + nanoid(),
         base_features: [],
         description,
         name: "New Npc Template",
