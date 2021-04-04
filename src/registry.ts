@@ -284,7 +284,8 @@ export type EntryConstructor<T extends EntryType> = {
         registry: Registry,
         ctx: OpCtx,
         id: string,
-        reg_data: RegEntryTypes<T>
+        reg_data: RegEntryTypes<T>,
+        flags?: any
     ): LiveEntryTypes<T>;
 };
 
@@ -612,17 +613,18 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
     public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
-    public Flags: any = null; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
+    public Flags: any; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
     private _load_promise: Promise<any>;
 
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
-    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>) {
+    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>, flags: any = null) {
         this.Type = type;
         this.Registry = registry;
         this.OpCtx = ctx;
         this.RegistryID = id;
         this.OrigData = reg_data;
+        this.Flags = flags;
         ctx.set(id, this);
 
         // Load, and when done remove our pending entry
@@ -857,11 +859,6 @@ export abstract class RegEntry<T extends EntryType> {
 }
 
 export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<T> {
-    // Pretty simple
-    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>) {
-        super(type, registry, ctx, id, reg_data);
-    }
-
     // What does this item own? We ask our reg for another reg, trusting in the uniquness of nanoid's to keep us in line
     async get_inventory(): Promise<Registry> {
         let v = this.Registry.switch_reg_inv(this);

@@ -7,7 +7,6 @@ import {
     Registry,
     RegRef,
     RegSer,
-    SimSer,
 } from "@src/registry";
 
 export interface ITagTemplateData {
