@@ -450,6 +450,7 @@ export abstract class SerUtil {
     // Handles the bonuses, actions, synergies, deployables, and tags of an item
     public static async unpack_basdt(
         src: {
+            id: string,
             bonuses?: PackedBonusData[];
             actions?: IActionData[];
             synergies?: ISynergyData[];
@@ -466,12 +467,7 @@ export abstract class SerUtil {
         tags: RegTagInstanceData[];
     }> {
         // Create deployable entries
-        let dep_entries = await SerUtil.unpack_children(
-            Deployable.unpack,
-            reg,
-            ctx,
-            src.deployables
-        );
+        let dep_entries = await Promise.all((src.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, src.id)));
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get tags

@@ -165,6 +165,7 @@ export function CORE_SYSTEM(): RegCoreSystemData {
 
 export function DEPLOYABLE(): RegDeployableData {
     return {
+        id: "dep_" + nanoid(),
         actions: [],
         bonuses: [],
         counters: [],

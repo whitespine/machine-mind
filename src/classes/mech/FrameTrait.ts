@@ -71,12 +71,13 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
     public static async unpack(
         data: PackedFrameTraitData,
         reg: Registry,
-        ctx: OpCtx
+        ctx: OpCtx,
+        frame_id: string
     ): Promise<RegFrameTraitData> {
         let rdata: RegFrameTraitData = {
             ...defaults.FRAME_TRAIT(),
             ...data,
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            ...(await SerUtil.unpack_basdt({id: frame_id, ...data}, reg, ctx)),
             counters: SerUtil.unpack_counters_default(data.counters),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
         };

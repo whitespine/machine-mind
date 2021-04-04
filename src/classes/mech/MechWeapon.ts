@@ -253,51 +253,41 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         return this.SelectedProfile.Synergies;
     }
 
-    static async unpack(dat: PackedMechWeaponData, reg: Registry, ctx: OpCtx): Promise<MechWeapon> {
+    static async unpack(data: PackedMechWeaponData, reg: Registry, ctx: OpCtx): Promise<MechWeapon> {
         // Get the basics
         // These two arrays we continue to add to as we unpack profiles
-        let parent_integrated = SerUtil.unpack_integrated_refs(reg, dat.integrated);
-        let parent_dep_entries = await SerUtil.unpack_children(
-            Deployable.unpack,
-            reg,
-            ctx,
-            dat.deployables
-        );
+        let parent_integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
+        let parent_dep_entries = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id)));
         let parent_deployables = SerUtil.ref_all(parent_dep_entries);
 
         let unpacked: RegMechWeaponData = {
             ...defaults.MECH_WEAPON(),
-            ...dat,
+            ...data,
             cascading: false,
             destroyed: false,
             loaded: true,
-            name: dat.name,
+            name: data.name,
             profiles: [],
             integrated: parent_integrated,
             deployables: parent_deployables,
             selected_profile: 0,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, dat.source),
-            size: SerUtil.restrict_enum(WeaponSize, WeaponSize.Main, dat.mount)
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+            size: SerUtil.restrict_enum(WeaponSize, WeaponSize.Main, data.mount)
         };
 
         // Get profiles - depends on if array is provided, but we tend towards the default
         let packed_profiles: PackedMechWeaponProfile[];
-        if (dat.profiles && dat.profiles.length) {
-            packed_profiles = dat.profiles;
+        if (data.profiles && data.profiles.length) {
+            packed_profiles = data.profiles;
         } else {
-            packed_profiles = [dat]; // Treat the item itself as a profile
+            packed_profiles = [data]; // Treat the item itself as a profile
         }
 
         // Unpack them
         for (let p of packed_profiles) {
             // Unpack sub components
             // We pluck out deployables and integrated
-            let dep_entries = await SerUtil.unpack_children(
-                Deployable.unpack,
-                reg,
-                ctx,
-                p.deployables
-            );
+            let dep_entries = await Promise.all((p.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, `${data.id}_${p.name}`)));
             let dep_refs = SerUtil.ref_all(dep_entries);
             let int_refs = SerUtil.unpack_integrated_refs(reg, p.integrated);
             parent_integrated.push(...int_refs);

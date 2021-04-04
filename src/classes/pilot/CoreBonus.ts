@@ -98,32 +98,27 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     }
 
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
-    static async unpack(cor: PackedCoreBonusData, reg: Registry, ctx: OpCtx): Promise<CoreBonus> {
+    static async unpack(data: PackedCoreBonusData, reg: Registry, ctx: OpCtx): Promise<CoreBonus> {
         // Create deployable entries
-        let dep_entries = await SerUtil.unpack_children(
-            Deployable.unpack,
-            reg,
-            ctx,
-            cor.deployables
-        );
+        let dep_entries = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id)));
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs
-        let integrated = SerUtil.unpack_integrated_refs(reg, cor.integrated);
+        let integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
 
         // Get the counters
-        let counters = SerUtil.unpack_counters_default(cor.counters);
+        let counters = SerUtil.unpack_counters_default(data.counters);
         let cbdata: RegCoreBonusData = {
             ...defaults.CORE_BONUS(),
-            ...cor,
+            ...data,
             integrated,
             deployables,
             counters,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, cor.source),
-            mounted_effect: cor.mounted_effect ?? "",
-            actions: cor.actions ?? [],
-            bonuses: (cor.bonuses ?? []).map(Bonus.unpack),
-            synergies: cor.synergies ?? [],
+            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+            mounted_effect: data.mounted_effect ?? "",
+            actions: data.actions ?? [],
+            bonuses: (data.bonuses ?? []).map(Bonus.unpack),
+            synergies: data.synergies ?? [],
         };
         return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata);
     }

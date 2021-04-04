@@ -25,9 +25,9 @@ async function init_basic_setup(include_base: boolean = true): Promise<DefSetup>
     return {env, reg};
 }
 
+// Get a content pack for testing. Here we use an lcp kindly contributed by Ceebees (thank you!)
 async function get_cp(): Promise<IContentPack> {
     let buff = await fs.promises.readFile("./__tests__/ceebees_lcp.lcp");
-    // let buff_string = buff.toString();
     return parseContentPack(buff);
 }
 
@@ -77,6 +77,33 @@ describe("Content pack handling", () => {
         expect(frame_names).toContain("LUNAMOTH");
         expect(frame_names).toContain("DJINN");
         expect(frame_names).toContain("GAIUS"); // 5
+    });
+
+    it("Generates deployable ids in a reasonable way", async () => {
+        // Same as above, but with base frames as well
+        expect.assertions(6);
+        let s = await init_basic_setup(true);
+        let ctx = new OpCtx();
+
+        // Add it in
+        let pack = await get_cp();
+        await intake_pack(pack, s.reg);
+
+        // Grab a system with a deployable
+        let eagle = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_legion_eagle");
+
+        // Assert that it has its deployable, and that the deployable is named as we expect it to be
+        expect(eagle).toBeTruthy();
+        expect(eagle.Deployables.length).toEqual(1);
+        expect(eagle.Deployables[0].ID).toEqual("dep_ms_legion_eagle_legion_standard");
+
+        // Also check something from core data
+        let hive = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_hive_drone");
+
+        // Assert that it has its deployable, and that the deployable is named as we expect it to be
+        expect(hive).toBeTruthy();
+        expect(hive.Deployables.length).toEqual(1);
+        expect(hive.Deployables[0].ID).toEqual("dep_ms_hive_drone_hive_drone");
     });
 
     it("Can load npc data as well", async () => {
