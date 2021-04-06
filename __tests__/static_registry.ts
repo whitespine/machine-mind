@@ -62,9 +62,9 @@ describe("Static Registry Reference implementation", () => {
         expect(raw).toBeTruthy();
         expect(raw!.id).toEqual("bmw");
 
-        // Try retrieving by mmid
-        expect(await c.lookup_mmid_live(ctx, "bmw")).toBeTruthy();
-        expect(await c.lookup_mmid_live(ctx, "zoop")).toBeNull(); // 5
+        // Try retrieving by lid
+        expect(await c.lookup_lid_live(ctx, "bmw")).toBeTruthy();
+        expect(await c.lookup_lid_live(ctx, "zoop")).toBeNull(); // 5
 
         // Check listing of both types
         expect(Array.from(await c.iter_raw()).length).toEqual(1);
@@ -108,7 +108,7 @@ describe("Static Registry Reference implementation", () => {
         let env = await init_basic_setup();
         let ctx = new OpCtx();
 
-        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_standard_pattern_i_everest")
+        let ever: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_standard_pattern_i_everest")
         expect(ever).toBeTruthy();
         expect(ever.Name).toEqual("EVEREST")
 
@@ -122,7 +122,7 @@ describe("Static Registry Reference implementation", () => {
         expect(ever.Traits[1].Bonuses[0].Title).toEqual("Half Cost for Structure Repairs");
 
         // Check a lancaster - should have an integrated
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster")
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_lancaster")
         expect(lanny.CoreSystem).toBeTruthy();
         expect(lanny.CoreSystem.Integrated.length).toEqual(1);
         expect(lanny.CoreSystem.Integrated[0]).toBeInstanceOf(MechWeapon); // 10
@@ -177,13 +177,13 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
         // Regardless of id resolution method we expect these to be the same
-        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster");
+        let lanny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_lancaster");
         lanny.Flags = "alpha"; // for later test
-        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster"); // Double identical lookup via mmid
+        let lenny: Frame = await env.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_lancaster"); // Double identical lookup via lid
         expect(lanny === lenny).toBeTruthy();
         let larry: Frame = await env.reg.get_cat(EntryType.FRAME).get_live(ctx, lanny.RegistryID); // Repeat lookup by reg iD
         expect(lanny === larry).toBeTruthy();
-        let harry: Frame = await env.reg.resolve_wildcard_mmid(ctx, "mf_lancaster");
+        let harry: Frame = await env.reg.resolve_wildcard_lid(ctx, "mf_lancaster");
         harry.Flags = "beta"; // for later test
         expect(lanny === harry).toBeTruthy();
         let terry: Frame = await env.reg.resolve(ctx, lanny.as_ref());
@@ -207,7 +207,7 @@ describe("Static Registry Reference implementation", () => {
         // Insinuate the lancaster from the full to the empty, using a refresh to ensure things remain cool
         let ctx = new OpCtx();
         let moved_ctx = new OpCtx();
-        let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_lancaster")
+        let lanny: Frame = await full_env.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_lancaster")
         lanny.Flags = "alpha";
         let moved_lanny = await lanny.insinuate(empty_env.reg, moved_ctx);
         
@@ -294,7 +294,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0); // 2
 
         // Take the sherman, which has a native weapon
-        let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_mmid_live(new OpCtx(), "mf_sherman");
+        let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_lid_live(new OpCtx(), "mf_sherman");
         expect(sherman.CoreSystem.Integrated.length).toEqual(1); // 3
 
         // Send it over
@@ -322,7 +322,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0); // 2
 
         // Take the sherman, which has a native weapon, and send it over.
-        let solidcore = await source_env.reg.get_cat(EntryType.MECH_WEAPON).lookup_mmid_live(new OpCtx(), "mw_sherman_integrated");
+        let solidcore = await source_env.reg.get_cat(EntryType.MECH_WEAPON).lookup_lid_live(new OpCtx(), "mw_sherman_integrated");
         await solidcore.insinuate(dest_env.reg);
 
         // Dest env should have just the weapon. 
@@ -378,7 +378,7 @@ describe("Static Registry Reference implementation", () => {
         let ctx = new OpCtx();
 
         // We plan on moving a frame, specifically the hydra. The hydra has 4 deployables, so totaling 5 expected insinuate hooks
-        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_hydra");
+        let drake = await src.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_hydra");
         await drake.insinuate(dest, null, hooks);
     });
 
@@ -423,7 +423,7 @@ describe("Static Registry Reference implementation", () => {
         expect(found_val.Registry.name()).toEqual("b");
     });
 
-    it("Properly resolves fallback mmids", async () => {
+    it("Properly resolves fallback lids", async () => {
         expect.assertions(4);
 
         // Create two setups
@@ -442,11 +442,11 @@ describe("Static Registry Reference implementation", () => {
         // Delete the sherman from beta
         let ctx = new OpCtx();
         let beta_frames = await setup_beta.reg.get_cat(EntryType.FRAME).list_live(ctx);
-        let beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_sherman");
+        let beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_sherman");
         await beta_sherman.destroy_entry();
 
         // We take the sherman from alpha and place its data (raw, unaffected) in beta
-        let alpha_sherman = await setup_alpha.reg.get_cat(EntryType.FRAME).lookup_mmid_live(ctx, "mf_sherman");
+        let alpha_sherman = await setup_alpha.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_sherman");
 
         let new_beta_sherman = await setup_beta.reg.get_cat(EntryType.FRAME).create_live(ctx, alpha_sherman.save());
 
@@ -454,7 +454,7 @@ describe("Static Registry Reference implementation", () => {
         expect((await setup_alpha.reg.get_cat(EntryType.FRAME).list_live(ctx)).length).toEqual((await setup_beta.reg.get_cat(EntryType.FRAME).list_live(ctx)).length);
 
         // Now, the alpha sherman's manufacturer, targs, and integrated refs would typically have just been lost in transition
-        // prior to recent changes to mmid fallbacking. But now! They shouldn't! We assume that an incorrect id means use fallback mmid, 
+        // prior to recent changes to lid fallbacking. But now! They shouldn't! We assume that an incorrect id means use fallback lid, 
         // and that an invalid ref name just means use current
         let new_solidcore = new_beta_sherman.CoreSystem.Integrated[0];
 
@@ -597,7 +597,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Moving a system from one to the other with proper relinking should not increment count
         let ctx = new OpCtx();
-        let system = await setup_source.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_neurospike");
+        let system = await setup_source.reg.get_cat(EntryType.MECH_SYSTEM).lookup_lid_live(ctx, "ms_neurospike");
 
         const get_dest_listing = async () => setup_dest.reg.get_cat(EntryType.MECH_SYSTEM).list_live(new OpCtx());
         const orig = await get_dest_listing();

@@ -663,7 +663,7 @@ export async function mech_cloud_sync(
     // And re-resolve from compendium. Again, just want the fetch
     for (let snc of snc_names) {
         await fallback_obtain_ref(stack, ctx, {
-            fallback_mmid: snc,
+            fallback_lid: snc,
             id: "",
             type: EntryType.STATUS
         }, hooks);

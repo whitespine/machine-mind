@@ -118,8 +118,8 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
         if (!Tag) {
             Tag = new TagTemplate(EntryType.TAG, this.Registry, this.OpCtx, "error", {
                 description: "INVALID",
-                id: data.tag.fallback_mmid,
-                name: data.tag.fallback_mmid,
+                id: data.tag.fallback_lid,
+                name: data.tag.fallback_lid,
                 filter_ignore: true,
                 hidden: false, // Want it to be seen so it can be fixed
             });

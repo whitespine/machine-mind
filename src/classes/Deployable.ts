@@ -1,5 +1,5 @@
 import { Action, Bonus, Counter, Mech, Pilot, Synergy, TagInstance } from "@src/class";
-import { defaults, mmid_format_name } from "@src/funcs";
+import { defaults, lid_format_name } from "@src/funcs";
 import {
     IActionData,
     RegBonusData,
@@ -323,7 +323,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         let unpacked: RegDeployableData = {
             ...defaults.DEPLOYABLE(),
             ...dep,
-            id: `dep_${source_id}_${mmid_format_name(dep.name)}`,
+            id: `dep_${source_id}_${lid_format_name(dep.name)}`,
             bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
             max_hp: dep.hp ?? 0,
             overshield: 0,

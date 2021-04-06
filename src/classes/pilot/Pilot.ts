@@ -697,7 +697,7 @@ export async function cloud_sync(
     // Core bonuses. Does not delete. All we care about is that we have them
     for (let cb of data.core_bonuses) {
         await fallback_obtain_ref(stack, ctx, {
-            fallback_mmid: cb,
+            fallback_lid: cb,
             id: "",
             type: EntryType.CORE_BONUS,
         }, hooks);
@@ -718,7 +718,7 @@ export async function cloud_sync(
     for (let s of data.skills) {
         // Try to get/fetch pre-existing
         let found = await fallback_obtain_ref(stack, ctx, {
-            fallback_mmid: s.id,
+            fallback_lid: s.id,
             id: "",
             type: EntryType.SKILL
         }, hooks);
@@ -751,7 +751,7 @@ export async function cloud_sync(
     for (let t of data.talents) {
         let found = await fallback_obtain_ref(stack, ctx, {
             type: EntryType.TALENT,
-            fallback_mmid: t.id,
+            fallback_lid: t.id,
             id: ""
         }, hooks);
         if (found) {
@@ -787,21 +787,21 @@ export async function cloud_sync(
     // Fetch all weapons, armor, gear we will need
     for (let a of data.loadout.armor) {
         if (a) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_mmid: a.id, id: ""}, hooks);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_lid: a.id, id: ""}, hooks);
         }
     }
     for (let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
         if (w) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_mmid: w.id, id: ""}, hooks);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_lid: w.id, id: ""}, hooks);
         }
     }
     for (let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
         if (g) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_mmid: g.id, id: ""}, hooks);
+            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_lid: g.id, id: ""}, hooks);
         }
     }
     // Do loadout stuff
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_mmid_live(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_lid_live(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
     pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
     await pilot.Loadout.ready();
 

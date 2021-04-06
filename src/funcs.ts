@@ -35,6 +35,6 @@ export function list_truthy_keys(of_dict: { [key: string]: any }): string[] {
 
 
 // Converts things like "LEAVIATHAN HEAVY ASSAULT CANNON" into "leaviathan_heavy_assault_cannon"
-export function mmid_format_name(name: string): string {
+export function lid_format_name(name: string): string {
     return name.trim().replace(/[:\\\/-\s]+/g, "_").toLowerCase();
 }

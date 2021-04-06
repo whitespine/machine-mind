@@ -224,7 +224,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         // Find the frame
         let frame = await fallback_obtain_ref(stack, this.OpCtx, {
             type: EntryType.FRAME,
-            fallback_mmid: mech_frame_id,
+            fallback_lid: mech_frame_id,
             id: ""
         }, hooks);
 
@@ -291,7 +291,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                     stack,
                     this.OpCtx, {
                         type: EntryType.MECH_SYSTEM,
-                        fallback_mmid: mls.id,
+                        fallback_lid: mls.id,
                         id: "",
                     },
                     hooks
@@ -431,7 +431,7 @@ export class WeaponSlot {
                     stack,
                     ctx, {
                         type: EntryType.MECH_WEAPON,
-                        fallback_mmid: dat.weapon.id,
+                        fallback_lid: dat.weapon.id,
                         id: ""
                     }, hooks
                 );
@@ -458,7 +458,7 @@ export class WeaponSlot {
                             stack,
                             ctx, {
                                 type: EntryType.WEAPON_MOD,
-                                fallback_mmid: mod.id,
+                                fallback_lid: mod.id,
                                 id: "",
                             },
                             hooks

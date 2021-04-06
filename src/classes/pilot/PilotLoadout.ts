@@ -213,7 +213,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             return null;
         }
         // Get the item
-        let item = await reg.get_cat(expect_type).lookup_mmid_live(ctx, item_state.id);
+        let item = await reg.get_cat(expect_type).lookup_lid_live(ctx, item_state.id);
         if (!item) {
             console.warn(`Could not resolve item ${item_state.id}`);
             return null;

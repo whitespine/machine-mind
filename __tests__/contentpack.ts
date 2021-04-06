@@ -90,7 +90,7 @@ describe("Content pack handling", () => {
         await intake_pack(pack, s.reg);
 
         // Grab a system with a deployable
-        let eagle = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_legion_eagle");
+        let eagle = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_lid_live(ctx, "ms_legion_eagle");
 
         // Assert that it has its deployable, and that the deployable is named as we expect it to be
         expect(eagle).toBeTruthy();
@@ -98,7 +98,7 @@ describe("Content pack handling", () => {
         expect(eagle.Deployables[0].ID).toEqual("dep_ms_legion_eagle_legion_standard");
 
         // Also check something from core data
-        let hive = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_mmid_live(ctx, "ms_hive_drone");
+        let hive = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_lid_live(ctx, "ms_hive_drone");
 
         // Assert that it has its deployable, and that the deployable is named as we expect it to be
         expect(hive).toBeTruthy();

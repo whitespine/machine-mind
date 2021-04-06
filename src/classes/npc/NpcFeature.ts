@@ -415,7 +415,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
         // Last thing we do: Set uses based on tags. A bit rough, but serviceable
         for (let t of tags) {
-            if (t.tag.fallback_mmid == "tg_limited") {
+            if (t.tag.fallback_lid == "tg_limited") {
                 result.uses = Number.parseInt(`${t.val ?? 0}`);
             }
         }

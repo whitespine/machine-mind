@@ -14,7 +14,7 @@
  * undefined should either mean None or does not apply, contextually.
  * It might be easier to just treat as null in those cases. However, never store as null
  *
- * Resolving MMID's is recommended to be done via unpacking from a static IContentPack array.
+ * Resolving LID's is recommended to be done via unpacking from a static IContentPack array.
  * Though this might seem inefficient, note that this is only done on item/actor creation, where performance really isn't much of a concern
  *
  * RegEntries should define a heirarchy by which they can/should be deleted. Typically, only the "top" entry in any tree should allow normal deletion
@@ -639,11 +639,11 @@ export abstract class RegEntry<T extends EntryType> {
     // Make a reference to this item
     public as_ref(): RegRef<T> {
         // Attempt to get our id. Default as empty string
-        let mmid = (this as any).ID ?? "";
-        // If our context was set as mmid-mode, then we save back as ids whenever possible
+        let lid = (this as any).ID ?? "";
+        // If our context was set as lid-mode, then we save back as ids whenever possible
         return {
             id: this.RegistryID,
-            fallback_mmid: mmid,
+            fallback_lid: lid,
             type: this.Type,
             reg_name: this.Registry.name(),
         };
@@ -943,7 +943,7 @@ export class OpCtx {
         this.resolved.set(id, val);
     }
 
-    // A helper on set. Has finicky behavior on mmid resolution. Doesn't overwrite
+    // A helper on set. Has finicky behavior on lid resolution. Doesn't overwrite
     add(item: RegEntry<any>) {
         this.set(item.RegistryID, item);
     }
@@ -978,13 +978,13 @@ export abstract class RegCat<T extends EntryType> {
         return lookup ? this.get_live(ctx, lookup.id) : null;
     }
 
-    // Find a value by mmid. Just wraps above - common enough to warrant its own helper
-    lookup_mmid_raw(mmid: string): Promise<{id: string, val: RegEntryTypes<T>} | null> {
-        return this.lookup_raw((e) => (e as any).id == mmid);
+    // Find a value by lid. Just wraps above - common enough to warrant its own helper
+    lookup_lid_raw(lid: string): Promise<{id: string, val: RegEntryTypes<T>} | null> {
+        return this.lookup_raw((e) => (e as any).id == lid);
     }
 
-    lookup_mmid_live(ctx: OpCtx, mmid: string): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, (e) => (e as any).id == mmid);
+    lookup_lid_live(ctx: OpCtx, lid: string): Promise<LiveEntryTypes<T> | null> {
+        return this.lookup_live(ctx, (e) => (e as any).id == lid);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1121,13 +1121,13 @@ export abstract class Registry {
     // A bit cludgy, but looks far and wide to find things with the given id(s), yielding the first match of each.
     // Implementation of this is a bit weird, as this would usually mean that you DON'T want to look in the current registry
     // As such its implementation is left up to the user.
-    public async resolve_wildcard_mmid(
+    public async resolve_wildcard_lid(
         ctx: OpCtx,
-        mmid: string
+        lid: string
     ): Promise<LiveEntryTypes<EntryType> | null> {
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
-            let attempt = await cat.lookup_mmid_live(ctx, mmid);
+            let attempt = await cat.lookup_lid_live(ctx, lid);
             if (attempt) {
                 // We found it!
                 return attempt;
@@ -1147,7 +1147,7 @@ export abstract class Registry {
         return this.resolve_rough(ctx, ref) as any; // Trust me bro
     }
 
-    // This function (along with resolve_wildcard_mmid) actually performs all of the resolution of references
+    // This function (along with resolve_wildcard_lid) actually performs all of the resolution of references
     public async resolve_rough(
         ctx: OpCtx,
         ref: RegRef<any>
@@ -1177,14 +1177,14 @@ export abstract class Registry {
                 result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
             }
 
-            // Failing that try fallback mmid
-            if (!result && ref.fallback_mmid) {
+            // Failing that try fallback lid
+            if (!result && ref.fallback_lid) {
                 if (ref.type) {
                     result =
-                        (await this.try_get_cat(ref.type)?.lookup_mmid_live(ctx, ref.fallback_mmid)) ??
+                        (await this.try_get_cat(ref.type)?.lookup_lid_live(ctx, ref.fallback_lid)) ??
                         null;
                 } else {
-                    result = await this.resolve_wildcard_mmid(ctx, ref.fallback_mmid);
+                    result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid);
                 }
             }
             return result;
@@ -1236,36 +1236,36 @@ export abstract class Registry {
 // Usually, a ref has a specific type. For instance, a reference to a weapon would be a RegRef<EntryType.MECH_WEAPON>. They can/should be resolved via the `resolve` or `resolve_many` functions.
 // Sometimes we do not know the type. These are typed as RegRef<any>. Generally trying to `resolve` these gives wonky typing, so I would advise using `resolve_rough` and `resolve_many_rough`
 //
-// Sometimes, we don't even know the item's actual unique registry-id, and instead only know the compcon-provided id. Slightly perplexingly, I decided to call these "mmid"s. I don't remember why. Just roll with it
+// Sometimes, we don't even know the item's actual unique registry-id, and instead only know the compcon-provided id. Slightly perplexingly, I decided to call these "lid"s. I don't remember why. Just roll with it
 // These are typically encountered only on freshly unpacked daata, and provide a means of navigating tricky chicken-egg scenarios by leaving the references unresolved until the items are first loaded.
-// For the most part every rough ref is an unresolved mmid, though there are certain cases where theoretically one might simply not know the type of
-// Use rough basically only when you cannot be explicit about the type, IE for unresolved mmids
-// If mmid is resolved but you have a mixed content array, might still be / definitely is better to just use `any`
+// For the most part every rough ref is an unresolved lid, though there are certain cases where theoretically one might simply not know the type of
+// Use rough basically only when you cannot be explicit about the type, IE for unresolved lids
+// If lid is resolved but you have a mixed content array, might still be / definitely is better to just use `any`
 export interface RegRef<T extends EntryType> {
     // The item id
     id: string;
 
-    // The mmid to resolve, as a fallback to if the id couldn't be resolve / is just "" (same thing, I suppose)
+    // The lid to resolve, as a fallback to if the id couldn't be resolve / is just "" (same thing, I suppose)
     // Holds the compcon style id, e.x. mf_lancaster
     // If does not exist, will be "".
-    fallback_mmid: string;
+    fallback_lid: string;
 
-    // The category we are referencing. If null, it is unknown (only used for unresolved mmids - avoid if possible)
+    // The category we are referencing. If null, it is unknown (only used for unresolved lids - avoid if possible)
     type: T | null;
 
     // The name of the reg we expect to find this item in. If we cannot resolve this to another reg, we just treat it as though it is expected in the source reg
     reg_name: string;
 }
 
-// Quickly make an mmid-based reference reference
+// Quickly make an lid-based reference reference
 export function quick_local_ref<T extends EntryType>(
     reg: Registry,
     type: T | null,
-    mmid: string
+    lid: string
 ): RegRef<T> {
     return {
         id: "",
-        fallback_mmid: mmid,
+        fallback_lid: lid,
         type: type as T | null,
         reg_name: reg.name(),
     };

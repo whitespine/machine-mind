@@ -241,7 +241,7 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
             this.reg_data.set(new_id, raw); // It's just that easy!
             refs.push({
                 id: new_id,
-                fallback_mmid: (raw as any).id ?? "", // Our best guess
+                fallback_lid: (raw as any).id ?? "", // Our best guess
                 type: this.cat,
                 reg_name: this.parent.name(),
             });

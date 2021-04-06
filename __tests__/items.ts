@@ -32,10 +32,10 @@ describe("Items Miscellania", () => {
         let c = s.reg.get_cat(EntryType.MECH_WEAPON);
         let ctx = new OpCtx();
 
-        let fold_knife = await c.lookup_mmid_live(ctx, "mw_fold_knife");
-        let assault_rifle = await c.lookup_mmid_live(ctx, "mw_assault_rifle");
-        let kinetic_hammer = await c.lookup_mmid_live(ctx, "mw_kinetic_hammer");
-        let siege_cannon = await c.lookup_mmid_live(ctx, "mw_siege_cannon");
+        let fold_knife = await c.lookup_lid_live(ctx, "mw_fold_knife");
+        let assault_rifle = await c.lookup_lid_live(ctx, "mw_assault_rifle");
+        let kinetic_hammer = await c.lookup_lid_live(ctx, "mw_kinetic_hammer");
+        let siege_cannon = await c.lookup_lid_live(ctx, "mw_siege_cannon");
 
         expect(fold_knife.Size).toEqual(WeaponSize.Aux);
         expect(assault_rifle.Size).toEqual(WeaponSize.Main);
@@ -59,9 +59,9 @@ describe("Items Miscellania", () => {
         await mech.writeback();
 
         // Fetch our items
-        let global_ar = await guns.lookup_mmid_live(ctx, "mw_assault_rifle");
-        let global_tk = await guns.lookup_mmid_live(ctx, "mw_tactical_knife");
-        let global_nl = await bonuses.lookup_mmid_live(ctx, "cb_neurolink_targeting");
+        let global_ar = await guns.lookup_lid_live(ctx, "mw_assault_rifle");
+        let global_tk = await guns.lookup_lid_live(ctx, "mw_tactical_knife");
+        let global_nl = await bonuses.lookup_lid_live(ctx, "cb_neurolink_targeting");
 
         // Put them in
         let mech_inv = await mech.get_inventory();
@@ -94,7 +94,7 @@ describe("Items Miscellania", () => {
         let guns = s.reg.get_cat(EntryType.MECH_WEAPON);
         let ctx = new OpCtx();
 
-        let autopod = await guns.lookup_mmid_live(ctx, "mw_autopod");
+        let autopod = await guns.lookup_lid_live(ctx, "mw_autopod");
 
         expect(!!autopod).toBeTruthy();
     });
@@ -174,7 +174,7 @@ describe("Items Miscellania", () => {
         let frames = s.reg.get_cat(EntryType.FRAME);
         let ctx = new OpCtx();
 
-        let balor: Frame = await frames.lookup_mmid_live(ctx, "mf_balor");
+        let balor: Frame = await frames.lookup_lid_live(ctx, "mf_balor");
 
         expect(balor.CoreSystem.Tags.length).toEqual(0);
     });
