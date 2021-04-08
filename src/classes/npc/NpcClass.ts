@@ -12,19 +12,20 @@ import { defaults } from "@src/funcs";
 import { INpcClassStats } from "@src/interface";
 
 interface AllNpcClassData {
-    id: string;
     name: string;
     role: string;
     info: { flavor: string; tactics: string };
     power: number;
 }
 export interface PackedNpcClassData extends AllNpcClassData {
+    id: string;
     base_features: string[];
     optional_features: string[];
     stats: INpcClassStats;
 }
 
 export interface RegNpcClassData extends AllNpcClassData {
+    lid: string;
     base_features: RegRef<EntryType.NPC_FEATURE>[];
     optional_features: RegRef<EntryType.NPC_FEATURE>[];
     base_stats: INpcClassStats;
@@ -45,7 +46,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
 
     public async load(data: RegNpcClassData): Promise<void> {
         data = { ...defaults.NPC_CLASS(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Role = data.role;
         this.Info = data.info;
@@ -62,7 +63,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.OptionalFeatures),
-            id: this.ID,
+            lid: this.ID,
             info: this.Info,
             name: this.Name,
             power: this.Power,

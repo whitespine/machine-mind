@@ -36,7 +36,7 @@ export interface PackedPilotLoadoutData {
 }
 
 export interface RegPilotLoadoutData {
-    id: string;
+    lid: string;
     name: string;
     armor: (RegRef<EntryType.PILOT_ARMOR> | null)[]; // Accounts for gaps in the inventory slots.... Were it my call this wouldn't be how it was, but it ain't my way
     weapons: (RegRef<EntryType.PILOT_WEAPON> | null)[];
@@ -99,7 +99,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     }
 
     private to_packed_ref(item: PilotEquipment | null): PackedPilotEquipmentState | null {
-        // Just saves us some time later
+        // WIP: For to-compcon  syncing
         if (item == null) return null;
 
         return {
@@ -116,7 +116,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         data = { ...defaults.PILOT_LOADOUT(), ...data };
         // Simple
         this.Name = data.name;
-        this.ID = data.id;
+        this.ID = data.lid;
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
         this.Armor = await Promise.all(
@@ -138,7 +138,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
 
     protected save_imp(): RegPilotLoadoutData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             armor: this.Armor.map(a => a?.as_ref() ?? null),
             gear: this.Gear.map(a => a?.as_ref() ?? null),
@@ -191,7 +191,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         }
 
         let reg_dat: RegPilotLoadoutData = {
-            id: data.id,
+            lid: data.id,
             name: data.name,
             armor: reffer(armor),
             gear: reffer(gear),

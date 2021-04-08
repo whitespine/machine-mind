@@ -2,7 +2,7 @@ import { OrgType } from "@src/enums";
 import { bound_int, defaults } from "@src/funcs";
 import { EntryType, RegEntry, SimSer } from "@src/registry";
 
-export interface IOrganizationData {
+interface AllOrganizationData {
     name: string;
     purpose: OrgType;
     description: string;
@@ -10,8 +10,13 @@ export interface IOrganizationData {
     influence: number;
     actions: string;
 }
+export interface PackedOrganizationData extends AllOrganizationData { }
+export interface RegOrganizationData extends AllOrganizationData { 
+    lid: string;
+}
 
 export class Organization extends RegEntry<EntryType.ORGANIZATION> {
+    public ID!: string;
     public Purpose!: OrgType;
     public Name!: string;
     public Description!: string;
@@ -37,8 +42,9 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
         this._influence = bound_int(n, 1, 6);
     }
 
-    public async load(data: IOrganizationData): Promise<void> {
+    public async load(data: RegOrganizationData): Promise<void> {
         data = { ...defaults.ORGANIZATION(), ...data };
+        this.ID = data.lid;
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
         this.Efficiency = bound_int(data.efficiency, 0, 6);
@@ -46,8 +52,9 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
         this.Description = data.description;
         this.Actions = data.actions;
     }
-    protected save_imp(): IOrganizationData {
+    protected save_imp(): RegOrganizationData {
         return {
+            lid: this.ID ,
             name: this.Name,
             purpose: this.Purpose,
             description: this.Description,

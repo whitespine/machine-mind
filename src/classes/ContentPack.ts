@@ -29,9 +29,6 @@ import {
     Quirk,
 } from "@src/class";
 import {
-    IFactionData,
-    IEnvironmentData,
-    ISitrepData,
     PackedCoreBonusData,
     PackedTalentData,
     PackedPilotEquipmentData,
@@ -40,14 +37,17 @@ import {
     PackedMechWeaponData,
     PackedFrameData,
     PackedReserveData,
-    ITagTemplateData,
     PackedSkillData,
     PackedManufacturerData,
     PackedNpcClassData,
     AnyPackedNpcFeatureData,
     PackedNpcTemplateData,
+    PackedSitrepData,
+    PackedEnvironmentData,
+    PackedStatusData,
+    PackedTagTemplateData,
+    PackedFactionData,
 } from "@src/interface";
-import { IStatusData } from "./Statuses";
 import { OpCtx, Registry } from "@src/registry";
 import { LicensedItem } from "./License";
 
@@ -62,7 +62,7 @@ export interface IContentPackManifest {
 }
 export interface IContentPackData {
     manufacturers: PackedManufacturerData[];
-    factions: IFactionData[];
+    factions: PackedFactionData[];
     coreBonuses: PackedCoreBonusData[];
     frames: PackedFrameData[];
     weapons: PackedMechWeaponData[];
@@ -70,7 +70,7 @@ export interface IContentPackData {
     mods: PackedWeaponModData[];
     pilotGear: PackedPilotEquipmentData[];
     talents: PackedTalentData[];
-    tags: ITagTemplateData[];
+    tags: PackedTagTemplateData[];
 
     npcClasses: PackedNpcClassData[];
     npcFeatures: AnyPackedNpcFeatureData[];
@@ -78,10 +78,10 @@ export interface IContentPackData {
 
     // New additions courtesy of whitespine
     skills?: PackedSkillData[];
-    statuses?: IStatusData[];
+    statuses?: PackedStatusData[];
     reserves?: PackedReserveData[];
-    environments?: IEnvironmentData[];
-    sitreps?: ISitrepData[];
+    environments?: PackedEnvironmentData[];
+    sitreps?: PackedSitrepData[];
     quirks?: string[];
 }
 

@@ -1,8 +1,7 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
-export interface ISitrepData {
-    id: string;
+interface AllSitrepData {
     name: string;
     description: string;
     pcVictory: string;
@@ -12,6 +11,14 @@ export interface ISitrepData {
     objective?: string;
     controlZone?: string;
     extraction?: string;
+}
+
+export interface PackedSitrepData extends AllSitrepData {
+    id: string;
+}
+
+export interface RegSitrepData extends AllSitrepData {
+    lid: string;
 }
 
 export class Sitrep extends RegEntry<EntryType.SITREP> {
@@ -26,9 +33,9 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     ControlZone!: string;
     Extraction!: string;
 
-    protected save_imp(): ISitrepData {
+    protected save_imp(): RegSitrepData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             description: this.Description,
             pcVictory: this.PcVictory,
@@ -41,9 +48,9 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
         };
     }
 
-    public async load(data: ISitrepData) {
+    public async load(data: RegSitrepData) {
         data = { ...defaults.SITREP(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.PcVictory = data.pcVictory;
@@ -55,7 +62,10 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
         this.Extraction = data.extraction || "";
     }
 
-    public static async unpack(dep: ISitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
-        return reg.get_cat(EntryType.SITREP).create_live(ctx, dep);
+    public static async unpack(psd: PackedSitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
+        return reg.get_cat(EntryType.SITREP).create_live(ctx, {
+            ...psd,
+            lid: psd.id
+        });
     }
 }

@@ -1,7 +1,7 @@
 import { Action, Bonus, Counter, Deployable, Synergy } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
-    IActionData,
+    RegActionData,
     RegBonusData,
     PackedBonusData,
     ISynergyData,
@@ -11,6 +11,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { FrameEffectUse } from "@src/enums";
+import { PackedActionData } from "../Action";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
 
@@ -18,7 +19,6 @@ interface AllFrameTraitData {
     name: string;
     description: string; // v-html
     use?: FrameEffectUse;
-    actions?: IActionData[];
     synergies?: ISynergyData[];
 }
 
@@ -27,6 +27,7 @@ export interface PackedFrameTraitData extends AllFrameTraitData {
     counters?: PackedCounterData[];
     deployables?: PackedDeployableData[];
     bonuses?: PackedBonusData[];
+    actions?: PackedActionData[];
 }
 
 export interface RegFrameTraitData extends Required<AllFrameTraitData> {
@@ -34,6 +35,7 @@ export interface RegFrameTraitData extends Required<AllFrameTraitData> {
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
+    actions: RegActionData[];
 }
 
 export class FrameTrait extends RegSer<RegFrameTraitData> {

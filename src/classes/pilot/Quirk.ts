@@ -1,6 +1,6 @@
 import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
 import { defaults } from "@src/funcs";
-import { IActionData, ISynergyData, RegBonusData, RegCounterData } from "@src/interface";
+import { RegActionData, ISynergyData, RegBonusData, RegCounterData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 
 ///////////////////////////////////////////////////////////
@@ -9,7 +9,7 @@ import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/regi
 export interface RegQuirkData {
     name: string; // v-html
     description: string;
-    actions: IActionData[]; // these are only available to UNMOUNTED pilots
+    actions: RegActionData[]; // these are only available to UNMOUNTED pilots
     bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies: ISynergyData[];
 

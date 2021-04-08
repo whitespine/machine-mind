@@ -2,12 +2,14 @@ import { Synergy, Bonus, Action, Counter, Deployable } from "@src/class";
 import { defaults } from "@src/funcs";
 
 import {
-    IActionData,
-    ISynergyData,
     PackedDeployableData,
     PackedCounterData,
     RegBonusData,
     PackedBonusData,
+    RegActionData,
+    PackedActionData,
+    ISynergyData,
+    RegCounterData
 } from "@src/interface";
 import {
     EntryType,
@@ -19,33 +21,34 @@ import {
     RegSer,
     SerUtil,
 } from "@src/registry";
-import { RegCounterData } from "../Counter";
-import { Manufacturer } from "../Manufacturer";
+import { Manufacturer } from "@src/class";
 
 // These attrs are shared
 interface AllCoreBonusData {
-    id: string;
     name: string;
     effect: string; // v-html
     description: string; // v-html
     mounted_effect?: string;
-    actions?: IActionData[];
     synergies?: ISynergyData[];
 }
 export interface PackedCoreBonusData extends AllCoreBonusData {
+    id: string;
     bonuses?: PackedBonusData[];
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
     source: string; // must be the same as the Manufacturer ID to sort correctly
+    actions?: PackedActionData[];
 }
 
 export interface RegCoreBonusData extends Required<AllCoreBonusData> {
+    lid: string;
     bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
     source: RegRef<EntryType.MANUFACTURER> | null; // _should_ never be null mechanically, but as always we must be error tolerant
+    actions: RegActionData[];
 }
 
 export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
@@ -67,7 +70,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
 
     public async load(data: RegCoreBonusData): Promise<void> {
         data = { ...defaults.CORE_BONUS(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.Description = data.description;
@@ -80,11 +83,12 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         this.Counters = SerUtil.process_counters(data.counters);
         this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
     }
+
     protected save_imp(): RegCoreBonusData {
         return {
             description: this.Description,
             effect: this.Effect,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             source: this.Source?.as_ref() ?? null,
             actions: SerUtil.save_all(this.Actions),
@@ -111,12 +115,13 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         let cbdata: RegCoreBonusData = {
             ...defaults.CORE_BONUS(),
             ...data,
+            lid: data.id,
             integrated,
             deployables,
             counters,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             mounted_effect: data.mounted_effect ?? "",
-            actions: data.actions ?? [],
+            actions: (data.actions ?? []).map(Action.unpack),
             bonuses: (data.bonuses ?? []).map(Bonus.unpack),
             synergies: data.synergies ?? [],
         };

@@ -13,12 +13,13 @@ import {
 } from "@src/class";
 import { defaults, tag_util } from "@src/funcs";
 import {
-    IActionData,
+    RegActionData,
     RegBonusData,
     PackedBonusData,
     ISynergyData,
     PackedRangeData,
     RegRangeData,
+    PackedActionData,
     PackedCounterData,
     PackedDamageData,
     PackedDeployableData,
@@ -39,7 +40,6 @@ import {
 import { SystemType, WeaponSize, WeaponType } from "@src/enums";
 
 export interface AllWeaponModData {
-    id: string;
     name: string;
     sp: number;
     license: string; // Frame Name
@@ -47,17 +47,18 @@ export interface AllWeaponModData {
     effect: string; // v-html
     allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
     allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
-    actions?: IActionData[];
     synergies?: ISynergyData[];
 }
 
 export interface PackedWeaponModData extends AllWeaponModData {
+    id: string;
     source: string; // Manufacturer ID
     tags: PackedTagInstanceData[]; // tags related to the mod itself
     added_tags?: PackedTagInstanceData[]; // tags propogated to the weapon the mod is installed on
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     bonuses?: PackedBonusData[]; // these bonuses are applied to the pilot, not parent weapon
+    actions?: PackedActionData[];
     added_damage?: PackedDamageData[]; // damage added to the weapon the mod is installed on
     added_range?: PackedRangeData[]; // range added to the weapon the mod is installed on
     integrated?: string[];
@@ -66,6 +67,7 @@ export interface PackedWeaponModData extends AllWeaponModData {
 }
 
 export interface RegWeaponModData extends Required<AllWeaponModData> {
+    lid: string;
     source: RegRef<EntryType.MANUFACTURER> | null;
     tags: RegTagInstanceData[]; // tags related to the mod itself
     added_tags: RegTagInstanceData[]; // tags propogated to the weapon the mod is installed on
@@ -75,6 +77,7 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     added_damage: RegDamageData[]; // damage added to the weapon the mod is installed on
     added_range: RegRangeData[]; // damage added to the weapon the mod is installed on
     bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent weapon
+    actions: RegActionData[];
 
     // state info
     cascading: boolean;
@@ -169,7 +172,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         return {
             license: this.License,
             license_level: this.LicenseLevel,
-            id: this.ID,
+            lid: this.ID,
             source: this.Source?.as_ref() ?? null,
 
             name: this.Name,
@@ -198,7 +201,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         data = { ...defaults.WEAPON_MOD(), ...data };
         this.License = data.license;
         this.LicenseLevel = data.license_level;
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
 
         this.Name = data.name;

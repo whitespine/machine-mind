@@ -22,7 +22,7 @@ export interface PackedBonusData {
 
 // Make all fields required, force val to string, and use checklists
 export interface RegBonusData {
-    id: string;
+    lid: string;
     val: string;
     damage_types: DamageTypeChecklist;
     range_types: RangeTypeChecklist;
@@ -80,7 +80,7 @@ export class Bonus extends SimSer<RegBonusData> {
 
     public load(data: RegBonusData) {
         data = {...defaults.BONUS(), ...data};
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Value = data.val;
         this.DamageTypes = data.damage_types;
         this.RangeTypes = data.range_types;
@@ -90,7 +90,7 @@ export class Bonus extends SimSer<RegBonusData> {
         this.Replace = data.replace;
 
         // Check for more metadata from our list/map of implemented bonus data
-        const entry = BonusDict.get(data.id);
+        const entry = BonusDict.get(data.lid);
         this.Title = entry ? entry.title : "UNKNOWN BONUS";
         this.Detail = entry ? this.parse_detail(entry.detail) : "UNKNOWN BONUS";
     }
@@ -99,6 +99,7 @@ export class Bonus extends SimSer<RegBonusData> {
         return {
             ...defaults.BONUS(),
             ...data,
+            lid: data.id,
             val: "" + data.val,
             damage_types: Damage.MakeChecklist(data.damage_types ?? []),
             range_types: Range.MakeChecklist(data.range_types ?? []),
@@ -130,10 +131,10 @@ export class Bonus extends SimSer<RegBonusData> {
     }
 
     // Just a more convenient constructor
-    public static generate(id: string, val: string | number, replace: boolean = false, overwrite: boolean = false): Bonus {
+    public static generate(lid: string, val: string | number, replace: boolean = false, overwrite: boolean = false): Bonus {
         return new Bonus({
             ...defaults.BONUS(), 
-            id, 
+            lid, 
             val: "" + val,
             replace,
             overwrite
@@ -142,7 +143,7 @@ export class Bonus extends SimSer<RegBonusData> {
 
     public save(): RegBonusData {
         return {
-            id: this.ID,
+            lid: this.ID,
             val: this.Value,
             damage_types: {...this.DamageTypes}, 
             range_types: {...this.RangeTypes},

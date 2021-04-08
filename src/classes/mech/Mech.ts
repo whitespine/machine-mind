@@ -27,7 +27,6 @@ import { fallback_obtain_ref, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
-    id: string;
     name: string;
     notes: string;
     gm_note: string;
@@ -49,6 +48,7 @@ interface AllMechData {
 }
 
 export interface PackedMechData extends AllMechData {
+    id: string;
     active: boolean;
     frame: string;
     statuses: string[];
@@ -66,6 +66,7 @@ export interface PackedMechData extends AllMechData {
 }
 
 export interface RegMechData extends AllMechData {
+    lid: string;
     pilot: RegRef<EntryType.PILOT> | null;
     resistances: DamageTypeChecklist;
     //reactions: RegRef<EntryType.ACTION>[]
@@ -521,7 +522,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // -- I/O ---------------------------------------------------------------------------------------
     protected save_imp(): RegMechData {
         return {
-            id: this.ID,
+            lid: this.ID,
             pilot: this.Pilot?.as_ref() ?? null,
             name: this.Name,
             notes: this.Notes,
@@ -550,7 +551,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public async load(data: RegMechData): Promise<void> {
         data = { ...defaults.MECH(), ...data };
         let subreg = await this.get_inventory();
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
         this.Name = data.name;
         this.Notes = data.notes;

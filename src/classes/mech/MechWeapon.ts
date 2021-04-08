@@ -10,7 +10,7 @@ import {
     TagInstance,
     WeaponMod,
 } from "@src/class";
-import type {PackedRangeData, RegRangeData, IActionData,  ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData, PackedBonusData, RegBonusData } from "@src/interface";
+import type {PackedRangeData, RegRangeData, ISynergyData, PackedTagInstanceData, RegCounterData, PackedDamageData, PackedDeployableData, PackedCounterData, RegDamageData, RegTagInstanceData, PackedBonusData, RegBonusData, PackedActionData, RegActionData } from "@src/interface";
 import { WeaponSize, WeaponType } from "@src/enums";
 import {
     EntryType,
@@ -43,7 +43,7 @@ export interface PackedMechWeaponData {
     on_attack?: string; // v-html
     on_hit?: string; // v-html
     on_crit?: string; // v-html
-    actions?: IActionData[];
+    actions?: PackedActionData[];
     bonuses?: PackedBonusData[];
     synergies?: ISynergyData[];
     deployables?: PackedDeployableData[];
@@ -68,7 +68,7 @@ export type PackedMechWeaponProfile = Omit<
 
 // In our registry version, we push all data down to profiles, to eliminate the confusion of base data vs profile
 export interface RegMechWeaponData {
-    id: string;
+    lid: string;
     name: string;
     source: RegRef<EntryType.MANUFACTURER> | null;
     license: string; // reference to the Frame name of the associated license
@@ -117,7 +117,7 @@ export interface RegMechWeaponProfile {
     barrageable: boolean;
 
     // basc
-    actions: IActionData[];
+    actions: RegActionData[];
     bonuses: RegBonusData[];
     synergies: ISynergyData[];
     counters: RegCounterData[];
@@ -156,7 +156,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
 
     public async load(data: RegMechWeaponData): Promise<void> {
         data = { ...defaults.MECH_WEAPON(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.License = data.license;
@@ -212,7 +212,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
 
     protected save_imp(): RegMechWeaponData {
         return {
-            id: this.ID,
+            lid: this.ID,
             license: this.License,
             integrated: SerUtil.ref_all(this.Integrated),
             deployables: SerUtil.ref_all(this.Deployables),
@@ -263,6 +263,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         let unpacked: RegMechWeaponData = {
             ...defaults.MECH_WEAPON(),
             ...data,
+            lid: data.id,
             cascading: false,
             destroyed: false,
             loaded: true,
@@ -326,7 +327,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
                 cost: p.cost ?? 1,
                 barrageable,
                 skirmishable,
-                actions: p.actions || [],
+                actions: (p.actions ?? []).map(Action.unpack),
                 bonuses: (p.bonuses ?? []).map(Bonus.unpack),
                 counters: SerUtil.unpack_counters_default(p.counters),
                 description: p.description,

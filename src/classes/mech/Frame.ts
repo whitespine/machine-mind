@@ -38,7 +38,6 @@ export interface IFrameStats {
 
 // Entire frame
 interface AllFrameData {
-    id: string;
     license_level: number; // set to zero for this item to be available to a LL0 character
     name: string;
     mechtype: string[]; // can be customized
@@ -51,12 +50,14 @@ interface AllFrameData {
 }
 
 export interface PackedFrameData extends AllFrameData {
+    id: string;
     traits: PackedFrameTraitData[];
     core_system: PackedCoreSystemData;
     source: string;
 }
 
 export interface RegFrameData extends Required<AllFrameData> {
+    lid: string;
     traits: RegFrameTraitData[];
     core_system: RegCoreSystemData;
     source: RegRef<EntryType.MANUFACTURER> | null;
@@ -79,7 +80,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
 
     public async load(fd: RegFrameData): Promise<void> {
         fd = { ...defaults.FRAME(), ...fd };
-        this.ID = fd.id;
+        this.ID = fd.lid;
         this.LicenseLevel = fd.license_level;
         this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source) : null;
         this.Name = fd.name;
@@ -98,7 +99,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
 
     protected save_imp(): RegFrameData {
         return {
-            id: this.ID,
+            lid: this.ID,
             description: this.Description,
             license_level: this.LicenseLevel,
             source: this.Source?.as_ref() ?? null,
@@ -120,6 +121,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         let fdata: RegFrameData = {
             ...defaults.FRAME(),
             ...frame,
+            lid: frame.id,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
             traits,
             core_system,

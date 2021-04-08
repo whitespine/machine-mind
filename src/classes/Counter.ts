@@ -18,7 +18,7 @@ export interface PackedCounterSaveData {
 }
 
 export interface RegCounterData {
-    id: string;
+    lid: string;
     name: string;
     min: number;
     max: number | null;
@@ -38,7 +38,7 @@ export class Counter extends SimSer<RegCounterData> {
     private _value!: number;
 
     public load(data: RegCounterData) {
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         // this.Level = data.level || null;
         this.Min = data.min || 0;
@@ -48,7 +48,7 @@ export class Counter extends SimSer<RegCounterData> {
 
     public save(): RegCounterData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             val: this.Value,
             max: this.Max,
@@ -83,7 +83,7 @@ export class Counter extends SimSer<RegCounterData> {
         // Init
         let out: RegCounterData = {
             default_value: packed_counter.default_value ?? packed_counter.min ?? 0,
-            id: packed_counter.id,
+            lid: packed_counter.id,
             max: packed_counter.max ?? null,
             min: packed_counter.min ?? 0,
             name: packed_counter.name,

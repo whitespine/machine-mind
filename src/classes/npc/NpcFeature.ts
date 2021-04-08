@@ -91,7 +91,7 @@ export type AnyPackedNpcFeatureData =
 // Reg main types
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 export interface BaseRegNpcFeatureData {
-    id: string;
+    lid: string;
     name: string;
     origin: IOriginData;
     effect: string;
@@ -237,7 +237,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
     protected async load(data: AnyRegNpcFeatureData): Promise<void> {
         data = { ...defaults.NPC_FEATURE(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Origin = { ...data.origin };
         this.Effect = data.effect;
@@ -280,7 +280,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
     protected save_imp(): AnyRegNpcFeatureData {
         let base: BaseRegNpcFeatureData = {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             origin: this.Origin,
             effect: this.Effect,
@@ -350,6 +350,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let result_react: RegNpcReactionData = {
                 ...defaults.NPC_REACTION(),
                 ...data,
+                lid: data.id,
                 tags,
             };
             result = result_react;
@@ -357,6 +358,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let result_sys: RegNpcSystemData = {
                 ...defaults.NPC_SYSTEM(),
                 ...data,
+                lid: data.id,
                 tags,
             };
             result = result_sys;
@@ -364,6 +366,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let result_tech: RegNpcTechData = {
                 ...defaults.NPC_TECH(),
                 ...data,
+                lid: data.id,
                 tags,
                 tech_type: SerUtil.restrict_enum(NpcTechType, NpcTechType.Quick, data.tech_type),
                 accuracy: data.accuracy ?? [0, 0, 0],
@@ -397,6 +400,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let result_wep: RegNpcWeaponData = {
                 ...defaults.NPC_WEAPON(),
                 ...data,
+                lid: data.id,
                 tags,
                 accuracy: data.accuracy ?? [0, 0, 0],
                 attack_bonus: data.attack_bonus ?? [0, 0, 0],
@@ -408,6 +412,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             let result_trait: RegNpcTraitData = {
                 ...defaults.NPC_TRAIT(),
                 ...data,
+                lid: data.id,
                 tags,
             };
             result = result_trait;

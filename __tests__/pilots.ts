@@ -168,7 +168,7 @@ describe("Pilots", () => {
         // If we sync again with a proper relinker, then we shouldn't get any more duplicates
         let hooks = {
             relinker: quick_relinker({
-                key_pairs: [["ID", "id"], ["Name", "name"]]
+                key_pairs: [["ID", "lid"], ["Name", "name"]]
             })
         }
         await cloud_sync(pilot_data, pilots[1], [compendium.reg], hooks);

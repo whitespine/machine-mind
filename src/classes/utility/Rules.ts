@@ -1,5 +1,9 @@
-import { rules, actions } from "lancer-data";
-import type { IActionData } from "@src/interface";
+import { rules, actions as _actions } from "lancer-data";
+import { Action } from "@src/class";
+import { RegActionData, PackedActionData } from "@src/interface";
+import { ActivationType } from "@src/enums";
+
+const actions: PackedActionData[] = _actions;
 
 export class Rules {
     public static get BaseStructure(): number {
@@ -95,23 +99,7 @@ export class Rules {
         return rules.overcharge;
     }
 
-    public static BaseProtocols(): IActionData[] {
+    public static BaseProtocols(): RegActionData[] {
         return [];
-    }
-
-    public static get BaseFullActions(): IActionData[] {
-        return actions.filter(x => x.action_type === "full" && !x.reserve);
-    }
-
-    public static get BaseQuickActions(): IActionData[] {
-        return actions.filter(x => x.action_type === "quick" && !x.reserve);
-    }
-
-    public static get BaseReactions(): IActionData[] {
-        return actions.filter(x => x.action_type === "reaction" && !x.reserve);
-    }
-
-    public static get BaseFreeActions(): IActionData[] {
-        return actions.filter(x => x.action_type === "overcharge" && !x.reserve);
     }
 }

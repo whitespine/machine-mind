@@ -2,19 +2,22 @@ import { defaults } from "@src/funcs";
 import { imageManagement, ImageTag } from "@src/hooks";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
-export interface PackedManufacturerData {
-    id: string;
+interface AllManufacturerData {
     name: string;
     logo: string;
-    logo_url?: string;
     light: string;
     description: string;
     dark: string;
     quote: string;
 }
+export interface PackedManufacturerData extends AllManufacturerData {
+    id: string;
+    logo_url?: string;
+}
 
-export type RegManufacturerData = Omit<PackedManufacturerData, "logo_url">;
-
+export interface RegManufacturerData extends AllManufacturerData {
+    lid: string;
+}
 export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     ID!: string;
     Name!: string;
@@ -26,7 +29,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
 
     public async load(data: RegManufacturerData): Promise<void> {
         data = { ...defaults.MANUFACTURER(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Light = data.light;
         this.Dark = data.dark;
@@ -36,7 +39,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     }
     protected save_imp(): RegManufacturerData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             logo: this.Logo,
             light: this.Light,
@@ -47,11 +50,14 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     }
 
     public static async unpack(
-        dep: PackedManufacturerData,
+        pmd: PackedManufacturerData,
         reg: Registry,
         ctx: OpCtx
     ): Promise<Manufacturer> {
-        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, dep);
+        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, {
+            ...pmd,
+            lid: pmd.id    
+        });
     }
 
     public GetColor(dark?: boolean): string {

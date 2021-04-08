@@ -4,7 +4,7 @@ import { CORE_BREW_ID } from "@src/enums";
 import {
     IContentPackManifest,
     IContentPack,
-    IFactionData,
+    PackedFactionData,
     PackedCoreBonusData,
     PackedFrameData,
     PackedMechWeaponData,
@@ -16,8 +16,8 @@ import {
     PackedNpcTemplateData,
     PackedNpcClassData,
     AnyPackedNpcFeatureData,
+    PackedTagTemplateData,
 } from "@src/interface";
-import { ITagTemplateData } from "@src/classes/Tag";
 
 const isValidManifest = function(obj: any): obj is IContentPackManifest {
     return (
@@ -84,7 +84,7 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
     }
 
     const manufacturers = await getZipData<PackedManufacturerData>(zip, "manufacturers.json");
-    const factions = await getZipData<IFactionData>(zip, "factions.json");
+    const factions = await getZipData<PackedFactionData>(zip, "factions.json");
     const coreBonuses = generateIDs(
         await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"),
         "cb"
@@ -98,7 +98,7 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
         "pg"
     );
     const talents = generateIDs(await getZipData<PackedTalentData>(zip, "talents.json"), "t");
-    const tags = generateIDs(await getZipData<ITagTemplateData>(zip, "tags.json"), "tg");
+    const tags = generateIDs(await getZipData<PackedTagTemplateData>(zip, "tags.json"), "tg");
 
     const npcClasses = (await readZipJSON<PackedNpcClassData[]>(zip, "npc_classes.json")) || [];
     const npcFeatures =

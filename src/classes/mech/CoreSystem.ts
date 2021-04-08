@@ -1,7 +1,8 @@
 import { Action, Bonus, Counter, Deployable, MechWeapon, Synergy, TagInstance } from "@src/class";
 import { defaults, lid_format_name } from "@src/funcs";
 import {
-    IActionData,
+    PackedActionData,
+    RegActionData,
     ISynergyData,
     PackedCounterData,
     PackedDeployableData,
@@ -24,13 +25,11 @@ export interface AllCoreSystemData {
     //
     active_name: string;
     active_effect: string; // v-html
-    active_actions: IActionData[];
     active_synergies: ISynergyData[];
 
     // Basically the same but passives
     passive_name?: string;
     passive_effect?: string; // v-html,
-    passive_actions?: IActionData[];
     passive_synergies?: ISynergyData[];
 
     // And all the rest
@@ -43,6 +42,8 @@ export interface PackedCoreSystemData extends AllCoreSystemData {
     tags: PackedTagInstanceData[];
     active_bonuses?: PackedBonusData[];
     passive_bonuses?: PackedBonusData[];
+    active_actions?: PackedActionData[];
+    passive_actions?: PackedActionData[];
 }
 
 export interface RegCoreSystemData extends Required<AllCoreSystemData> {
@@ -52,6 +53,8 @@ export interface RegCoreSystemData extends Required<AllCoreSystemData> {
     tags: RegTagInstanceData[];
     active_bonuses: RegBonusData[];
     passive_bonuses: RegBonusData[];
+    active_actions: RegActionData[];
+    passive_actions: RegActionData[];
 }
 
 export class CoreSystem extends RegSer<RegCoreSystemData> {
@@ -156,6 +159,8 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
             ...data,
             active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
             passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
+            active_actions: (data.active_actions ?? []).map(Action.unpack),
+            passive_actions: (data.passive_actions ?? []).map(Action.unpack),
             tags,
             counters,
             deployables,

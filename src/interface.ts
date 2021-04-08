@@ -4,8 +4,8 @@
 // stored anywhere and collected imports are fine as long as their constituents are impored
 
 // first in this file.
-export { IActionData } from "@src/classes/Action";
-export { IBackground } from "@src/classes/Background";
+export { PackedActionData, RegActionData } from "@src/classes/Action";
+export { PackedBackground, RegBackground } from "@src/classes/Background";
 export { PackedBonusData, RegBonusData, BonusSummary, BonusContext } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
 export { PackedCounterData, PackedCounterSaveData, RegCounterData } from "./classes/Counter";
@@ -54,9 +54,9 @@ export {
     PackedPilotLoadoutData,
     RegPilotLoadoutData,
 } from "./classes/pilot/PilotLoadout";
-export { IFactionData } from "./classes/Faction";
+export { PackedFactionData, RegFactionData } from "./classes/Faction";
 export { PackedReserveData, RegReserveData } from "./classes/pilot/reserves/Reserve";
-export { IOrganizationData } from "./classes/pilot/reserves/Organization";
+export { PackedOrganizationData, RegOrganizationData } from "./classes/pilot/reserves/Organization";
 // export { IProjectData } from "./classes/pilot/reserves/Project";
 export {
     PackedTalentData,
@@ -95,10 +95,10 @@ export { INpcStats, INpcStatComposite } from "./classes/npc/NpcStats";
 // export { IMissionStep } from "./classes/encounter/IMissionStep";
 export { RegQuirkData } from "./classes/pilot/Quirk";
 // export { IActiveMissionData } from "./classes/encounter/ActiveMission";
-export { IStatusData } from "./classes/Statuses";
-export { ISitrepData } from "./classes/encounter/Sitrep";
-export { IEnvironmentData } from "./classes/encounter/Environment";
-export { PackedTagInstanceData, RegTagInstanceData, ITagTemplateData } from "./classes/Tag";
+export { PackedStatusData, RegStatusData } from "./classes/Statuses";
+export { PackedSitrepData, RegSitrepData } from "./classes/encounter/Sitrep";
+export { PackedEnvironmentData, RegEnvironmentData } from "./classes/encounter/Environment";
+export { PackedTagInstanceData, RegTagInstanceData, PackedTagTemplateData, RegTagTemplateData } from "./classes/Tag";
 export { RegManufacturerData, PackedManufacturerData } from "./classes/Manufacturer";
 // export { DataStoreOptions } from "./store/store_module";
 export * from "./classes/GeneralInterfaces";

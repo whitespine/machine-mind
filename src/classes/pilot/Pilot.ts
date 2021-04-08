@@ -19,9 +19,10 @@ import {
 } from "@src/class";
 import * as gistApi from "@src/io/apis/gist";
 import {
-    IActionData,
-    IOrganizationData,
-    IRankedData,
+    PackedActionData,
+    RegActionData,
+    RegOrganizationData,
+    PackedRankedData,
     PackedReserveData,
     PackedMechData,
     PackedCounterSaveData,
@@ -31,6 +32,7 @@ import {
     RegCounterData,
     PackedSkillData,
     RegPilotLoadoutData,
+    PackedOrganizationData,
 } from "@src/interface";
 import {
     EntryType,
@@ -53,7 +55,6 @@ import {
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
 interface BothPilotData {
-    id: string;
     campaign: string;
     group: string;
     sort_index: number;
@@ -78,11 +79,12 @@ interface BothPilotData {
 
 // The compcon export format. This stuff just gets converted into owned items.
 export interface PackedPilotData extends BothPilotData {
-    licenses: IRankedData[];
-    skills: Array<IRankedData | (PackedSkillData & { custom: true })>;
-    talents: IRankedData[];
+    id: string;
+    licenses: PackedRankedData[];
+    skills: Array<PackedRankedData | (PackedSkillData & { custom: true })>;
+    talents: PackedRankedData[];
     reserves: PackedReserveData[];
-    orgs: IOrganizationData[];
+    orgs: PackedOrganizationData[];
     mechs: PackedMechData[];
     state?: IMechState;
     counter_data: PackedCounterSaveData[];
@@ -97,6 +99,7 @@ export interface PackedPilotData extends BothPilotData {
 
 // This just gets converted into owned items
 export interface RegPilotData extends Required<BothPilotData> {
+    lid: string;
     active_mech: RegRef<EntryType.MECH> | null;
 
     // Compcon doesn't (but should) track these
@@ -509,7 +512,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Group = data.group;
         this.History = data.history;
-        this.ID = data.id;
+        this.ID = data.lid;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
         this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
@@ -553,7 +556,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             custom_counters: SerUtil.save_all(this.CustomCounters),
             group: this.Group,
             history: this.History,
-            id: this.ID,
+            lid: this.ID,
             lastCloudUpdate: this.LastCloudUpdate,
             level: this.Level,
             loadout: this.Loadout.save(),

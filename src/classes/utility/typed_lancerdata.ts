@@ -25,7 +25,7 @@ import {
     weapons as _weapons,
 } from "lancer-data";
 import type {
-    IBackground,
+    PackedBackground,
     PackedReserveData,
     PackedCoreBonusData,
     PackedTalentData,
@@ -33,15 +33,15 @@ import type {
     PackedMechSystemData,
     PackedSkillData,
     PackedFrameData,
-    IFactionData,
+    PackedFactionData,
     PackedWeaponModData,
     PackedNpcClassData,
     PackedNpcTemplateData,
-    ITagTemplateData,
-    IStatusData,
-    ISitrepData,
-    IEnvironmentData,
-    IActionData,
+    PackedTagTemplateData,
+    PackedStatusData,
+    PackedSitrepData,
+    PackedEnvironmentData,
+    PackedActionData,
     PackedPilotEquipmentData,
     PackedManufacturerData,
     AnyPackedNpcFeatureData,
@@ -54,11 +54,11 @@ export interface GlossaryItem {
 }
 export const glossary = _glossary as GlossaryItem[];
 
-export const actions = _actions as IActionData[];
-export const backgrounds = _backgrounds as IBackground[];
+export const actions = _actions as PackedActionData[];
+export const backgrounds = _backgrounds as PackedBackground[];
 export const core_bonuses = _core_bonuses as PackedCoreBonusData[];
-export const environments = _environments as IEnvironmentData[];
-export const factions = _factions as IFactionData[];
+export const environments = _environments as PackedEnvironmentData[];
+export const factions = _factions as PackedFactionData[];
 export const frames = _frames as PackedFrameData[];
 
 export const info = _info as {
@@ -77,11 +77,11 @@ export const npc_templates = _npc_templates as PackedNpcTemplateData[];
 export const pilot_gear = _pilot_gear as PackedPilotEquipmentData[];
 export const quirks = _quirks as string[];
 export const reserves = _reserves as PackedReserveData[];
-export const sitreps = _sitreps as ISitrepData[];
+export const sitreps = _sitreps as PackedSitrepData[];
 export const skills = _skills as PackedSkillData[];
-export const statuses = _statuses as IStatusData[];
+export const statuses = _statuses as PackedStatusData[];
 export const systems = _systems as PackedMechSystemData[];
-export const tags = _tags as ITagTemplateData[];
+export const tags = _tags as PackedTagTemplateData[];
 export const talents = _talents as PackedTalentData[];
 export const weapons = _weapons as PackedMechWeaponData[];
 

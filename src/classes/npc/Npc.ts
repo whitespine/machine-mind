@@ -22,7 +22,6 @@ interface INpcItemSaveData {
 }
 
 interface AllNpcData {
-    id: string;
     tier: number | string;
     name: string;
     subtitle: string;
@@ -41,6 +40,7 @@ interface AllNpcData {
 }
 
 export interface PackedNpcData {
+    id: string;
     active: boolean;
     cc_ver: string;
     class: string;
@@ -56,6 +56,7 @@ export interface PackedNpcData {
 }
 
 export interface RegNpcData extends AllNpcData {
+    lid: string;
     tier: number; // Custom tiering is handled on a per item basis
     custom_counters: RegCounterData[];
     current_hp: number;
@@ -255,7 +256,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.CloudImage = data.cloudImage;
         this.Defeat = data.defeat;
         this.Destroyed = data.destroyed;
-        this.ID = data.id;
+        this.ID = data.lid;
         this.CurrentHP = data.current_hp;
         this.CurrentHeat = data.current_heat;
         this.CurrentStress = data.current_stress;
@@ -284,7 +285,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             cloudImage: this.CloudImage,
             defeat: this.Defeat,
             destroyed: this.Destroyed,
-            id: this.ID,
+            lid: this.ID,
             current_hp: this.CurrentHP,
             current_heat: this.CurrentHeat,
             labels: this.Labels,

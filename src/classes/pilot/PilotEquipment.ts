@@ -1,7 +1,7 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@src/class";
 import { defaults, tag_util } from "@src/funcs";
 import {
-    IActionData,
+    PackedActionData,
     RegBonusData,
     PackedBonusData,
     RegRangeData,
@@ -11,6 +11,7 @@ import {
     PackedDeployableData,
     PackedTagInstanceData,
     RegTagInstanceData,
+    RegActionData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { RegDamageData } from "../Damage";
@@ -29,7 +30,7 @@ interface AllPackedData {
     id: string;
     name: string; // v-html
     description: string;
-    actions?: IActionData[]; // these are only available to UNMOUNTED pilots
+    actions?: PackedActionData[]; // these are only available to UNMOUNTED pilots
     bonuses?: PackedBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies?: ISynergyData[];
     deployables?: PackedDeployableData[];
@@ -52,11 +53,11 @@ export interface PackedPilotArmorData extends AllPackedData {
 // Reg items
 
 interface AllRegData {
-    id: string;
+    lid: string;
     name: string; // v-html
     description: string;
     uses: number; // Remaining uses, if applicable
-    actions: IActionData[]; // these are only available to UNMOUNTED pilots
+    actions: RegActionData[]; // these are only available to UNMOUNTED pilots
     bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent system
     synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -95,7 +96,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
 
     public async load(data: RegPilotArmorData): Promise<void> {
         data = { ...defaults.PILOT_ARMOR(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
@@ -107,7 +108,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     protected save_imp(): RegPilotArmorData {
         return {
             description: this.Description,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
             uses: this.Uses,
@@ -123,6 +124,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         let rdata: RegPilotArmorData = {
             ...defaults.PILOT_ARMOR(),
             ...data,
+            lid: data.id,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
         return reg.get_cat(EntryType.PILOT_ARMOR).create_live(ctx, rdata);
@@ -151,7 +153,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
 
     public async load(data: RegPilotGearData): Promise<void> {
         data = { ...defaults.PILOT_GEAR(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
@@ -163,7 +165,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     protected save_imp(): RegPilotGearData {
         return {
             description: this.Description,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
             uses: this.Uses,
@@ -179,6 +181,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         let rdata: RegPilotGearData = {
             ...defaults.PILOT_GEAR(),
             ...data,
+            lid: data.id,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
         };
         return reg.get_cat(EntryType.PILOT_GEAR).create_live(ctx, rdata);
@@ -210,7 +213,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     public async load(data: RegPilotWeaponData): Promise<void> {
         data = { ...defaults.PILOT_WEAPON(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Effect = data.effect;
@@ -224,7 +227,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     protected save_imp(): RegPilotWeaponData {
         return {
-            id: this.ID,
+            lid: this.ID,
             description: this.Description,
             name: this.Name,
             effect: this.Effect,
@@ -245,6 +248,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         let rdata: RegPilotWeaponData = {
             ...defaults.PILOT_WEAPON(),
             ...data,
+            lid: data.id,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             damage: data.damage.map(d => Damage.unpack(d)),
             range: data.range.map(Range.unpack),

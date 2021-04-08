@@ -1,7 +1,8 @@
 import { Deployable, Synergy, Bonus, Action, TagInstance, Counter, Manufacturer } from "@src/class";
 import { defaults, tag_util } from "@src/funcs";
 import {
-    IActionData,
+    RegActionData,
+    PackedActionData,
     RegBonusData,
     PackedBonusData,
     ISynergyData,
@@ -24,7 +25,6 @@ import {
 import { SystemType } from "@src/enums";
 
 interface AllMechSystemData {
-    id: string;
     name: string;
     license: string; // reference to the Frame name of the associated license
     license_level: number; // set to zero for this item to be available to a LL0 character
@@ -32,24 +32,27 @@ interface AllMechSystemData {
     sp: number;
     description: string; // v-html
     effect: string; // v-html
-    actions?: IActionData[];
     synergies?: ISynergyData[];
 }
 
 export interface PackedMechSystemData extends AllMechSystemData {
+    id: string;
     deployables?: PackedDeployableData[];
     integrated?: string[];
     counters?: PackedCounterData[];
     bonuses?: PackedBonusData[];
+    actions?: PackedActionData[];
     tags?: PackedTagInstanceData[];
     source: string; // must be the same as the Manufacturer ID to sort correctly
 }
 
 export interface RegMechSystemData extends Required<AllMechSystemData> {
+    lid: string;
     bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     integrated: RegRef<any>[];
     counters: RegCounterData[];
+    actions: RegActionData[];
     tags: RegTagInstanceData[];
     source: RegRef<EntryType.MANUFACTURER> | null;
 
@@ -114,7 +117,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
 
     public async load(data: RegMechSystemData): Promise<void> {
         data = { ...defaults.MECH_SYSTEM(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.SysType = data.type;
@@ -138,7 +141,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         return {
             description: this.Description,
             effect: this.Effect,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             source: this.Source?.as_ref() ?? null,
             license: this.License,
@@ -166,6 +169,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
             ...defaults.MECH_SYSTEM(),
             ...data,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            lid: data.id,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),

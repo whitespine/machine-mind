@@ -61,17 +61,10 @@ import {
     Organization,
 } from "@src/class";
 import {
-    IActionData,
     RegBonusData,
     PackedBonusData,
-    IEnvironmentData,
-    IFactionData,
-    IOrganizationData,
     RegRangeData,
-    ISitrepData,
-    IStatusData,
     ISynergyData,
-    ITagTemplateData,
     PackedCoreBonusData,
     PackedCounterData,
     PackedDeployableData,
@@ -116,6 +109,20 @@ import {
     RegWeaponModData,
     AnyRegNpcFeatureData,
     AnyPackedNpcFeatureData,
+    RegTagTemplateData,
+    RegStatusData,
+    RegSitrepData,
+    RegFactionData,
+    RegEnvironmentData,
+    PackedEnvironmentData,
+    PackedTagTemplateData,
+    RegOrganizationData,
+    PackedFactionData,
+    PackedOrganizationData,
+    PackedSitrepData,
+    PackedStatusData,
+    RegActionData,
+    PackedActionData,
 } from "./interface";
 
 ////////////////////////////////////////////////////////////////////////
@@ -165,8 +172,8 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: RegCoreBonusData;
     [EntryType.DEPLOYABLE]: RegDeployableData;
-    [EntryType.ENVIRONMENT]: IEnvironmentData;
-    [EntryType.FACTION]: IFactionData;
+    [EntryType.ENVIRONMENT]: RegEnvironmentData;
+    [EntryType.FACTION]: RegFactionData;
     [EntryType.FRAME]: RegFrameData;
     [EntryType.LICENSE]: RegLicenseData;
     [EntryType.MANUFACTURER]: RegManufacturerData;
@@ -177,17 +184,16 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
     [EntryType.NPC_CLASS]: RegNpcClassData;
     [EntryType.NPC_FEATURE]: AnyRegNpcFeatureData;
     [EntryType.NPC_TEMPLATE]: RegNpcTemplateData;
-    [EntryType.ORGANIZATION]: IOrganizationData;
+    [EntryType.ORGANIZATION]: RegOrganizationData;
     [EntryType.PILOT_ARMOR]: RegPilotArmorData;
     [EntryType.PILOT_GEAR]: RegPilotGearData;
     [EntryType.PILOT_WEAPON]: RegPilotWeaponData;
     [EntryType.PILOT]: RegPilotData;
     [EntryType.RESERVE]: RegReserveData;
-    [EntryType.SITREP]: ISitrepData;
+    [EntryType.SITREP]: RegSitrepData;
     [EntryType.SKILL]: RegSkillData;
-    [EntryType.STATUS]: IStatusData;
-    // [EntryType.STATUS]: IStatusData;
-    [EntryType.TAG]: ITagTemplateData;
+    [EntryType.STATUS]: RegStatusData;
+    [EntryType.TAG]: RegTagTemplateData;
     [EntryType.TALENT]: RegTalentData;
     [EntryType.QUIRK]: RegQuirkData;
     [EntryType.WEAPON_MOD]: RegWeaponModData;
@@ -202,8 +208,8 @@ interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
     [EntryType.DEPLOYABLE]: PackedDeployableData;
-    [EntryType.ENVIRONMENT]: IEnvironmentData;
-    [EntryType.FACTION]: IFactionData;
+    [EntryType.ENVIRONMENT]: PackedEnvironmentData;
+    [EntryType.FACTION]: PackedFactionData;
     [EntryType.FRAME]: PackedFrameData;
     [EntryType.LICENSE]: null;
     [EntryType.MANUFACTURER]: PackedManufacturerData;
@@ -213,16 +219,16 @@ interface FixedPackedEntryTypes {
     [EntryType.NPC_CLASS]: PackedNpcClassData;
     [EntryType.NPC_FEATURE]: AnyPackedNpcFeatureData;
     [EntryType.NPC_TEMPLATE]: PackedNpcTemplateData;
-    [EntryType.ORGANIZATION]: IOrganizationData;
+    [EntryType.ORGANIZATION]: PackedOrganizationData;
     [EntryType.PILOT_ARMOR]: PackedPilotArmorData;
     [EntryType.PILOT_GEAR]: PackedPilotGearData;
     [EntryType.PILOT_WEAPON]: PackedPilotWeaponData;
     [EntryType.PILOT]: PackedPilotData;
     [EntryType.RESERVE]: PackedReserveData;
-    [EntryType.SITREP]: ISitrepData;
+    [EntryType.SITREP]: PackedSitrepData;
     [EntryType.SKILL]: PackedSkillData;
-    [EntryType.STATUS]: IStatusData;
-    [EntryType.TAG]: ITagTemplateData;
+    [EntryType.STATUS]: PackedStatusData;
+    [EntryType.TAG]: PackedTagTemplateData;
     [EntryType.TALENT]: PackedTalentData;
     [EntryType.QUIRK]: string; // womp womp
     [EntryType.WEAPON_MOD]: PackedWeaponModData;
@@ -283,7 +289,7 @@ export type EntryConstructor<T extends EntryType> = {
         type: T,
         registry: Registry,
         ctx: OpCtx,
-        id: string,
+        lid: string,
         reg_data: RegEntryTypes<T>,
         flags?: any
     ): LiveEntryTypes<T>;
@@ -385,7 +391,7 @@ export abstract class SerUtil {
         return (synergies || []).map(r => new Synergy(r));
     }
 
-    public static process_actions(actions?: IActionData[]): Action[] {
+    public static process_actions(actions?: RegActionData[]): Action[] {
         return (actions || []).map(a => new Action(a));
     }
 
@@ -406,7 +412,7 @@ export abstract class SerUtil {
         Deployables: Deployable[] /*Tags: TagInstance[]*/;
     }): {
         bonuses: RegBonusData[];
-        actions: IActionData[];
+        actions: RegActionData[];
         synergies: ISynergyData[];
         deployables: RegRef<EntryType.DEPLOYABLE>[];
         /*tags: RegTagInstanceData[] */
@@ -425,7 +431,7 @@ export abstract class SerUtil {
         reg: Registry,
         src: {
             bonuses?: RegBonusData[];
-            actions?: IActionData[];
+            actions?: RegActionData[];
             synergies?: ISynergyData[];
             deployables?: RegRef<EntryType.DEPLOYABLE>[];
             /* tags: RegTagInstanceData[]*/
@@ -453,7 +459,7 @@ export abstract class SerUtil {
         src: {
             id: string,
             bonuses?: PackedBonusData[];
-            actions?: IActionData[];
+            actions?: PackedActionData[];
             synergies?: ISynergyData[];
             deployables?: PackedDeployableData[];
             tags?: PackedTagInstanceData[];
@@ -462,7 +468,7 @@ export abstract class SerUtil {
         ctx: OpCtx
     ): Promise<{
         bonuses: RegBonusData[];
-        actions: IActionData[];
+        actions: RegActionData[];
         synergies: ISynergyData[];
         deployables: RegRef<EntryType.DEPLOYABLE>[];
         tags: RegTagInstanceData[];
@@ -477,9 +483,12 @@ export abstract class SerUtil {
         // Get bonuses
         let bonuses = (src.bonuses ?? []).map(b => Bonus.unpack(b));
 
+        // Get actions
+        let actions = (src.actions ?? []).map(a => Action.unpack(a));
+
         return {
             bonuses,
-            actions: src.actions ?? [],
+            actions,
             synergies: src.synergies ?? [],
             deployables,
             tags,
@@ -980,11 +989,11 @@ export abstract class RegCat<T extends EntryType> {
 
     // Find a value by lid. Just wraps above - common enough to warrant its own helper
     lookup_lid_raw(lid: string): Promise<{id: string, val: RegEntryTypes<T>} | null> {
-        return this.lookup_raw((e) => (e as any).id == lid);
+        return this.lookup_raw((e) => (e as any).lid == lid);
     }
 
     lookup_lid_live(ctx: OpCtx, lid: string): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, (e) => (e as any).id == lid);
+        return this.lookup_live(ctx, (e) => (e as any).lid == lid);
     }
 
     // Fetches the specific raw item of a category by its ID

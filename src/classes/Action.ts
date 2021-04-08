@@ -2,10 +2,10 @@ import { SerUtil, SimSer } from "@src/registry";
 import { typed_lancer_data } from "@src/data";
 import { ActivationType } from "@src/enums";
 import { SynergyLocation } from "@src/interface";
-import { defaults } from "@src/funcs";
+import { defaults, lid_format_name } from "@src/funcs";
+import { nanoid } from "nanoid";
 
-export interface IActionData {
-    id?: string;
+interface AllActionData {
     name: string;
     activation: ActivationType;
     cost?: number;
@@ -24,6 +24,14 @@ export interface IActionData {
     heat_cost?: number;
 }
 
+export interface PackedActionData extends AllActionData {
+    id?: string;
+}
+
+export interface RegActionData extends AllActionData {
+    lid: string;
+}
+
 export enum ActivePeriod {
     Turn = "Turn",
     Round = "Round",
@@ -32,8 +40,8 @@ export enum ActivePeriod {
     Unlimited = "Unlimited",
 }
 
-export class Action extends SimSer<IActionData> {
-    ID!: string | null;
+export class Action extends SimSer<RegActionData> {
+    ID!: string;
     Name!: string;
     Activation!: ActivationType;
     Cost!: number | null;
@@ -63,9 +71,24 @@ export class Action extends SimSer<IActionData> {
         return this._frequency;
     }
 
-    public load(data: IActionData): void {
+    public static unpack(action: PackedActionData): RegActionData {
+        let lid = action.id;
+        if(!lid) {
+            if(action.name) {
+                lid = "act_" + lid_format_name(action.name);
+            } else {
+                lid = "act_" + nanoid();
+            }
+        }
+        return  {
+            ...action,
+            lid,
+        };
+    }
+
+    public load(data: RegActionData): void {
         data = {...defaults.ACTION(), ...data};
-        this.ID;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Activation = SerUtil.restrict_enum(
             ActivationType,
@@ -84,9 +107,9 @@ export class Action extends SimSer<IActionData> {
         this.SynergyLocations = (data.synergy_locations as SynergyLocation[]) ?? [];
     }
 
-    public save(): IActionData {
+    public save(): RegActionData {
         return {
-            id: this.ID || undefined,
+            lid: this.ID,
             name: this.Name,
             activation: this.Activation,
             terse: this.Terse || undefined,
@@ -157,5 +180,5 @@ class Frequency {
 // There are some default actions defined as well. We make accessing them simpler here
 export const BaseActionsMap: Map<string, Action> = new Map();
 for (let t of typed_lancer_data.actions) {
-    BaseActionsMap.set(t.id!, new Action(t));
+    BaseActionsMap.set(t.id!, new Action(Action.unpack(t)));
 }

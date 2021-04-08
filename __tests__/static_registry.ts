@@ -43,7 +43,7 @@ describe("Static Registry Reference implementation", () => {
 
 
         let man = await c.create_live(ctx, {
-            id: "bmw",
+            lid: "bmw",
             name: "Big Mech Weapons",
             dark: "black",
             light: "white",
@@ -60,7 +60,7 @@ describe("Static Registry Reference implementation", () => {
         // Try retreiving raw 
         let raw = await c.get_raw(man.RegistryID);
         expect(raw).toBeTruthy();
-        expect(raw!.id).toEqual("bmw");
+        expect(raw!.lid).toEqual("bmw");
 
         // Try retrieving by lid
         expect(await c.lookup_lid_live(ctx, "bmw")).toBeTruthy();
@@ -85,7 +85,7 @@ describe("Static Registry Reference implementation", () => {
         // Check raw matches expected updated value
         raw = await c.get_raw(man.RegistryID);
         expect(raw).toBeTruthy();
-        expect(raw!.id).toEqual("smz");
+        expect(raw!.lid).toEqual("smz");
         expect(raw!.description).toEqual("small gunz");
 
         // Delete it, make sure it is gone
@@ -604,7 +604,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Insinuate three ways. One using a quickrelinker targeting ids at the func call level. Then, modifying setup_dest to have an inbuilt relinking hook targeting names. Finally, one which deliberately blacklists the key(s)
         let id_relinker = quick_relinker({
-            key_pairs: [["ID", "id"]]
+            key_pairs: [["ID", "lid"]]
         });
         await system.insinuate(setup_dest.reg, null, {relinker: id_relinker});
         const p1 = await get_dest_listing();
@@ -617,7 +617,7 @@ describe("Static Registry Reference implementation", () => {
         const p2 = await get_dest_listing();
 
         let blacklist_id_relinker = quick_relinker({
-            key_pairs: [["Name", "name"], ["ID", "id"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
+            key_pairs: [["Name", "name"], ["ID", "lid"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
             blacklist: ["ms_neurospike"]
         });
         setup_dest.reg.hooks.relinker = blacklist_id_relinker;

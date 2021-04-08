@@ -1,8 +1,7 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
 
-export interface IFactionData {
-    id: string;
+interface AllFactionData {
     name: string;
     description: string;
     logo: string;
@@ -10,36 +9,54 @@ export interface IFactionData {
     logo_url?: string;
 }
 
+export interface PackedFactionData extends AllFactionData {
+    id: string;
+}
+
+export interface RegFactionData extends Required<AllFactionData> {
+    lid: string;
+}
+
 export class Faction extends RegEntry<EntryType.FACTION> {
     ID!: string;
     Name!: string;
     Description!: string;
     Logo!: string;
-    LogoURL!: string | null;
+    LogoURL!: string;
     Color!: string;
 
-    public async load(data: IFactionData): Promise<void> {
+    public static async unpack(data: PackedFactionData, reg: Registry, ctx: OpCtx): Promise<Faction> {
         data = { ...defaults.FACTION(), ...data };
-        this.ID = data.id;
+        let fdata: RegFactionData = {
+            ...defaults.FACTION(),
+            lid: data.id,
+            color: data.color,
+            description: data.description,
+            logo: data.logo,
+            logo_url: data.logo_url ?? "",
+            name: data.name
+        };
+        return reg.get_cat(EntryType.FACTION).create_live(ctx, fdata);
+    }
+
+    public async load(data: RegFactionData): Promise<void> {
+        data = { ...defaults.FACTION(), ...data };
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Logo = data.logo;
-        this.LogoURL = data.logo_url ?? null;
+        this.LogoURL = data.logo_url;
         this.Color = data.color;
     }
 
-    protected save_imp(): IFactionData {
+    protected save_imp(): RegFactionData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             description: this.Description,
             logo: this.Logo,
             color: this.Color,
-            logo_url: undefined,
+            logo_url: this.LogoURL,
         };
-    }
-
-    public static async unpack(dep: IFactionData, reg: Registry, ctx: OpCtx): Promise<Faction> {
-        return reg.get_cat(EntryType.FACTION).create_live(ctx, dep);
     }
 }

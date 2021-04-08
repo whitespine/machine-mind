@@ -1,7 +1,8 @@
 import { Action, Bonus, Counter, Deployable, FrameTrait, MechEquipment, Synergy } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
-    IActionData,
+    PackedActionData,
+    RegActionData,
     RegBonusData,
     PackedBonusData,
     ISynergyData,
@@ -23,7 +24,7 @@ export interface PackedTalentRank {
     name: string;
     description: string; // v-html
     exclusive: boolean; // see below
-    actions?: IActionData[];
+    actions?: PackedActionData[];
     bonuses?: PackedBonusData[];
     synergies?: ISynergyData[];
     deployables?: PackedDeployableData[];
@@ -46,7 +47,7 @@ export interface RegTalentRank {
     name: string;
     description: string; // v-html
     exclusive: boolean; // see below
-    actions: IActionData[];
+    actions: RegActionData[];
     bonuses: RegBonusData[];
     synergies: ISynergyData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
@@ -55,7 +56,7 @@ export interface RegTalentRank {
 }
 
 export interface RegTalentData {
-    id: string;
+    lid: string;
     name: string;
     icon: string;
     terse: string; // terse text used in short descriptions. The fewer characters the better
@@ -88,7 +89,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
 
     public async load(data: RegTalentData): Promise<void> {
         data = { ...defaults.TALENT(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Icon = data.icon;
         this.Terse = data.terse;
@@ -133,7 +134,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         return {
             description: this.Description,
             icon: this.Icon,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             terse: this.Terse,
             ranks,
@@ -158,6 +159,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         let rdata: RegTalentData = {
             ...defaults.TALENT(),
             ...data,
+            lid: data.id,
             ranks,
             curr_rank: 1,
         };

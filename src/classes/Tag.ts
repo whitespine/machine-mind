@@ -9,13 +9,20 @@ import {
     RegSer,
 } from "@src/registry";
 
-export interface ITagTemplateData {
-    id: string;
+interface AllTagTemplateData {
     name: string;
     description: string;
     filter_ignore?: boolean;
     hidden?: boolean;
 }
+
+export interface PackedTagTemplateData extends AllTagTemplateData {
+    id: string;
+}
+export interface RegTagTemplateData extends Required<AllTagTemplateData> {
+    lid: string;
+}
+
 
 export interface PackedTagInstanceData {
     id: string;
@@ -33,36 +40,42 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     Name!: string;
     Description!: string;
     Hidden!: boolean;
-    _filter_ignore!: boolean | null; // Whether to ignore this tags data when filtering
+    FilterIgnore!: boolean; // Whether to ignore this tags data when filtering
 
-    public async load(data: ITagTemplateData): Promise<void> {
+    public async load(data: RegTagTemplateData): Promise<void> {
         data = { ...defaults.TAG_TEMPLATE(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Hidden = data.hidden || false; // Whether to show this tag
-        this._filter_ignore = data.filter_ignore || null;
+        this.FilterIgnore = data.filter_ignore;
     }
 
-    protected save_imp(): ITagTemplateData {
+    protected save_imp(): RegTagTemplateData {
         return {
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             description: this.Description,
-            filter_ignore: this._filter_ignore || undefined,
+            filter_ignore: this.FilterIgnore,
             hidden: this.Hidden,
         };
     }
     public static async unpack(
-        dep: ITagTemplateData,
+        dep: PackedTagTemplateData,
         reg: Registry,
         ctx: OpCtx
     ): Promise<TagTemplate> {
-        return reg.get_cat(EntryType.TAG).create_live(ctx, dep);
+        return reg.get_cat(EntryType.TAG).create_live(ctx, {
+            lid: dep.id,
+            description: dep.description,
+            name: dep.name,
+            filter_ignore: dep.filter_ignore ?? false,
+            hidden: dep.hidden ?? false
+        });
     }
 
-    get FilterIgnore(): boolean {
-        return this._filter_ignore || this.Hidden;
+    get ShouldShow(): boolean {
+        return this.FilterIgnore || this.Hidden;
     }
     get IsUnique(): boolean {
         return this.ID === "tg_unique";
@@ -118,7 +131,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
         if (!Tag) {
             Tag = new TagTemplate(EntryType.TAG, this.Registry, this.OpCtx, "error", {
                 description: "INVALID",
-                id: data.tag.fallback_lid,
+                lid: data.tag.fallback_lid,
                 name: data.tag.fallback_lid,
                 filter_ignore: true,
                 hidden: false, // Want it to be seen so it can be fixed

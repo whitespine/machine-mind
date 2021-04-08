@@ -4,26 +4,6 @@ export interface IImageContainer {
     Image: string;
 }
 
-export interface INotificationVariant {
-    color: string;
-    icon: string;
-    prefix?: string | null;
-    timeout?: number | null;
-}
-export interface INotification {
-    id: string;
-    variant: string;
-    text: string;
-    onClick?: null | (() => void);
-}
-
-export interface IErrorReport {
-    time: Date;
-    message: string;
-    component?: string | null;
-    stack: string;
-}
-
 export interface IDiceStats {
     min: number;
     max: number;
@@ -49,7 +29,7 @@ export interface IDamageRollResult {
     parseError: boolean;
 }
 
-export interface IRankedData {
+export interface PackedRankedData {
     id: string;
     rank: number;
     custom?: boolean;
@@ -73,50 +53,3 @@ export interface IHistoryItem {
     field: string;
     val?: any;
 }
-/*
-export interface IEquipmentSaveData {
-    id: string;
-    destroyed: boolean;
-    cascading: boolean;
-    note: string;
-    uses?: number;
-    flavorName?: string;
-    flavorDescription?: string;
-    customDamageType?: string;
-}
-
-export interface IMechWeaponSaveData extends IEquipmentSaveData {
-    loaded: boolean;
-    mod?: IEquipmentSaveData;
-    customDamageType?: string;
-    maxUseOverride?: number;
-}
-
-
-
-
-export interface IMechLoadoutData {
-    id: string;
-    name: string;
-    systems: IEquipmentData[];
-    integratedSystems: IEquipmentData[];
-    mounts: IMountData[];
-    integratedMounts: { weapon: IMechWeaponSaveData; source: string }[];
-    improved_armament: IMountData;
-    integratedWeapon: IMountData;
-}
-
-export interface IMountData {
-    mount_type: string;
-    lock: boolean;
-    slots: IWeaponSlotData[];
-    extra: IWeaponSlotData[];
-    bonus_effects: string[];
-}
-
-export interface IWeaponSlotData {
-    size: string;
-    weapon: IMechWeaponSaveData | null;
-}
-
-*/

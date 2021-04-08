@@ -1,5 +1,5 @@
 import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@src/class";
-import { IActionData, Action } from "@src/classes/Action";
+import { RegActionData, PackedActionData, Action } from "@src/classes/Action";
 import { PackedBonusData, Bonus, RegBonusData } from "@src/classes/Bonus";
 import {
     ISynergyData,
@@ -12,7 +12,6 @@ import { ReserveType } from "@src/enums";
 import { defaults } from "@src/funcs";
 
 interface AllReserveData {
-    id: string;
     type?: string;
     name?: string;
     label?: string;
@@ -22,21 +21,24 @@ interface AllReserveData {
     resource_cost: string;
     used: boolean;
     consumable: boolean;
-    actions?: IActionData[];
     synergies?: ISynergyData[];
 }
 export interface PackedReserveData extends AllReserveData {
+    id: string;
     deployables?: PackedDeployableData[];
     counters?: PackedCounterData[];
     integrated?: string[];
     bonuses?: PackedBonusData[];
+    actions?: PackedActionData[];
 }
 
 export interface RegReserveData extends Required<AllReserveData> {
+    lid: string;
     bonuses: RegBonusData[];
     deployables: RegRef<EntryType.DEPLOYABLE>[];
     counters: RegCounterData[];
     integrated: RegRef<any>[];
+    actions: RegActionData[];
 }
 
 export class Reserve extends RegEntry<EntryType.RESERVE> {
@@ -59,7 +61,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
     public async load(data: RegReserveData) {
         data = { ...defaults.RESERVE(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
         this.ReserveType = (data.type as ReserveType) || ReserveType.Resources;
@@ -103,7 +105,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
     protected save_imp(): RegReserveData {
         return {
-            id: this.ID,
+            lid: this.ID,
             type: this.Type,
             name: this.Name,
             label: this.ResourceLabel,
@@ -138,6 +140,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
             ...defaults.RESERVE(),
             ...data,
             bonuses: (data.bonuses ?? []).map(Bonus.unpack),
+            actions: (data.actions ?? []).map(Action.unpack),
             integrated,
             deployables,
             counters,

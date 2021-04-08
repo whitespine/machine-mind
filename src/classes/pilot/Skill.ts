@@ -30,7 +30,7 @@ export interface PackedSkillData {
 }
 
 export interface RegSkillData {
-    id: string;
+    lid: string;
     name: string;
     description: string; // terse, prefer fewest chars
     detail: string; // v-html
@@ -48,7 +48,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
 
     public async load(data: RegSkillData): Promise<void> {
         data = { ...defaults.SKILL(), ...data };
-        this.ID = data.id;
+        this.ID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Detail = data.detail;
@@ -61,7 +61,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
             description: this.Description,
             detail: this.Detail,
             family: this.Family,
-            id: this.ID,
+            lid: this.ID,
             name: this.Name,
             rank: this.CurrentRank,
         };
@@ -86,9 +86,13 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Skill> {
-        let rdata = { ...defaults.SKILL(), ...packed_skill };
+        let rdata = { 
+            ...defaults.SKILL(), 
+            lid: packed_skill.id,
+            name: packed_skill.name ?? packed_skill.id
+        };
         // Default the name
-        rdata.name = packed_skill.name ?? rdata.id;
+        rdata.name = packed_skill.name ?? rdata.lid;
         return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
     }
 }

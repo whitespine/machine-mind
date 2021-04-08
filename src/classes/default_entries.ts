@@ -2,14 +2,9 @@ import { Bonus } from "@src/class";
 import type {
     AnyRegNpcFeatureData,
     BaseRegNpcFeatureData,
-    IEnvironmentData,
-    IFactionData,
     INpcClassStats,
     INpcStats,
-    IOrganizationData,
-    ISitrepData,
-    IStatusData,
-    ITagTemplateData,
+    PackedOrganizationData,
     RegBonusData,
     RegCoreBonusData,
     RegCoreSystemData,
@@ -43,6 +38,13 @@ import type {
     RegTalentRank,
     RegWeaponModData,
     RegWepMountData,
+    RegActionData,
+    RegTagTemplateData,
+    RegStatusData,
+    RegEnvironmentData,
+    RegFactionData,
+    RegSitrepData,
+    RegOrganizationData
 } from "@src/interface";
 import { EntryType, RegEntryTypes } from "@src/registry";
 import { nanoid } from "nanoid";
@@ -62,7 +64,6 @@ import {
     MountType,
     NpcTechType,
 } from "@src/enums";
-import { IActionData } from "./Action";
 
 // Some general defaults
 const description = "No description";
@@ -73,7 +74,7 @@ const logo = icon;
 // Our default bonus basically does nothing but allows everything
 export function BONUS(): RegBonusData {
     return {
-        id: "unknown",
+        lid: "unknown",
         val: "0",
         overwrite: false,
         replace: false,
@@ -111,9 +112,9 @@ export function BONUS(): RegBonusData {
     };
 }
 
-export function ACTION(): IActionData {
+export function ACTION(): RegActionData {
     return {
-        id: nanoid(),
+        lid: "act_" + nanoid(),
         activation: ActivationType.Quick,
         detail: description,
         name: "New Action",
@@ -131,7 +132,7 @@ export function CORE_BONUS(): RegCoreBonusData {
         integrated: [],
         name: "New Core Bonus",
         effect: "",
-        id: "cb_" + nanoid(),
+        lid: "cb_" + nanoid(),
         mounted_effect: "",
         source: null,
     };
@@ -165,7 +166,7 @@ export function CORE_SYSTEM(): RegCoreSystemData {
 
 export function DEPLOYABLE(): RegDeployableData {
     return {
-        id: "dep_" + nanoid(),
+        lid: "dep_" + nanoid(),
         actions: [],
         bonuses: [],
         counters: [],
@@ -201,19 +202,19 @@ export function DEPLOYABLE(): RegDeployableData {
     };
 }
 
-export function ENVIRONMENT(): Required<IEnvironmentData> {
+export function ENVIRONMENT(): Required<RegEnvironmentData> {
     return {
         description,
-        id: "env_" + nanoid(),
+        lid: "env_" + nanoid(),
         name: "New Environment",
     };
 }
 
-export function FACTION(): Required<IFactionData> {
+export function FACTION(): Required<RegFactionData> {
     return {
         color,
         description,
-        id: "fac_" + nanoid(),
+        lid: "fac_" + nanoid(),
         logo,
         name: "New Faction",
         logo_url: "",
@@ -237,7 +238,7 @@ export function FRAME_TRAIT(): RegFrameTraitData {
 export function FRAME(): RegFrameData {
     return {
         description,
-        id: "mf_" + nanoid(),
+        lid: "mf_" + nanoid(),
         license_level: 2,
         mechtype: ["BALANCED"],
         mounts: [],
@@ -280,7 +281,7 @@ export function MANUFACTURER(): RegManufacturerData {
     return {
         dark: "#000000",
         description,
-        id: "man_" + nanoid(),
+        lid: "man_" + nanoid(),
         light: "#EEEEEE",
         logo,
         name: "New Manufacturer",
@@ -303,7 +304,7 @@ export function MECH(): RegMechData {
         current_structure: 0,
         ejected: false,
         gm_note: "",
-        id: "mech_" + nanoid(),
+        lid: "mech_" + nanoid(),
         loadout: {
             frame: null,
             system_mounts: [],
@@ -340,7 +341,7 @@ export function MECH_WEAPON(): RegMechWeaponData {
         cascading: false,
         deployables: [],
         destroyed: false,
-        id: "mw_" + nanoid(),
+        lid: "mw_" + nanoid(),
         integrated: [],
         license: "",
         license_level: 0,
@@ -367,7 +368,7 @@ export function MECH_SYSTEM(): RegMechSystemData {
         deployables: [],
         destroyed: false,
         effect: "",
-        id: "ms_" + nanoid(),
+        lid: "ms_" + nanoid(),
         integrated: [],
         license: "",
         license_level: 0,
@@ -394,7 +395,7 @@ export function NPC(): RegNpcData {
         custom_counters: [],
         defeat: "",
         destroyed: false,
-        id: "npc_" + nanoid(),
+        lid: "npc_" + nanoid(),
         labels: [],
         localImage: "",
         name: "New Npc",
@@ -412,7 +413,7 @@ export function NPC(): RegNpcData {
 
 export function NPC_CLASS(): RegNpcClassData {
     return {
-        id: "npcc_" + nanoid(),
+        lid: "npcc_" + nanoid(),
         name: "New Npc Class",
         base_features: [],
         base_stats: NPC_CLASS_STATS(),
@@ -432,7 +433,7 @@ export function NPC_FEATURE(): AnyRegNpcFeatureData {
 
 function npc_feature_commons(): BaseRegNpcFeatureData {
     return {
-        id: "npcf_" + nanoid(),
+        lid: "npcf_" + nanoid(),
         name: "New Npc Feature",
         origin: {
             base: false,
@@ -535,7 +536,7 @@ export function NPC_SYSTEM(): RegNpcSystemData {
 
 export function NPC_TEMPLATE(): RegNpcTemplateData {
     return {
-        id: "npct_" + nanoid(),
+        lid: "npct_" + nanoid(),
         base_features: [],
         description,
         name: "New Npc Template",
@@ -588,7 +589,7 @@ export function NPC_STATS(): Required<INpcStats> {
     };
 }
 
-export function ORGANIZATION(): Required<IOrganizationData> {
+export function ORGANIZATION(): Required<RegOrganizationData> {
     return {
         actions: "",
         description,
@@ -596,6 +597,7 @@ export function ORGANIZATION(): Required<IOrganizationData> {
         influence: 0,
         name: "New Organization",
         purpose: OrgType.Academic, // Just the alphabetic first
+        lid: "ord_" + nanoid()
     };
 }
 
@@ -606,7 +608,7 @@ export function PILOT_GEAR(): RegPilotGearData {
         deployables: [],
         description,
         uses: 0,
-        id: "pg_" + nanoid(),
+        lid: "pg_" + nanoid(),
         name: "New Gear",
         synergies: [],
         tags: [],
@@ -665,11 +667,11 @@ export function PILOT(): RegPilotData {
         custom_counters: [],
         group: "",
         history: "",
-        id: "pilot_" + nanoid(),
+        lid: "pilot_" + nanoid(),
         lastCloudUpdate: "",
         level: 0,
         loadout: {
-            id: "loadout_" + nanoid(),
+            lid: "loadout_" + nanoid(),
             name: "Foundry Loadout",
             armor: [null],
             gear: [null, null, null],
@@ -695,7 +697,7 @@ export function PILOT_LOADOUT(): RegPilotLoadoutData {
         extendedGear: [null, null],
         extendedWeapons: [null, null],
         gear: [null, null, null],
-        id: "ploadout_" + nanoid(),
+        lid: "ploadout_" + nanoid(),
         name: "Foundry Loadout",
         weapons: [null, null],
     };
@@ -717,16 +719,16 @@ export function RESERVE(): RegReserveData {
         bonuses: [],
         deployables: [],
         description,
-        id: "res_" + nanoid(),
+        lid: "res_" + nanoid(),
         synergies: [],
     };
 }
 
-export function SITREP(): Required<ISitrepData> {
+export function SITREP(): Required<RegSitrepData> {
     return {
         description,
         enemyVictory: "The enemy wins when ___",
-        id: "sit_" + nanoid(),
+        lid: "sit_" + nanoid(),
         name: "New Sitrep",
         pcVictory: "The PCs win when ___",
         controlZone: "",
@@ -739,7 +741,7 @@ export function SITREP(): Required<ISitrepData> {
 
 export function SKILL(): RegSkillData {
     return {
-        id: "sk_" + nanoid(),
+        lid: "sk_" + nanoid(),
         description: "can sing the dk rap really well",
         detail: "",
         family: SkillFamily.cha,
@@ -748,8 +750,9 @@ export function SKILL(): RegSkillData {
     };
 }
 
-export function STATUS(): Required<IStatusData> {
+export function STATUS(): Required<RegStatusData> {
     return {
+        lid: "cond_" + nanoid(),
         effects: [],
         icon,
         name: "New Status/Condition",
@@ -757,10 +760,10 @@ export function STATUS(): Required<IStatusData> {
     };
 }
 
-export function TAG_TEMPLATE(): Required<ITagTemplateData> {
+export function TAG_TEMPLATE(): Required<RegTagTemplateData> {
     return {
         description,
-        id: "tg_" + nanoid(),
+        lid: "tg_" + nanoid(),
         name: "New Tag",
         hidden: false,
         filter_ignore: false,
@@ -772,7 +775,7 @@ export function TALENT(): RegTalentData {
         curr_rank: 1,
         description,
         icon,
-        id: "t_" + nanoid(),
+        lid: "t_" + nanoid(),
         name: "New Talent",
         ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
         terse: "",
@@ -845,7 +848,7 @@ export function WEAPON_MOD(): RegWeaponModData {
         deployables: [],
         destroyed: false,
         effect: "",
-        id: "wm_" + nanoid(),
+        lid: "wm_" + nanoid(),
         integrated: [],
         license: "",
         license_level: 0,
