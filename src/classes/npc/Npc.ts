@@ -68,7 +68,7 @@ export interface RegNpcData extends AllNpcData {
 
 export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     // Held data
-    ID!: string;
+    LID!: string;
     Tier!: number;
     Name!: string;
     Subtitle!: string;
@@ -156,7 +156,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     public get AvailableFeatures(): NpcFeature[] {
         return this.Class.OptionalFeatures.concat(
             this._templates.flatMap(x => x.OptionalFeatures)
-        ).filter(x => !this.SelectedFeatures.some(y => y.ID === x.ID));
+        ).filter(x => !this.SelectedFeatures.some(y => y.LID === x.LID));
     }
     */
 
@@ -256,7 +256,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.CloudImage = data.cloudImage;
         this.Defeat = data.defeat;
         this.Destroyed = data.destroyed;
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.CurrentHP = data.current_hp;
         this.CurrentHeat = data.current_heat;
         this.CurrentStress = data.current_stress;
@@ -285,7 +285,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             cloudImage: this.CloudImage,
             defeat: this.Defeat,
             destroyed: this.Destroyed,
-            lid: this.ID,
+            lid: this.LID,
             current_hp: this.CurrentHP,
             current_heat: this.CurrentHeat,
             labels: this.Labels,

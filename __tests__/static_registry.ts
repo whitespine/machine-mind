@@ -71,12 +71,12 @@ describe("Static Registry Reference implementation", () => {
         expect((await c.list_live(ctx)).length).toEqual(1);
 
         // Try modifying and saving
-        man.ID = "smz";
+        man.LID = "smz";
         man.Description = "small gunz";
         await man.writeback();
 
         // Make sure writeback didn't break things in the live copy somehow.
-        expect(man.ID).toEqual("smz");
+        expect(man.LID).toEqual("smz");
 
         // Check listing of both types again
         expect(Array.from(await c.iter_raw()).length).toEqual(1);
@@ -604,7 +604,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Insinuate three ways. One using a quickrelinker targeting ids at the func call level. Then, modifying setup_dest to have an inbuilt relinking hook targeting names. Finally, one which deliberately blacklists the key(s)
         let id_relinker = quick_relinker({
-            key_pairs: [["ID", "lid"]]
+            key_pairs: [["LID", "lid"]]
         });
         await system.insinuate(setup_dest.reg, null, {relinker: id_relinker});
         const p1 = await get_dest_listing();
@@ -617,7 +617,7 @@ describe("Static Registry Reference implementation", () => {
         const p2 = await get_dest_listing();
 
         let blacklist_id_relinker = quick_relinker({
-            key_pairs: [["Name", "name"], ["ID", "lid"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
+            key_pairs: [["Name", "name"], ["LID", "lid"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
             blacklist: ["ms_neurospike"]
         });
         setup_dest.reg.hooks.relinker = blacklist_id_relinker;

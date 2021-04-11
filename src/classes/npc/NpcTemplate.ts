@@ -29,7 +29,7 @@ export interface RegNpcTemplateData extends AllNpcTemplateData {
 }
 
 export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     BaseFeatures!: NpcFeature[];
@@ -38,7 +38,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
 
     protected async load(data: RegNpcTemplateData): Promise<void> {
         data = { ...defaults.NPC_TEMPLATE(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Power = data.power;
@@ -51,7 +51,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
 
     protected save_imp(): RegNpcTemplateData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.OptionalFeatures),
             description: this.Description,

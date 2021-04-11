@@ -141,7 +141,7 @@ describe("Pilots", () => {
         expect(dest_weapons.length).toEqual(0); // 3
 
         // Make sure that the mechs do in fact have the items, though. Only both with a few
-        let lanny = await dest_mechs.find((m: Mech) => m.Loadout.Frame.ID == "mf_lancaster");
+        let lanny = await dest_mechs.find((m: Mech) => m.Loadout.Frame.LID == "mf_lancaster");
         let lanny_inv = await lanny.get_inventory();
         let lanny_frames = await lanny_inv.get_cat(EntryType.FRAME).list_live(ctx);
         let lanny_weapons = await lanny_inv.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
@@ -168,7 +168,7 @@ describe("Pilots", () => {
         // If we sync again with a proper relinker, then we shouldn't get any more duplicates
         let hooks = {
             relinker: quick_relinker({
-                key_pairs: [["ID", "lid"], ["Name", "name"]]
+                key_pairs: [["LID", "lid"], ["Name", "name"]]
             })
         }
         await cloud_sync(pilot_data, pilots[1], [compendium.reg], hooks);

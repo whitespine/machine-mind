@@ -16,7 +16,7 @@ export interface RegOrganizationData extends AllOrganizationData {
 }
 
 export class Organization extends RegEntry<EntryType.ORGANIZATION> {
-    public ID!: string;
+    public LID!: string;
     public Purpose!: OrgType;
     public Name!: string;
     public Description!: string;
@@ -44,7 +44,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
 
     public async load(data: RegOrganizationData): Promise<void> {
         data = { ...defaults.ORGANIZATION(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
         this.Efficiency = bound_int(data.efficiency, 0, 6);
@@ -54,7 +54,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
     protected save_imp(): RegOrganizationData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             purpose: this.Purpose,
             description: this.Description,

@@ -125,7 +125,7 @@ export interface RegMechWeaponProfile {
 
 export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
     // Generic equip info
-    ID!: string;
+    LID!: string;
     Name!: string;
     Source!: Manufacturer | null; // must be the same as the Manufacturer ID to sort correctly
     License!: string; // reference to the Frame name of the associated license
@@ -156,7 +156,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
 
     public async load(data: RegMechWeaponData): Promise<void> {
         data = { ...defaults.MECH_WEAPON(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.License = data.license;
@@ -212,7 +212,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
 
     protected save_imp(): RegMechWeaponData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             license: this.License,
             integrated: SerUtil.ref_all(this.Integrated),
             deployables: SerUtil.ref_all(this.Deployables),

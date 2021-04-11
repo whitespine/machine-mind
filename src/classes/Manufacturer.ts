@@ -19,7 +19,7 @@ export interface RegManufacturerData extends AllManufacturerData {
     lid: string;
 }
 export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     Logo!: string;
@@ -29,7 +29,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
 
     public async load(data: RegManufacturerData): Promise<void> {
         data = { ...defaults.MANUFACTURER(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Light = data.light;
         this.Dark = data.dark;
@@ -39,7 +39,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     }
     protected save_imp(): RegManufacturerData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             logo: this.Logo,
             light: this.Light,

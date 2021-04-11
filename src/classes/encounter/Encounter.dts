@@ -156,7 +156,7 @@ export class Encounter implements IMissionStep {
     public Npcs(side: EncounterSide): Npc[] {
         const npcs: Npc[] = [];
         this.npcIDBySide(side).forEach(id => {
-            const n = store.npcs.Npcs.find((x: Npc) => x.ID === id);
+            const n = store.npcs.Npcs.find((x: Npc) => x.LID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -167,12 +167,12 @@ export class Encounter implements IMissionStep {
     }
 
     public AddNpc(npc: Npc, side: EncounterSide): void {
-        this._npcs.push({ id: npc.ID, side: side });
+        this._npcs.push({ id: npc.LID, side: side });
         this.save();
     }
 
     public RemoveNpc(npc: Npc, side: EncounterSide): void {
-        const idx = this._npcs.findIndex(x => x.id === npc.ID && x.side === side);
+        const idx = this._npcs.findIndex(x => x.id === npc.LID && x.side === side);
         if (idx > -1) this._npcs.splice(idx, 1);
         this.save();
     }
@@ -190,7 +190,7 @@ export class Encounter implements IMissionStep {
     public Reinforcements(side: EncounterSide): Npc[] {
         const npcs: Npc[] = [];
         this.reinforcementIDBySide(side).forEach(id => {
-            const n = store.npcs.Npcs.find((x: Npc) => x.ID === id);
+            const n = store.npcs.Npcs.find((x: Npc) => x.LID === id);
             if (n) npcs.push(n);
         });
         return npcs;
@@ -201,18 +201,18 @@ export class Encounter implements IMissionStep {
     }
 
     public AddReinforcement(n: Npc, side: EncounterSide): void {
-        this._reinforcements.push({ id: n.ID, side: side });
+        this._reinforcements.push({ id: n.LID, side: side });
         this.save();
     }
 
     public RemoveReinforcement(n: Npc, side: EncounterSide): void {
-        const idx = this._reinforcements.findIndex(x => x.id === n.ID && x.side === side);
+        const idx = this._reinforcements.findIndex(x => x.id === n.LID && x.side === side);
         if (idx > -1) this._reinforcements.splice(idx, 1);
         this.save();
     }
 
     public MoveReinforcement(n: Npc): void {
-        const idx = this._reinforcements.findIndex(x => x.id === n.ID);
+        const idx = this._reinforcements.findIndex(x => x.id === n.LID);
         // Doesn't seem to have worked out
         if (idx === -1) {
             logger(`Reinforcement ${n.Name} not found in encounter`);
@@ -253,7 +253,7 @@ export class Encounter implements IMissionStep {
 
     public static Serialize(enc: Encounter): IEncounterData {
         return {
-            id: enc.ID,
+            id: enc.LID,
             name: enc.Name,
             npcs: enc._npcs,
             reinforcements: enc._reinforcements,

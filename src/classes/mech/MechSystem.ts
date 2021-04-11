@@ -64,7 +64,7 @@ export interface RegMechSystemData extends Required<AllMechSystemData> {
 
 export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     // System information
-    ID!: string;
+    LID!: string;
     Name!: string;
     Source!: Manufacturer | null;
     SysType!: SystemType;
@@ -117,7 +117,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
 
     public async load(data: RegMechSystemData): Promise<void> {
         data = { ...defaults.MECH_SYSTEM(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.SysType = data.type;
@@ -141,7 +141,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         return {
             description: this.Description,
             effect: this.Effect,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             source: this.Source?.as_ref() ?? null,
             license: this.License,

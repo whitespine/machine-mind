@@ -29,7 +29,7 @@ export interface RegCounterData {
 // This is kinda weird because I think the compcon storage strategy is kinda dumb. So, when we load, we take both the ICounterData as well as an array off ICounterSaveData
 
 export class Counter extends SimSer<RegCounterData> {
-    public ID!: string;
+    public LID!: string;
     public Name!: string;
     // public Level!: number | null;
     public Min!: number;
@@ -38,7 +38,7 @@ export class Counter extends SimSer<RegCounterData> {
     private _value!: number;
 
     public load(data: RegCounterData) {
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         // this.Level = data.level || null;
         this.Min = data.min || 0;
@@ -48,7 +48,7 @@ export class Counter extends SimSer<RegCounterData> {
 
     public save(): RegCounterData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             val: this.Value,
             max: this.Max,
@@ -96,7 +96,7 @@ export class Counter extends SimSer<RegCounterData> {
     // Try to set this counters value from a set of counter save data
     public sync_state_from(counter_saves: PackedCounterSaveData[]) {
         // Load saves
-        let save = counter_saves?.find(y => y.id == this.ID);
+        let save = counter_saves?.find(y => y.id == this.LID);
         if (save) {
             this.Value = save.val;
         }

@@ -671,7 +671,7 @@ export abstract class RegEntry<T extends EntryType> {
     // Make a reference to this item
     public as_ref(): RegRef<T> {
         // Attempt to get our id. Default as empty string
-        let lid = (this as any).ID ?? "";
+        let lid = (this as any).LID ?? "";
         // If our context was set as lid-mode, then we save back as ids whenever possible
         return {
             id: this.RegistryID,

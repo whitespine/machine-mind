@@ -42,7 +42,7 @@ export interface RegReserveData extends Required<AllReserveData> {
 }
 
 export class Reserve extends RegEntry<EntryType.RESERVE> {
-    ID!: string;
+    LID!: string;
     ResourceLabel!: string;
     Consumable!: boolean;
     ReserveType!: ReserveType;
@@ -61,7 +61,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
     public async load(data: RegReserveData) {
         data = { ...defaults.RESERVE(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
         this.ReserveType = (data.type as ReserveType) || ReserveType.Resources;
@@ -105,7 +105,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
     protected save_imp(): RegReserveData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             type: this.Type,
             name: this.Name,
             label: this.ResourceLabel,

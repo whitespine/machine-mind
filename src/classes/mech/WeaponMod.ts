@@ -91,7 +91,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     Source!: Manufacturer | null;
     LicenseLevel!: number;
     License!: string;
-    ID!: string;
+    LID!: string;
     Name!: string;
 
     // Mech equipment
@@ -172,7 +172,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         return {
             license: this.License,
             license_level: this.LicenseLevel,
-            lid: this.ID,
+            lid: this.LID,
             source: this.Source?.as_ref() ?? null,
 
             name: this.Name,
@@ -201,7 +201,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         data = { ...defaults.WEAPON_MOD(), ...data };
         this.License = data.license;
         this.LicenseLevel = data.license_level;
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
 
         this.Name = data.name;

@@ -80,7 +80,7 @@ export interface RegPilotGearData extends AllRegData {}
 /////////////////////////////////////////////////////////
 
 export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     Uses!: number;
@@ -96,7 +96,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
 
     public async load(data: RegPilotArmorData): Promise<void> {
         data = { ...defaults.PILOT_ARMOR(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
@@ -108,7 +108,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     protected save_imp(): RegPilotArmorData {
         return {
             description: this.Description,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
             uses: this.Uses,
@@ -136,7 +136,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
 }
 
 export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     Tags!: TagInstance[];
@@ -153,7 +153,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
 
     public async load(data: RegPilotGearData): Promise<void> {
         data = { ...defaults.PILOT_GEAR(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
@@ -165,7 +165,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     protected save_imp(): RegPilotGearData {
         return {
             description: this.Description,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             tags: SerUtil.save_all(this.Tags),
             uses: this.Uses,
@@ -194,7 +194,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
 
 export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Name!: string;
-    ID!: string;
+    LID!: string;
     Description!: string;
     Effect!: string;
     Uses!: number;
@@ -213,7 +213,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     public async load(data: RegPilotWeaponData): Promise<void> {
         data = { ...defaults.PILOT_WEAPON(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Effect = data.effect;
@@ -227,7 +227,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     protected save_imp(): RegPilotWeaponData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             description: this.Description,
             name: this.Name,
             effect: this.Effect,

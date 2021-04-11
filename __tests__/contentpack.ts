@@ -95,7 +95,7 @@ describe("Content pack handling", () => {
         // Assert that it has its deployable, and that the deployable is named as we expect it to be
         expect(eagle).toBeTruthy();
         expect(eagle.Deployables.length).toEqual(1);
-        expect(eagle.Deployables[0].ID).toEqual("dep_ms_legion_eagle_legion_standard");
+        expect(eagle.Deployables[0].LID).toEqual("dep_ms_legion_eagle_legion_standard");
 
         // Also check something from core data
         let hive = await s.reg.get_cat(EntryType.MECH_SYSTEM).lookup_lid_live(ctx, "ms_hive_drone");
@@ -103,7 +103,7 @@ describe("Content pack handling", () => {
         // Assert that it has its deployable, and that the deployable is named as we expect it to be
         expect(hive).toBeTruthy();
         expect(hive.Deployables.length).toEqual(1);
-        expect(hive.Deployables[0].ID).toEqual("dep_ms_hive_drone_hive_drone");
+        expect(hive.Deployables[0].LID).toEqual("dep_ms_hive_drone_hive_drone");
     });
 
     it("Can load npc data as well", async () => {

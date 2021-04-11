@@ -32,7 +32,7 @@ export class ActiveMission {
 
     public constructor(m: Mission, pilots: Pilot[]) {
         this._mission = m;
-        this._pilotIDs = pilots.map(x => x.ID);
+        this._pilotIDs = pilots.map(x => x.LID);
         this._activeNpcs = [];
         this._activeReinforcements = [];
         this._step = 0;
@@ -143,7 +143,7 @@ export class ActiveMission {
     }
 
     public RemoveActiveNpc(n: Npc): void {
-        const idx = this.ActiveNpcs.findIndex(x => x.ID === n.ID);
+        const idx = this.ActiveNpcs.findIndex(x => x.LID === n.LID);
         if (idx > -1) this.ActiveNpcs.splice(idx, 1);
     }
 
@@ -165,12 +165,12 @@ export class ActiveMission {
     }
 
     public RemoveActiveReinforcement(n: Npc): void {
-        const idx = this.ActiveReinforcements.findIndex(x => x.ID === n.ID);
+        const idx = this.ActiveReinforcements.findIndex(x => x.LID === n.LID);
         if (idx > -1) this.ActiveReinforcements.splice(idx, 1);
     }
 
     public MoveReinforcement(n: Npc): void {
-        const idx = this._activeReinforcements.findIndex(x => x.ID === n.ID);
+        const idx = this._activeReinforcements.findIndex(x => x.LID === n.LID);
         if (idx === -1) {
             logger(`Npc reinforcement ${n.Name} not found in this encounter`);
         }
@@ -205,19 +205,19 @@ export class ActiveMission {
     }
 
     public get Pilots(): Pilot[] {
-        return store.pilots.Pilots.filter((x: Pilot) => this._pilotIDs.some(y => y === x.ID));
+        return store.pilots.Pilots.filter((x: Pilot) => this._pilotIDs.some(y => y === x.LID));
     }
 
     public set Pilots(val: Pilot[]) {
-        this._pilotIDs = val.map(x => x.ID);
+        this._pilotIDs = val.map(x => x.LID);
     }
 
     public AddPilot(p: Pilot): void {
-        this._pilotIDs.push(p.ID);
+        this._pilotIDs.push(p.LID);
     }
 
     public RemovePilot(p: Pilot): void {
-        const idx = this._pilotIDs.indexOf(p.ID);
+        const idx = this._pilotIDs.indexOf(p.LID);
         if (idx > -1) this._pilotIDs.splice(idx, 1);
     }
 
@@ -244,7 +244,7 @@ export class ActiveMission {
     public static Serialize(m: ActiveMission): IActiveMissionData {
         return {
             mission: Mission.Serialize(m._mission),
-            pilotIDs: m.Pilots.map(x => x.ID),
+            pilotIDs: m.Pilots.map(x => x.LID),
             step: m.Step,
             round: m.Round,
             activeNpcs: m.ActiveNpcs.map(x => Npc.Serialize(x)),

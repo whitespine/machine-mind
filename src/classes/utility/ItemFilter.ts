@@ -12,7 +12,7 @@ export class ItemFilter {
         Object.keys(filter).forEach(p => {
             if (p === "Tags") {
                 items = items.filter(e =>
-                    (e as MechEquipment).Tags.map(t => t.ID).some(x => filter.Tags.includes(x))
+                    (e as MechEquipment).Tags.map(t => t.LID).some(x => filter.Tags.includes(x))
                 );
             } else if (filter[p].length)
                 items = items.filter(x => filter[p].some((e: any) => x[p].includes(e)));

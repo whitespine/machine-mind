@@ -35,7 +35,7 @@ export class Rest implements IMissionStep {
 
     public static Serialize(rest: Rest): IRestData {
         return {
-            id: rest.ID,
+            id: rest.LID,
             note: rest.Note,
         };
     }

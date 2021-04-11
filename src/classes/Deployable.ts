@@ -95,7 +95,7 @@ export interface RegDeployableData {
 }
 
 export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     DeployableType!: string; // this is for UI furnishing only. Drone, etc
     Detail!: string;
@@ -171,7 +171,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
     private sum_bonuses(base_value: number, lid: string): number {
         // Filter down to only relevant bonuses
-        let filtered = this.AllBonuses.filter(b => b.ID == lid);
+        let filtered = this.AllBonuses.filter(b => b.LID == lid);
 
         let ctx: BonusContext = {};
         if (this.Deployer?.Type == EntryType.PILOT) {
@@ -244,7 +244,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.AvailableMounted = data.avail_mounted;
         this.AvailableUnmounted = data.avail_unmounted;
 
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Detail = data.detail;
         this.DeployableType = data.type;
@@ -286,7 +286,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     protected save_imp(): RegDeployableData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             type: this.Type,
             burn: this.Burn,

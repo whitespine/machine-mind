@@ -18,7 +18,7 @@ export interface RegFactionData extends Required<AllFactionData> {
 }
 
 export class Faction extends RegEntry<EntryType.FACTION> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     Logo!: string;
@@ -45,7 +45,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
 
     public async load(data: RegFactionData): Promise<void> {
         data = { ...defaults.FACTION(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Logo = data.logo;
@@ -55,7 +55,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
 
     protected save_imp(): RegFactionData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             description: this.Description,
             logo: this.Logo,

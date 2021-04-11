@@ -95,7 +95,7 @@ export class Mission {
     }
 
     public get Encounters(): Encounter[] {
-        const ids = this._step_ids.filter(x => !this.Rests.map(r => r.ID).some(y => y === x));
+        const ids = this._step_ids.filter(x => !this.Rests.map(r => r.LID).some(y => y === x));
         return ids.map(x => store.encounters.getEncounter(x)).filter(x => x) as Encounter[];
     }
 
@@ -105,8 +105,8 @@ export class Mission {
 
     // Remove all invalid ids
     public ValidateSteps(): void {
-        const ids = store.encounters.Encounters.map((x: Encounter) => x.ID).concat(
-            this._rests.map(x => x.ID)
+        const ids = store.encounters.Encounters.map((x: Encounter) => x.LID).concat(
+            this._rests.map(x => x.LID)
         );
         this._step_ids = this._step_ids.filter(x => ids.some(y => y === x));
     }
@@ -116,12 +116,12 @@ export class Mission {
     }
 
     public Step(id: string): IMissionStep | null {
-        const r = this._rests.find(x => x.ID === id);
+        const r = this._rests.find(x => x.LID === id);
         if (r) return r;
         const enc = store.encounters.Encounters;
         const rIdx = this._step_ids.indexOf(id);
         if (rIdx == -1) this.RemoveStep(rIdx);
-        return enc.find(x => x.ID === id) || null;
+        return enc.find(x => x.LID === id) || null;
     }
 
     public MoveStepUp(idx: number): void {
@@ -141,14 +141,14 @@ export class Mission {
     }
 
     public AddEncounter(e: Encounter): void {
-        this._step_ids.push(e.ID);
+        this._step_ids.push(e.LID);
         this.save();
     }
 
     public AddRest(): void {
         const r = new Rest();
         this._rests.push(r);
-        this._step_ids.push(r.ID);
+        this._step_ids.push(r.LID);
         this.save();
     }
 
@@ -159,13 +159,13 @@ export class Mission {
 
     public static Serialize(mission: Mission): IMissionData {
         return {
-            id: mission.ID,
+            id: mission.LID,
             name: mission._name,
             note: mission._note,
             campaign: mission._campaign,
             labels: mission._labels,
             step_ids: mission._step_ids,
-            rests: mission.Rests.map(x => ({ id: x.ID, note: x.Note })),
+            rests: mission.Rests.map(x => ({ id: x.LID, note: x.Note })),
         };
     }
 

@@ -15,7 +15,7 @@ export interface RegStatusData extends AllStatusData {
 }
 
 export class Status extends RegEntry<EntryType.STATUS> {
-    public ID!: string;
+    public LID!: string;
     public Name!: string;
     public Icon!: string;
     public Effects!: string[];
@@ -23,7 +23,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
 
     async load(data: RegStatusData) {
         data = { ...defaults.STATUS(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Subtype = data.type;
         this.Name = data.name;
         this.Icon = data.icon;
@@ -32,7 +32,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
 
     protected save_imp(): RegStatusData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             icon: this.Icon,
             type: this.Subtype,

@@ -117,7 +117,7 @@ export interface RegPilotData extends Required<BothPilotData> {
 
 export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // Identity
-    ID!: string; // As with all ids
+    LID!: string; // As with all ids
     Name!: string;
     Callsign!: string;
     PlayerName!: string;
@@ -403,7 +403,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // -- Licenses ----------------------------------------------------------------------------------
     public CountLicenses(manufacturerID: string): number {
         return this.Licenses.filter(
-            x => x.Manufacturer?.ID.toLowerCase() === manufacturerID.toLowerCase()
+            x => x.Manufacturer?.LID.toLowerCase() === manufacturerID.toLowerCase()
         ).reduce((a, b) => +a + +b.CurrentRank, 0);
     }
 
@@ -490,7 +490,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
     // Sum our pilot bonuses for the specified id, return the number
     private sum_bonuses(id: string): number {
-        let filtered = this.AllBonuses.filter(b => b.ID == id);
+        let filtered = this.AllBonuses.filter(b => b.LID == id);
         let ctx = Bonus.ContextFor(this);
         return Bonus.Accumulate(0, filtered, ctx).final_value;
     }
@@ -512,7 +512,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Group = data.group;
         this.History = data.history;
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
         this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
@@ -556,7 +556,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             custom_counters: SerUtil.save_all(this.CustomCounters),
             group: this.Group,
             history: this.History,
-            lid: this.ID,
+            lid: this.LID,
             lastCloudUpdate: this.LastCloudUpdate,
             level: this.Level,
             loadout: this.Loadout.save(),
@@ -600,7 +600,7 @@ export async function cloud_sync(
     };
     let ctx = pilot.OpCtx;
     // Identity
-    pilot.ID = data.id;
+    pilot.LID = data.id;
     pilot.Name = data.name;
     pilot.Callsign = data.callsign;
     pilot.PlayerName = data.player_name;
@@ -621,7 +621,7 @@ export async function cloud_sync(
         // Do a lazy convert of the id. Due to the way compcon stores licenses we can't just do by ID, though I expect with the release of alt frames this will change. Sort of TODO
         // Find the corresponding license
         for (let sl of stack_licenses) {
-            let found_corr_item = sl.FlatUnlocks.find(x => x.ID == cc_pilot_license.id);
+            let found_corr_item = sl.FlatUnlocks.find(x => x.LID == cc_pilot_license.id);
             if (found_corr_item) {
                 // We have found a local license corresponding to the new license.
                 // First, check if owned by pilot
@@ -643,7 +643,7 @@ export async function cloud_sync(
     let pilot_mechs = await pilot.Mechs();
     for (let md of data.mechs) {
         // For each imported mech entry, find the corrseponding mech actor entity by matching compcon id
-        let corr_mech = pilot_mechs.find(m => m.ID == md.id);
+        let corr_mech = pilot_mechs.find(m => m.LID == md.id);
 
         if (!corr_mech) {
             // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one and add it to our tracker
@@ -674,9 +674,9 @@ export async function cloud_sync(
 
     // Look for faction. Create if not present
     if (data.factionID) {
-        if (!pilot.Factions.find(f => f.ID == data.factionID)) {
+        if (!pilot.Factions.find(f => f.LID == data.factionID)) {
             let new_faction = await pilot_inv.create_live(EntryType.FACTION, ctx);
-            new_faction.ID = data.factionID;
+            new_faction.LID = data.factionID;
             new_faction.writeback();
         }
     }

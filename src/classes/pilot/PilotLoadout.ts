@@ -32,7 +32,7 @@ export interface RegPilotLoadoutData {
 }
 
 export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Armor!: (PilotArmor | null)[];
     Gear!: (PilotGear | null)[];
@@ -93,7 +93,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             cascading: false,
             customDamageType: null,
             destroyed: false,
-            id: item.ID,
+            id: item.LID,
             uses: 0,
         };
     }
@@ -102,7 +102,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         data = { ...defaults.PILOT_LOADOUT(), ...data };
         // Simple
         this.Name = data.name;
-        this.ID = data.lid;
+        this.LID = data.lid;
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
         this.Armor = await Promise.all(
@@ -124,7 +124,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
 
     protected save_imp(): RegPilotLoadoutData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             armor: this.Armor.map(a => a?.as_ref() ?? null),
             gear: this.Gear.map(a => a?.as_ref() ?? null),

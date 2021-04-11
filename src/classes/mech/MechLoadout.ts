@@ -288,7 +288,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             // If system already exists no need to fetch
             let sys: MechSystem | null = null;
             let corr = this.SysMounts[i];
-            if (corr?.System?.ID == mls.id) {
+            if (corr?.System?.LID == mls.id) {
                 sys = corr.System;
             } else {
                 // Look it up
@@ -434,7 +434,7 @@ export class WeaponSlot {
         // First we resolve the weapon
         if (dat.weapon) {
             // See if we already have that weapon mounted
-            if (this.Weapon && dat.weapon.id == this.Weapon.ID) {
+            if (this.Weapon && dat.weapon.id == this.Weapon.LID) {
                 // Do nothing. Weapon is unchanged
             } else {
                 // Otherwise attempt to resolve
@@ -463,7 +463,7 @@ export class WeaponSlot {
                     let mod = dat.weapon.mod;
 
                     // See if we already have that mod mounted
-                    if (this.Mod && mod.id == this.Mod.ID) {
+                    if (this.Mod && mod.id == this.Mod.LID) {
                         // Do nothing. Mod is unchanged
                     } else {
                         // Attempt to resolve mod

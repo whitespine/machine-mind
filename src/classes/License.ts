@@ -100,9 +100,9 @@ export class License extends RegEntry<EntryType.LICENSE> {
         let licenses: License[] = [];
         for (let frame of frames) {
             // Copy items, filtering out "bad" mechs
-            let frame_id = frame?.ID ?? license_name;
+            let frame_id = frame?.LID ?? license_name;
             let sub_licensed_items = all_licensed_items.filter(f =>
-                f instanceof Frame ? f.ID == frame_id : true
+                f instanceof Frame ? f.LID == frame_id : true
             );
 
             // Group into ranks

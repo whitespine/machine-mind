@@ -64,7 +64,7 @@ export interface RegFrameData extends Required<AllFrameData> {
 }
 
 export class Frame extends RegEntry<EntryType.FRAME> {
-    ID!: string;
+    LID!: string;
     LicenseLevel!: number;
     Source!: Manufacturer | null;
     Name!: string;
@@ -80,7 +80,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
 
     public async load(fd: RegFrameData): Promise<void> {
         fd = { ...defaults.FRAME(), ...fd };
-        this.ID = fd.lid;
+        this.LID = fd.lid;
         this.LicenseLevel = fd.license_level;
         this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source) : null;
         this.Name = fd.name;
@@ -99,7 +99,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
 
     protected save_imp(): RegFrameData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             description: this.Description,
             license_level: this.LicenseLevel,
             source: this.Source?.as_ref() ?? null,
@@ -145,7 +145,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     public get DefaultImage(): string {
         if (this.ImageUrl) return this.ImageUrl;
         return ""; // TODO, maybe
-        // return getImagePath(ImageTag.Frame, `${this.ID}.png`, true);
+        // return getImagePath(ImageTag.Frame, `${this.LID}.png`, true);
     }
 
     // For consistency's sake

@@ -35,7 +35,7 @@ export interface RegTagInstanceData {
 
 // TODO: I decided how to do these very early on, while still holding closely to compcons patterns. It should maybe be different (perhaps a single object)
 export class TagTemplate extends RegEntry<EntryType.TAG> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     Hidden!: boolean;
@@ -43,7 +43,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
 
     public async load(data: RegTagTemplateData): Promise<void> {
         data = { ...defaults.TAG_TEMPLATE(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Hidden = data.hidden || false; // Whether to show this tag
@@ -52,7 +52,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
 
     protected save_imp(): RegTagTemplateData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             description: this.Description,
             filter_ignore: this.FilterIgnore,
@@ -77,37 +77,37 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
         return this.FilterIgnore || this.Hidden;
     }
     get IsUnique(): boolean {
-        return this.ID === "tg_unique";
+        return this.LID === "tg_unique";
     }
     get IsAI(): boolean {
-        return this.ID === "tg_ai";
+        return this.LID === "tg_ai";
     }
     get IsLimited(): boolean {
-        return this.ID === "tg_limited";
+        return this.LID === "tg_limited";
     }
     get IsLoading(): boolean {
-        return this.ID === "tg_loading";
+        return this.LID === "tg_loading";
     }
     get IsRecharging(): boolean {
-        return this.ID === "tg_recharge";
+        return this.LID === "tg_recharge";
     }
     get IsIndestructible(): boolean {
-        return this.ID === "tg_indestructible";
+        return this.LID === "tg_indestructible";
     }
     get IsSmart(): boolean {
-        return this.ID === "tg_smart";
+        return this.LID === "tg_smart";
     }
     get IsOverkill(): boolean {
-        return this.ID === "tg_overkill";
+        return this.LID === "tg_overkill";
     }
     get IsAccurate(): boolean {
-        return this.ID === "tg_accurate";
+        return this.LID === "tg_accurate";
     }
     get IsInaccurate(): boolean {
-        return this.ID === "tg_inaccurate";
+        return this.LID === "tg_inaccurate";
     }
     get IsReliable(): boolean {
-        return this.ID === "tg_reliable";
+        return this.LID === "tg_reliable";
     }
 }
 

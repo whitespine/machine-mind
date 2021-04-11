@@ -38,7 +38,7 @@ export function CreateProject(data: IProjectData | null): Project {
 
     ///////////////////
     // Unfortunately thjis is redundant with Reserve. We haven't really got a good way of efficiently handling subclasses. Much like foundry ;)
-    mb.with(new RWMix("ID", "name", ident, ident));
+    mb.with(new RWMix("LID", "name", ident, ident));
     mb.with(new RWMix("Name", "name", ident, ident));
     mb.with(new RWMix("Description", "description", ident, ident));
     mb.with(

@@ -41,7 +41,7 @@ export enum ActivePeriod {
 }
 
 export class Action extends SimSer<RegActionData> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Activation!: ActivationType;
     Cost!: number | null;
@@ -88,7 +88,7 @@ export class Action extends SimSer<RegActionData> {
 
     public load(data: RegActionData): void {
         data = { ...defaults.ACTION(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Activation = SerUtil.restrict_enum(
             ActivationType,
@@ -109,7 +109,7 @@ export class Action extends SimSer<RegActionData> {
 
     public save(): RegActionData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             activation: this.Activation,
             terse: this.Terse || undefined,

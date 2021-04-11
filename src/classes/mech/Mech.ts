@@ -83,7 +83,7 @@ export interface RegMechData extends AllMechData {
 }
 
 export class Mech extends InventoriedRegEntry<EntryType.MECH> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Notes!: string;
     GmNote!: string;
@@ -169,7 +169,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         const requirements = this.Loadout.RequiredLicenses;
 
         //TODO: change from GMS to LL0
-        if (this.Frame.ID === "mf_standard_pattern_i_everest") {
+        if (this.Frame.LID === "mf_standard_pattern_i_everest") {
             const gmsIdx = requirements.findIndex(x => x.source === "GMS");
             if (gmsIdx > -1) requirements[gmsIdx].items.push('STANDARD PATTERN I "EVEREST" Frame');
             else requirements.push(this.Frame.RequiredLicense);
@@ -530,7 +530,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     // -- I/O ---------------------------------------------------------------------------------------
     protected save_imp(): RegMechData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             pilot: this.Pilot?.as_ref() ?? null,
             name: this.Name,
             notes: this.Notes,
@@ -559,7 +559,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public async load(data: RegMechData): Promise<void> {
         data = { ...defaults.MECH(), ...data };
         let subreg = await this.get_inventory();
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
         this.Name = data.name;
         this.Notes = data.notes;
@@ -605,7 +605,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
     private sum_bonuses(base_value: number, id: string): number {
-        let filtered = this.AllBonuses.filter(b => b.ID == id);
+        let filtered = this.AllBonuses.filter(b => b.LID == id);
         let ctx: BonusContext = {};
         if (this.Pilot) {
             ctx = Bonus.ContextFor(this.Pilot);
@@ -634,7 +634,7 @@ export async function mech_cloud_sync(
     }
 
     // All of this is trivial
-    mech.ID = data.id;
+    mech.LID = data.id;
     mech.Name = data.name;
     mech.Notes = data.notes;
     mech.GmNote = data.gm_note;

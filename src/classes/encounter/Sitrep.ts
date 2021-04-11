@@ -22,7 +22,7 @@ export interface RegSitrepData extends AllSitrepData {
 }
 
 export class Sitrep extends RegEntry<EntryType.SITREP> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
     PcVictory!: string;
@@ -35,7 +35,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
 
     protected save_imp(): RegSitrepData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             description: this.Description,
             pcVictory: this.PcVictory,
@@ -50,7 +50,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
 
     public async load(data: RegSitrepData) {
         data = { ...defaults.SITREP(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.PcVictory = data.pcVictory;

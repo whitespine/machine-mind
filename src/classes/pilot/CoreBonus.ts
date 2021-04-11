@@ -53,7 +53,7 @@ export interface RegCoreBonusData extends Required<AllCoreBonusData> {
 
 export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     // Basic data
-    ID!: string;
+    LID!: string;
     Name!: string;
     Source!: Manufacturer | null; // No licensing info is needed other than manufacturer
     Description!: string;
@@ -70,7 +70,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
 
     public async load(data: RegCoreBonusData): Promise<void> {
         data = { ...defaults.CORE_BONUS(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
         this.Description = data.description;
@@ -88,7 +88,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         return {
             description: this.Description,
             effect: this.Effect,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             source: this.Source?.as_ref() ?? null,
             actions: SerUtil.save_all(this.Actions),

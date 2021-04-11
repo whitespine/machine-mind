@@ -32,7 +32,7 @@ export interface RegNpcClassData extends AllNpcClassData {
 }
 
 export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Role!: string;
     Info!: {
@@ -46,7 +46,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
 
     public async load(data: RegNpcClassData): Promise<void> {
         data = { ...defaults.NPC_CLASS(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Role = data.role;
         this.Info = data.info;
@@ -63,7 +63,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         return {
             base_features: SerUtil.ref_all(this.BaseFeatures),
             optional_features: SerUtil.ref_all(this.OptionalFeatures),
-            lid: this.ID,
+            lid: this.LID,
             info: this.Info,
             name: this.Name,
             power: this.Power,

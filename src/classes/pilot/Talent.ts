@@ -78,7 +78,7 @@ export interface TalentRank {
 }
 
 export class Talent extends RegEntry<EntryType.TALENT> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Icon!: string;
     Terse!: string;
@@ -89,7 +89,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
 
     public async load(data: RegTalentData): Promise<void> {
         data = { ...defaults.TALENT(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Icon = data.icon;
         this.Terse = data.terse;
@@ -134,7 +134,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         return {
             description: this.Description,
             icon: this.Icon,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             terse: this.Terse,
             ranks,
@@ -170,7 +170,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         if (this.Ranks[rank - 1]) {
             return this.Ranks[rank - 1];
         }
-        console.error(`Talent ${this.ID}/${this.Name} does not contain rank ${rank} data`);
+        console.error(`Talent ${this.LID}/${this.Name} does not contain rank ${rank} data`);
         return null;
     }
 

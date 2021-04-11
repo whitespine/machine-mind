@@ -14,13 +14,13 @@ export interface RegEnvironmentData {
 
 // Seems overkill but whatever
 export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
-    ID!: string;
+    LID!: string;
     Name!: string;
     Description!: string;
 
     public async load(data: RegEnvironmentData): Promise<void> {
         data = { ...defaults.ENVIRONMENT(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Description = data.description;
         this.Name = data.name;
     }
@@ -28,7 +28,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
     protected save_imp(): RegEnvironmentData {
         return {
             description: this.Description,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
         };
     }

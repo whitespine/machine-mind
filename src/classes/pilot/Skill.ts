@@ -39,7 +39,7 @@ export interface RegSkillData {
 }
 
 export class Skill extends RegEntry<EntryType.SKILL> {
-    ID!: string;
+    LID!: string;
     Name!: string; // The trigger name
     Description!: string;
     Detail!: string;
@@ -48,7 +48,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
 
     public async load(data: RegSkillData): Promise<void> {
         data = { ...defaults.SKILL(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
         this.Detail = data.detail;
@@ -61,7 +61,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
             description: this.Description,
             detail: this.Detail,
             family: this.Family,
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             rank: this.CurrentRank,
         };

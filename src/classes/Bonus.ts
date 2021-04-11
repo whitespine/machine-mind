@@ -54,7 +54,7 @@ export interface BonusContext {
 }
 
 export class Bonus extends SimSer<RegBonusData> {
-    ID!: string;
+    LID!: string;
     Title!: string;
     Detail!: string;
     DamageTypes!: DamageTypeChecklist;
@@ -80,7 +80,7 @@ export class Bonus extends SimSer<RegBonusData> {
 
     public load(data: RegBonusData) {
         data = {...defaults.BONUS(), ...data};
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Value = data.val;
         this.DamageTypes = data.damage_types;
         this.RangeTypes = data.range_types;
@@ -143,7 +143,7 @@ export class Bonus extends SimSer<RegBonusData> {
 
     public save(): RegBonusData {
         return {
-            lid: this.ID,
+            lid: this.LID,
             val: this.Value,
             damage_types: {...this.DamageTypes}, 
             range_types: {...this.RangeTypes},

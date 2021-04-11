@@ -151,7 +151,7 @@ export type AnyRegNpcFeatureData =
 // Omnibus class implementations
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
-    public ID!: string;
+    public LID!: string;
     public Name!: string;
     public Origin!: IOriginData;
     public Effect!: string;
@@ -237,7 +237,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
     protected async load(data: AnyRegNpcFeatureData): Promise<void> {
         data = { ...defaults.NPC_FEATURE(), ...data };
-        this.ID = data.lid;
+        this.LID = data.lid;
         this.Name = data.name;
         this.Origin = { ...data.origin };
         this.Effect = data.effect;
@@ -280,7 +280,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
     protected save_imp(): AnyRegNpcFeatureData {
         let base: BaseRegNpcFeatureData = {
-            lid: this.ID,
+            lid: this.LID,
             name: this.Name,
             origin: this.Origin,
             effect: this.Effect,

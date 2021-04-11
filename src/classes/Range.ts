@@ -77,7 +77,7 @@ export class Range extends SimSer<RegRangeData> {
         mod?: WeaponMod
     ): Range[] {
         // cut down to bonuses that affect ranges
-        let all_bonuses = mech.AllBonuses.concat(mod?.Bonuses ?? []).filter(x => x.ID === "range");
+        let all_bonuses = mech.AllBonuses.concat(mod?.Bonuses ?? []).filter(x => x.LID === "range");
 
         // Start building our output
         const output: Range[] = [];
