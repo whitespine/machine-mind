@@ -56,7 +56,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     ): Promise<Manufacturer> {
         return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, {
             ...pmd,
-            lid: pmd.id    
+            lid: pmd.id,
         });
     }
 

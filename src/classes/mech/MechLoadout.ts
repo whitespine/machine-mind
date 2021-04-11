@@ -222,11 +222,16 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         hooks?: InsinuateHooks
     ): Promise<void> {
         // Find the frame
-        let frame = await fallback_obtain_ref(stack, this.OpCtx, {
-            type: EntryType.FRAME,
-            fallback_lid: mech_frame_id,
-            id: ""
-        }, hooks);
+        let frame = await fallback_obtain_ref(
+            stack,
+            this.OpCtx,
+            {
+                type: EntryType.FRAME,
+                fallback_lid: mech_frame_id,
+                id: "",
+            },
+            hooks
+        );
 
         // Reconstruct the mount setup
         this.WepMounts = [];
@@ -289,7 +294,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 // Look it up
                 sys = await fallback_obtain_ref(
                     stack,
-                    this.OpCtx, {
+                    this.OpCtx,
+                    {
                         type: EntryType.MECH_SYSTEM,
                         fallback_lid: mls.id,
                         id: "",
@@ -419,7 +425,12 @@ export class WeaponSlot {
     }
 
     // Take in the specified data
-    async sync(dat: PackedWeaponSlotData, stack: RegFallbackStack, ctx: OpCtx, hooks?: InsinuateHooks): Promise<void> {
+    async sync(
+        dat: PackedWeaponSlotData,
+        stack: RegFallbackStack,
+        ctx: OpCtx,
+        hooks?: InsinuateHooks
+    ): Promise<void> {
         // First we resolve the weapon
         if (dat.weapon) {
             // See if we already have that weapon mounted
@@ -429,11 +440,13 @@ export class WeaponSlot {
                 // Otherwise attempt to resolve
                 this.Weapon = await fallback_obtain_ref(
                     stack,
-                    ctx, {
+                    ctx,
+                    {
                         type: EntryType.MECH_WEAPON,
                         fallback_lid: dat.weapon.id,
-                        id: ""
-                    }, hooks
+                        id: "",
+                    },
+                    hooks
                 );
             }
 
@@ -456,7 +469,8 @@ export class WeaponSlot {
                         // Attempt to resolve mod
                         this.Mod = await fallback_obtain_ref(
                             stack,
-                            ctx, {
+                            ctx,
+                            {
                                 type: EntryType.WEAPON_MOD,
                                 fallback_lid: mod.id,
                                 id: "",
@@ -502,7 +516,11 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         }
 
         // Check that if we are flex, they aren't trying to main-aux
-        if (this.MountType == MountType.Flex && this.Slots[0]?.Weapon?.Size == WeaponSize.Main && this.Slots[1].Weapon !== null) {
+        if (
+            this.MountType == MountType.Flex &&
+            this.Slots[0]?.Weapon?.Size == WeaponSize.Main &&
+            this.Slots[1].Weapon !== null
+        ) {
             return "Flex cannot have Main & Aux. Acceptable configurations are Aux/Aux and Main";
         }
 
@@ -522,7 +540,9 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     // Adds weapon to next available fitting, if possible. Returns success
     public try_add_weapon(wep: MechWeapon): boolean {
         // Sort them smallest to largest. We prefer filling a smaller mount over a larger one
-        let sorted_slots = [...this.Slots].sort((a, b) => weapon_size_magnitude(a.Size) - weapon_size_magnitude(b.Size));
+        let sorted_slots = [...this.Slots].sort(
+            (a, b) => weapon_size_magnitude(a.Size) - weapon_size_magnitude(b.Size)
+        );
 
         for (let s of sorted_slots) {
             if (s.check_can_take(wep) === null) {
@@ -615,7 +635,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
 }
 
 /**
- * Yields a number suitable for sowrting weapons/mounts by their size. 
+ * Yields a number suitable for sowrting weapons/mounts by their size.
  * If a fitting size is >= a weapon size, then that fitting can hold that weapon
  * Higher = bigger. Useful to determine slot fill priority, as filling largest weapons first to largest slots gives a higher likelihood of proper fit.
  * @param size  The size to rank
@@ -641,6 +661,6 @@ export function weapon_size_magnitude(size: WeaponSize | FittingSize): number {
             return 5;
 
         case FittingSize.Integrated:
-            return 6; 
+            return 6;
     }
 }

@@ -10,8 +10,8 @@ interface AllOrganizationData {
     influence: number;
     actions: string;
 }
-export interface PackedOrganizationData extends AllOrganizationData { }
-export interface RegOrganizationData extends AllOrganizationData { 
+export interface PackedOrganizationData extends AllOrganizationData {}
+export interface RegOrganizationData extends AllOrganizationData {
     lid: string;
 }
 
@@ -54,7 +54,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
     protected save_imp(): RegOrganizationData {
         return {
-            lid: this.ID ,
+            lid: this.ID,
             name: this.Name,
             purpose: this.Purpose,
             description: this.Description,

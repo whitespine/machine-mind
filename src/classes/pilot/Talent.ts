@@ -149,7 +149,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
             ranks.push({
                 ...defaults.TALENT_RANK(),
                 ...r,
-                ...(await SerUtil.unpack_basdt({id: data.id, ...r}, reg, ctx)),
+                ...(await SerUtil.unpack_basdt({ id: data.id, ...r }, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
                 integrated: SerUtil.unpack_integrated_refs(reg, r.integrated),
             });

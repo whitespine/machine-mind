@@ -128,7 +128,9 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
     // Initializes self and all subsidiary items. DO NOT REPEATEDLY CALL LEST YE GET TONS OF DUPS
     static async unpack(data: PackedReserveData, reg: Registry, ctx: OpCtx): Promise<Reserve> {
         // Create deployable entries
-        let dep_entries = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id)));
+        let dep_entries = await Promise.all(
+            (data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id))
+        );
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get integrated refs

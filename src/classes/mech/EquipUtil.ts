@@ -53,4 +53,3 @@ export function get_reliable(item: TaggedEquippable): number {
     }
     return rel_tag.as_number(0);
 }
-

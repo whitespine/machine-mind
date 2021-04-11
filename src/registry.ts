@@ -457,7 +457,7 @@ export abstract class SerUtil {
     // Handles the bonuses, actions, synergies, deployables, and tags of an item
     public static async unpack_basdt(
         src: {
-            id: string,
+            id: string;
             bonuses?: PackedBonusData[];
             actions?: PackedActionData[];
             synergies?: ISynergyData[];
@@ -474,7 +474,9 @@ export abstract class SerUtil {
         tags: RegTagInstanceData[];
     }> {
         // Create deployable entries
-        let dep_entries = await Promise.all((src.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, src.id)));
+        let dep_entries = await Promise.all(
+            (src.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, src.id))
+        );
         let deployables = SerUtil.ref_all(dep_entries);
 
         // Get tags
@@ -584,12 +586,19 @@ export interface InsinuationRecord<T extends EntryType> {
     new_item: LiveEntryTypes<T>; // The final product, newly insinuated into its registry
 }
 
-
 // Shorthand for the relinker type of _InsinuateHooks. Useful for function factories
-export type RelinkHook<T extends EntryType> = (source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>) => Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
+export type RelinkHook<T extends EntryType> = (
+    source_item: LiveEntryTypes<T>,
+    dest_reg: Registry,
+    dest_cat: RegCat<T>
+) => Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
 interface _InsinuateHooks {
     // Used during insinuation procedures to dedup/consolidate entities by finding pre-existing entities to use instead (or overriding entity creation process
-    relinker<T extends EntryType>(source_item: LiveEntryTypes<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
+    relinker<T extends EntryType>(
+        source_item: LiveEntryTypes<T>,
+        dest_reg: Registry,
+        dest_cat: RegCat<T>
+    ): Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
     skip_relinked_inventories?: boolean; // Default faulse. If true, we will not attempt to insinuate inventory items if the Inventoried actor entry was relinked
 
     /* Hook called upon completion of an insinuation. 
@@ -597,22 +606,29 @@ interface _InsinuateHooks {
 
      * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
      */
-    post_final_write<T extends EntryType>(record: InsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<void> | void;
+    post_final_write<T extends EntryType>(
+        record: InsinuationRecord<T>,
+        dest_reg: Registry,
+        dest_cat: RegCat<T>
+    ): Promise<void> | void;
 
     /* Hook called upon insinuation targets immediately prior to their final write to the destination reg.
      * At this points, the entire object structure should be in place, though it has not been committed to memory
      * Overriding this is necessary if we have other requirements in our insinuation process. Edit the object in place.
      * Note that at this point the entry has already been created -- you cannot change anything at this point except what is finally written to the entry.
-     * 
+     *
      * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
      */
-     pre_final_write<T extends EntryType>(record: MidInsinuationRecord<T>, dest_reg: Registry, dest_cat: RegCat<T>): Promise<void> | void;
+    pre_final_write<T extends EntryType>(
+        record: MidInsinuationRecord<T>,
+        dest_reg: Registry,
+        dest_cat: RegCat<T>
+    ): Promise<void> | void;
 }
 
 // Let all the functions be optional
 export type InsinuateHooks = Partial<_InsinuateHooks>;
 // Note: Registrys can have these inbuilt. They will be called after the function-call-specific insinuate hooks if present
-
 
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
@@ -627,7 +643,14 @@ export abstract class RegEntry<T extends EntryType> {
 
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
-    constructor(type: T, registry: Registry, ctx: OpCtx, id: string, reg_data: RegEntryTypes<T>, flags: any = null) {
+    constructor(
+        type: T,
+        registry: Registry,
+        ctx: OpCtx,
+        id: string,
+        reg_data: RegEntryTypes<T>,
+        flags: any = null
+    ) {
         this.Type = type;
         this.Registry = registry;
         this.OpCtx = ctx;
@@ -688,11 +711,16 @@ export abstract class RegEntry<T extends EntryType> {
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
     // Generates a new opctx if none is provided, otherwise behaves just like getLive() on this items reg
     public async refreshed(ctx?: OpCtx): Promise<LiveEntryTypes<T> | null> {
-        if(ctx && this.OpCtx == ctx) {
-            console.warn("Refreshing an item into its selfsame OpCtx can lead to data incoherence.");
+        if (ctx && this.OpCtx == ctx) {
+            console.warn(
+                "Refreshing an item into its selfsame OpCtx can lead to data incoherence."
+            );
         }
-        let refreshed = this.Registry.get_cat(this.Type).get_live(ctx ?? new OpCtx(), this.RegistryID); // new opctx to refresh _everything_
-        if(!refreshed) {
+        let refreshed = this.Registry.get_cat(this.Type).get_live(
+            ctx ?? new OpCtx(),
+            this.RegistryID
+        ); // new opctx to refresh _everything_
+        if (!refreshed) {
             console.error("Refresh failed - item was deleted from under MM");
         }
         return refreshed;
@@ -705,18 +733,22 @@ export abstract class RegEntry<T extends EntryType> {
         return [];
     }
 
-    // 
-    // 
+    //
+    //
     /** Create a copy self in the target DB, bringing along all child items with properly reconstructed links.
      *  This can be the same ctx as the original without issue, but doing so is pretty unlikely to be useful.
      *  Returns said copy. If supplied, ctx will be used for the revival of the newly insinuated data in to_new_reg.
      *  @param to_new_reg Registry we wish to copy this item + its descendants to
      *  @param ctx If provided, the live entry of the item (and its descendants) will be resurrected to this ctx
-     *  @param relinker If provided, this function will be applied to every item as it is being insinuated. 
+     *  @param relinker If provided, this function will be applied to every item as it is being insinuated.
      *                  If it returns an Entry, then we will link against that entry instead of creating a new item.
      *                  Note that this cannot change the type of an item. Items relinked in this way will not have their children insinuated.
      */
-    public async insinuate(to_new_reg: Registry, ctx?: OpCtx | null, hooks?: InsinuateHooks): Promise<LiveEntryTypes<T>> {
+    public async insinuate(
+        to_new_reg: Registry,
+        ctx?: OpCtx | null,
+        hooks?: InsinuateHooks
+    ): Promise<LiveEntryTypes<T>> {
         // The public exposure of insinuate, which ensures it is safe by refreshing before and after all operations
 
         // Create a fresh copy, free of any other context. This will be heavily mutated in order to migrate
@@ -738,10 +770,10 @@ export abstract class RegEntry<T extends EntryType> {
             // Call pre-write-save hooks. Callsite provided go first, then registry defined
             let dest_reg = record.pending.Registry;
             let dest_cat = dest_reg.get_cat(record.type);
-            if(hooks?.pre_final_write) {
+            if (hooks?.pre_final_write) {
                 await hooks?.pre_final_write(record, dest_reg, dest_cat);
             }
-            if(dest_reg.hooks.pre_final_write) {
+            if (dest_reg.hooks.pre_final_write) {
                 await dest_reg.hooks.pre_final_write(record, dest_reg, dest_cat);
             }
 
@@ -761,7 +793,7 @@ export abstract class RegEntry<T extends EntryType> {
                 console.error(
                     "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted during insinuation."
                 );
-                continue
+                continue;
             }
             let final_record = {
                 from: { ...record.from },
@@ -772,10 +804,10 @@ export abstract class RegEntry<T extends EntryType> {
             // Call post-write-save hooks. Callsite provided go first, then registry defined
             let dest_reg = new_v.Registry;
             let dest_cat = dest_reg.get_cat(final_record.type);
-            if(hooks?.post_final_write) {
+            if (hooks?.post_final_write) {
                 hooks.post_final_write(final_record, dest_reg, dest_cat);
             }
-            if(dest_reg.hooks.post_final_write) {
+            if (dest_reg.hooks.post_final_write) {
                 dest_reg.hooks.post_final_write(final_record, dest_reg, dest_cat);
             }
         }
@@ -812,27 +844,31 @@ export abstract class RegEntry<T extends EntryType> {
         let new_entry: LiveEntryTypes<T> | null = null;
         let fun_relinked = false;
         let reg_relinked = false;
-        if(hooks?.relinker) {
-            new_entry = await hooks.relinker(this as unknown as LiveEntryTypes<T>, to_new_reg, to_new_reg.get_cat(this.Type));
+        if (hooks?.relinker) {
+            new_entry = await hooks.relinker(
+                (this as unknown) as LiveEntryTypes<T>,
+                to_new_reg,
+                to_new_reg.get_cat(this.Type)
+            );
             fun_relinked = !!new_entry;
         }
 
         // Also try relinking using registry relinker if possible
-        if(to_new_reg.hooks.relinker && !fun_relinked) {
-            new_entry = await to_new_reg.hooks.relinker(this as unknown as LiveEntryTypes<T>, to_new_reg, to_new_reg.get_cat(this.Type));
+        if (to_new_reg.hooks.relinker && !fun_relinked) {
+            new_entry = await to_new_reg.hooks.relinker(
+                (this as unknown) as LiveEntryTypes<T>,
+                to_new_reg,
+                to_new_reg.get_cat(this.Type)
+            );
             reg_relinked = !!new_entry;
         }
 
         // If no relink hook / relink hook didn't produce anything useful
-        if(!new_entry) {
+        if (!new_entry) {
             // Create an entry with the saved data. This is essentially a duplicate of this item on the other registry
             // however, this new item will (somewhat predictably) fail to resolve any of its references. We don't care - we just want its id
-            new_entry = await to_new_reg.create_live(
-                this.Type,
-                this.OpCtx,
-                saved
-            );
-        } 
+            new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
+        }
 
         // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
         // Thankfully, all we really need to do is have this ID right / be able to save validly, so the outer insinuate method can make all of the references have the proper id's
@@ -849,21 +885,21 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Ask all of our live children to insinuate themselves. They will insinuate recursively. Don't if relinking, as we assume the relink target already has this basically handled.
         // If the user wants it to be regenerated, they can just delete the item
-        if(!fun_relinked && !reg_relinked) {
+        if (!fun_relinked && !reg_relinked) {
             for (let child of assoc) {
                 await child._insinuate_imp(to_new_reg, insinuation_hit_list, hooks); // Ensure that they don't get root call true. This prevents dumb save-thrashing
             }
         }
 
-        if(fun_relinked && hooks?.skip_relinked_inventories) {
+        if (fun_relinked && hooks?.skip_relinked_inventories) {
             return null; // Essentially drops the inventory
-        } else if(reg_relinked && to_new_reg.hooks.skip_relinked_inventories) {
+        } else if (reg_relinked && to_new_reg.hooks.skip_relinked_inventories) {
             return null; // Ditto
         } else {
-            // Even if this didn't produce a new item, we still wish to return. 
+            // Even if this didn't produce a new item, we still wish to return.
             // This return (right now) exclusively controls if we want to do inventory transfer or not. We do, unless relinker options say otherwise
             return new_entry;
-        } 
+        }
     }
 }
 
@@ -980,20 +1016,25 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Find a value by some arbitrary criteria
-    abstract lookup_raw(criteria: (e: RegEntryTypes<T>) => boolean): Promise<{id: string, val: RegEntryTypes<T>} | null>;
+    abstract lookup_raw(
+        criteria: (e: RegEntryTypes<T>) => boolean
+    ): Promise<{ id: string; val: RegEntryTypes<T> } | null>;
 
-    async lookup_live(ctx: OpCtx, criteria: (e: RegEntryTypes<T>) => boolean): Promise<LiveEntryTypes<T> | null> {
+    async lookup_live(
+        ctx: OpCtx,
+        criteria: (e: RegEntryTypes<T>) => boolean
+    ): Promise<LiveEntryTypes<T> | null> {
         let lookup = await this.lookup_raw(criteria);
         return lookup ? this.get_live(ctx, lookup.id) : null;
     }
 
     // Find a value by lid. Just wraps above - common enough to warrant its own helper
-    lookup_lid_raw(lid: string): Promise<{id: string, val: RegEntryTypes<T>} | null> {
-        return this.lookup_raw((e) => (e as any).lid == lid);
+    lookup_lid_raw(lid: string): Promise<{ id: string; val: RegEntryTypes<T> } | null> {
+        return this.lookup_raw(e => (e as any).lid == lid);
     }
 
     lookup_lid_live(ctx: OpCtx, lid: string): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, (e) => (e as any).lid == lid);
+        return this.lookup_live(ctx, e => (e as any).lid == lid);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1028,10 +1069,7 @@ export abstract class RegCat<T extends EntryType> {
 
     // A simple singular form if you don't want to mess with arrays
     // The awaited item should be .ready
-    async create_live(
-        ctx: OpCtx,
-        val: RegEntryTypes<T>
-    ): Promise<LiveEntryTypes<T>> {
+    async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         // }
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
@@ -1190,8 +1228,10 @@ export abstract class Registry {
             if (!result && ref.fallback_lid) {
                 if (ref.type) {
                     result =
-                        (await this.try_get_cat(ref.type)?.lookup_lid_live(ctx, ref.fallback_lid)) ??
-                        null;
+                        (await this.try_get_cat(ref.type)?.lookup_lid_live(
+                            ctx,
+                            ref.fallback_lid
+                        )) ?? null;
                 } else {
                     result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid);
                 }
@@ -1280,11 +1320,10 @@ export function quick_local_ref<T extends EntryType>(
     };
 }
 
-
 interface QuickRelinkParams<T extends EntryType> {
-    key_pairs:  Array<[keyof LiveEntryTypes<T>, keyof RegEntryTypes<T>]>; // Left will be read from src_item, right from the reg entry data. If both exist and equal, then that will be relinked. Checked in order
+    key_pairs: Array<[keyof LiveEntryTypes<T>, keyof RegEntryTypes<T>]>; // Left will be read from src_item, right from the reg entry data. If both exist and equal, then that will be relinked. Checked in order
     blacklist?: Array<any>; // If the value read from src_item is in (checked via ==) this array, then that source item will not be considered for relinking
-};
+}
 
 /**
  * A utility function for quickly creating relinking functions that associate by one or more property names
@@ -1292,21 +1331,24 @@ interface QuickRelinkParams<T extends EntryType> {
 export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>): RelinkHook<T> {
     return async (src_item, dest_reg, dest_cat) => {
         // First check blacklist
-        for(let forbidden of params.blacklist ?? []) {
-            for(let kp of params.key_pairs) {
+        for (let forbidden of params.blacklist ?? []) {
+            for (let kp of params.key_pairs) {
                 let src_item_val = src_item[kp[0]];
-                if(src_item_val == forbidden) {
+                if (src_item_val == forbidden) {
                     return null;
                 }
             }
         }
 
         // Ok, none of the kvp items seem to have been blacklisted. Now we process them in order
-        for(let kp of params.key_pairs) {
+        for (let kp of params.key_pairs) {
             let src_item_val = src_item[kp[0]];
-            if(src_item_val) {
-                let found = await dest_cat.lookup_live(src_item.OpCtx, (v) => v[kp[1]] as any == src_item_val);
-                if(found) {
+            if (src_item_val) {
+                let found = await dest_cat.lookup_live(
+                    src_item.OpCtx,
+                    v => (v[kp[1]] as any) == src_item_val
+                );
+                if (found) {
                     return found;
                 }
             }
@@ -1314,6 +1356,5 @@ export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>
 
         // No kvp worked
         return null;
-    }
+    };
 }
-

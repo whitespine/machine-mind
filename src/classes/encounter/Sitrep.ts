@@ -65,7 +65,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     public static async unpack(psd: PackedSitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
         return reg.get_cat(EntryType.SITREP).create_live(ctx, {
             ...psd,
-            lid: psd.id
+            lid: psd.id,
         });
     }
 }

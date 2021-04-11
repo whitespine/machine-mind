@@ -32,7 +32,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
 
     protected save_imp(): RegStatusData {
         return {
-            lid: this.ID ,
+            lid: this.ID,
             name: this.Name,
             icon: this.Icon,
             type: this.Subtype,
@@ -43,7 +43,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
     public static async unpack(psd: PackedStatusData, reg: Registry, ctx: OpCtx): Promise<Status> {
         return reg.get_cat(EntryType.STATUS).create_live(ctx, {
             ...psd,
-            lid: "cond_" + lid_format_name(psd.name)
+            lid: "cond_" + lid_format_name(psd.name),
         });
     }
 

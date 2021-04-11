@@ -147,7 +147,11 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         let counters = SerUtil.unpack_counters_default(data.counters);
 
         // Get the deployables
-        let deployables_ = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, "cs_" + lid_format_name(data.name)))); // Need to generate an lid for the core system. Doesn't need to exist, just gotta be uniqueish
+        let deployables_ = await Promise.all(
+            (data.deployables ?? []).map(i =>
+                Deployable.unpack(i, reg, ctx, "cs_" + lid_format_name(data.name))
+            )
+        ); // Need to generate an lid for the core system. Doesn't need to exist, just gotta be uniqueish
         let deployables = SerUtil.ref_all(deployables_) as RegRef<EntryType.DEPLOYABLE>[];
 
         // Get any integrated data

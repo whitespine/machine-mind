@@ -25,7 +25,11 @@ export class Faction extends RegEntry<EntryType.FACTION> {
     LogoURL!: string;
     Color!: string;
 
-    public static async unpack(data: PackedFactionData, reg: Registry, ctx: OpCtx): Promise<Faction> {
+    public static async unpack(
+        data: PackedFactionData,
+        reg: Registry,
+        ctx: OpCtx
+    ): Promise<Faction> {
         data = { ...defaults.FACTION(), ...data };
         let fdata: RegFactionData = {
             ...defaults.FACTION(),
@@ -34,7 +38,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
             description: data.description,
             logo: data.logo,
             logo_url: data.logo_url ?? "",
-            name: data.name
+            name: data.name,
         };
         return reg.get_cat(EntryType.FACTION).create_live(ctx, fdata);
     }

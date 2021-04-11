@@ -22,7 +22,7 @@ export async function fallback_resolve_ref<T extends EntryType>(
     ctx: OpCtx,
     ref: Omit<RegRef<T>, "reg_name">
 ): Promise<LiveEntryTypes<T> | null> {
-    let rcp: RegRef<T> = {...ref, reg_name: from.base.name()};
+    let rcp: RegRef<T> = { ...ref, reg_name: from.base.name() };
     let d = await from.base.resolve_rough(ctx, rcp);
     if (!d) {
         // Try all fallbacks

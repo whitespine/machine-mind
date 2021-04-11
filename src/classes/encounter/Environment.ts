@@ -41,7 +41,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         return reg.get_cat(EntryType.ENVIRONMENT).create_live(ctx, {
             lid: ped.id,
             name: ped.name,
-            description: ped.description
+            description: ped.description,
         });
     }
 }

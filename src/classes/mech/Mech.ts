@@ -21,7 +21,15 @@ import {
     PackedMechLoadoutData,
     RegMechLoadoutData,
 } from "@src/interface";
-import { EntryType, InsinuateHooks, InventoriedRegEntry, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import {
+    EntryType,
+    InsinuateHooks,
+    InventoriedRegEntry,
+    RegEntry,
+    Registry,
+    RegRef,
+    SerUtil,
+} from "@src/registry";
 import { CC_VERSION, DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
 // import { RegStack } from '../regstack';
@@ -663,11 +671,16 @@ export async function mech_cloud_sync(
 
     // And re-resolve from compendium. Again, just want the fetch
     for (let snc of snc_names) {
-        await fallback_obtain_ref(stack, ctx, {
-            fallback_lid: snc,
-            id: "",
-            type: EntryType.STATUS
-        }, hooks);
+        await fallback_obtain_ref(
+            stack,
+            ctx,
+            {
+                fallback_lid: snc,
+                id: "",
+                type: EntryType.STATUS,
+            },
+            hooks
+        );
     }
 
     // We always want to insinuate and writeback to be sure we own all of these items

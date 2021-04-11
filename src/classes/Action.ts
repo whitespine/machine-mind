@@ -73,21 +73,21 @@ export class Action extends SimSer<RegActionData> {
 
     public static unpack(action: PackedActionData): RegActionData {
         let lid = action.id;
-        if(!lid) {
-            if(action.name) {
+        if (!lid) {
+            if (action.name) {
                 lid = "act_" + lid_format_name(action.name);
             } else {
                 lid = "act_" + nanoid();
             }
         }
-        return  {
+        return {
             ...action,
             lid,
         };
     }
 
     public load(data: RegActionData): void {
-        data = {...defaults.ACTION(), ...data};
+        data = { ...defaults.ACTION(), ...data };
         this.ID = data.lid;
         this.Name = data.name;
         this.Activation = SerUtil.restrict_enum(

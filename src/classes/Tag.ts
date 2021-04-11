@@ -23,7 +23,6 @@ export interface RegTagTemplateData extends Required<AllTagTemplateData> {
     lid: string;
 }
 
-
 export interface PackedTagInstanceData {
     id: string;
     val?: string | number;
@@ -70,7 +69,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
             description: dep.description,
             name: dep.name,
             filter_ignore: dep.filter_ignore ?? false,
-            hidden: dep.hidden ?? false
+            hidden: dep.hidden ?? false,
         });
     }
 

@@ -230,9 +230,9 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
     // Get the most probably activation action. Order of priority is Activate -> Redeploy -> Quick Action
     get PrimaryActivation(): ActivationType {
-        if(this.Activation && this.Activation !== ActivationType.None) {
+        if (this.Activation && this.Activation !== ActivationType.None) {
             return this.Activation;
-        } else if(this.Redeploy && this.Redeploy !== ActivationType.None) {
+        } else if (this.Redeploy && this.Redeploy !== ActivationType.None) {
             return this.Redeploy;
         } else {
             return ActivationType.Quick;

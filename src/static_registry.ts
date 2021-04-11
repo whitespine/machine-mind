@@ -197,12 +197,14 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         }
     }
 
-    async lookup_raw(criteria: (x: RegEntryTypes<T>) => boolean): Promise<{id: string, val: RegEntryTypes<T>} | null> {
+    async lookup_raw(
+        criteria: (x: RegEntryTypes<T>) => boolean
+    ): Promise<{ id: string; val: RegEntryTypes<T> } | null> {
         for (let [reg_id, reg_raw] of this.reg_data.entries()) {
-            if(criteria(reg_raw)) {
+            if (criteria(reg_raw)) {
                 return {
                     id: reg_id,
-                    val: reg_raw
+                    val: reg_raw,
                 };
             }
         }

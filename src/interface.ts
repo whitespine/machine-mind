@@ -98,7 +98,12 @@ export { RegQuirkData } from "./classes/pilot/Quirk";
 export { PackedStatusData, RegStatusData } from "./classes/Statuses";
 export { PackedSitrepData, RegSitrepData } from "./classes/encounter/Sitrep";
 export { PackedEnvironmentData, RegEnvironmentData } from "./classes/encounter/Environment";
-export { PackedTagInstanceData, RegTagInstanceData, PackedTagTemplateData, RegTagTemplateData } from "./classes/Tag";
+export {
+    PackedTagInstanceData,
+    RegTagInstanceData,
+    PackedTagTemplateData,
+    RegTagTemplateData,
+} from "./classes/Tag";
 export { RegManufacturerData, PackedManufacturerData } from "./classes/Manufacturer";
 // export { DataStoreOptions } from "./store/store_module";
 export * from "./classes/GeneralInterfaces";

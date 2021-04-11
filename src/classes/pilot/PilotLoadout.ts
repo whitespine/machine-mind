@@ -1,20 +1,6 @@
-import {
-    PilotArmor,
-    PilotWeapon,
-    PilotGear,
-    PilotEquipment,
-    Bonus,
-    Synergy,
-} from "@src/class";
+import { PilotArmor, PilotWeapon, PilotGear, PilotEquipment, Bonus, Synergy } from "@src/class";
 import { defaults } from "@src/funcs";
-import {
-    EntryType,
-    LiveEntryTypes,
-    OpCtx,
-    Registry,
-    RegRef,
-    RegSer,
-} from "@src/registry";
+import { EntryType, LiveEntryTypes, OpCtx, Registry, RegRef, RegSer } from "@src/registry";
 
 // This is what is actually in the loadouts. The id's ref actual weapons
 export interface PackedPilotEquipmentState {

@@ -86,10 +86,10 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Skill> {
-        let rdata = { 
-            ...defaults.SKILL(), 
+        let rdata = {
+            ...defaults.SKILL(),
             lid: packed_skill.id,
-            name: packed_skill.name ?? packed_skill.id
+            name: packed_skill.name ?? packed_skill.id,
         };
         // Default the name
         rdata.name = packed_skill.name ?? rdata.lid;

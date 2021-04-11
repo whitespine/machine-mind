@@ -116,7 +116,9 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     }
 
     public static async unpack(frame: PackedFrameData, reg: Registry, ctx: OpCtx): Promise<Frame> {
-        let traits = await Promise.all((frame.traits ?? []).map(i => FrameTrait.unpack(i, reg, ctx, frame.id)));
+        let traits = await Promise.all(
+            (frame.traits ?? []).map(i => FrameTrait.unpack(i, reg, ctx, frame.id))
+        );
         let core_system = await CoreSystem.unpack(frame.core_system, reg, ctx);
         let fdata: RegFrameData = {
             ...defaults.FRAME(),
