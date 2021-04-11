@@ -89,7 +89,8 @@ export interface PackedPilotData extends BothPilotData {
     state?: IMechState;
     counter_data: PackedCounterSaveData[];
     custom_counters: PackedCounterData[];
-    loadout: PackedPilotLoadoutData;
+    loadout?: PackedPilotLoadoutData;
+    loadouts?: PackedPilotLoadoutData[];
     active_mech: string;
     brews: string[];
     core_bonuses: string[];
@@ -788,25 +789,34 @@ export async function cloud_sync(
     }
 
     // Fetch all weapons, armor, gear we will need
-    for (let a of data.loadout.armor) {
-        if (a) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_lid: a.id, id: ""}, hooks);
-        }
+    let loadout: PackedPilotLoadoutData | null = null;
+    if(data.loadout) {
+        loadout = data.loadout;
+    } else if(data.loadouts && data.loadouts.length) {
+        loadout = data.loadouts[0];
     }
-    for (let w of [...data.loadout.weapons, ...data.loadout.extendedWeapons]) {
-        if (w) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_lid: w.id, id: ""}, hooks);
-        }
-    }
-    for (let g of [...data.loadout.gear, ...data.loadout.extendedGear]) {
-        if (g) {
-            await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_lid: g.id, id: ""}, hooks);
-        }
-    }
+
     // Do loadout stuff
+    if(loadout) {
+        for (let a of loadout.armor) {
+            if (a) {
+                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_lid: a.id, id: ""}, hooks);
+            }
+        }
+        for (let w of [...loadout.weapons, ...loadout.extendedWeapons]) {
+            if (w) {
+                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_lid: w.id, id: ""}, hooks);
+            }
+        }
+        for (let g of [...loadout.gear, ...loadout.extendedGear]) {
+            if (g) {
+                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_lid: g.id, id: ""}, hooks);
+            }
+        }
+        pilot.Loadout = await PilotLoadout.unpack(loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
+        await pilot.Loadout.ready();
+    }
     pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_lid_live(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
-    pilot.Loadout = await PilotLoadout.unpack(data.loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
-    await pilot.Loadout.ready();
 
     // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();

@@ -10,6 +10,7 @@ import { validate_props } from "../src/classes/key_util";
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
 let DEPLOYABLE_GUY = "674a75a9be41eaa32e0d4514b61af461";
+let BARB = "764bcd352a463074f3ec1bd79486bd71";
 
 type DefSetup = {
     reg: StaticReg;
@@ -183,6 +184,20 @@ describe("Pilots", () => {
         // Oh no!
         all_deployables = await world.reg.get_cat(EntryType.DEPLOYABLE).list_live(ctx);
         expect(all_deployables.length).toEqual(6);
+    });
+
+    it("Can import various pilots", async () => {
+        expect.assertions(1);
+        let s = await init_basic_setup(true);
+
+        // Load barb
+        let ctx = new OpCtx();
+        let barb: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
+        let barb_data = await gist_io.download_pilot(BARB);
+        await cloud_sync(barb_data, barb, [s.reg]);
+        barb = await barb.refreshed();
+
+        expect(true).toBeTruthy();
     });
 
 });
