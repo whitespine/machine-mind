@@ -228,6 +228,17 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         return [];
     }
 
+    // Get the most probably activation action. Order of priority is Activate -> Redeploy -> Quick Action
+    get PrimaryActivation(): ActivationType {
+        if(this.Activation && this.Activation !== ActivationType.None) {
+            return this.Activation;
+        } else if(this.Redeploy && this.Redeploy !== ActivationType.None) {
+            return this.Redeploy;
+        } else {
+            return ActivationType.Quick;
+        }
+    }
+
     public async load(data: RegDeployableData): Promise<void> {
         data = { ...defaults.DEPLOYABLE(), ...data };
         this.AvailableMounted = data.avail_mounted;
