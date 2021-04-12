@@ -143,7 +143,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     CurrentHP!: number;
     Overshield!: number;
     Loadout!: PilotLoadout;
-    ActiveMech!: Mech | null;
+    ActiveMechRef!: RegRef<EntryType.MECH> | null;
     Mounted!: boolean;
     // State!: ActiveState;
 
@@ -451,10 +451,13 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     // Umbrella utility function for deducing which mechs in a pool are owned by this mech
-    // Slightly expensive, which is why we don't do it automatically
     public async Mechs(): Promise<Mech[]> {
         let all_mechs = await this.Registry.get_cat(EntryType.MECH).list_live(this.OpCtx);
         return all_mechs.filter(m => m.Pilot == this);
+    }
+
+    public async ActiveMech(): Promise<Mech | null> {
+        return this.ActiveMechRef ? this.Registry.resolve(this.OpCtx, this.ActiveMechRef) : null;
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
@@ -462,7 +465,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return [
             ...this.Talents.flatMap(t => t.Counters),
             ...this.CoreBonuses.flatMap(cb => cb.Counters),
-            ...(this.ActiveMech?.MechCounters() || []),
+            // ...(this.ActiveMech?.MechCounters() || []),
             ...this.CustomCounters,
         ];
     }
@@ -499,9 +502,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     public async load(data: RegPilotData): Promise<void> {
         data = { ...defaults.PILOT(), ...data };
         let subreg = await this.get_inventory();
-        this.ActiveMech = data.active_mech
-            ? await subreg.resolve(this.OpCtx, data.active_mech)
-            : null;
         this.Background = data.background;
         this.Callsign = data.callsign;
         this.Campaign = data.campaign;
@@ -518,7 +518,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Level = data.level;
         this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
         this.MechSkills = new MechSkills(data.mechSkills);
-        // this.Mechs = await subreg.resolve_many( this.OpCtx, data.mechs);
+        this.ActiveMechRef = data.active_mech;
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
@@ -544,7 +544,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
     protected save_imp(): RegPilotData {
         return {
-            active_mech: this.ActiveMech?.as_ref() ?? null,
+            active_mech: this.ActiveMechRef,
             background: this.Background,
             callsign: this.Callsign,
             campaign: this.Campaign,
@@ -816,7 +816,12 @@ export async function cloud_sync(
         pilot.Loadout = await PilotLoadout.unpack(loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
         await pilot.Loadout.ready();
     }
-    pilot.ActiveMech = await pilot_inv.get_cat(EntryType.MECH).lookup_lid_live(ctx, data.active_mech); // Do an actor lookup. Note that we MUST do this AFTER syncing mechs
+    pilot.ActiveMechRef = {
+        fallback_lid: data.active_mech,
+        id: "",
+        type: EntryType.MECH,
+        reg_name: pilot_inv.name()
+    }; 
 
     // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();
