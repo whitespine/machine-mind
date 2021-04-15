@@ -6,6 +6,7 @@ import * as filtrex from "filtrex";
 import { DamageTypeChecklist, RangeTypeChecklist, WeaponSizeChecklist, WeaponTypeChecklist } from "@src/interface";
 import { defaults, list_truthy_keys } from "@src/funcs";
 import { MechWeaponProfile } from "@src/class";
+import { merge_defaults } from "./default_entries";
 
 export interface PackedBonusData {
     id: string;
@@ -79,7 +80,7 @@ export class Bonus extends SimSer<RegBonusData> {
     }
 
     public load(data: RegBonusData) {
-        data = {...defaults.BONUS(), ...data};
+        merge_defaults(data, defaults.BONUS());
         this.LID = data.lid;
         this.Value = data.val;
         this.DamageTypes = data.damage_types;
@@ -96,16 +97,14 @@ export class Bonus extends SimSer<RegBonusData> {
     }
 
     public static unpack(data: PackedBonusData): RegBonusData {
-        return {
-            ...defaults.BONUS(),
-            ...data,
+        return merge_defaults({
             lid: data.id,
             val: "" + data.val,
             damage_types: Damage.MakeChecklist(data.damage_types ?? []),
             range_types: Range.MakeChecklist(data.range_types ?? []),
             weapon_sizes: MechWeapon.MakeSizeChecklist(data.weapon_sizes ?? []),
             weapon_types: MechWeapon.MakeTypeChecklist(data.weapon_types ?? [])
-        }
+        }, defaults.BONUS());
     }
 
     // Compile the expression

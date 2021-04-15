@@ -1,5 +1,6 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 export interface PackedEnvironmentData {
     id: string;
     name: string;
@@ -19,7 +20,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
     Description!: string;
 
     public async load(data: RegEnvironmentData): Promise<void> {
-        data = { ...defaults.ENVIRONMENT(), ...data };
+        merge_defaults(data, defaults.ENVIRONMENT());
         this.LID = data.lid;
         this.Description = data.description;
         this.Name = data.name;

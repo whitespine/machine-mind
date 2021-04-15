@@ -1,6 +1,7 @@
 import { PilotArmor, PilotWeapon, PilotGear, PilotEquipment, Bonus, Synergy } from "@src/class";
 import { defaults } from "@src/funcs";
 import { EntryType, LiveEntryTypes, OpCtx, Registry, RegRef, RegSer } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 // This is what is actually in the loadouts. The id's ref actual weapons
 export interface PackedPilotEquipmentState {
@@ -99,7 +100,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
     }
 
     public async load(data: RegPilotLoadoutData): Promise<void> {
-        data = { ...defaults.PILOT_LOADOUT(), ...data };
+        merge_defaults(data, defaults.PILOT_LOADOUT());
         // Simple
         this.Name = data.name;
         this.LID = data.lid;

@@ -10,6 +10,7 @@ import {
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
 import { ReserveType } from "@src/enums";
 import { defaults } from "@src/funcs";
+import { merge_defaults } from "@src/classes/default_entries";
 
 interface AllReserveData {
     type?: string;
@@ -60,7 +61,7 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
     Used!: boolean;
 
     public async load(data: RegReserveData) {
-        data = { ...defaults.RESERVE(), ...data };
+        merge_defaults(data, defaults.RESERVE());
         this.LID = data.lid;
         this.ResourceLabel = data.label;
         this.Consumable = data.consumable;
@@ -138,15 +139,24 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(data.counters);
-        let rdata: RegReserveData = {
-            ...defaults.RESERVE(),
-            ...data,
+        let rdata: RegReserveData = merge_defaults({
+            lid: data.id,
+            consumable: data.consumable,
+            description: data.description,
+            label: data.label,
+            name: data.name,
+            resource_cost: data.resource_cost,
+            resource_name: data.resource_name,
+            resource_note: data.resource_note,
+            type: data.type,
+            used: data.used,
             bonuses: (data.bonuses ?? []).map(Bonus.unpack),
             actions: (data.actions ?? []).map(Action.unpack),
+            synergies: data.synergies ?? [],
             integrated,
             deployables,
             counters,
-        };
+        }, defaults.RESERVE());
         return reg.get_cat(EntryType.RESERVE).create_live(ctx, rdata);
     }
 }

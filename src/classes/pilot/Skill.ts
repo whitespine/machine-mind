@@ -1,6 +1,7 @@
 import { Rules } from "@src/class";
-import { defaults } from "@src/funcs";
+import { defaults, lid_format_name } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 /*
 This is serialized and deserialized very simply.
@@ -47,7 +48,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
     CurrentRank!: number;
 
     public async load(data: RegSkillData): Promise<void> {
-        data = { ...defaults.SKILL(), ...data };
+        merge_defaults(data, defaults.SKILL());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -86,13 +87,14 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Skill> {
-        let rdata = {
-            ...defaults.SKILL(),
+        let rdata: RegSkillData = merge_defaults({
             lid: packed_skill.id,
-            name: packed_skill.name ?? packed_skill.id,
-        };
-        // Default the name
-        rdata.name = packed_skill.name ?? rdata.lid;
+            description: packed_skill.description,
+            detail: packed_skill.detail,
+            family: packed_skill.family,
+            rank: packed_skill.rank ?? 1,
+            name: packed_skill.name ?? packed_skill.id
+        }, defaults.SKILL());
         return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
     }
 }

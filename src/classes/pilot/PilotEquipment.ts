@@ -15,6 +15,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { RegDamageData } from "../Damage";
+import { merge_defaults } from "../default_entries";
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -41,6 +42,7 @@ export interface PackedPilotWeaponData extends AllPackedData {
     type: "Weapon";
     damage: PackedDamageData[];
     range: PackedRangeData[];
+    effect?: string;
 }
 export interface PackedPilotGearData extends AllPackedData {
     type: "Gear";
@@ -95,7 +97,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     }
 
     public async load(data: RegPilotArmorData): Promise<void> {
-        data = { ...defaults.PILOT_ARMOR(), ...data };
+        merge_defaults(data, defaults.PILOT_ARMOR());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -121,12 +123,12 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotArmor> {
-        let rdata: RegPilotArmorData = {
-            ...defaults.PILOT_ARMOR(),
-            ...data,
+        let rdata: RegPilotArmorData = merge_defaults({
+            name: data.name,
+            description: data.description,
             lid: data.id,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        };
+        }, defaults.PILOT_ARMOR());
         return reg.get_cat(EntryType.PILOT_ARMOR).create_live(ctx, rdata);
     }
 
@@ -152,7 +154,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     }
 
     public async load(data: RegPilotGearData): Promise<void> {
-        data = { ...defaults.PILOT_GEAR(), ...data };
+        merge_defaults(data, defaults.PILOT_GEAR());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -178,12 +180,12 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotGear> {
-        let rdata: RegPilotGearData = {
-            ...defaults.PILOT_GEAR(),
-            ...data,
+        let rdata: RegPilotGearData = merge_defaults({
             lid: data.id,
+            name: data.name,
+            description: data.description,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        };
+        }, defaults.PILOT_GEAR());
         return reg.get_cat(EntryType.PILOT_GEAR).create_live(ctx, rdata);
     }
 
@@ -212,7 +214,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     }
 
     public async load(data: RegPilotWeaponData): Promise<void> {
-        data = { ...defaults.PILOT_WEAPON(), ...data };
+        merge_defaults(data, defaults.PILOT_LOADOUT());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -245,14 +247,15 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotWeapon> {
-        let rdata: RegPilotWeaponData = {
-            ...defaults.PILOT_WEAPON(),
-            ...data,
+        let rdata: RegPilotWeaponData = merge_defaults({
+            name: data.name,
+            effect: data.description,
+            description: data.description,
             lid: data.id,
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             damage: data.damage.map(d => Damage.unpack(d)),
             range: data.range.map(Range.unpack),
-        };
+            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+        }, defaults.PILOT_WEAPON());
         return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata);
     }
 

@@ -11,6 +11,7 @@ import {
     RegCounterData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -88,7 +89,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
     CurrentRank!: number;
 
     public async load(data: RegTalentData): Promise<void> {
-        data = { ...defaults.TALENT(), ...data };
+        merge_defaults(data, defaults.TALENT());
         this.LID = data.lid;
         this.Name = data.name;
         this.Icon = data.icon;
@@ -96,7 +97,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         this.Description = data.description;
         this.Ranks = [];
         for (let r of data.ranks) {
-            r = { ...defaults.TALENT_RANK(), ...r };
+            merge_defaults(r, defaults.TALENT_RANK());
             this.Ranks.push({
                 Actions: SerUtil.process_actions(r.actions),
                 Bonuses: SerUtil.process_bonuses(
@@ -146,23 +147,25 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         // Process talent ranks
         let ranks: RegTalentRank[] = [];
         for (let r of data.ranks) {
-            ranks.push({
-                ...defaults.TALENT_RANK(),
-                ...r,
+            ranks.push(merge_defaults({
+                name: r.name,
+                description: r.description,
                 ...(await SerUtil.unpack_basdt({ id: data.id, ...r }, reg, ctx)),
                 counters: SerUtil.unpack_counters_default(r.counters),
                 integrated: SerUtil.unpack_integrated_refs(reg, r.integrated),
-            });
+            }, defaults.TALENT_RANK()));
         }
 
         // Finish with entire reg
-        let rdata: RegTalentData = {
-            ...defaults.TALENT(),
-            ...data,
+        let rdata: RegTalentData = merge_defaults({
+            description: data.description,
+            icon: data.icon,
+            name: data.name,
+            terse: data.terse,
             lid: data.id,
             ranks,
             curr_rank: 1,
-        };
+        }, defaults.TALENT());
         return reg.get_cat(EntryType.TALENT).create_live(ctx, rdata);
     }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed

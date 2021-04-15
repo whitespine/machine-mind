@@ -17,6 +17,7 @@ import {
 } from "@src/registry";
 import { IArtLocation } from "../Art";
 import { MechType, MountType } from "@src/enums";
+import { merge_defaults } from "../default_entries";
 
 // The raw stat information
 export interface IFrameStats {
@@ -79,7 +80,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     ImageUrl!: string;
 
     public async load(fd: RegFrameData): Promise<void> {
-        fd = { ...defaults.FRAME(), ...fd };
+        merge_defaults(fd, defaults.FRAME());
         this.LID = fd.lid;
         this.LicenseLevel = fd.license_level;
         this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source) : null;
@@ -120,16 +121,21 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             (frame.traits ?? []).map(i => FrameTrait.unpack(i, reg, ctx, frame.id))
         );
         let core_system = await CoreSystem.unpack(frame.core_system, reg, ctx);
-        let fdata: RegFrameData = {
-            ...defaults.FRAME(),
-            ...frame,
+        let fdata: RegFrameData = merge_defaults({
+            description: frame.description,
+            license_level: frame.license_level,
+            mechtype: frame.mechtype,
+            mounts: frame.mounts,
+            name: frame.name,
+            stats: frame.stats,
+            y_pos: frame.y_pos,
             lid: frame.id,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
             traits,
             core_system,
             image_url: frame.image_url ?? "",
             other_art: frame.other_art ?? [],
-        };
+        }, defaults.FRAME());
         return reg.get_cat(EntryType.FRAME).create_live(ctx, fdata);
     }
 

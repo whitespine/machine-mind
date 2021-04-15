@@ -1,9 +1,10 @@
 import { SerUtil, SimSer } from "@src/registry";
 import { typed_lancer_data } from "@src/data";
 import { ActivationType } from "@src/enums";
-import { SynergyLocation } from "@src/interface";
+import { SynergyLocation, PackedDamageData, PackedRangeData, RegDamageData, RegRangeData } from "@src/interface";
 import { defaults, lid_format_name } from "@src/funcs";
 import { nanoid } from "nanoid";
+import { Damage, Range } from "@src/class";
 
 interface AllActionData {
     name: string;
@@ -26,10 +27,14 @@ interface AllActionData {
 
 export interface PackedActionData extends AllActionData {
     id?: string;
+    damage?: PackedDamageData[];
+    range?: PackedRangeData[];
 }
 
 export interface RegActionData extends AllActionData {
     lid: string;
+    damage: RegDamageData[];
+    range: RegRangeData[];
 }
 
 export enum ActivePeriod {
@@ -53,6 +58,8 @@ export class Action extends SimSer<RegActionData> {
     AvailableUnmounted!: boolean;
     HeatCost!: number;
     SynergyLocations!: SynergyLocation[];
+    Damage!: Damage[];
+    Range!: Range[];
     // We don't handle other fields yet - they're almost purely for flavor. Synergies, maybe someday
 
     // Frequency we set as string
@@ -81,7 +88,24 @@ export class Action extends SimSer<RegActionData> {
             }
         }
         return {
-            ...action,
+            activation: action.activation,
+            detail: action.detail,
+            name: action.name,
+            confirm: action.confirm,
+            cost: action.cost,
+            frequency: action.frequency,
+            heat_cost: action.heat_cost,
+            hide_active: action.hide_active,
+            ignore_used: action.ignore_used,
+            init: action.init,
+            log: action.log,
+            mech: action.mech,
+            pilot: action.pilot,
+            synergy_locations: action.synergy_locations,
+            terse: action.terse,
+            trigger: action.trigger,
+            damage: (action.damage ?? []).map(Damage.unpack),
+            range: (action.range ?? []).map(Range.unpack),
             lid,
         };
     }
@@ -105,6 +129,8 @@ export class Action extends SimSer<RegActionData> {
         this.AvailableMounted = data.mech ?? (data.pilot ? false : true); // If undefined, guess that we should only allow if pilot is unset/set false
         this.HeatCost = data.heat_cost ?? 0;
         this.SynergyLocations = (data.synergy_locations as SynergyLocation[]) ?? [];
+        this.Damage = data.damage.map(d => new Damage(d));
+        this.Range = data.range.map(r => new Range(r));
     }
 
     public save(): RegActionData {
@@ -122,6 +148,8 @@ export class Action extends SimSer<RegActionData> {
             mech: this.AvailableMounted,
             heat_cost: this.HeatCost,
             synergy_locations: this.SynergyLocations,
+            damage: this.Damage.map(d => d.save()),
+            range: this.Range.map(d => d.save())
         };
     }
 }

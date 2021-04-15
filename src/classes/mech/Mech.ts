@@ -32,6 +32,7 @@ import {
 } from "@src/registry";
 import { CC_VERSION, DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
+import { merge_defaults } from "../default_entries";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
@@ -557,7 +558,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public async load(data: RegMechData): Promise<void> {
-        data = { ...defaults.MECH(), ...data };
+        merge_defaults(data, defaults.MECH());
         let subreg = await this.get_inventory();
         this.LID = data.lid;
         this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;

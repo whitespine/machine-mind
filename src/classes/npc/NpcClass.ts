@@ -10,6 +10,7 @@ import {
 } from "@src/registry";
 import { defaults } from "@src/funcs";
 import { INpcClassStats } from "@src/interface";
+import { merge_defaults } from "../default_entries";
 
 interface AllNpcClassData {
     name: string;
@@ -45,7 +46,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     Power!: number;
 
     public async load(data: RegNpcClassData): Promise<void> {
-        data = { ...defaults.NPC_CLASS(), ...data };
+        merge_defaults(data, defaults.NPC_CLASS());
         this.LID = data.lid;
         this.Name = data.name;
         this.Role = data.role;
@@ -77,9 +78,13 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcClass> {
-        let rdata: RegNpcClassData = {
-            ...defaults.NPC_CLASS(),
-            ...data,
+        let rdata: RegNpcClassData = merge_defaults({
+            // ...data,
+            info: data.info,
+            lid: data.id,
+            name: data.name,
+            power: data.power,
+            role: data.role,
             base_stats: { ...data.stats },
 
             base_features: data.base_features.map(f =>
@@ -88,7 +93,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
             optional_features: data.optional_features.map(f =>
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
-        };
+        }, defaults.NPC_CLASS());
         return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata);
     }
 

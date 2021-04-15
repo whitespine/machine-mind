@@ -23,6 +23,7 @@ import {
 import { ActivationType } from "@src/enums";
 import { BonusContext } from "./Bonus";
 import { Npc } from "./npc/Npc";
+import { merge_defaults } from "./default_entries";
 
 export interface PackedDeployableData {
     name: string;
@@ -240,7 +241,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     }
 
     public async load(data: RegDeployableData): Promise<void> {
-        data = { ...defaults.DEPLOYABLE(), ...data };
+        data = merge_defaults(data, defaults.DEPLOYABLE());
         this.AvailableMounted = data.avail_mounted;
         this.AvailableUnmounted = data.avail_unmounted;
 
@@ -332,20 +333,37 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     ): Promise<Deployable> {
         let tags = SerUtil.unpack_tag_instances(reg, dep.tags);
         let counters = SerUtil.unpack_counters_default(dep.counters);
-        let unpacked: RegDeployableData = {
-            ...defaults.DEPLOYABLE(),
-            ...dep,
+        let unpacked: RegDeployableData = merge_defaults({
             lid: `dep_${source_id}_${lid_format_name(dep.name)}`,
+            activation: dep.activation,
+            armor: dep.armor,
+            deactivation: dep.deactivation,
+            deployer: null,
+            detail: dep.detail,
+            edef: dep.edef,
+            evasion: dep.evasion,
+            heatcap: dep.heatcap,
+            instances: dep.instances,
+            name: dep.name,
+            recall: dep.recall,
+            redeploy: dep.redeploy,
+            repcap: dep.repcap,
+            save: dep.save,
+            sensor_range: dep.sensor_range,
+            size: dep.size,
+            speed: dep.speed,
+            synergies: dep.synergies ?? [],
+            tech_attack: dep.tech_attack,
+            type: dep.type,
             bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
             actions: (dep.actions ?? []).map(Action.unpack),
-            max_hp: dep.hp ?? 0,
-            overshield: 0,
-            current_hp: dep.hp ?? 0,
+            max_hp: dep.hp,
+            current_hp: dep.hp,
             avail_mounted: dep.mech ?? true,
             avail_unmounted: dep.pilot ?? false,
             counters,
             tags,
-        };
+        }, defaults.DEPLOYABLE());
         return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
     }
 }

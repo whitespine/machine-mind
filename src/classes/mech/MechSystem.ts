@@ -23,6 +23,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { SystemType } from "@src/enums";
+import { merge_defaults } from "../default_entries";
 
 interface AllMechSystemData {
     name: string;
@@ -116,7 +117,7 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     }
 
     public async load(data: RegMechSystemData): Promise<void> {
-        data = { ...defaults.MECH_SYSTEM(), ...data };
+        merge_defaults(data, defaults.MECH_SYSTEM());
         this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -165,15 +166,19 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<MechSystem> {
-        let rdata: RegMechSystemData = {
-            ...defaults.MECH_SYSTEM(),
-            ...data,
+        let rdata: RegMechSystemData = merge_defaults({
+            name: data.name,
+            sp: data.sp,
+            effect: data.effect,
+            license: data.license,
+            license_level: data.license_level,
+            description: data.description,
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
             lid: data.id,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
-        };
+        }, defaults.MECH_SYSTEM());
 
         return reg.get_cat(EntryType.MECH_SYSTEM).create_live(ctx, rdata);
     }

@@ -22,6 +22,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { Manufacturer } from "@src/class";
+import { merge_defaults } from "../default_entries";
 
 // These attrs are shared
 interface AllCoreBonusData {
@@ -69,7 +70,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegCoreBonusData): Promise<void> {
-        data = { ...defaults.CORE_BONUS(), ...data };
+        merge_defaults(data, defaults.CORE_BONUS());
         this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -114,10 +115,9 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(data.counters);
-        let cbdata: RegCoreBonusData = {
-            ...defaults.CORE_BONUS(),
-            ...data,
+        let cbdata: RegCoreBonusData = merge_defaults({
             lid: data.id,
+            name: data.name,
             integrated,
             deployables,
             counters,
@@ -126,7 +126,7 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             actions: (data.actions ?? []).map(Action.unpack),
             bonuses: (data.bonuses ?? []).map(Bonus.unpack),
             synergies: data.synergies ?? [],
-        };
+        }, defaults.CORE_BONUS());
         return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata);
     }
 

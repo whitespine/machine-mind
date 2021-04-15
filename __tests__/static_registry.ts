@@ -382,26 +382,6 @@ describe("Static Registry Reference implementation", () => {
         await drake.insinuate(dest, null, hooks);
     });
 
-    it("Preserves misc original data", async () => {
-        expect.assertions(4);
-        let setup = await init_basic_setup(true);
-        let reg = setup.reg;
-        let ctx = new OpCtx();
-        let sys = await reg.create_live(EntryType.MECH_SYSTEM, ctx, {name: "ns", nonspec_data: "test"});
-
-        // Initial write should still have the field
-        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).name).toEqual("ns");
-        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).nonspec_data).toEqual("test");
-
-        // Modify sys slightly and writeback. Modification shouldn't matter but we want to be sure
-        sys.Name = "newname";
-        await sys.writeback();
-
-        // Should still be the same, but name should be updated
-        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).name).toEqual("newname");
-        expect((await reg.get_raw(EntryType.MECH_SYSTEM, sys.RegistryID)).nonspec_data).toEqual("test");
-    });
-
     it("Properly redirects resolutions to different named regs", async () => {
         expect.assertions(2);
         let env = new RegEnv();

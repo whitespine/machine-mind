@@ -23,6 +23,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { defaults, tag_util } from "@src/funcs";
+import { merge_defaults } from "../default_entries";
 // TODO:
 // class WeaponAmmo {}
 
@@ -155,7 +156,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
     NoSynergies!: boolean; // We should not collect/display synergies when using/displaying this weapon
 
     public async load(data: RegMechWeaponData): Promise<void> {
-        data = { ...defaults.MECH_WEAPON(), ...data };
+        merge_defaults(data, defaults.MECH_WEAPON());
         this.LID = data.lid;
         this.Name = data.name;
         this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
@@ -260,21 +261,27 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         let parent_dep_entries = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id)));
         let parent_deployables = SerUtil.ref_all(parent_dep_entries);
 
-        let unpacked: RegMechWeaponData = {
-            ...defaults.MECH_WEAPON(),
-            ...data,
+        let unpacked: RegMechWeaponData = merge_defaults({
             lid: data.id,
             cascading: false,
             destroyed: false,
             loaded: true,
             name: data.name,
+            license: data.license,
+            license_level: data.license_level,
+            no_attack: data.no_attack,
+            no_bonuses: data.no_bonus,
+            no_core_bonuses: data.no_core_bonus,
+            no_mods: data.no_mods,
+            no_synergies: data.no_synergy,
+            sp: data.sp,
             profiles: [],
             integrated: parent_integrated,
             deployables: parent_deployables,
             selected_profile: 0,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             size: SerUtil.restrict_enum(WeaponSize, WeaponSize.Main, data.mount)
-        };
+        }, defaults.MECH_WEAPON());
 
         // Get profiles - depends on if array is provided, but we tend towards the default
         let packed_profiles: PackedMechWeaponProfile[];
@@ -394,7 +401,7 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile> {
     Tags!: TagInstance[];
 
     public async load(data: RegMechWeaponProfile): Promise<void> {
-        data = { ...defaults.WEAPON_PROFILE(), ...data };
+        merge_defaults(data, defaults.WEAPON_PROFILE());
         this.Name = data.name;
         this.WepType = data.type;
         this.BaseDamage = SerUtil.process_damages(data.damage);

@@ -118,6 +118,8 @@ export function ACTION(): RegActionData {
         activation: ActivationType.Quick,
         detail: description,
         name: "New Action",
+        damage: [],
+        range: []
     };
 }
 
@@ -742,7 +744,7 @@ export function SITREP(): Required<RegSitrepData> {
 export function SKILL(): RegSkillData {
     return {
         lid: "sk_" + nanoid(),
-        description: "can sing the dk rap really well",
+        description: "No description",
         detail: "",
         family: SkillFamily.cha,
         name: "New Skill",
@@ -905,4 +907,13 @@ export function DEFAULT_FUNC_FOR<T extends EntryType>(type: T): () => RegEntryTy
 
 export function DEFAULT_FOR<T extends EntryType>(type: T): RegEntryTypes<T> {
     return DEFAULT_FUNC_MAP[type]() as RegEntryTypes<T>;
+}
+
+export function merge_defaults<T>(targ: Partial<T>, defaults: T): T {
+    for(let key in defaults) {
+        if(targ[key] === undefined && key in defaults) {
+            targ[key] = defaults[key];
+        }
+    }
+    return targ as T;
 }

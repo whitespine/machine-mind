@@ -9,6 +9,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 interface AllNpcTemplateData {
     name: string;
@@ -37,7 +38,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
     Power!: number;
 
     protected async load(data: RegNpcTemplateData): Promise<void> {
-        data = { ...defaults.NPC_TEMPLATE(), ...data };
+        merge_defaults(data, defaults.NPC_TEMPLATE());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -65,17 +66,18 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcTemplate> {
-        let rdata: RegNpcTemplateData = {
-            ...defaults.NPC_TEMPLATE(),
-            ...data,
-
+        let rdata: RegNpcTemplateData = merge_defaults({
+            description: data.description,
+            lid: data.id,
+            name: data.name,
+            power:  data.power,
             base_features: data.base_features.map(f =>
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
             optional_features: data.optional_features.map(f =>
                 quick_local_ref(reg, EntryType.NPC_FEATURE, f)
             ),
-        };
+        }, defaults.NPC_TEMPLATE());
         return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }
 }

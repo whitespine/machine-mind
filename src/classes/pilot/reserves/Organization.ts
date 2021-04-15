@@ -1,3 +1,4 @@
+import { merge_defaults } from "@src/classes/default_entries";
 import { OrgType } from "@src/enums";
 import { bound_int, defaults } from "@src/funcs";
 import { EntryType, RegEntry, SimSer } from "@src/registry";
@@ -43,7 +44,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
 
     public async load(data: RegOrganizationData): Promise<void> {
-        data = { ...defaults.ORGANIZATION(), ...data };
+        merge_defaults(data, defaults.ORGANIZATION());
         this.LID = data.lid;
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;

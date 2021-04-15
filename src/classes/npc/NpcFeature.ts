@@ -10,6 +10,7 @@ import {
     RegTagInstanceData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rider types
@@ -236,7 +237,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     }
 
     protected async load(data: AnyRegNpcFeatureData): Promise<void> {
-        data = { ...defaults.NPC_FEATURE(), ...data };
+        merge_defaults(data, defaults.NPC_FEATURE());
         this.LID = data.lid;
         this.Name = data.name;
         this.Origin = { ...data.origin };
@@ -253,17 +254,17 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         // Fetch whatever else is there
         switch (data.type) {
             case NpcFeatureType.Reaction:
-                data = { ...defaults.NPC_REACTION(), ...data };
+                merge_defaults(data, defaults.NPC_REACTION());
                 this.Trigger = data.trigger;
                 return;
             case NpcFeatureType.Tech:
-                data = { ...defaults.NPC_TECH(), ...data };
+                merge_defaults(data, defaults.NPC_TECH());
                 this.TechType = data.tech_type;
                 this.Accuracy = [...data.accuracy];
                 this.AttackBonus = [...data.attack_bonus];
                 return;
             case NpcFeatureType.Weapon:
-                data = { ...defaults.NPC_WEAPON(), ...data };
+                merge_defaults(data, defaults.NPC_WEAPON());
                 this.Accuracy = [...data.accuracy];
                 this.AttackBonus = [...data.attack_bonus];
                 this.WepType = data.weapon_type;

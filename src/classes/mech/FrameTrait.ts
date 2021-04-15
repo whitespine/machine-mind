@@ -12,6 +12,7 @@ import {
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { FrameEffectUse } from "@src/enums";
 import { PackedActionData } from "../Action";
+import { merge_defaults } from "../default_entries";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])
 
@@ -50,7 +51,7 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegFrameTraitData): Promise<void> {
-        data = { ...defaults.FRAME_TRAIT(), ...data };
+        merge_defaults(data, defaults.FRAME_TRAIT());
         this.Name = data.name;
         this.Description = data.description;
         this.Use = data.use ?? null;
@@ -76,13 +77,13 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         ctx: OpCtx,
         frame_id: string
     ): Promise<RegFrameTraitData> {
-        let rdata: RegFrameTraitData = {
-            ...defaults.FRAME_TRAIT(),
-            ...data,
+        let rdata: RegFrameTraitData = merge_defaults({
+            name: data.name,
+            use: data.use, 
             ...(await SerUtil.unpack_basdt({ id: frame_id, ...data }, reg, ctx)),
             counters: SerUtil.unpack_counters_default(data.counters),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
-        };
+        }, defaults.FRAME_TRAIT());
         return rdata;
     }
     public get_assoc_entries(): RegEntry<any>[] {

@@ -9,6 +9,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
+import { merge_defaults } from "./default_entries";
 
 export type LicensedItemType =
     | EntryType.FRAME
@@ -43,7 +44,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
     }
 
     public async load(data: RegLicenseData): Promise<void> {
-        data = { ...defaults.LICENSE(), ...data };
+        merge_defaults(data, defaults.LICENSE());
         this.Name = data.name;
         this.Manufacturer = null;
         if (data.manufacturer) {

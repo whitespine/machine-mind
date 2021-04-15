@@ -51,6 +51,7 @@ import {
     fallback_obtain_ref,
     RegFallback,
 } from "../regstack";
+import { merge_defaults } from "../default_entries";
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 
@@ -500,7 +501,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public async load(data: RegPilotData): Promise<void> {
-        data = { ...defaults.PILOT(), ...data };
+        merge_defaults(data, defaults.PILOT());
         let subreg = await this.get_inventory();
         this.Background = data.background;
         this.Callsign = data.callsign;

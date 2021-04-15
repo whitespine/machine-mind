@@ -6,12 +6,12 @@
 
 export * from "@src/classes/GeneralClasses";
 export { Rules } from "./classes/utility/Rules";
+export { Damage } from "./classes/Damage";
+export { Range } from "./classes/Range";
 export { Action } from "./classes/Action";
 export { Bonus } from "./classes/Bonus";
 export { Deployable } from "./classes/Deployable";
 export { CoreBonus } from "./classes/pilot/CoreBonus";
-export { Damage } from "./classes/Damage";
-export { Range } from "./classes/Range";
 export { Synergy } from "@src/classes/Synergy";
 export { Skill } from "./classes/pilot/Skill";
 export { PilotArmor, PilotGear, PilotWeapon, PilotEquipment } from "./classes/pilot/PilotEquipment";

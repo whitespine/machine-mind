@@ -1,6 +1,7 @@
 import { defaults } from "@src/funcs";
 import { imageManagement, ImageTag } from "@src/hooks";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
+import { merge_defaults } from "./default_entries";
 
 interface AllManufacturerData {
     name: string;
@@ -28,7 +29,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     Quote!: string;
 
     public async load(data: RegManufacturerData): Promise<void> {
-        data = { ...defaults.MANUFACTURER(), ...data };
+        merge_defaults(data, defaults.MANUFACTURER());
         this.LID = data.lid;
         this.Name = data.name;
         this.Light = data.light;
@@ -54,10 +55,15 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Manufacturer> {
-        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, {
-            ...pmd,
+        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, merge_defaults({
             lid: pmd.id,
-        });
+            dark: pmd.dark,
+            description: pmd.description,
+            light: pmd.light,
+            logo: pmd.logo,
+            name: pmd.name,
+            quote: pmd.quote
+        }, defaults.MANUFACTURER()));
     }
 
     public GetColor(dark?: boolean): string {

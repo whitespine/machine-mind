@@ -14,6 +14,7 @@ import {
 import { FittingSize, MountType, WeaponSize } from "@src/enums";
 import { fallback_obtain_ref, RegFallback as RegFallbackStack } from "../regstack";
 import { createHook } from "async_hooks";
+import { merge_defaults } from "../default_entries";
 
 //todo: superheavies :<
 
@@ -89,7 +90,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     WepMounts!: WeaponMount[]; // TODO: check or auto populate mounts in some way, based on frame
 
     public async load(data: RegMechLoadoutData): Promise<void> {
-        data = { ...defaults.MECH_LOADOUT(), ...data };
+        merge_defaults(data, defaults.MECH_LOADOUT());
         this.SysMounts = await Promise.all(
             data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).ready())
         );
@@ -502,9 +503,6 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     // Is it integrated? (forbids mods). Separate from mounttype integrated, which is strictly for frame-integrated mounts
     Integrated!: boolean;
 
-    // Is it from a core bonus
-    // from_cb..... how we do this?
-
     Bracing!: boolean; // True if this mount is being used as bracing. Forbids use of anything else
 
     // Validate the provided slots based on this mounts current configuration
@@ -607,7 +605,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     public async load(data: RegWepMountData): Promise<void> {
-        data = { ...defaults.WEAPON_MOUNT_DATA(), ...data };
+        merge_defaults(data, defaults.WEAPON_MOUNT_DATA());
         this.MountType = data.mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
 

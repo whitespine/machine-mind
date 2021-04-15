@@ -14,6 +14,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { ActivationType, FrameEffectUse } from "@src/enums";
+import { merge_defaults } from "../default_entries";
 
 export interface AllCoreSystemData {
     name: string;
@@ -83,7 +84,7 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
     Tags!: TagInstance[];
 
     public async load(data: RegCoreSystemData): Promise<void> {
-        data = { ...defaults.CORE_SYSTEM(), ...data };
+        merge_defaults(data, defaults.CORE_SYSTEM());
         this.Activation = data.activation;
         this.Description = data.description;
         this.Name = data.name;
@@ -158,9 +159,18 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         let integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
 
         // Get and ref the deployables
-        let unpacked: RegCoreSystemData = {
-            ...defaults.CORE_SYSTEM(),
-            ...data,
+        let unpacked: RegCoreSystemData = merge_defaults({
+            activation: data.activation,
+            active_effect: data.active_effect,
+            active_name: data.active_name,
+            active_synergies: (data.active_synergies ?? []),
+            passive_effect: data.passive_effect,
+            deactivation: data.deactivation,
+            description: data.description,
+            name: data.name,
+            passive_name: data.passive_name,
+            passive_synergies: (data.passive_synergies ?? []),
+            use: data.use,
             active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
             passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
             active_actions: (data.active_actions ?? []).map(Action.unpack),
@@ -169,7 +179,7 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
             counters,
             deployables,
             integrated,
-        };
+        }, defaults.CORE_SYSTEM());
         return unpacked;
     }
 

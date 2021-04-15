@@ -542,14 +542,12 @@ export abstract class SimSer<S> {
 export abstract class RegSer<SourceType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
-    public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
     private _load_promise: Promise<any>;
 
     // Setup
     constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
         this.Registry = registry;
         this.OpCtx = ctx;
-        this.OrigData = data;
 
         // Load, and when done remove our pending entry
         this._load_promise = this.load(data);
@@ -566,7 +564,7 @@ export abstract class RegSer<SourceType> {
 
     // Export this item for registry saving back to registry
     public save(): SourceType {
-        return { ...this.OrigData, ...this.save_imp() };
+        return this.save_imp();
     }
 
     protected abstract save_imp(): SourceType;
@@ -687,7 +685,7 @@ export abstract class RegEntry<T extends EntryType> {
     // Export this item for registry saving back to registry
     public save(): RegEntryTypes<T> {
         let savedata = this.save_imp();
-        return { ...this.OrigData, ...savedata }; // TODO: do more of a recursive merge
+        return savedata;
     }
 
     // What we override for saves

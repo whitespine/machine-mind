@@ -38,6 +38,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "@src/enums";
+import { merge_defaults } from "../default_entries";
 
 export interface AllWeaponModData {
     name: string;
@@ -198,7 +199,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     public async load(data: RegWeaponModData): Promise<void> {
-        data = { ...defaults.WEAPON_MOD(), ...data };
+        merge_defaults(data, defaults.WEAPON_MOD());
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.LID = data.lid;
@@ -264,9 +265,13 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             allowed_sizes = allowed_sizes.filter(x => data.allowed_sizes?.includes(x));
         }
 
-        let rdata: RegWeaponModData = {
-            ...defaults.WEAPON_MOD(),
-            ...data,
+        let rdata: RegWeaponModData = merge_defaults({
+            sp: data.sp,
+            effect: data.effect,
+            lid: data.id,
+            name: data.name,
+            license: data.license,
+            license_level: data.license_level,
             source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
             added_range: data.added_range?.map(Range.unpack) ?? [],
@@ -278,7 +283,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
             counters: SerUtil.unpack_counters_default(data.counters),
             ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        };
+        }, defaults.WEAPON_MOD());
         return reg.get_cat(EntryType.WEAPON_MOD).create_live(ctx, rdata);
     }
 

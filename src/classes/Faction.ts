@@ -1,5 +1,6 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
+import { merge_defaults } from "./default_entries";
 
 interface AllFactionData {
     name: string;
@@ -30,21 +31,19 @@ export class Faction extends RegEntry<EntryType.FACTION> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Faction> {
-        data = { ...defaults.FACTION(), ...data };
-        let fdata: RegFactionData = {
-            ...defaults.FACTION(),
+        let fdata: RegFactionData = merge_defaults({
             lid: data.id,
             color: data.color,
             description: data.description,
             logo: data.logo,
             logo_url: data.logo_url ?? "",
             name: data.name,
-        };
+        }, defaults.FACTION());
         return reg.get_cat(EntryType.FACTION).create_live(ctx, fdata);
     }
 
     public async load(data: RegFactionData): Promise<void> {
-        data = { ...defaults.FACTION(), ...data };
+        merge_defaults(data, defaults.FACTION());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;

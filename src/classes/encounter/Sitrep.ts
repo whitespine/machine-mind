@@ -1,5 +1,6 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 interface AllSitrepData {
     name: string;
@@ -49,7 +50,7 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     }
 
     public async load(data: RegSitrepData) {
-        data = { ...defaults.SITREP(), ...data };
+        merge_defaults(data, defaults.SITREP());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
@@ -64,7 +65,15 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
 
     public static async unpack(psd: PackedSitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
         return reg.get_cat(EntryType.SITREP).create_live(ctx, {
-            ...psd,
+            description: psd.description,
+            enemyVictory: psd.enemyVictory,
+            name: psd.name,
+            pcVictory: psd.pcVictory,
+            controlZone: psd.controlZone,
+            deployment: psd.deployment,
+            extraction: psd.extraction,
+            noVictory: psd.noVictory,
+            objective: psd.objective,
             lid: psd.id,
         });
     }

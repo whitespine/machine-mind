@@ -1,5 +1,6 @@
 import { defaults, lid_format_name } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
+import { merge_defaults } from "./default_entries";
 
 interface AllStatusData {
     name: string;
@@ -22,7 +23,7 @@ export class Status extends RegEntry<EntryType.STATUS> {
     public Subtype!: "Status" | "Condition";
 
     async load(data: RegStatusData) {
-        data = { ...defaults.STATUS(), ...data };
+        merge_defaults(data, defaults.STATUS());
         this.LID = data.lid;
         this.Subtype = data.type;
         this.Name = data.name;
@@ -42,7 +43,10 @@ export class Status extends RegEntry<EntryType.STATUS> {
 
     public static async unpack(psd: PackedStatusData, reg: Registry, ctx: OpCtx): Promise<Status> {
         return reg.get_cat(EntryType.STATUS).create_live(ctx, {
-            ...psd,
+            effects: psd.effects,
+            icon: psd.icon,
+            name: psd.name,
+            type: psd.type,
             lid: "cond_" + lid_format_name(psd.name),
         });
     }

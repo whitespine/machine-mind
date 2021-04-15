@@ -2,6 +2,7 @@ import { Action, Bonus, Deployable, Synergy, Counter } from "@src/class";
 import { defaults } from "@src/funcs";
 import { RegActionData, ISynergyData, RegBonusData, RegCounterData } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
+import { merge_defaults } from "../default_entries";
 
 ///////////////////////////////////////////////////////////
 // Data
@@ -30,7 +31,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     Integrated!: RegEntry<any>[];
 
     public async load(data: RegQuirkData): Promise<void> {
-        data = { ...defaults.QUIRK(), ...data };
+        merge_defaults(data, defaults.QUIRK());
         this.Name = data.name;
         this.Description = data.description;
 
@@ -49,14 +50,13 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     }
 
     public static async unpack(raw_quirk: string, reg: Registry, ctx: OpCtx): Promise<Quirk> {
-        let qdata: RegQuirkData = {
-            ...defaults.QUIRK(),
+        let qdata: RegQuirkData = merge_defaults({
             name: `Quirk: ${raw_quirk
                 .split(" ")
                 .slice(0, 6)
                 .join(" ")}...`, // Show the first 6 words in the name
             description: raw_quirk,
-        };
+        }, defaults.QUIRK());
 
         return reg.get_cat(EntryType.QUIRK).create_live(ctx, qdata);
     }

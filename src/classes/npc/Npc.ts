@@ -9,6 +9,7 @@ import {
 } from "@src/interface";
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
+import { merge_defaults } from "../default_entries";
 
 interface INpcItemSaveData {
     // unsure if we really need this
@@ -247,7 +248,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
 
     protected async load(data: RegNpcData): Promise<void> {
-        data = { ...defaults.NPC(), ...data };
+        merge_defaults(data, defaults.NPC());
         let subreg = await this.get_inventory();
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;

@@ -8,6 +8,7 @@ import {
     RegRef,
     RegSer,
 } from "@src/registry";
+import { merge_defaults } from "./default_entries";
 
 interface AllTagTemplateData {
     name: string;
@@ -42,7 +43,7 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     FilterIgnore!: boolean; // Whether to ignore this tags data when filtering
 
     public async load(data: RegTagTemplateData): Promise<void> {
-        data = { ...defaults.TAG_TEMPLATE(), ...data };
+        merge_defaults(data, defaults.TAG_TEMPLATE());
         this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
