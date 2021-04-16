@@ -64,6 +64,7 @@ import {
     MountType,
     NpcTechType,
 } from "@src/enums";
+import { DeployableType } from "./Deployable";
 
 // Some general defaults
 const description = "No description";
@@ -196,7 +197,7 @@ export function DEPLOYABLE(): RegDeployableData {
         size: 1,
         speed: 0,
         tech_attack: 0,
-        type: "drone",
+        type: DeployableType.Deployable,
         avail_unmounted: false,
         avail_mounted: true,
         deployer: null,

@@ -711,7 +711,7 @@ export abstract class RegEntry<T extends EntryType> {
     public async refreshed(ctx?: OpCtx): Promise<LiveEntryTypes<T> | null> {
         if (ctx && this.OpCtx == ctx) {
             console.warn(
-                "Refreshing an item into its selfsame OpCtx can lead to data incoherence."
+                "Refreshing an item into its selfsame OpCtx will just give you the same object"
             );
         }
         let refreshed = this.Registry.get_cat(this.Type).get_live(
