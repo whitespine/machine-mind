@@ -80,6 +80,7 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         let rdata: RegFrameTraitData = merge_defaults({
             name: data.name,
             use: data.use, 
+            description: data.description,
             ...(await SerUtil.unpack_basdt({ id: frame_id, ...data }, reg, ctx)),
             counters: SerUtil.unpack_counters_default(data.counters),
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
@@ -88,5 +89,21 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
     }
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
+    }
+
+    public async emit(): Promise<PackedFrameTraitData> {
+        return  {
+            name: this.Name,
+            description: this.Description,
+
+            use: this.Use,
+
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
     }
 }

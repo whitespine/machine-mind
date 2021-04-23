@@ -39,15 +39,15 @@ import {
 } from "@src/registry";
 import { SystemType, WeaponSize, WeaponType } from "@src/enums";
 import { merge_defaults } from "../default_entries";
+import { WeaponSizeChecklist, WeaponTypeChecklist } from "./MechWeapon";
 
 export interface AllWeaponModData {
     name: string;
     sp: number;
+    description: string;
     license: string; // Frame Name
     license_level: number; // set to 0 to be available to all Pilots
     effect: string; // v-html
-    allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
-    allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
     synergies?: ISynergyData[];
 }
 
@@ -65,6 +65,8 @@ export interface PackedWeaponModData extends AllWeaponModData {
     integrated?: string[];
     restricted_types?: WeaponType[]; // weapon types the mod CAN NOT be applied to
     restricted_sizes?: WeaponSize[]; // weapon sizes the mod CAN NOT be applied to
+    allowed_types?: WeaponType[]; // weapon types the mod CAN be applied to
+    allowed_sizes?: WeaponSize[]; // weapon sizes the mod CAN be applied to
 }
 
 export interface RegWeaponModData extends Required<AllWeaponModData> {
@@ -79,6 +81,8 @@ export interface RegWeaponModData extends Required<AllWeaponModData> {
     added_range: RegRangeData[]; // damage added to the weapon the mod is installed on
     bonuses: RegBonusData[]; // these bonuses are applied to the pilot, not parent weapon
     actions: RegActionData[];
+    allowed_types: WeaponTypeChecklist; // weapon types the mod CAN be applied to
+    allowed_sizes: WeaponSizeChecklist; // weapon sizes the mod CAN be applied to
 
     // state info
     cascading: boolean;
@@ -94,12 +98,13 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     License!: string;
     LID!: string;
     Name!: string;
+    Description!: string;
 
     // Mech equipment
     Uses!: number;
     Destroyed!: boolean; // does this even make sense?
     Cascading!: boolean; // - can mods? Can't hurt I guess
-    // MaxUses!: number
+    // BaseLimit!: number
     SP!: number;
     Effect!: string;
     // bIsIntegrated!: boolean; - no
@@ -111,8 +116,8 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     // CanSetUses!: boolean
 
     // Mod specific
-    AllowedTypes!: WeaponType[]; // if empty assume all
-    AllowedSizes!: WeaponSize[]; // if empty assume all
+    AllowedTypes!: WeaponTypeChecklist; // if empty assume all
+    AllowedSizes!: WeaponSizeChecklist; // if empty assume all
     // RestrictedTypes!: WeaponType[]  -- These are redundant and thus omitted
     // RestrictedSizes!: WeaponSize[]
     AddedTags!: TagInstance[];
@@ -153,20 +158,8 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
     }
 
     public accepts(weapon: MechWeapon): boolean {
-        // (current) size matches?
-        if (this.AllowedSizes.length && !this.AllowedSizes.includes(weapon.Size)) {
-            return false;
-        }
-
-        // (current) type matches?
-        if (
-            this.AllowedTypes.length &&
-            !this.AllowedTypes.includes(weapon.SelectedProfile.WepType)
-        ) {
-            return false;
-        }
-
-        return true;
+        // Use selectedprofile to determine details
+        return this.AllowedSizes[weapon.Size] && this.AllowedTypes[weapon.SelectedProfile.WepType];
     }
 
     protected save_imp(): RegWeaponModData {
@@ -179,6 +172,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             name: this.Name,
             sp: this.SP,
             effect: this.Effect,
+            description: this.Description,
 
             cascading: this.Cascading,
             destroyed: this.Destroyed,
@@ -208,6 +202,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.Name = data.name;
         this.SP = data.sp;
         this.Effect = data.effect;
+        this.Description = data.description;
 
         (this.AddedRange = SerUtil.process_ranges(data.added_range)),
             (this.AddedDamage = SerUtil.process_damages(data.added_damage)),
@@ -276,8 +271,8 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             added_damage: data.added_damage?.map(Damage.unpack) ?? [],
             added_range: data.added_range?.map(Range.unpack) ?? [],
             added_tags: SerUtil.unpack_tag_instances(reg, data.added_tags),
-            allowed_sizes,
-            allowed_types,
+            allowed_sizes: MechWeapon.MakeSizeChecklist(allowed_sizes),
+            allowed_types: MechWeapon.MakeTypeChecklist(allowed_types),
 
             // Boring stuff
             integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
@@ -289,5 +284,35 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
+    }
+
+    public async emit(): Promise<PackedWeaponModData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Description,
+
+            effect: this.Effect,
+            license: this.License,
+            license_level: this.LicenseLevel,
+            sp: this.SP,
+        
+            added_damage: await SerUtil.emit_all(this.AddedDamage),
+            added_range: await SerUtil.emit_all(this.AddedRange),
+            added_tags: await SerUtil.emit_all(this.AddedTags),
+            allowed_sizes: MechWeapon.FlattenSizeChecklist(this.AllowedSizes),
+            allowed_types: MechWeapon.FlattenTypeChecklist(this.AllowedTypes),
+            restricted_sizes: [],
+            restricted_types: [],
+
+            source: this.Source?.LID ?? "GMS",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            tags: await SerUtil.emit_all(this.Tags),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
     }
 }

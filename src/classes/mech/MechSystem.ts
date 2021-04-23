@@ -186,4 +186,27 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
     }
+
+    public async emit(): Promise<PackedMechSystemData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Description,
+
+            effect: this.Effect,
+            license: this.License,
+            license_level: this.LicenseLevel,
+            sp: this.SP,
+            type: this.SysType,
+
+            source: this.Source?.LID ?? "GMS",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            tags: await SerUtil.emit_all(this.Tags),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
+    }
 }

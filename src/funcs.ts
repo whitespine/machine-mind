@@ -1,3 +1,7 @@
+import { Counter } from "./class";
+import { SourcedCounter } from "./interface";
+import { EntryType, LiveEntryTypes } from "./registry";
+
 // Same logic as interfaces, classes, etc.
 export { parseContentPack } from "@src/io/ContentPackParser";
 export { intake_pack } from "@src/classes/ContentPack";
@@ -37,4 +41,43 @@ export function list_truthy_keys(of_dict: { [key: string]: any }): string[] {
 // Converts things like "LEAVIATHAN HEAVY ASSAULT CANNON" into "leaviathan_heavy_assault_cannon"
 export function lid_format_name(name: string): string {
     return name.trim().replace(/[:\\\/-\s]+/g, "_").toLowerCase();
+}
+
+// Remove all undefined from an object
+export function remove_undefined<T>(item: T): {
+    [K in keyof T]: Exclude<T[K], undefined>;
+} {
+    for(let key of Object.keys(item)) {
+        if(item[key] === undefined) {
+            delete item[key];
+        }
+    }
+    return item as any;
+}
+
+export function remove_null<T>(item: T): {
+    [K in keyof T]: Exclude<T[K], null>;
+} {
+    for(let key of Object.keys(item)) {
+        if(item[key] === null) {
+            delete item[key];
+        }
+    }
+    return item as any;
+}
+
+export function remove_nullish<T>(item: T): {
+    [K in keyof T]: Exclude<T[K], undefined | null>;
+} {
+    for(let key of Object.keys(item)) {
+        if(item[key] == undefined) {
+            delete item[key];
+        }
+    }
+    return item as any;
+}
+
+export function source_all_counters<T extends EntryType>(from_list: (LiveEntryTypes<T> & {Counters: Counter[]})[]): SourcedCounter<T>[] {
+    // Collect counters from the given array of items, marking each with its source entity
+    return from_list.flatMap(t => t.Counters.map(c => c.mark_sourced(t)));
 }

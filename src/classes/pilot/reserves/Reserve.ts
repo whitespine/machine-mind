@@ -158,5 +158,27 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
             counters,
         }, defaults.RESERVE());
         return reg.get_cat(EntryType.RESERVE).create_live(ctx, rdata);
+    }    
+    
+    public async emit(): Promise<PackedReserveData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Description,
+            consumable: this.Consumable,
+            resource_cost: this.ResourceCost,
+            resource_name: this.ResourceName,
+            resource_note: this.ResourceNote,
+            used: this.Used,
+            label: this.ResourceLabel,
+            type: this.ReserveType,
+
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
     }
 }

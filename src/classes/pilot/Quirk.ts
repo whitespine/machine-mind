@@ -63,5 +63,9 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
+    }    
+    
+    public async emit(): Promise<string> {
+        return this.Description;
     }
 }

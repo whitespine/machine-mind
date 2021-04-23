@@ -64,7 +64,7 @@ export interface PackedMechWeaponData {
 }
 export type PackedMechWeaponProfile = Omit<
     PackedMechWeaponData,
-    "profiles" | "source" | "license" | "license_level" | "mount"
+    "id" | "profiles" | "source" | "license" | "license_level" | "mount" | "sp"
 >;
 
 // In our registry version, we push all data down to profiles, to eliminate the confusion of base data vs profile
@@ -366,6 +366,11 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         };
     }
 
+    // Undo the above conversion
+    public static FlattenTypeChecklist(types: WeaponTypeChecklist): WeaponType[] {
+        return Object.keys(types).filter(t => types[t]) as WeaponType[];
+    }
+
     public static MakeSizeChecklist(types: WeaponSize[]): WeaponSizeChecklist {
         let override = types.length == 0;
         return {
@@ -374,6 +379,33 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             Main: override || types.includes(WeaponSize.Main),
             Superheavy: override || types.includes(WeaponSize.Superheavy),
         };
+    }
+
+    // Undo the above conversion
+    public static FlattenSizeChecklist(sizes: WeaponSizeChecklist): WeaponSize[] {
+        return Object.keys(sizes).filter(s => sizes[s]) as WeaponSize[];
+    }
+
+    public async emit(): Promise<PackedMechWeaponData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Profiles[0]?.Description ?? "",
+
+            license: this.License,
+            license_level: this.LicenseLevel,
+            sp: this.SP,
+            mount: this.Size,
+            profiles: await SerUtil.emit_all(this.Profiles),
+            type: this.Profiles[0]?.WepType ?? WeaponType.Rifle,
+
+            source: this.Source?.LID ?? "GMS",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
     }
 }
 
@@ -441,5 +473,35 @@ export class MechWeaponProfile extends RegSer<RegMechWeaponProfile> {
             counters: SerUtil.save_all(this.Counters),
             tags: SerUtil.save_all(this.Tags),
         };
+    }
+
+    public async emit(): Promise<PackedMechWeaponProfile> {
+        return {
+            name: this.Name,
+            description: this.Description,
+
+            type: this.WepType,
+            barrage: this.Barrageable,
+            skirmish: this.Skirmishable,
+            cost: this.Cost,
+            damage: await SerUtil.emit_all(this.BaseDamage),
+            range: await SerUtil.emit_all(this.BaseRange),
+            effect: this.Effect,
+            on_attack: this.OnAttack,
+            on_crit: this.OnCrit,
+            on_hit: this.OnHit,
+
+            // no_attack?: boolean;
+            // no_bonus?: boolean;
+            // no_synergy?: boolean;
+            // no_mods?: boolean;
+            // no_core_bonus?: boolean;
+        
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            tags: await SerUtil.emit_all(this.Tags),
+            synergies: await SerUtil.emit_all(this.Synergies),
+        }
     }
 }

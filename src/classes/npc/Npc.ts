@@ -10,6 +10,7 @@ import {
 import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 import { merge_defaults } from "../default_entries";
+import { CC_VERSION } from "@src/enums";
 
 interface INpcItemSaveData {
     // unsure if we really need this
@@ -301,5 +302,25 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             current_stress: this.CurrentStress,
             current_structure: this.CurrentStructure,
         };
+    }
+
+    public async emit(): Promise<PackedNpcData> {
+        throw new TypeError("not yet implemented");
+        /*
+        return {
+            actions: [],
+            active: false,
+            cc_ver: CC_VERSION,
+            class: this.ActiveClass?.LID ?? "",
+            conditions:  [],
+            counter_data: [],
+            currentStats: {
+                activations: this.Activations,
+                agility: this.Agility,
+                armor: this.Armor,
+                edef: thisJKJ
+            },
+        }
+        */
     }
 }

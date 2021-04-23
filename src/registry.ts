@@ -340,6 +340,10 @@ export abstract class SerUtil {
         return items.map(i => i.save());
     }
 
+    // Makes our emit code look more consistent
+    public static emit_all<S, T extends { emit(): Promise<S> }>(items: T[]): Promise<S[]> {
+        return Promise.all(items.map(i => i.emit()));
+    }
     // Handle null -> undef convrsion
     public static save_all_opt<S, T extends { save(): S }>(items: T[] | null): S[] | undefined {
         return items?.map(i => i.save());
@@ -687,6 +691,9 @@ export abstract class RegEntry<T extends EntryType> {
         let savedata = this.save_imp();
         return savedata;
     }
+
+    // Export to packed
+    public abstract emit(): Promise<PackedEntryTypes<T>>;
 
     // What we override for saves
     protected abstract save_imp(): RegEntryTypes<T>;

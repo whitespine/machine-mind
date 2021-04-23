@@ -221,6 +221,40 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
         return item;
     }
 
+    public async emit(): Promise<PackedPilotLoadoutData> {
+        let armor: PackedPilotEquipmentState[] = this.EquippedArmor.map(ea => ({
+            id: ea.LID,
+            destroyed: false,
+            cascading: false,
+            uses: ea.Uses,
+            customDamageType: null,
+        }));
+        let gear: PackedPilotEquipmentState[] = this.EquippedGear.map(ea => ({
+            id: ea.LID,
+            destroyed: false,
+            cascading: false,
+            uses: ea.Uses,
+            customDamageType: null,
+        }));
+        let weapons: PackedPilotEquipmentState[] = this.EquippedWeapons.map(ea => ({
+            id: ea.LID,
+            destroyed: false,
+            cascading: false,
+            uses: ea.Uses,
+            customDamageType: null,
+        }));
+
+        return {
+            armor,
+            gear: gear.slice(0, 3),
+            extendedGear: gear.slice(3, 5),
+            weapons: weapons.slice(0, 2),
+            extendedWeapons: weapons.slice(2, 4),
+            id: this.LID,
+            name: this.Name,
+        }
+    }
+
     // Adds an item to the first free slot it can find
     /*
     Add(item: PilotArmor | PilotWeapon | PilotGear) { //, slot: number, extended?: boolean | null): void {

@@ -97,4 +97,19 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         }, defaults.SKILL());
         return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
     }
+
+    public async emit(): Promise<PackedSkillData> {
+        console.warn("Currently don't support any waay of determining if a skill is native, so we just assume the answer is yes");
+        return {
+            description: this.Description,
+            detail: this.Detail,
+            family: this.Family,
+            id: this.LID,
+            name: this.Name,
+            rank: this.CurrentRank,
+            custom_desc: this.Description,
+            custom_detail: this.Detail,
+            custom: true
+        }
+    }
 }

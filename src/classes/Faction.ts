@@ -36,7 +36,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
             color: data.color,
             description: data.description,
             logo: data.logo,
-            logo_url: data.logo_url ?? "",
+            logo_url: data.logo_url,
             name: data.name,
         }, defaults.FACTION());
         return reg.get_cat(EntryType.FACTION).create_live(ctx, fdata);
@@ -61,5 +61,16 @@ export class Faction extends RegEntry<EntryType.FACTION> {
             color: this.Color,
             logo_url: this.LogoURL,
         };
+    }
+
+    public async emit(): Promise<PackedFactionData> {
+        return {
+            color: this.Color,
+            description: this.Description,
+            id: this.LID,
+            logo: this.Logo,
+            name: this.Name,
+            logo_url: this.LogoURL
+        }
     }
 }

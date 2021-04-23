@@ -18,7 +18,7 @@ export interface PackedSitrepData extends AllSitrepData {
     id: string;
 }
 
-export interface RegSitrepData extends AllSitrepData {
+export interface RegSitrepData extends Required<AllSitrepData> {
     lid: string;
 }
 
@@ -56,15 +56,15 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
         this.Description = data.description;
         this.PcVictory = data.pcVictory;
         this.EnemyVictory = data.enemyVictory;
-        this.NoVictory = data.noVictory || "";
-        this.Deployment = data.deployment || "";
-        this.Objective = data.objective || "";
-        this.ControlZone = data.controlZone || "";
-        this.Extraction = data.extraction || "";
+        this.NoVictory = data.noVictory;
+        this.Deployment = data.deployment;
+        this.Objective = data.objective;
+        this.ControlZone = data.controlZone;
+        this.Extraction = data.extraction;
     }
 
     public static async unpack(psd: PackedSitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
-        return reg.get_cat(EntryType.SITREP).create_live(ctx, {
+        let data: RegSitrepData = merge_defaults({
             description: psd.description,
             enemyVictory: psd.enemyVictory,
             name: psd.name,
@@ -75,6 +75,22 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
             noVictory: psd.noVictory,
             objective: psd.objective,
             lid: psd.id,
-        });
+        }, defaults.SITREP());
+        return reg.get_cat(EntryType.SITREP).create_live(ctx, data);
+    }    
+
+    public async emit(): Promise<PackedSitrepData> {
+        return {
+            description: this.Description,
+            id: this.LID,
+            name: this.Name,
+            enemyVictory: this.EnemyVictory,
+            pcVictory: this. PcVictory,
+            controlZone: this.ControlZone,
+            deployment: this.Deployment,
+            extraction: this.Extraction,
+            noVictory: this.NoVictory,
+            objective: this.Objective,
+        }
     }
 }

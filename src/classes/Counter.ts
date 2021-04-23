@@ -1,11 +1,10 @@
 import { bound_int } from "@src/funcs";
-import { SimSer } from "@src/registry";
+import { EntryType, LiveEntryTypes, RegEntry, SimSer } from "@src/registry";
 
 /* eslint-disable @typescript-eslint/camelcase */
 export interface PackedCounterData {
     id: string;
     name: string;
-    level?: number;
     min?: number;
     max?: number;
     default_value?: number;
@@ -101,4 +100,29 @@ export class Counter extends SimSer<RegCounterData> {
             this.Value = save.val;
         }
     }
+
+    public async emit(): Promise<PackedCounterData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            custom: false,
+            default_value: this.Default,
+            max: this.Max ?? undefined,
+            min: this.Min
+        }
+    }
+
+    public mark_sourced<T extends EntryType>(from_source: LiveEntryTypes<T>): SourcedCounter<T> {
+        // Use this so we can track where counters came from when merging them into lists
+        return {
+            counter: this,
+            source: from_source
+        }
+    }
+}
+
+/* Represents a counter sourced from a specific entity */
+export interface SourcedCounter<T extends EntryType> {
+    counter: Counter;
+    source: LiveEntryTypes<T>
 }

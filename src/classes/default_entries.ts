@@ -1,4 +1,4 @@
-import { Bonus } from "@src/class";
+import { Bonus, MechWeapon } from "@src/class";
 import type {
     AnyRegNpcFeatureData,
     BaseRegNpcFeatureData,
@@ -119,8 +119,21 @@ export function ACTION(): RegActionData {
         activation: ActivationType.Quick,
         detail: description,
         name: "New Action",
+        confirm: ["CONFIRM"],
+        cost: 1,
+        frequency: "",
+        heat_cost: 0,
+        hide_active: false,
+        ignore_used: false,
+        init: "",
         damage: [],
-        range: []
+        range: [],
+        log: "",
+        mech: true,
+        pilot: true,
+        synergy_locations: [],
+        terse: "Terse Description",
+        trigger: ""
     };
 }
 
@@ -289,6 +302,7 @@ export function MANUFACTURER(): RegManufacturerData {
         logo,
         name: "New Manufacturer",
         quote: "We sell mechs and mech accessories",
+        logo_url: ""
     };
 }
 
@@ -850,6 +864,7 @@ export function WEAPON_MOD(): RegWeaponModData {
         counters: [],
         deployables: [],
         destroyed: false,
+        description,
         effect: "",
         lid: "wm_" + nanoid(),
         integrated: [],
@@ -860,8 +875,8 @@ export function WEAPON_MOD(): RegWeaponModData {
         tags: [],
         sp: 0,
         uses: 0,
-        allowed_sizes: [],
-        allowed_types: [],
+        allowed_sizes: MechWeapon.MakeSizeChecklist([]),
+        allowed_types: MechWeapon.MakeTypeChecklist([]),
         actions: [],
         added_range: [],
         bonuses: [],

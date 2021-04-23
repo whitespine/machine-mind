@@ -33,6 +33,7 @@ import {
     PackedSkillData,
     RegPilotLoadoutData,
     PackedOrganizationData,
+    SourcedCounter,
 } from "@src/interface";
 import {
     EntryType,
@@ -43,7 +44,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { bound_int, defaults, mech_cloud_sync } from "@src/funcs";
+import { bound_int, defaults, mech_cloud_sync, source_all_counters } from "@src/funcs";
 import { get_user_id } from "@src/hooks";
 import { CC_VERSION } from "@src/enums";
 import {
@@ -90,6 +91,28 @@ export interface PackedPilotData extends BothPilotData {
     state?: IMechState;
     counter_data: PackedCounterSaveData[];
     custom_counters: PackedCounterData[];
+    special_equipment?: {
+        PilotArmor: [],
+        PilotWeapons: [],
+        PilotGear: [],
+        Frames: [],
+        MechWeapons: [],
+        WeaponMods: [],
+        MechSystems: [],
+        SystemMods: []
+    },
+    combat_history: {
+        moves: 0,
+        kills: 0,
+        damage: 0,
+        hp_damage: 0,
+        structure_damage: 0,
+        overshield: 0,
+        heat_damage: 0,
+        reactor_damage: 0,
+        overcharge_uses: 0,
+        core_uses: 0
+    },
     loadout?: PackedPilotLoadoutData;
     loadouts?: PackedPilotLoadoutData[];
     active_mech: string;
@@ -462,12 +485,11 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
-    public get Counters(): Counter[] {
+    public get AllCounters(): SourcedCounter<EntryType.TALENT | EntryType.CORE_BONUS | EntryType.PILOT>[] {
         return [
-            ...this.Talents.flatMap(t => t.Counters),
-            ...this.CoreBonuses.flatMap(cb => cb.Counters),
-            // ...(this.ActiveMech?.MechCounters() || []),
-            ...this.CustomCounters,
+            ...source_all_counters(this.Talents),
+            ...source_all_counters(this.CoreBonuses),
+            ...this.CustomCounters.map(c => c.mark_sourced(this))
         ];
     }
 
@@ -573,6 +595,92 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             status: this.Status,
             text_appearance: this.TextAppearance,
         };
+    }
+
+    public async emit(): Promise<PackedPilotData> {
+        console.warn("We do not currently emit proper brew data when emitting pilots, or counter data");
+        let mechs: PackedMechData[] = [];
+        for(let mech of await this.Mechs()) {
+            mechs.push(await mech.emit());
+        }
+        let skills: PackedRankedData[] = [];
+        for(let skill of  this.Skills) {
+            skills.push({
+                id: skill.LID,
+                rank: skill.CurrentRank,
+                custom: false, // ???
+                custom_desc: skill.Description,
+                custom_detail: skill.Detail
+            });
+        }
+
+        let talents: PackedRankedData[] = [];
+        for(let talent of this.Talents) {
+            talents.push({
+                id: talent.LID,
+                rank: talent.CurrentRank
+            });
+        }
+
+       let licenses: PackedRankedData[] = [];
+        for(let license of this.Licenses) {
+            talents.push({
+                id: license.Name,
+                rank: license.CurrentRank
+            });
+        }
+
+
+
+        return {
+            active_mech: this.ActiveMechRef?.fallback_lid ?? "",
+            background: this.Background,
+            brews: [],
+            callsign: this.Callsign,
+            campaign: this.Campaign,
+            cc_ver: CC_VERSION,
+            cloudID: this.CloudID,
+            cloudOwnerID: this.CloudOwnerID,
+            cloud_portrait: this.CloudPortrait,
+            combat_history: {
+                core_uses: 0,
+                damage: 0,
+                heat_damage: 0,
+                hp_damage: 0,
+                kills: 0,
+                moves: 0,
+                overcharge_uses: 0,
+                overshield: 0,
+                reactor_damage: 0,
+                structure_damage: 0
+            },
+            core_bonuses: this.CoreBonuses.map(cb => cb.LID),
+            counter_data: [],
+            current_hp: this.CurrentHP,
+            custom_counters: [],
+            factionID: this.Factions[0]?.LID,
+            group: this.Group,
+            history: this.History,
+            id: this.LID,
+            lastCloudUpdate: this.LastCloudUpdate,
+            level: this.Level,
+            mechSkills: [this.MechSkills.Hull, this.MechSkills.Agi, this.MechSkills.Sys, this.MechSkills.Eng],
+            name: this.Name,
+            mechs,
+            notes: this.Notes,
+            orgs: await SerUtil.emit_all(this.Orgs),
+            player_name: this.PlayerName,
+            portrait: this.Portrait,
+            quirk: this.Quirks[0]?.Description ?? "",
+            reserves: await SerUtil.emit_all(this.Reserves),
+            skills,
+            talents,
+            licenses,
+            sort_index: 0,
+            status: this.Status,
+            text_appearance: this.TextAppearance,
+            loadout: await this.Loadout.emit()
+        }
     }
 }
 
@@ -785,8 +893,8 @@ export async function cloud_sync(
     }
 
     // Sync counters
-    for (let c of pilot.Counters) {
-        c.sync_state_from(data.counter_data);
+    for (let c of pilot.AllCounters) {
+        c.counter.sync_state_from(data.counter_data);
     }
 
     // Fetch all weapons, armor, gear we will need

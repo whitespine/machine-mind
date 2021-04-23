@@ -10,13 +10,13 @@ interface AllManufacturerData {
     description: string;
     dark: string;
     quote: string;
+    logo_url?: string;
 }
 export interface PackedManufacturerData extends AllManufacturerData {
     id: string;
-    logo_url?: string;
 }
 
-export interface RegManufacturerData extends AllManufacturerData {
+export interface RegManufacturerData extends Required<AllManufacturerData> {
     lid: string;
 }
 export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
@@ -24,6 +24,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
     Name!: string;
     Description!: string;
     Logo!: string;
+    LogoURL!: string;
     Light!: string;
     Dark!: string;
     Quote!: string;
@@ -37,6 +38,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         this.Quote = data.quote;
         this.Description = data.description;
         this.Logo = data.logo;
+        this.LogoURL = data.logo_url;
     }
     protected save_imp(): RegManufacturerData {
         return {
@@ -47,6 +49,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
             dark: this.Dark,
             quote: this.Quote,
             description: this.Description,
+            logo_url: this.LogoURL
         };
     }
 
@@ -68,5 +71,18 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
 
     public GetColor(dark?: boolean): string {
         return dark ? this.Dark : this.Light;
+    }
+
+    public async emit(): Promise<PackedManufacturerData> {
+        return {
+            dark: this.Dark,
+            description: this.Description,
+            id: this.LID,
+            light: this.Light,
+            logo: this.Logo,
+            name: this.Name,
+            quote: this.Quote,
+            logo_url: this.Logo
+        }
     }
 }

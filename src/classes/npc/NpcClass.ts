@@ -105,4 +105,17 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
     public get Color(): string {
         return `role--${this.Role}`;
     }
+
+    public async emit(): Promise<PackedNpcClassData> {
+        return {
+            base_features: this.BaseFeatures.map(x => x.LID),
+            optional_features: this.OptionalFeatures.map(x => x.LID),
+            id: this.LID,
+            info: this.Info,
+            name: this.Name,
+            power: this.Power,
+            role: this.Role,
+            stats: this.Stats
+        }
+    }
 }

@@ -66,6 +66,13 @@ export class Damage extends SimSer<RegDamageData> {
         };
     }
 
+    public async emit(): Promise<PackedDamageData> {
+        return {
+            type: this.DamageType,
+            val: this.Value
+        }
+    }
+
     public copy(): Damage {
         return new Damage(this.save());
     }
@@ -88,6 +95,11 @@ export class Damage extends SimSer<RegDamageData> {
             Kinetic: override || damages.includes(DamageType.Kinetic),
             Variable: override || damages.includes(DamageType.Variable),
         };
+    }
+
+    // Undo the above conversion
+    public static FlattenChecklist(damages: DamageTypeChecklist): DamageType[] {
+        return Object.keys(damages).filter(d => damages[d]) as DamageType[];
     }
 
     // Combine two arrays of damage. Does not edit originals

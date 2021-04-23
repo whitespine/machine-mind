@@ -382,4 +382,37 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         }, defaults.DEPLOYABLE());
         return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
     }
+
+    public async emit(): Promise<PackedDeployableData> {
+        return {
+            detail: this.Detail,
+            name: this.Name,
+            size: this.Size,
+            type: this.DeployableType,
+            actions: await SerUtil.emit_all(this.Actions),
+            activation: this.Activation,
+            armor: this.Armor,
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            cost: this.Cost,
+            counters: await SerUtil.emit_all(this.Counters),
+            deactivation: this.Deactivation,
+            edef: this.BaseEDefense,
+            evasion: this.BaseEvasion,
+            heatcap: this.BaseHeatCapacity,
+            hp: this.BaseMaxHP,
+            instances: this.Instances,
+            mech: this.AvailableMounted,
+            pilot: this.AvailableUnmounted,
+            range: [],
+            sensor_range: this.BaseSensorRange,
+            recall: this.Recall,
+            redeploy: this.Redeploy,
+            repcap: this.BaseRepairCapacity,
+            save: this.BaseSaveTarget,
+            speed: this.BaseSpeed,
+            synergies: await SerUtil.emit_all(this.Synergies),
+            tags: await SerUtil.emit_all(this.Tags),
+            tech_attack: this.BaseTechAttack
+        };
+    }
 }

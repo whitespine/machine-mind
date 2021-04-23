@@ -1,7 +1,7 @@
 import { merge_defaults } from "@src/classes/default_entries";
 import { OrgType } from "@src/enums";
 import { bound_int, defaults } from "@src/funcs";
-import { EntryType, RegEntry, SimSer } from "@src/registry";
+import { EntryType, RegEntry } from "@src/registry";
 
 interface AllOrganizationData {
     name: string;
@@ -63,5 +63,17 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
             influence: this.Influence,
             actions: this.Actions,
         };
+    }    
+    
+    
+    public async emit(): Promise<PackedOrganizationData> {
+        return {
+            name: this.Name,
+            description: this.Description,
+            efficiency: this.Efficiency,
+            influence: this.Influence,
+            purpose: this.Purpose,
+            actions: this.Actions
+        }
     }
 }

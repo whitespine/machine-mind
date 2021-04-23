@@ -80,4 +80,15 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         }, defaults.NPC_TEMPLATE());
         return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }
+
+    public async emit(): Promise<PackedNpcTemplateData> {
+        return {
+            base_features: this.BaseFeatures.map(x => x.LID),
+            optional_features: this.OptionalFeatures.map(x => x.LID),
+            id: this.LID,
+            description: this.Description,
+            name: this.Name,
+            power: this.Power
+        }
+    }
 }

@@ -107,4 +107,9 @@ export class Synergy extends SimSer<ISynergyData> {
         active_synergies = active_synergies.filter(x => x.Locations?.includes(location) ?? true);
         return active_synergies;
     }
+
+    public async emit(): Promise<ISynergyData> {
+        // Here just for naming consistency
+        return this.save();
+    }
 }

@@ -6164,6 +6164,11 @@ ts-loader@^6.2.1:
     micromatch "^4.0.0"
     semver "^6.0.0"
 
+ts-reflection@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ts-reflection/-/ts-reflection-0.3.0.tgz#29c6bea691ca757fd249bc0547dba5d55628b46b"
+  integrity sha512-Zi6U+53hIMMkRhqcGKKTQ0dC8MbQ0tgHjGIKGb3hD+9ZcK+PwHFUWQG64atq4KHaAXHB8rRANa2I/M00CGVCQQ==
+
 ts-transformer-keys@^0.4.2:
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/ts-transformer-keys/-/ts-transformer-keys-0.4.3.tgz#d62389a40f430c00ef98fb9575fb6778a196e3ed"

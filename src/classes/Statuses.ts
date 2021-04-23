@@ -58,4 +58,12 @@ export class Status extends RegEntry<EntryType.STATUS> {
     public get is_condition(): boolean {
         return this.Subtype == "Condition";
     }
+    public async emit(): Promise<PackedStatusData> {
+        return {
+            name: this.Name,
+            effects: this.Effects,
+            icon: this.Icon,
+            type: this.Subtype,
+        }
+    }
 }

@@ -165,4 +165,22 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             ...this.CoreSystem.get_assoc_entries(),
         ];
     }
+
+    public async emit(): Promise<PackedFrameData> {
+        return {
+            core_system: await this.CoreSystem.emit(),
+            description: this.Description,
+            id: this.LID,
+            license_level: this.LicenseLevel,
+            mechtype: this.MechType,
+            mounts: this.Mounts,
+            name: this.Name,
+            source: this.Source?.LID ?? "GMS",
+            stats: this.Stats,
+            traits: await SerUtil.emit_all(this.Traits),
+            y_pos: this.YPosition,
+            image_url: this.ImageUrl,
+            other_art: this.OtherArt
+        }
+    }
 }

@@ -377,6 +377,20 @@ export class Bonus extends SimSer<RegBonusData> {
         }
         return result;
     }
+
+
+    public async emit(): Promise<PackedBonusData> {
+        return {
+            id: this.LID,
+            val: this.Value,
+            damage_types: Damage.FlattenChecklist(this.DamageTypes),
+            range_types: Range.FlattenChecklist(this.RangeTypes),
+            overwrite: this.Overwrite,
+            replace: this.Replace,
+            weapon_sizes: MechWeapon.FlattenSizeChecklist(this.WeaponSizes),
+            weapon_types: MechWeapon.FlattenTypeChecklist(this.WeaponTypes)
+        }
+    }
 }
 
 // Find highest valued item of provided array. Used for overrides

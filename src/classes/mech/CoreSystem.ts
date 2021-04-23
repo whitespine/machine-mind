@@ -160,21 +160,25 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
 
         // Get and ref the deployables
         let unpacked: RegCoreSystemData = merge_defaults({
+            name: data.name,
+            description: data.description,
+            use: data.use,
+
             activation: data.activation,
+            deactivation: data.deactivation,
+
             active_effect: data.active_effect,
             active_name: data.active_name,
             active_synergies: (data.active_synergies ?? []),
+            active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
+            active_actions: (data.active_actions ?? []).map(Action.unpack),
+
             passive_effect: data.passive_effect,
-            deactivation: data.deactivation,
-            description: data.description,
-            name: data.name,
             passive_name: data.passive_name,
             passive_synergies: (data.passive_synergies ?? []),
-            use: data.use,
-            active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
             passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
-            active_actions: (data.active_actions ?? []).map(Action.unpack),
             passive_actions: (data.passive_actions ?? []).map(Action.unpack),
+
             tags,
             counters,
             deployables,
@@ -201,5 +205,31 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Integrated, ...this.Deployables];
+    }
+
+    public async emit(): Promise<PackedCoreSystemData> {
+        return {
+            activation: this.Activation,
+            active_effect: this.ActiveEffect,
+            active_name: this.ActiveName,
+            active_synergies: await SerUtil.emit_all(this.ActiveSynergies),
+            active_actions: await SerUtil.emit_all(this.ActiveActions),
+            active_bonuses: await SerUtil.emit_all(this.ActiveBonuses),
+            passive_effect: this.PassiveEffect,
+            passive_name: this.PassiveName,
+            passive_synergies: await SerUtil.emit_all(this.PassiveSynergies),
+            passive_actions: await SerUtil.emit_all(this.PassiveActions),
+            passive_bonuses: await SerUtil.emit_all(this.PassiveBonuses),
+            description: this.Description,
+            name: this.Name,
+            tags: await SerUtil.emit_all(this.Tags),
+            counters: await SerUtil.emit_all(this.Counters),
+            deactivation: this.Deactivation,
+            deployables: await SerUtil.emit_all(this.Deployables),
+            integrated: this.Integrated.map(i => (i as any).LID),
+            use: this.Use
+        }
+
+
     }
 }

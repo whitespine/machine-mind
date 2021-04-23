@@ -225,7 +225,7 @@ export class Statblock {
 [ SYSTEMS ]
   ${mechLoadout.Systems.map(sys => {
       let out = sys.Name;
-      if (sys.IsLimited) out += ` x${sys.MaxUses + mech.LimitedBonus}`;
+      if (sys.IsLimited) out += ` x${sys.BaseLimit + mech.LimitedBonus}`;
       return out;
   }).join(", ")}`;
     }

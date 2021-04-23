@@ -36,6 +36,14 @@ export class Range extends SimSer<RegRangeData> {
         };
     }
 
+    public async emit(): Promise<PackedRangeData> {
+        let parsed = parseInt(this.Value);
+        return {
+            type: this.RangeType,
+            val: Number.isNaN(parsed) ? this.Value as unknown as number : parsed,
+        }
+    }
+
     public copy(): Range {
         return new Range(this.save());
     }
@@ -126,6 +134,11 @@ export class Range extends SimSer<RegRangeData> {
             Thrown: override || ranges.includes(RangeType.Thrown),
             Threat: override || ranges.includes(RangeType.Threat),
         };
+    }
+
+    // Undo the above conversion
+    public static FlattenChecklist(ranges: RangeTypeChecklist): RangeType[] {
+        return Object.keys(ranges).filter(r => ranges[r]) as RangeType[];
     }
 
     public static unpack(r: PackedRangeData): RegRangeData {

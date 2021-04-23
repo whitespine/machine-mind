@@ -92,7 +92,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     Synergies!: Synergy[];
     Deployables!: Deployable[];
 
-    get MaxUses(): number | null {
+    get BaseLimit(): number | null {
         return tag_util.limited_max(this);
     }
 
@@ -135,6 +135,20 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables];
     }
+
+    public async emit(): Promise<PackedPilotArmorData> {
+        return {
+            description: this.Description,
+            id: this.LID,
+            name: this.Name,
+            type: "Armor",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            tags: await SerUtil.emit_all(this.Tags)
+        }
+    }
 }
 
 export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
@@ -149,7 +163,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
 
     Uses!: number; // How many we got remaining. Max determined by tag
     // Returns the base max uses
-    get MaxUses(): number | null {
+    get BaseLimit(): number | null {
         return tag_util.limited_max(this);
     }
 
@@ -192,6 +206,20 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables];
     }
+
+    public async emit(): Promise<PackedPilotGearData> {
+        return {
+            description: this.Description,
+            id: this.LID,
+            name: this.Name,
+            type: "Gear",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            tags: await SerUtil.emit_all(this.Tags)
+        }
+    }
 }
 
 export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
@@ -209,7 +237,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Synergies!: Synergy[];
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
-    get MaxUses(): number | null {
+    get BaseLimit(): number | null {
         return tag_util.limited_max(this);
     }
 
@@ -261,5 +289,22 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables];
+    }
+
+    public async emit(): Promise<PackedPilotWeaponData> {
+        return {
+            description: this.Description,
+            id: this.LID,
+            name: this.Name,
+            type: "Weapon",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            tags: await SerUtil.emit_all(this.Tags),
+            damage: await SerUtil.emit_all(this.Damage),
+            range: await SerUtil.emit_all(this.Range),
+            effect: this.Effect
+        }
     }
 }

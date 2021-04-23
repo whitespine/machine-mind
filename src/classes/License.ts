@@ -155,4 +155,6 @@ export class License extends RegEntry<EntryType.LICENSE> {
     // public get_child_entries(): RegEntry<any>[] {
     // return this.Unlocks.flat();
     // }
+
+    public async emit(): Promise<null> {return null}
 }

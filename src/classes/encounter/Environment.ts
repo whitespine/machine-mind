@@ -45,4 +45,12 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
             description: ped.description,
         });
     }
+
+    public async emit(): Promise<PackedEnvironmentData> {
+        return {
+            description: this.Description,
+            id: this.LID,
+            name: this.Name
+        }
+    }
 }

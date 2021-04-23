@@ -110,6 +110,16 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     get IsReliable(): boolean {
         return this.LID === "tg_reliable";
     }
+
+    public async emit(): Promise<PackedTagTemplateData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Description,
+            filter_ignore: this.FilterIgnore,
+            hidden: this.Hidden
+        }
+    }
 }
 
 export class TagInstance extends RegSer<RegTagInstanceData> {
@@ -157,5 +167,12 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
             val: inst.val,
         };
         return dat;
+    }
+
+    public async emit(): Promise<PackedTagInstanceData> {
+        return {
+            id: this.Tag.LID,
+            val: this.Value ?? undefined
+        }
     }
 }

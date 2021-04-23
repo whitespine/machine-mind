@@ -23,6 +23,7 @@ import {
 } from "@src/registry";
 import { Manufacturer } from "@src/class";
 import { merge_defaults } from "../default_entries";
+import { threadId } from "node:worker_threads";
 
 // These attrs are shared
 interface AllCoreBonusData {
@@ -118,6 +119,8 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         let cbdata: RegCoreBonusData = merge_defaults({
             lid: data.id,
             name: data.name,
+            description: data.description,
+            effect: data.effect,
             integrated,
             deployables,
             counters,
@@ -132,5 +135,24 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
+    }
+
+    public async emit(): Promise<PackedCoreBonusData> {
+        return {
+            id: this.LID,
+            name: this.Name,
+            description: this.Description,
+
+            effect: this.Effect,
+            mounted_effect: this.MountedEffect,
+
+            source: this.Source?.LID ?? "GMS",
+            actions: await SerUtil.emit_all(this.Actions),
+            bonuses: await SerUtil.emit_all(this.Bonuses),
+            counters: await SerUtil.emit_all(this.Counters),
+            deployables: await SerUtil.emit_all(this.Deployables),
+            synergies: await SerUtil.emit_all(this.Synergies),
+            integrated: this.Integrated.map(i => (i as any).LID ?? ""),
+        }
     }
 }

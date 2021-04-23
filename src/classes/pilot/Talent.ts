@@ -12,6 +12,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
 import { merge_defaults } from "../default_entries";
+import { PackedRankedData } from "../GeneralInterfaces";
 
 // Denotes an item bestowed by a talent. May be vestigial
 export interface ITalentItemData {
@@ -212,44 +213,29 @@ export class Talent extends RegEntry<EntryType.TALENT> {
     }
 
     // TODO: Handle exclusive
-}
 
-/*
-export class TalentRankUtil {
-    public static Synergies(tr: ITalentRank) {
-        return;
-    }
-
-    public static Actions(tr: ITalentRank): IAction[] {
-        if (!tr.actions) {
-            return [];
+    public async emit(): Promise<PackedTalentData> {
+        let ranks: PackedTalentRank[] = [];
+        for(let rank of this.Ranks) {
+            ranks.push({
+                description: rank.Description,
+                exclusive: rank.Exclusive,
+                name: rank.Name,
+                actions: await SerUtil.emit_all(rank.Actions),
+                bonuses: await SerUtil.emit_all(rank.Bonuses),
+                counters: await SerUtil.emit_all(rank.Counters),
+                synergies: await SerUtil.emit_all(rank.Synergies),
+                deployables: await SerUtil.emit_all(rank.Deployables),
+                integrated: rank.Integrated.map(i => (i as any).LID),
+            });
         }
-        return tr.actions;
-    }
-
-    public static Item(tr: ITalentRank): MechEquipment | null {
-        if (!tr.talent_item) {
-            return null;
-        }
-        const t = tr.talent_item.type === "weapon" ? "MechWeapons" : "MechSystems";
-        return store.compendium.getReferenceByID(t, tr.talent_item.id);
-    }
-
-    public static AllTalentItems(t: Talent, r: number): MechEquipment[] {
-        let talent_items: MechEquipment[] = [];
-        //let exclusive = null
-
-        for (let i = 0; i < r - 1; i++) {
-            const tr = t.Ranks[i];
-            if (tr.talent_item && !tr.talent_item.exclusive) {
-                talent_items.push(this.Item(tr)!);
-            } else if (tr.talent_item && tr.talent_item.exclusive) {
-                // Replace rest of list if exclusive
-                talent_items = [this.Item(tr)!];
-            }
-        }
-
-        return talent_items;
+        return {
+            description: this.Description,
+            icon: this.Icon,
+            id: this.LID,
+            name: this.Name,
+            terse: this.Terse,
+            ranks
+        };
     }
 }
-*/

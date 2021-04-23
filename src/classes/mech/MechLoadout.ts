@@ -15,6 +15,8 @@ import { FittingSize, MountType, WeaponSize } from "@src/enums";
 import { fallback_obtain_ref, RegFallback as RegFallbackStack } from "../regstack";
 import { createHook } from "async_hooks";
 import { merge_defaults } from "../default_entries";
+import { nanoid } from "nanoid";
+import { SlowBuffer } from "node:buffer";
 
 //todo: superheavies :<
 
@@ -319,6 +321,100 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
         // Save
         this.Frame = frame;
+    }
+
+    public async emit(): Promise<PackedMechLoadoutData> {
+        let cc_mounts: PackedMountData[] = [];
+        for(let mount of this.WepMounts) {
+            let cc_slots: PackedWeaponSlotData[] = [];
+            for(let slot of mount.Slots) {
+                // Init an empty slot
+                let cc_slot: PackedWeaponSlotData = {
+                    size: slot.Size,
+                    weapon: null,
+                };
+
+                // Set weapon if it exists
+                if(slot.Weapon) {
+                    cc_slot.weapon = {
+                        cascading: slot.Weapon.Cascading,
+                        destroyed: slot.Weapon.Destroyed,
+                        loaded: slot.Weapon.Loaded,
+                        id: slot.Weapon.LID,
+                        note: "",
+                        uses: slot.Weapon.Uses,
+                    }
+                    if(slot.Mod) {
+                        cc_slot.weapon.mod = {
+                            cascading: slot.Mod.Cascading,
+                            destroyed: slot.Mod.Destroyed,
+                            id: slot.Mod.LID,
+                            note: "",
+                            uses: slot.Mod.Uses,
+                        }
+                    }
+                }
+
+                cc_slots.push(cc_slot);
+            }
+            cc_mounts.push({
+                bonus_effects: [],
+                extra: [],
+                lock: false,
+                mount_type: mount.MountType,
+                slots: cc_slots
+            });
+        }
+
+        let systems = this.Systems.map(s => ({
+            id: s.LID,
+            cascading: s.Cascading,
+            destroyed: s.Destroyed,
+            note: "",
+        }))
+
+        return {
+            id: `loadout_${nanoid()}`,
+            name: "Foundry Loadout",
+            mounts: cc_mounts,
+            systems,
+            integratedMounts: [],
+            integratedSystems: [],
+
+            // Until we properly support this, just back default empty
+            integratedWeapon: {
+                bonus_effects: [],
+                extra: [],
+                lock: false,
+                mount_type:  MountType.Aux,
+                slots: [
+                    {
+                        size: WeaponSize.Aux,
+                        weapon: null 
+                    }
+                ]
+            },
+
+            // Until we properly support this, just back default empty
+            improved_armament: {
+                bonus_effects: [],
+                lock: false,
+                mount_type:  MountType.Flex,
+                slots: [
+                    {
+                        size: WeaponSize.Aux,
+                        weapon: null
+                    }
+                ],
+                extra: [
+                    {
+                        size: WeaponSize.Aux,
+                        weapon: null
+                    }
+                ],
+
+            }
+        }
     }
 }
 

@@ -37,17 +37,28 @@ export interface PackedRankedData {
     custom_detail?: string;
 }
 export interface IMechState {
-    stage: string;
-    turn: number;
-    move: number;
-    actions: number;
-    overwatch: boolean;
-    braced: boolean;
-    overcharged: boolean;
-    prepare: boolean;
-    bracedCooldown: boolean;
-    redundant: boolean;
-    history: IHistoryItem[];
+    active_mech_id: string,
+    stage: string,
+    turn: number,
+    actions: number,
+    braced: boolean,
+    overcharged: boolean,
+    prepare: boolean,
+    bracedCooldown: boolean,
+    redundant: boolean,
+    stats: {
+        moves: number,
+        kills: number,
+        damage: number,
+        hp_damage: number,
+        structure_damage: number,
+        overshield: number,
+        heat_damage: number,
+        reactor_damage: number,
+        overcharge_uses: number,
+        core_uses: number
+    },
+    deployed: []
 }
 export interface IHistoryItem {
     field: string;

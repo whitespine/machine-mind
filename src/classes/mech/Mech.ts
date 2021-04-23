@@ -20,6 +20,7 @@ import {
     DamageTypeChecklist,
     PackedMechLoadoutData,
     RegMechLoadoutData,
+    SourcedCounter,
 } from "@src/interface";
 import {
     EntryType,
@@ -451,44 +452,62 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     private mech_feature_sources(
         include_destroyed: boolean
     ): Array<{
-        Bonuses?: Bonus[];
-        Actions?: Action[];
-        Synergies?: Synergy[];
-        Deployables?: Deployable[];
-        Counters?: Counter[];
-    }> {
-        if (!this.Frame) return [];
-        let output: Array<{
+        data: {
             Bonuses?: Bonus[];
             Actions?: Action[];
             Synergies?: Synergy[];
             Deployables?: Deployable[];
             Counters?: Counter[];
+        },
+        source: RegEntry<any>
+    }> {
+        if (!this.Frame) return [];
+        let output: Array<{
+            data: {
+                Bonuses?: Bonus[];
+                Actions?: Action[];
+                Synergies?: Synergy[];
+                Deployables?: Deployable[];
+                Counters?: Counter[];
+            },
+            source: RegEntry<any>
         }> = [];
 
         // Get from equipment
         for (let item of this.Loadout.Equipment) {
             if (include_destroyed || (!item.Destroyed && !item.Cascading)) {
-                output.push(item);
+                output.push({
+                    data: item,
+                    source: item 
+                });
             }
         }
 
         // Get from frame traits
-        output.push(...this.Frame.Traits);
+        output.push(...this.Frame.Traits.map(t => ({
+            data: t,
+            source: this.Frame!
+        })));
 
         // Get from core passive/active. Gotta do a remap
         if (this.Frame.CoreSystem) {
             output.push({
-                Bonuses: this.Frame.CoreSystem.PassiveBonuses ?? [],
-                Actions: this.Frame.CoreSystem.PassiveActions ?? [],
-                Synergies: this.Frame.CoreSystem.PassiveSynergies ?? [],
+                data: {
+                    Bonuses: this.Frame.CoreSystem.PassiveBonuses ?? [],
+                    Actions: this.Frame.CoreSystem.PassiveActions ?? [],
+                    Synergies: this.Frame.CoreSystem.PassiveSynergies ?? [],
+                },
+                source: this.Frame!
             });
 
             if (this.CoreActive) {
                 output.push({
-                    Bonuses: this.Frame.CoreSystem.ActiveBonuses ?? [],
-                    Actions: this.Frame.CoreSystem.ActiveActions ?? [],
-                    Synergies: this.Frame.CoreSystem.ActiveSynergies ?? [],
+                    data: {
+                        Bonuses: this.Frame.CoreSystem.ActiveBonuses ?? [],
+                        Actions: this.Frame.CoreSystem.ActiveActions ?? [],
+                        Synergies: this.Frame.CoreSystem.ActiveSynergies ?? [],
+                    },
+                    source: this.Frame!
                 });
             }
         }
@@ -499,7 +518,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     private cached_bonuses: Bonus[] | null = null;
     public get MechBonuses(): Bonus[] {
         if (!this.cached_bonuses) {
-            this.cached_bonuses = this.mech_feature_sources(false).flatMap(x => x.Bonuses ?? []);
+            this.cached_bonuses = this.mech_feature_sources(false).flatMap(x => x.data.Bonuses ?? []);
         }
         return this.cached_bonuses;
     }
@@ -513,20 +532,28 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     public MechSynergies(): Synergy[] {
-        return this.mech_feature_sources(false).flatMap(x => x.Synergies ?? []);
+        return this.mech_feature_sources(false).flatMap(x => x.data.Synergies ?? []);
     }
 
     public MechActions(): Action[] {
-        return this.mech_feature_sources(false).flatMap(x => x.Actions ?? []);
+        return this.mech_feature_sources(false).flatMap(x => x.data.Actions ?? []);
     }
 
     public MechDeployables(): Deployable[] {
-        return this.mech_feature_sources(true).flatMap(x => x.Deployables ?? []);
+        return this.mech_feature_sources(true).flatMap(x => x.data.Deployables ?? []);
     }
 
-    public MechCounters(): Counter[] {
-        return this.mech_feature_sources(true).flatMap(x => x.Counters ?? []);
+    // Grabs counters from the pilot, their gear, their active mech, etc etc
+    public MechCounters(): SourcedCounter<EntryType.MECH_WEAPON | EntryType.MECH_SYSTEM | EntryType.FRAME | EntryType.WEAPON_MOD>[] {
+        let result: SourcedCounter<any>[] = [];
+        for(let s_data of this.mech_feature_sources(true)) {
+            let counters = s_data.data.Counters ?? [];
+            result.push(...counters.map(c => c.mark_sourced(s_data.source)));
+
+        }
+        return result;
     }
+
 
     // -- I/O ---------------------------------------------------------------------------------------
     protected save_imp(): RegMechData {
@@ -612,6 +639,43 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             ctx = Bonus.ContextFor(this.Pilot);
         }
         return Bonus.Accumulate(base_value, filtered, ctx).final_value;
+    }
+
+    public async emit(): Promise<PackedMechData> {
+        return {
+            // activations: this.Activ
+            activations: 1,
+            active: false,
+            active_loadout_index: 0,
+            burn: this.Burn,
+            cc_ver: this.Cc_ver,
+            cloud_portrait: this.CloudPortrait,
+            conditions: this.StatusesAndConditions.filter(sc => sc.Subtype == "Condition").map(c => c.Name),
+            statuses: this.StatusesAndConditions.filter(sc => sc.Subtype == "Status").map(s => s.Name),
+            core_active: this.CoreActive,
+            current_core_energy: this.CurrentCoreEnergy,
+            current_heat: this.CurrentHeat,
+            current_hp: this.CurrentHP,
+            current_overcharge: this.CurrentOvercharge,
+            current_repairs: this.CurrentRepairs,
+            current_stress: this.CurrentStress,
+            current_structure: this.CurrentStructure,
+            defeat: this.Destroyed ? "Destroyed" : this.ReactorDestroyed ? "Reactor Destroyed" : "Unknown",
+            destroyed: this.Destroyed,
+            ejected: this.Ejected,
+            frame: this.Frame?.LID ?? "mf_everest",
+            gm_note: this.GmNote,
+            id: this.LID,
+            loadouts: [await this.Loadout.emit()],
+            meltdown_imminent: this.MeltdownImminent,
+            name: this.Name,
+            notes: this.Notes,
+            overshield: this.Overshield,
+            portrait: this.Portrait,
+            reactions: this.Reactions,
+            reactor_destroyed: this.ReactorDestroyed,
+            resistances: Damage.FlattenChecklist(this.Resistances)
+        }
     }
 }
 
