@@ -77,7 +77,9 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
     function generateIDs<T extends { id: string }>(data: T[], dataPrefix?: string): T[] {
         if (dataPrefix) {
             for (let d of data) {
-                d.id = generateItemID(dataPrefix, d.id);
+                if(d.id) {
+                    d.id = generateItemID(dataPrefix, d.id);
+                }
             }
         }
         return data;

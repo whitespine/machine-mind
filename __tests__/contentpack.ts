@@ -31,6 +31,11 @@ async function get_cp(): Promise<IContentPack> {
     return parseContentPack(buff);
 }
 
+async function get_suldan(): Promise<IContentPack> {
+    let buff = await fs.promises.readFile("./__tests__/suldan_2.1.9.lcp");
+    return parseContentPack(buff);
+}
+
 async function get_npc_cp(): Promise<IContentPack> {
     let buff = await fs.promises.readFile("./__tests__/npcs.lcp").catch(e => {
         console.error("To test, put the npcs lcp at '__tests__/npcs.lcp'. I haven't included it so people don't steal it or whatever");
@@ -183,5 +188,28 @@ describe("Content pack handling", () => {
         // Test some random other fields, lol
         expect(exotic.Description).toEqual("Even in a galaxy of wonders, Exotics are strange and dangerous enemies. Some feature unique technologies not yet available to the wider galaxy or wield archaic weapon styles updated to the modern day, while others carry equipment or adopt tactics that are totally alien to Union doctrine.");
         //26
+    });    
+    
+    it("Can load suldan", async () => {
+        expect.assertions(1);
+        let s = await init_basic_setup(false);
+        let ctx = new OpCtx();
+
+        // Add it in
+        let pack = await get_suldan();
+        await intake_pack(pack, s.reg);
+        expect(true).toBeTruthy();
+        
+        /*
+        let frames = await s.reg.get_cat("frame").list_live(ctx);
+        expect(frames.length).toEqual(4);
+        let frame_names = frames.map(f => f.Name);
+        expect(frame_names).toContain("NORFOLK");
+        expect(frame_names).toContain("LUNAMOTH");
+        expect(frame_names).toContain("DJINN");
+        expect(frame_names).toContain("GAIUS"); // 5
+        */
     });
+
+
 });
