@@ -376,7 +376,7 @@ export abstract class SerUtil {
     public static restrict_enum<T extends string>(
         enum_: { [key: string]: T },
         default_choice: T,
-        provided: string
+        provided?: string 
     ): T {
         let choices = this.list_enum(enum_);
         return this.restrict_choices(choices, default_choice, provided);

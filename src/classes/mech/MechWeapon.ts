@@ -34,7 +34,7 @@ export interface PackedMechWeaponData {
     license: string; // reference to the Frame name of the associated license
     license_level: number; // set to zero for this item to be available to a LL0 character
     mount: WeaponSize;
-    type: WeaponType;
+    type?: WeaponType;
     damage?: PackedDamageData[];
     range?: PackedRangeData[];
     tags?: PackedTagInstanceData[];
@@ -62,10 +62,10 @@ export interface PackedMechWeaponData {
     no_mods?: boolean;
     no_core_bonus?: boolean;
 }
-export type PackedMechWeaponProfile = Omit<
+export type PackedMechWeaponProfile = Partial<Omit<
     PackedMechWeaponData,
     "id" | "profiles" | "source" | "license" | "license_level" | "mount" | "sp"
->;
+>>;
 
 // In our registry version, we push all data down to profiles, to eliminate the confusion of base data vs profile
 export interface RegMechWeaponData {
@@ -337,10 +337,11 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
                 actions: (p.actions ?? []).map(Action.unpack),
                 bonuses: (p.bonuses ?? []).map(Bonus.unpack),
                 counters: SerUtil.unpack_counters_default(p.counters),
-                description: p.description,
-                name: p.name,
+                description: p.description ?? data.description,
+                name: p.name ?? `${data.name} :: ${unpacked.profiles.length + 1}`,
                 synergies: p.synergies || [],
-                type: p.type,
+                type: SerUtil.restrict_enum(WeaponType, WeaponType.Rifle, p.type ?? data.type)
+
             };
             unpacked.profiles.push(unpacked_profile);
         }

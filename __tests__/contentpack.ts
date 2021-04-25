@@ -5,7 +5,7 @@ import { EntryType, OpCtx,  OpCtx } from "../src/registry";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
 import { IContentPack, intake_pack } from '../src/classes/ContentPack';
 import * as fs from "fs";
-import { Damage } from "../src/class";
+import { Damage, MechWeapon } from "../src/class";
 import { DamageType } from "@src/enums";
 
 type DefSetup = {
@@ -32,13 +32,26 @@ async function get_cp(): Promise<IContentPack> {
 }
 
 async function get_suldan(): Promise<IContentPack> {
-    let buff = await fs.promises.readFile("./__tests__/suldan_2.1.9.lcp");
+    let buff = await fs.promises.readFile("./__tests__/suldan.lcp").catch(e => {
+        console.error("To test, put the npcs lcp at '__tests__/suldan.lcp'. I haven't included it so people don't steal it or whatever");
+        throw e;
+    });
+;
     return parseContentPack(buff);
 }
 
 async function get_npc_cp(): Promise<IContentPack> {
     let buff = await fs.promises.readFile("./__tests__/npcs.lcp").catch(e => {
         console.error("To test, put the npcs lcp at '__tests__/npcs.lcp'. I haven't included it so people don't steal it or whatever");
+        throw e;
+    });
+    // let buff_string = buff.toString();
+    return parseContentPack(buff);
+}
+
+async function get_long_rim(): Promise<IContentPack> {
+    let buff = await fs.promises.readFile("./__tests__/longrim.lcp").catch(e => {
+        console.error("To test, put the npcs lcp at '__tests__/longrim.lcp'. I haven't included it so people don't steal it or whatever");
         throw e;
     });
     // let buff_string = buff.toString();
@@ -198,7 +211,8 @@ describe("Content pack handling", () => {
         // Add it in
         let pack = await get_suldan();
         await intake_pack(pack, s.reg);
-        expect(true).toBeTruthy();
+        let weapons = await s.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
+        expect(weapons.find(w => w.LID == "fgtsmw_colony_nexus")).toBeTruthy();
         
         /*
         let frames = await s.reg.get_cat("frame").list_live(ctx);
@@ -209,6 +223,23 @@ describe("Content pack handling", () => {
         expect(frame_names).toContain("DJINN");
         expect(frame_names).toContain("GAIUS"); // 5
         */
+    });
+
+    it("Can load long rim, and process its alternate weapon profile structure", async () => {
+        expect.assertions(4);
+        let s = await init_basic_setup(false);
+        let ctx = new OpCtx();
+
+        // Add it in
+        let pack = await get_long_rim();
+        await intake_pack(pack, s.reg);
+        let weapons = await s.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
+        let cannibal: MechWeapon = weapons.find(w => w.LID == "mw_hhs_155_cannibal");
+        let flayer: MechWeapon = weapons.find(w => w.LID == "mw_caliban_integrated");
+        expect(cannibal).toBeTruthy();
+        expect(flayer).toBeTruthy();
+        expect(cannibal.Profiles.some(p => p.WepType != "CQB")).toBeFalsy();
+        expect(flayer.Profiles.some(p => p.WepType != "CQB")).toBeFalsy();
     });
 
 
