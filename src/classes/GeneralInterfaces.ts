@@ -46,6 +46,7 @@ export interface IMechState {
     prepare: boolean,
     bracedCooldown: boolean,
     redundant: boolean,
+    mounted: boolean,
     stats: {
         moves: number,
         kills: number,

@@ -115,7 +115,6 @@ export interface PackedPilotData extends BothPilotData {
     },
     loadout?: PackedPilotLoadoutData;
     loadouts?: PackedPilotLoadoutData[];
-    active_mech: string;
     brews: string[];
     core_bonuses: string[];
     factionID: string;
@@ -633,7 +632,6 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
 
 
         return {
-            active_mech: this.ActiveMechRef?.fallback_lid ?? "",
             background: this.Background,
             brews: [],
             callsign: this.Callsign,
@@ -679,7 +677,32 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             sort_index: 0,
             status: this.Status,
             text_appearance: this.TextAppearance,
-            loadout: await this.Loadout.emit()
+            loadout: await this.Loadout.emit(),
+            state: {
+                active_mech_id: this.ActiveMechRef?.fallback_lid ?? "",
+                actions: 0,
+                braced: false,
+                bracedCooldown: false,
+                deployed: [],
+                mounted: false,
+                overcharged: false,
+                redundant: false,
+                stage: "Combat",
+                prepare: false,
+                stats: {
+                    core_uses: 0,
+                    damage: 0,
+                    heat_damage: 0,
+                    hp_damage: 0,
+                    kills: 0,
+                    moves: 0,
+                    overcharge_uses: 0,
+                    overshield: 0,
+                    reactor_damage: 0,
+                    structure_damage: 0
+                },
+                turn: 0
+            }
         }
     }
 }
@@ -925,12 +948,17 @@ export async function cloud_sync(
         pilot.Loadout = await PilotLoadout.unpack(loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
         await pilot.Loadout.ready();
     }
-    pilot.ActiveMechRef = {
-        fallback_lid: data.active_mech,
-        id: "",
-        type: EntryType.MECH,
-        reg_name: pilot_inv.name()
-    }; 
+    let ami = data.state?.active_mech_id ?? (data as any).active_mech;
+    if(ami) {
+        pilot.ActiveMechRef = {
+            fallback_lid: ami,
+            id: "",
+            type: EntryType.MECH,
+            reg_name: pilot_inv.name()
+        }; 
+    } else  {
+        pilot.ActiveMechRef = null;
+    }
 
     // We writeback. We should still be in a stable state though, so no need to refresh
     await pilot.writeback();

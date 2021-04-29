@@ -7,15 +7,28 @@ import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { gist_io, cloud_sync } from "../src/funcs";
 import { validate_props } from "../src/classes/key_util";
+import * as fs from "fs";
+import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
 let DEPLOYABLE_GUY = "674a75a9be41eaa32e0d4514b61af461";
 let BARB = "764bcd352a463074f3ec1bd79486bd71";
+let GRYGONS = "78d3c986d75b174f7a6627af63d6b24e";
 
 type DefSetup = {
     reg: StaticReg;
     env: RegEnv;
 }
+
+async function get_wallflower(): Promise<IContentPack> {
+    let buff = await fs.promises.readFile("./__tests__/wallflower.lcp").catch(e => {
+        console.error("To test, put the wallflower lcp at '__tests__/wallflower.lcp'. I haven't included it so people don't steal it or whatever");
+        throw e;
+    });
+    // let buff_string = buff.toString();
+    return parseContentPack(buff);
+}
+
 
 async function init_basic_setup(include_base: boolean = true): Promise<DefSetup> {
     let env = new RegEnv();
@@ -197,7 +210,18 @@ describe("Pilots", () => {
         await cloud_sync(barb_data, barb, [s.reg]);
         barb = await barb.refreshed();
 
-        expect(true).toBeTruthy();
+        // Add it in
+        let pack = await get_wallflower();
+        await intake_pack(pack, s.reg);
+        
+        // Load grygons
+        let ctx = new OpCtx();
+        let gry: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
+        let gry_data = await gist_io.download_pilot(GRYGONS);
+        await cloud_sync(gry_data, gry, [s.reg]);
+        gry = await gry.refreshed();
+        let gry_main = await gry.ActiveMech();
+        expect(gry_main).toBeTruthy();
     });
 
 });
