@@ -64,10 +64,9 @@ describe("Items Miscellania", () => {
         let global_nl = await bonuses.lookup_lid_live(ctx, "cb_neurolink_targeting");
 
         // Put them in
-        let mech_inv = await mech.get_inventory();
         let pilot_inv = await pilot.get_inventory();
-        let mech_ar = await global_ar.insinuate(mech_inv);
-        let mech_tk = await global_tk.insinuate(mech_inv);
+        let mech_ar = await global_ar.insinuate(pilot_inv);
+        let mech_tk = await global_tk.insinuate(pilot_inv);
         let pilot_nl = await global_nl.insinuate(pilot_inv);
 
         // Reload actors

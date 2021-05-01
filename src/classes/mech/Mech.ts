@@ -110,43 +110,14 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     Burn!: number;
     CoreActive!: boolean; // Are core bonuses currently in effect
 
-    // These are posessed systems/weapons/etc of the frame that are not necessarily equipped.
-    // Good for if your players like to reflavor their items.
-    // Everything in MechLoadout should just be reffing to these items (avoid making duplicates - an easy mistake to make but one that will ultimately become very annoying)
-
-    private _owned_weapons!: MechWeapon[];
-    public get OwnedWeapons(): MechWeapon[] {
-        return [...this._owned_weapons];
-    }
-
-    private _owned_systems!: MechSystem[];
-    public get OwnedSystems(): MechSystem[] {
-        return this._owned_systems;
-    }
-
-    private _owned_weapon_mods!: WeaponMod[];
-    public get OwnedWeaponMods(): WeaponMod[] {
-        return this._owned_weapon_mods;
-    }
-
-    private _owned_frames!: Frame[];
-    public get OwnedFrames(): Frame[] {
-        return this._owned_frames;
-    }
-
+    // -- Owned item helpers --------------------------------------------------------------------------------------
     private _statuses_and_conditions!: Status[];
     public get StatusesAndConditions(): Status[] {
         return [...this._statuses_and_conditions];
     }
 
-    protected enumerate_owned_items(): RegEntry<any>[] {
-        return [
-            ...this._owned_weapons,
-            ...this._owned_systems,
-            ...this._owned_weapon_mods,
-            ...this._owned_frames,
-            ...this._statuses_and_conditions,
-        ];
+    protected enumerate_owned_items(): RegEntry<EntryType>[] {
+        return this.StatusesAndConditions;
     }
 
     // Per turn data
@@ -612,11 +583,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.Cc_ver = data.cc_ver;
 
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
-        // They will be two separate items. This is a bit odd, but for the most part the pilot-items are more of a "shop" for the mechs to insinuate from.
-        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
-        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
-        this._owned_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
-        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
         this._statuses_and_conditions = await subreg
             .get_cat(EntryType.STATUS)
             .list_live(this.OpCtx);
@@ -685,18 +651,17 @@ export async function mech_cloud_sync(
     fallback_source_regs: Registry[],
     hooks?: InsinuateHooks
 ): Promise<void> {
-    // Reg stuff
-    let mech_inv = await mech.get_inventory();
-    let ctx = mech.OpCtx;
-    let stack: RegFallback;
-    if (mech.Pilot) {
-        stack = {
-            base: mech_inv,
-            fallbacks: [await mech.Pilot.get_inventory(), ...fallback_source_regs],
-        };
-    } else {
-        stack = { base: mech_inv, fallbacks: [...fallback_source_regs] };
+    // If no pilot, nowhere to read items from
+    if(!mech.Pilot) {
+        throw new Error("Cannot sync mech with no pilot");
     }
+
+    // Reg stuff
+    let ctx = mech.OpCtx;
+    let stack: RegFallback = {
+        base: await mech.Pilot.get_inventory(),
+        fallbacks: [...fallback_source_regs],
+    };
 
     // All of this is trivial
     mech.LID = data.id;

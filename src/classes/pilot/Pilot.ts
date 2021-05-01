@@ -16,6 +16,11 @@ import {
     PilotArmor,
     PilotGear,
     PilotWeapon,
+    MechWeapon,
+    MechSystem,
+    WeaponMod,
+    Status,
+    Frame,
 } from "@src/class";
 import * as gistApi from "@src/io/apis/gist";
 import {
@@ -180,18 +185,18 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // All the below fields are read only, derived from the contents of the pilot reg. To add or remove to these, you need to create/insinuate/destroy entries of the pilot reg
     // These are the weapons and stuff that we _own_, not necessarily that is currently in our loudout
     private _owned_armor!: PilotArmor[]; // We do not want people to mistakenly try to add to this - it is derived
-    public get OwnedArmor(): PilotArmor[] {
+    public get OwnedPilotArmor(): PilotArmor[] {
         return [...this._owned_armor];
     }
 
     private _owned_gear!: PilotGear[]; // We do not want people to mistakenly try to add to this - it is derived
-    public get OwnedGear(): PilotGear[] {
+    public get OwnedPilotGear(): PilotGear[] {
         return [...this._owned_gear];
     }
 
-    private _owned_weapons!: PilotWeapon[]; // We do not want people to mistakenly try to add to this - it is derived
-    public get OwnedWeapons(): PilotWeapon[] {
-        return [...this._owned_weapons];
+    private _owned_pilot_weapons!: PilotWeapon[]; // We do not want people to mistakenly try to add to this - it is derived
+    public get OwnedPilotWeapons(): PilotWeapon[] {
+        return [...this._owned_pilot_weapons];
     }
 
     private _core_bonuses!: CoreBonus[]; // We do not want people to mistakenly try to add to this - it is derived
@@ -232,11 +237,36 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     private _quirks!: Quirk[];
     public get Quirks(): Quirk[] {
         return [...this._quirks];
+    }    
+    
+    // These are posessed systems/weapons/etc of the mech that are not necessarily equipped.
+    // Since the pilot truly owns these items, they are stored on the pilot to prevent deduplication between different mechs
+    // Everything in MechLoadout should just be reffing to these items (avoid making duplicates - an easy mistake to make but one that will ultimately become very annoying)
+
+    private _owned_mech_weapons!: MechWeapon[];
+    public get OwnedMechWeapons(): MechWeapon[] {
+        return [...this._owned_mech_weapons];
     }
+
+    private _owned_systems!: MechSystem[];
+    public get OwnedSystems(): MechSystem[] {
+        return this._owned_systems;
+    }
+
+    private _owned_weapon_mods!: WeaponMod[];
+    public get OwnedWeaponMods(): WeaponMod[] {
+        return this._owned_weapon_mods;
+    }
+
+    private _owned_frames!: Frame[];
+    public get OwnedFrames(): Frame[] {
+        return this._owned_frames;
+    }
+
 
     protected enumerate_owned_items(): RegEntry<any>[] {
         return [
-            ...this._owned_weapons,
+            ...this._owned_pilot_weapons,
             ...this._owned_armor,
             ...this._owned_gear,
             ...this._core_bonuses,
@@ -246,6 +276,10 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             ...this._reserves,
             ...this._orgs,
             ...this._licenses,
+            ...this._owned_mech_weapons,
+            ...this._owned_systems,
+            ...this._owned_weapon_mods,
+            ...this._owned_frames,
         ];
     }
 
@@ -560,8 +594,12 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx);
         this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx);
         this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx);
-        this._owned_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx);
+        this._owned_pilot_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx);
         this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
+        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
+        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
     }
 
     protected save_imp(): RegPilotData {

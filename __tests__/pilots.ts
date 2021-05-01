@@ -95,9 +95,9 @@ describe("Pilots", () => {
 
 
         // Loadout
-        expect(dk.OwnedArmor.length).toEqual(1);
-        expect(dk.OwnedWeapons.length).toEqual(1);
-        expect(dk.OwnedGear.length).toEqual(2); // 21
+        expect(dk.OwnedPilotArmor.length).toEqual(1);
+        expect(dk.OwnedPilotWeapons.length).toEqual(1);
+        expect(dk.OwnedPilotGear.length).toEqual(2); // 21
         
         expect(dk.Loadout.Armor[0].Name.toLowerCase()).toEqual("light hardsuit");
         expect(dk.Loadout.Weapons[0]).toBeFalsy();
@@ -148,19 +148,19 @@ describe("Pilots", () => {
         // Do it by counts, easiest way to do it
         let ctx = new OpCtx();
         let dest_mechs = await dest.reg.get_cat(EntryType.MECH).list_live(ctx); // ought to have 3
-        let dest_frames = await dest.reg.get_cat(EntryType.FRAME).list_live(ctx); // ought to have 0 - the frames are owned by the mechs
-        let dest_weapons = await dest.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx); // ought to have 0 
+        let dest_frames = await dest.reg.get_cat(EntryType.FRAME).list_live(ctx); // global ought to have 0 - the frames are owned by the mechs
+        let dest_weapons = await dest.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx); // global ought to have 0 
         expect(dest_mechs.length).toEqual(3);
         expect(dest_frames.length).toEqual(0);
         expect(dest_weapons.length).toEqual(0); // 3
 
         // Make sure that the mechs do in fact have the items, though. Only both with a few
         let lanny = await dest_mechs.find((m: Mech) => m.Loadout.Frame.LID == "mf_lancaster");
-        let lanny_inv = await lanny.get_inventory();
-        let lanny_frames = await lanny_inv.get_cat(EntryType.FRAME).list_live(ctx);
-        let lanny_weapons = await lanny_inv.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
-        expect(lanny_frames.length).toEqual(1);
-        expect(lanny_weapons.length).toEqual(3); // 5
+        let dk_inv = await dk.get_inventory();
+        let dk_frames = await dk_inv.get_cat(EntryType.FRAME).list_live(ctx);
+        let dk_weapons = await dk_inv.get_cat(EntryType.MECH_WEAPON).list_live(ctx);
+        expect(dk_frames.length).toEqual(3); // Each mech has its own frame
+        expect(dk_weapons.length).toEqual(3); // Across all of our wframes we have 
     });
 
     it("Will not create duplicate deployables", async () => {

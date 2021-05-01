@@ -239,8 +239,8 @@ describe("Static Registry Reference implementation", () => {
         // Sanity check. Pilot should have one of each type. World should only have the single armor
         let check_ctx = new OpCtx();
         let source_pilot_check = await source_pilot.refreshed(check_ctx);
-        expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
-        expect(source_pilot_check.OwnedArmor.length).toEqual(1);
+        expect(source_pilot_check.OwnedPilotWeapons.length).toEqual(1);
+        expect(source_pilot_check.OwnedPilotArmor.length).toEqual(1);
         expect((await source_env.reg.get_cat(EntryType.PILOT_ARMOR).list_live(check_ctx)).length).toEqual(1);
         expect((await source_env.reg.get_cat(EntryType.PILOT_WEAPON).list_live(check_ctx)).length).toEqual(0); // 4
 
@@ -248,8 +248,8 @@ describe("Static Registry Reference implementation", () => {
         let dest_pilot = await source_pilot.insinuate(dest_env.reg);
 
         // Did it bring its items?
-        expect(source_pilot_check.OwnedWeapons.length).toEqual(1);
-        expect(source_pilot_check.OwnedArmor.length).toEqual(1);
+        expect(source_pilot_check.OwnedPilotWeapons.length).toEqual(1);
+        expect(source_pilot_check.OwnedPilotArmor.length).toEqual(1);
 
         // Dest reg should also not have any items in global space
         expect((await dest_env.reg.get_cat(EntryType.PILOT_ARMOR).list_live(check_ctx)).length).toEqual(0);
