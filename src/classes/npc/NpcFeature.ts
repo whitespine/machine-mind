@@ -106,6 +106,7 @@ export interface BaseRegNpcFeatureData {
     charged: boolean;
     uses: number;
     loaded: boolean;
+    destroyed: boolean;
 
     // If we want this feature to have a distinct tier fixed regardless of underlying npc tier
     tier_override: number;
@@ -161,6 +162,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     public Charged!: boolean;
     public Loaded!: boolean;
     public Uses!: number;
+    public Destroyed!: boolean;
     public Override!: Partial<INpcStats>;
     // public Locked!: boolean;
     public Tags!: TagInstance[];
@@ -248,6 +250,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         this.Charged = data.charged;
         this.Uses = data.uses;
         this.Loaded = data.loaded;
+        this.Destroyed = data.destroyed;
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.FeatureType = data.type;
         this.TierOverride = data.tier_override;
@@ -291,6 +294,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             tags: SerUtil.save_all(this.Tags),
             type: this.FeatureType,
             charged: this.Charged,
+            destroyed: this.Destroyed,
             uses: this.Uses,
             loaded: this.Loaded,
             tier_override: this.TierOverride,
