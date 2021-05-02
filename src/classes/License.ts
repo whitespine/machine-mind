@@ -20,6 +20,9 @@ export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 // export type LicensedItem = RegEntry<LicensedItemType>;
 
 export interface RegLicenseData {
+    // Its internal identifier. Initially equal to name
+    lid: string;
+
     // What's it called
     name: string;
 
@@ -34,6 +37,7 @@ export interface RegLicenseData {
 }
 
 export class License extends RegEntry<EntryType.LICENSE> {
+    LID!: string;
     Name!: string;
     Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     Unlocks!: Array<Array<LicensedItem>>;
@@ -45,6 +49,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
 
     public async load(data: RegLicenseData): Promise<void> {
         merge_defaults(data, defaults.LICENSE());
+        this.LID = data.lid;
         this.Name = data.name;
         this.Manufacturer = null;
         if (data.manufacturer) {
@@ -65,6 +70,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
             unlocks.push(urow);
         }
         return {
+            lid: this.LID,
             name: this.Name,
             manufacturer: this.Manufacturer?.as_ref() || null,
             rank: this.CurrentRank,
@@ -122,6 +128,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
             }
 
             let rdata: RegLicenseData = {
+                lid: ("lic_" + license_name.toLowerCase()),
                 name: frame?.Name ?? license_name,
                 manufacturer: frame?.Source?.as_ref() ?? null,
                 rank: 1,

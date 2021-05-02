@@ -8,6 +8,7 @@ import { merge_defaults } from "../default_entries";
 // Data
 ///////////////////////////////////////////////////////////
 export interface RegQuirkData {
+    lid: string;
     name: string; // v-html
     description: string;
     actions: RegActionData[]; // these are only available to UNMOUNTED pilots
@@ -21,6 +22,7 @@ export interface RegQuirkData {
 }
 
 export class Quirk extends RegEntry<EntryType.QUIRK> {
+    LID!: string;
     Name!: string;
     Description!: string;
     Actions!: Action[];
@@ -32,6 +34,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
 
     public async load(data: RegQuirkData): Promise<void> {
         merge_defaults(data, defaults.QUIRK());
+        this.LID = data.lid;
         this.Name = data.name;
         this.Description = data.description;
 
@@ -42,6 +45,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     protected save_imp(): RegQuirkData {
         return {
             ...SerUtil.save_commons(this),
+            lid: this.LID,
             name: this.Name,
             description: this.Description,
             integrated: SerUtil.ref_all(this.Integrated),

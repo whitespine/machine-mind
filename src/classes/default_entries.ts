@@ -286,6 +286,7 @@ export function FRAME(): RegFrameData {
 
 export function LICENSE(): RegLicenseData {
     return {
+        lid: "lic_" + nanoid(),
         manufacturer: null,
         name: "New License",
         rank: 0,
@@ -816,6 +817,7 @@ export function TALENT_RANK(): RegTalentRank {
 
 export function QUIRK(): RegQuirkData {
     return {
+        lid: "q_" + nanoid(),
         actions: [],
         bonuses: [],
         counters: [],

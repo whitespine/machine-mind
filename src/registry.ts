@@ -643,6 +643,8 @@ export abstract class RegEntry<T extends EntryType> {
     public Flags: any; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
     private _load_promise: Promise<any>;
 
+    public abstract LID: string;
+
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
     constructor(
