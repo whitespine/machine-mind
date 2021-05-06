@@ -21,10 +21,10 @@ import {
     PackedMechLoadoutData,
     RegMechLoadoutData,
     SourcedCounter,
+    SyncHooks,
 } from "@src/interface";
 import {
     EntryType,
-    InsinuateHooks,
     InventoriedRegEntry,
     RegEntry,
     Registry,
@@ -34,6 +34,7 @@ import {
 import { CC_VERSION, DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
 import { merge_defaults } from "../default_entries";
+import { AllHooks } from "../GeneralInterfaces";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
@@ -645,11 +646,13 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 }
 
+// Sync a mech. Subroutine of pilot sync
 export async function mech_cloud_sync(
     data: PackedMechData,
     mech: Mech,
     fallback_source_regs: Registry[],
-    hooks?: InsinuateHooks
+    sync_hooks: AllHooks,
+    is_new: boolean = false // Is this a new mech? purely for  what to pass the sync_hook at the end
 ): Promise<void> {
     // If no pilot, nowhere to read items from
     if(!mech.Pilot) {
@@ -691,7 +694,9 @@ export async function mech_cloud_sync(
     let packed_loadout = data.loadouts[data.active_loadout_index];
 
     // The loadout sync process does basically everything we need for items
-    await mech.Loadout.sync(data.frame, packed_loadout, stack, hooks);
+    await mech.Loadout.sync(data, packed_loadout, stack, sync_hooks);
+    if(sync_hooks.sync_loadout) 
+        await sync_hooks.sync_loadout(mech.Loadout, packed_loadout, is_new);
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects that compcon produces, so as not to destroy custom active effects)
     for (let s of mech.StatusesAndConditions) {
@@ -709,10 +714,12 @@ export async function mech_cloud_sync(
                 id: "",
                 type: EntryType.STATUS,
             },
-            hooks
+            sync_hooks
         );
     }
 
     // We always want to insinuate and writeback to be sure we own all of these items
+    if(sync_hooks.sync_mech) 
+        await sync_hooks.sync_mech(mech, data, is_new);
     await mech.writeback();
 }

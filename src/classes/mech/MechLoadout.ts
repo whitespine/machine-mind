@@ -2,26 +2,22 @@ import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment, Frame } from "@
 import { defaults } from "@src/funcs";
 import {
     EntryType,
-    InsinuateHooks,
     OpCtx,
-    quick_local_ref,
-    Registry,
     RegRef,
     RegSer,
     SerUtil,
     SimSer,
 } from "@src/registry";
 import { FittingSize, MountType, WeaponSize } from "@src/enums";
-import { fallback_obtain_ref, RegFallback as RegFallbackStack } from "../regstack";
-import { createHook } from "async_hooks";
+import { fallback_obtain_ref, FALLBACK_WAS_INSINUATED, RegFallback as RegFallbackStack } from "../regstack";
 import { merge_defaults } from "../default_entries";
 import { nanoid } from "nanoid";
-import { SlowBuffer } from "node:buffer";
+import { AllHooks, PackedMechData, SyncHooks } from "@src/interface";
 
 //todo: superheavies :<
 
 //////////////////////// PACKED INFO ////////////////////////
-interface PackedEquipmentData {
+export interface PackedEquipmentData {
     id: string;
     destroyed: boolean;
     cascading: boolean;
@@ -31,7 +27,7 @@ interface PackedEquipmentData {
     flavorDescription?: string;
     customDamageType?: string;
 }
-interface PackedMechWeaponSaveData extends PackedEquipmentData {
+export interface PackedMechWeaponSaveData extends PackedEquipmentData {
     loaded: boolean;
     mod?: PackedEquipmentData;
     customDamageType?: string;
@@ -219,10 +215,10 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Sync this loadout with compcon style loadout data
     // There's no real reason to restrict this logic just to unpacking, as we never just want a loadout on its own - only useful as part of a mech sync
     public async sync(
-        mech_frame_id: string,
+        full_mech_data: PackedMechData,
         mech_loadout: PackedMechLoadoutData,
         stack: RegFallbackStack,
-        hooks?: InsinuateHooks
+        sync_hooks: AllHooks
     ): Promise<void> {
         // Find the frame
         let frame = await fallback_obtain_ref(
@@ -230,11 +226,30 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             this.OpCtx,
             {
                 type: EntryType.FRAME,
-                fallback_lid: mech_frame_id,
+                fallback_lid: full_mech_data.frame,
                 id: "",
             },
-            hooks
+            sync_hooks
         );
+
+        // Hooksave it
+        if(frame) {
+            if(sync_hooks.sync_frame)
+                await sync_hooks.sync_frame(frame, full_mech_data, frame.Flags[FALLBACK_WAS_INSINUATED]);
+            await frame.writeback();
+
+            // Hook its deployaables
+            if(sync_hooks.sync_deployable_nosave) {
+                for(let d of frame.CoreSystem.Deployables) {
+                    await sync_hooks.sync_deployable_nosave(d);
+                }
+                for(let t of frame.Traits) {
+                    for(let d of t.Deployables) {
+                        await sync_hooks.sync_deployable_nosave(d);
+                    }
+                }
+            }
+        }
 
         // Reconstruct the mount setup
         this.WepMounts = [];
@@ -275,7 +290,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
         for (let tbr of to_be_rendered) {
             let mount = await this.AddEmptyWeaponMount(tbr.mount_type as MountType);
-            await mount.sync(tbr, stack);
+            await mount.sync(tbr, stack, sync_hooks);
         }
 
         // Now systems. We check if they are in the same position to preserve typedness/customization, but otherwise make no especial effort
@@ -303,7 +318,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                         fallback_lid: mls.id,
                         id: "",
                     },
-                    hooks
+                    sync_hooks
                 );
             }
 
@@ -312,7 +327,16 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 sys.Destroyed = mls.destroyed ?? sys.Destroyed;
                 sys.Cascading = mls.cascading ?? sys.Cascading;
                 sys.Uses = mls.uses ?? sys.Uses;
+                if(sync_hooks.sync_mech_system)
+                    await sync_hooks.sync_mech_system(sys, mls, sys.Flags[FALLBACK_WAS_INSINUATED]);
                 await sys.writeback();
+
+                // Hook its deployables
+                if(sync_hooks.sync_deployable_nosave) {
+                    for(let d of sys.Deployables) {
+                        await sync_hooks.sync_deployable_nosave(d);
+                    }
+                }
             }
 
             // Append the new mount
@@ -526,7 +550,7 @@ export class WeaponSlot {
         dat: PackedWeaponSlotData,
         stack: RegFallbackStack,
         ctx: OpCtx,
-        hooks?: InsinuateHooks
+        hooks: AllHooks
     ): Promise<void> {
         // First we resolve the weapon
         if (dat.weapon) {
@@ -553,7 +577,16 @@ export class WeaponSlot {
                 this.Weapon.Destroyed = dat.weapon.destroyed ?? this.Weapon.Destroyed;
                 this.Weapon.Cascading = dat.weapon.cascading ?? this.Weapon.Cascading;
                 this.Weapon.Loaded = dat.weapon.loaded ?? this.Weapon.Loaded;
+                if(hooks.sync_mech_weapon)
+                    await hooks.sync_mech_weapon(this.Weapon, dat.weapon, this.Weapon.Flags[FALLBACK_WAS_INSINUATED]);
                 await this.Weapon.writeback();
+
+                // Hook its deployables
+                if(hooks.sync_deployable_nosave) {
+                    for(let d of this.Weapon.Deployables) {
+                        await hooks.sync_deployable_nosave(d);
+                    }
+                }
 
                 // Proceed with modding
                 if (dat.weapon.mod) {
@@ -581,7 +614,14 @@ export class WeaponSlot {
                         this.Mod.Uses = mod.uses ?? this.Mod.Uses;
                         this.Mod.Destroyed = mod.destroyed ?? this.Mod.Destroyed;
                         this.Mod.Cascading = mod.cascading ?? this.Mod.Cascading;
+                        if(hooks.sync_weapon_mod)
+                            await hooks.sync_weapon_mod(this.Mod, dat.weapon.mod, this.Weapon.Flags[FALLBACK_WAS_INSINUATED]);
                         await this.Mod.writeback();
+                        if(hooks.sync_deployable_nosave) {
+                            for(let d of this.Mod.Deployables) {
+                                await hooks.sync_deployable_nosave(d);
+                            }
+                        }
                     }
                 }
             }
@@ -682,7 +722,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     // Match the provided mount data. Use the provided reg to facillitate lookup of required items from outside of mech
-    public async sync(mnt: PackedMountData, fallback: RegFallbackStack) {
+    public async sync(mnt: PackedMountData, fallback: RegFallbackStack, sync_hooks: SyncHooks) {
         // Init slots based on our size
         this.MountType = mnt.mount_type as MountType;
         this.Slots = this._slots_for_mount(this.MountType);
@@ -695,9 +735,12 @@ export class WeaponMount extends RegSer<RegWepMountData> {
             let s = this.Slots[i];
             let cw = packed_slots[i];
             if (cw) {
-                await s.sync(cw, fallback, this.OpCtx);
+                await s.sync(cw, fallback, this.OpCtx, sync_hooks);
             }
         }
+
+        if(sync_hooks.sync_weapon_mount) 
+            await sync_hooks.sync_weapon_mount(this, mnt, true);
     }
 
     public async load(data: RegWepMountData): Promise<void> {

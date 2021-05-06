@@ -31,6 +31,8 @@ export {
 } from "./classes/mech/MechWeapon";
 export {
     PackedMechLoadoutData,
+    PackedEquipmentData,
+    PackedMechWeaponSaveData,
     PackedMountData,
     PackedWeaponSlotData,
     RegMechLoadoutData,

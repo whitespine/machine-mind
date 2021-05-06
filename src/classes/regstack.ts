@@ -1,6 +1,6 @@
+import { InsinuateHooks } from "@src/interface";
 import {
     EntryType,
-    InsinuateHooks,
     LiveEntryTypes,
     OpCtx,
     quick_local_ref,
@@ -37,6 +37,9 @@ export async function fallback_resolve_ref<T extends EntryType>(
     return d as LiveEntryTypes<T>;
 }
 
+// We add this to flag whether the below function had to insinuate its result
+export const FALLBACK_WAS_INSINUATED = "FALLBACK_OBTAIN_REF_NONLOCAL";
+
 // Look in each registry in turn, returning the first that satisfies the reference after insinuating it into the base
 // Ignored the registry name specified on the ref
 export async function fallback_obtain_ref<T extends EntryType>(
@@ -48,6 +51,9 @@ export async function fallback_obtain_ref<T extends EntryType>(
     let found = await fallback_resolve_ref(from, ctx, ref);
     if (found && found.Registry.name() != from.base.name()) {
         found = (await found.insinuate(from.base, ctx, hooks)) as LiveEntryTypes<T>;
+        found.Flags[FALLBACK_WAS_INSINUATED] = true;
+    } else if(found) {
+        found.Flags[FALLBACK_WAS_INSINUATED] = false;
     }
     return found;
 }

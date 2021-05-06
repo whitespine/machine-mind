@@ -9,11 +9,13 @@ import { gist_io, cloud_sync } from "../src/funcs";
 import { validate_props } from "../src/classes/key_util";
 import * as fs from "fs";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
+import { SyncHooks } from "../src/interface";
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
 let DEPLOYABLE_GUY = "674a75a9be41eaa32e0d4514b61af461";
 let BARB = "764bcd352a463074f3ec1bd79486bd71";
 let GRYGONS = "78d3c986d75b174f7a6627af63d6b24e";
+let GRYGONS_WITH_EVERYTHING = "73f483f63ef9312010aa1c859fa0732e";
 
 type DefSetup = {
     reg: StaticReg;
@@ -222,6 +224,93 @@ describe("Pilots", () => {
         gry = await gry.refreshed();
         let gry_main = await gry.ActiveMech();
         expect(gry_main).toBeTruthy();
+    });
+
+    it("Calls all appropriate hooks", async () => {
+        expect.assertions(19);
+        let s = await init_basic_setup(true);
+
+        // Our checklist
+        let sat = {
+            pilot: false,
+            mech: false,
+            mech_weapon: false,
+            mech_system: false,
+            frame: false, // 5
+
+            core_bonus: false,
+            pilot_weapon: false,
+            pilot_armor: false,
+            pilot_gear: false,
+            loadout: false, // 10
+
+            pilot_loadout: false,
+            weapon_mount: false,
+            weapon_mod: false,
+            reserve: false,
+            organization: false, // 15
+
+            // faction: false,
+            trigger: false,
+            talent: false,
+            license: false,
+            deployable: true // 19
+        };
+
+        // Set our checklist to be proper
+        let callbacks: SyncHooks = {
+            sync_pilot(item, raw, is_new)  { sat.pilot = true; },
+            sync_mech(item, raw, is_new)  { sat.mech = true; },
+            sync_mech_weapon(item, raw, is_new)  { sat.mech_weapon = true; },
+            sync_mech_system(item, raw, is_new)  { sat.mech_system = true; },
+            sync_frame(item, raw, is_new)  { sat.frame = true; },
+            sync_core_bonus(item, raw, is_new)  { sat.core_bonus = true; },
+            sync_pilot_weapon(item, raw, is_new)  { sat.pilot_weapon = true; },
+            sync_pilot_armor(item, raw, is_new)  { sat.pilot_armor = true; },
+            sync_pilot_gear(item, raw, is_new)  { sat.pilot_gear = true; },
+            sync_loadout(item, raw, is_new)  { sat.loadout = true; },
+            sync_pilot_loadout(item, raw, is_new)  { sat.pilot_loadout = true; },
+            sync_weapon_mount(item, raw, is_new)  { sat.weapon_mount = true; },
+            sync_weapon_mod(item, raw, is_new)  { sat.weapon_mod = true; },
+            sync_reserve(item, raw, is_new)  { sat.reserve = true; },
+            // sync_faction(item, raw, is_new) => { sat.// faction = true; },
+            sync_organization(item, raw, is_new)  { sat.organization = true; },
+            sync_trigger(item, raw, is_new)  { sat.trigger = true; },
+            sync_talent(item, raw, is_new)  { sat.talent = true; },
+            sync_license(item, raw, is_new)  { sat.license = true; },
+            sync_deployable_nosave(dep) { sat.deployable = true; }
+        }
+
+        // Load barb
+        let ctx = new OpCtx();
+        let pilot: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
+        let pilot_data = await gist_io.download_pilot(GRYGONS_WITH_EVERYTHING);
+        await cloud_sync(pilot_data, pilot, [s.reg], callbacks);
+
+        // We expect everything in callbacks to be true
+        expect(sat.pilot).toBeTruthy();
+        expect(sat.mech).toBeTruthy();
+        expect(sat.mech_weapon).toBeTruthy();
+        expect(sat.mech_system).toBeTruthy();
+        expect(sat.frame).toBeTruthy(); // 5
+
+        expect(sat.core_bonus).toBeTruthy();
+        expect(sat.pilot_weapon).toBeTruthy();
+        expect(sat.pilot_armor).toBeTruthy();
+        expect(sat.pilot_gear).toBeTruthy();
+        expect(sat.loadout).toBeTruthy(); // 10
+
+        expect(sat.pilot_loadout).toBeTruthy();
+        expect(sat.weapon_mount).toBeTruthy();
+        expect(sat.weapon_mod).toBeTruthy();
+        expect(sat.reserve).toBeTruthy();
+        expect(sat.organization).toBeTruthy(); // 15
+
+            // faction: false,
+        expect(sat.trigger).toBeTruthy();
+        expect(sat.talent).toBeTruthy();
+        expect(sat.license).toBeTruthy();
+        expect(sat.deployable).toBeTruthy(); // 19
     });
 
 });

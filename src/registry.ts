@@ -123,6 +123,9 @@ import {
     PackedStatusData,
     RegActionData,
     PackedActionData,
+    MidInsinuationRecord,
+    InsinuateHooks,
+    RelinkHook,
 } from "./interface";
 
 ////////////////////////////////////////////////////////////////////////
@@ -574,64 +577,6 @@ export abstract class RegSer<SourceType> {
     protected abstract save_imp(): SourceType;
 }
 
-// Describes an itemized transfer as part of an insinuation. Used in hooks
-export interface MidInsinuationRecord<T extends EntryType> {
-    type: T;
-    from: RegRef<T>; // Ref to entry this was insinuated from
-    // The intermediate product, which has been achieved by telling the original item that it lives elsewhere than where it came from
-    // This item is, at the time of this object being yielded, about to be written to the destination registry. Making any final changes here, while you can
-    pending: LiveEntryTypes<T>;
-}
-export interface InsinuationRecord<T extends EntryType> {
-    type: T;
-    from: RegRef<T>; // Ref to entry this was insinuated from
-    new_item: LiveEntryTypes<T>; // The final product, newly insinuated into its registry
-}
-
-// Shorthand for the relinker type of _InsinuateHooks. Useful for function factories
-export type RelinkHook<T extends EntryType> = (
-    source_item: LiveEntryTypes<T>,
-    dest_reg: Registry,
-    dest_cat: RegCat<T>
-) => Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
-interface _InsinuateHooks {
-    // Used during insinuation procedures to dedup/consolidate entities by finding pre-existing entities to use instead (or overriding entity creation process
-    relinker<T extends EntryType>(
-        source_item: LiveEntryTypes<T>,
-        dest_reg: Registry,
-        dest_cat: RegCat<T>
-    ): Promise<LiveEntryTypes<T> | null> | LiveEntryTypes<T> | null;
-    skip_relinked_inventories?: boolean; // Default faulse. If true, we will not attempt to insinuate inventory items if the Inventoried actor entry was relinked
-
-    /* Hook called upon completion of an insinuation. 
-     * Provided with information about the old and new item
-
-     * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
-     */
-    post_final_write<T extends EntryType>(
-        record: InsinuationRecord<T>,
-        dest_reg: Registry,
-        dest_cat: RegCat<T>
-    ): Promise<void> | void;
-
-    /* Hook called upon insinuation targets immediately prior to their final write to the destination reg.
-     * At this points, the entire object structure should be in place, though it has not been committed to memory
-     * Overriding this is necessary if we have other requirements in our insinuation process. Edit the object in place.
-     * Note that at this point the entry has already been created -- you cannot change anything at this point except what is finally written to the entry.
-     *
-     * Note that the 2nd/3rd args are derived from the item, and are simply there for convenience
-     */
-    pre_final_write<T extends EntryType>(
-        record: MidInsinuationRecord<T>,
-        dest_reg: Registry,
-        dest_cat: RegCat<T>
-    ): Promise<void> | void;
-}
-
-// Let all the functions be optional
-export type InsinuateHooks = Partial<_InsinuateHooks>;
-// Note: Registrys can have these inbuilt. They will be called after the function-call-specific insinuate hooks if present
-
 // Serialization and deserialization requires a registry
 // Also, this item itself lives in the registry
 export abstract class RegEntry<T extends EntryType> {
@@ -640,7 +585,7 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
     public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
-    public Flags: any; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
+    public Flags: {[key: string]: any}; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
     private _load_promise: Promise<any>;
 
     public abstract LID: string;
@@ -768,7 +713,7 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Create a mapping of original items to Insinuation records
         let hitlist: Map<RegEntry<EntryType>, MidInsinuationRecord<EntryType>> = new Map();
-        await (fresh as RegEntry<EntryType>)._insinuate_imp(to_new_reg, hitlist, hooks);
+        await (fresh as RegEntry<EntryType>)._insinuate_imp(to_new_reg, hitlist, hooks || {});
 
         // At this point no more processing is going to occur - our entire data structure should have been transferred over to the new reg
         // However, what _hasn't_ yet been processed / updated are our reg entry references - they're still saved as their original ids
@@ -831,7 +776,7 @@ export abstract class RegEntry<T extends EntryType> {
     public async _insinuate_imp(
         to_new_reg: Registry,
         insinuation_hit_list: Map<RegEntry<any>, MidInsinuationRecord<any>>,
-        hooks?: InsinuateHooks
+        hooks: InsinuateHooks
     ): Promise<LiveEntryTypes<T> | null> {
         // Check if we've been hit to avoid circular problems
         if (insinuation_hit_list.has(this)) {
@@ -930,7 +875,7 @@ export abstract class InventoriedRegEntry<T extends EntryType> extends RegEntry<
     public async _insinuate_imp(
         to_new_reg: Registry,
         insinuation_hit_list: Map<RegEntry<EntryType>, MidInsinuationRecord<EntryType>>,
-        hooks?: InsinuateHooks
+        hooks: InsinuateHooks
     ): Promise<LiveEntryTypes<T> | null> {
         // Get our super call. Since new entry is of same type, then it should also have an inventory
         let new_reg_entry = (await super._insinuate_imp(

@@ -39,11 +39,13 @@ import {
     RegPilotLoadoutData,
     PackedOrganizationData,
     SourcedCounter,
+    SyncHooks,
+    AllHooks,
 } from "@src/interface";
 import {
     EntryType,
-    InsinuateHooks,
     InventoriedRegEntry,
+    LiveEntryTypes,
     RegEntry,
     Registry,
     RegRef,
@@ -56,6 +58,7 @@ import {
     finding_iterate,
     fallback_obtain_ref,
     RegFallback,
+    FALLBACK_WAS_INSINUATED,
 } from "../regstack";
 import { merge_defaults } from "../default_entries";
 
@@ -745,6 +748,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 }
 
+
+const noop = (..._: any) => {};
+
 // Due to the nature of pilot data, and the fact that we generally desire to use this for synchronization of an existing pilot rather than as a one off compendium import,
 // we define this separately. gather_source_regs is where we look if we can't find an item in the pilot that we expected - it will be added to the pilot
 // If custom_pilot_inv, it will be used as the pilot's inventory registry. 
@@ -752,16 +758,18 @@ export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
     fallback_source_regs: Registry[],
-    hooks?: InsinuateHooks,
-): Promise<{ pilot: Pilot; pilot_mechs: Mech[] } | null> {
+    hooks?: AllHooks,
+): Promise<Pilot> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();
     if (!tmp_pilot) {
-        return null; // This is fairly catastrophic
+        throw new Error("Pilot was unable to be refreshed. May have been deleted"); // This is fairly catastrophic
     }
     pilot = tmp_pilot;
     let pilot_inv = await tmp_pilot.get_inventory();
-    hooks = hooks ?? {};
+
+    // Stub out pre-edit with a noop
+    hooks = hooks || {};
 
     // The simplest way to do this is to, for each entry, just look in a regstack and insinuate to the pilot inventory.
     // if the item was already in the pilot inventory, then no harm!. If not, it is added.
@@ -781,7 +789,7 @@ export async function cloud_sync(
     pilot.Portrait = data.portrait; // Should this be a link or something? Mayabe just not sync it?
     pilot.TextAppearance = data.text_appearance;
 
-    // Fetch machine-mind stored licenses.
+    // Fetch ALL registry + fallback stored licenses - need to inspect them to find frames
     const stack_licenses: License[] = [];
     for await (const i of finding_iterate(stack, ctx, EntryType.LICENSE)) {
         stack_licenses.push(i);
@@ -796,13 +804,18 @@ export async function cloud_sync(
             if (found_corr_item) {
                 // We have found a local license corresponding to the new license.
                 // First, check if owned by pilot
+                let is_new = false;
                 if (sl.Registry.name() != pilot_inv.name()) {
                     // Grab a copy for our pilot
                     sl = await sl.insinuate(pilot_inv, ctx, hooks);
+                    is_new = true;
                 }
 
                 // Then update lvl and save
                 sl.CurrentRank = cc_pilot_license.rank;
+                // await (sync_hooks.sync_license ?? noop)(sl, cc_pilot_license, is_new);
+                if(hooks.sync_license)
+                    await hooks.sync_license(sl, cc_pilot_license, is_new);
                 await sl.writeback();
                 // Got it - we can go
                 break;
@@ -815,18 +828,20 @@ export async function cloud_sync(
     for (let md of data.mechs) {
         // For each imported mech entry, find the corrseponding mech actor entity by matching compcon id
         let corr_mech = pilot_mechs.find(m => m.LID == md.id);
+        let is_new = false;
 
         if (!corr_mech) {
             // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one and add it to our tracker
             corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
             pilot_mechs.push(corr_mech);
+            is_new = true;
         }
 
         // Tell it we own/pilot it
         corr_mech.Pilot = pilot;
 
         // Apply
-        await mech_cloud_sync(md, corr_mech, fallback_source_regs, hooks);
+        await mech_cloud_sync(md, corr_mech, fallback_source_regs, hooks, is_new);
     }
 
     // Try to find a quirk that matches, or create if not present
@@ -843,11 +858,13 @@ export async function cloud_sync(
     pilot.SortIndex = data.sort_index;
     pilot.Campaign = data.campaign;
 
-    // Look for faction. Create if not present
+    // Look for faction. Create if not present. Do nothing otherwise. TODO: Handle when this has real data
     if (data.factionID) {
         if (!pilot.Factions.find(f => f.LID == data.factionID)) {
             let new_faction = await pilot_inv.create_live(EntryType.FACTION, ctx);
             new_faction.LID = data.factionID;
+            // if(sync_hooks.sync_faction) 
+                // await sync_hooks.sync_faction(new_faction, {id: data.factionID}, true); // TODO
             new_faction.writeback();
         }
     }
@@ -869,78 +886,122 @@ export async function cloud_sync(
     );
 
     // Core bonuses. Does not delete. All we care about is that we have them
-    for (let cb of data.core_bonuses) {
-        await fallback_obtain_ref(stack, ctx, {
-            fallback_lid: cb,
+    for (let data_cb of data.core_bonuses) {
+        let cb = await fallback_obtain_ref(stack, ctx, {
+            fallback_lid: data_cb,
             id: "",
             type: EntryType.CORE_BONUS,
         }, hooks);
+        
+        // Do a sync save writeback
+        if(cb) {
+            if(hooks.sync_core_bonus)
+                await hooks.sync_core_bonus(cb, data, cb.Flags[FALLBACK_WAS_INSINUATED]);
+            await cb.writeback();
+
+            // Also deployables
+            if(hooks.sync_deployable_nosave) {
+                for(let d of cb.Deployables) {
+                    await hooks.sync_deployable_nosave(d);
+                }
+            }
+        }
     }
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // For reserves, as they lack a meaningful way of identification we just clobber.
-    for (let r of data.reserves) {
+    for (let data_reserve of data.reserves) {
         // Though we could ref, almost always better to unpack due to custom data
         // TODO - don't clobber?
         for (let ur of pilot.Reserves) {
             ur.destroy_entry();
         }
-        await Reserve.unpack(r, pilot_inv, ctx);
+        let reserve = await Reserve.unpack(data_reserve, pilot_inv, ctx);
+
+        // Do a sync save writeback
+        if(reserve) {
+            if(hooks.sync_reserve)
+                await hooks.sync_reserve(reserve, data_reserve, true);
+            await reserve.writeback();
+
+            // Also deployables
+            if(hooks.sync_deployable_nosave) {
+                for(let d of reserve.Deployables) {
+                    await hooks.sync_deployable_nosave(d);
+                }
+            }
+        }
     }
 
     // Skills, we try to find and if not create
-    for (let s of data.skills) {
+    for (let data_skill of data.skills) {
         // Try to get/fetch pre-existing
-        let found = await fallback_obtain_ref(stack, ctx, {
-            fallback_lid: s.id,
+        let skill = await fallback_obtain_ref(stack, ctx, {
+            fallback_lid: data_skill.id,
             id: "",
             type: EntryType.SKILL
         }, hooks);
-        if (!found) {
+        let is_new = skill?.Flags[FALLBACK_WAS_INSINUATED] ?? false; // Track if this is new to the pilot, for hooks knowledge
+        if (!skill) {
             // Make if we can
-            if ((s as PackedSkillData).custom) {
-                found = await Skill.unpack(s as PackedSkillData, pilot_inv, ctx);
+            if ((data_skill as PackedSkillData).custom) {
+                skill = await Skill.unpack(data_skill as PackedSkillData, pilot_inv, ctx);
             } else {
                 // Nothing we can do for this one - ignore
-                console.warn("Unrecognized skill: " + s.id);
+                console.warn("Unrecognized skill: " + data_skill.id);
                 continue;
             }
         }
 
         // Can set rank regardless
-        found.CurrentRank = s.rank ?? found.CurrentRank;
+        skill.CurrentRank = data_skill.rank ?? skill.CurrentRank;
 
         // Details require custom
-        if ((s as PackedSkillData).custom) {
-            let ss = s as PackedSkillData;
-            found.Description = ss.custom_desc ?? found.Description;
-            found.Detail = ss.custom_detail ?? found.Detail;
+        if ((data_skill as PackedSkillData).custom) {
+            let ss = data_skill as PackedSkillData;
+            skill.Description = ss.custom_desc ?? skill.Description;
+            skill.Detail = ss.custom_detail ?? skill.Detail;
         }
 
-        // Save
-        await found.writeback();
+        // Do a sync save writeback
+        if(hooks.sync_trigger) 
+            hooks.sync_trigger(skill, data_skill, is_new);
+        await skill.writeback();
     }
 
     // Fetch talents. Also need to update rank. Due nothing to missing
-    for (let t of data.talents) {
-        let found = await fallback_obtain_ref(stack, ctx, {
+    for (let data_talent of data.talents) {
+        let talent = await fallback_obtain_ref(stack, ctx, {
             type: EntryType.TALENT,
-            fallback_lid: t.id,
+            fallback_lid: data_talent.id,
             id: ""
         }, hooks);
-        if (found) {
+        if (talent) {
             // Update rank
-            found.CurrentRank = t.rank;
-            found.writeback();
+            talent.CurrentRank = data_talent.rank;
+
+            // Do a sync save writeback
+            if(hooks.sync_talent)
+                await hooks.sync_talent(talent, data_talent, talent.Flags[FALLBACK_WAS_INSINUATED]);
+            await talent.writeback();
+
+            // Also deployables
+            if(hooks.sync_deployable_nosave) {
+                for(let d of talent.Deployables) {
+                    await hooks.sync_deployable_nosave(d);
+                }
+            }
         }
     }
 
     // Look for org matching existing orgs. Create if not present. Do nothing to unmatched
     for (let org of data.orgs) {
         let corr_org = pilot.Orgs.find(o => o.Name == org.name);
+        let is_new = false;
         if (!corr_org) {
             // Make a new one
             corr_org = await pilot_inv.get_cat(EntryType.ORGANIZATION).create_default(ctx);
+            is_new = true;
         }
 
         // Update / init
@@ -950,7 +1011,11 @@ export async function cloud_sync(
         corr_org.Influence ??= org.influence;
         corr_org.Name ??= org.name;
         corr_org.Purpose ??= org.purpose;
-        corr_org.writeback();
+
+        // hook/writeback
+        if(hooks.sync_organization)
+            await hooks.sync_organization(corr_org, org, is_new);
+        await corr_org.writeback();
     }
 
     // Sync counters
@@ -968,23 +1033,67 @@ export async function cloud_sync(
 
     // Do loadout stuff
     if(loadout) {
-        for (let a of loadout.armor) {
-            if (a) {
-                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_lid: a.id, id: ""}, hooks);
+        for (let data_armor of loadout.armor) {
+            if (data_armor) {
+                let armor = await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_ARMOR, fallback_lid: data_armor.id, id: ""}, hooks);
+                // TODO: sync armor uses
+                if(armor) {
+                    if(hooks.sync_pilot_armor)
+                        await hooks.sync_pilot_armor(armor, data_armor, armor.Flags[FALLBACK_WAS_INSINUATED]);
+                    await armor.writeback();
+
+                    // Also deployables
+                    if(hooks.sync_deployable_nosave) {
+                        for(let d of armor.Deployables) {
+                            await hooks.sync_deployable_nosave(d);
+                        }
+                    }
+                }
             }
         }
-        for (let w of [...loadout.weapons, ...loadout.extendedWeapons]) {
-            if (w) {
-                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_lid: w.id, id: ""}, hooks);
+        for (let data_weapon of [...loadout.weapons, ...loadout.extendedWeapons]) {
+            if (data_weapon) {
+                let weapon = await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_WEAPON, fallback_lid: data_weapon.id, id: ""}, hooks);
+                // TODO: sync weapon uses/loaded
+                if(weapon) {
+                    if(hooks.sync_pilot_weapon)
+                        await hooks.sync_pilot_weapon(weapon, data_weapon, weapon.Flags[FALLBACK_WAS_INSINUATED]);
+                    await weapon.writeback();
+
+                    // Also deployables
+                    if(hooks.sync_deployable_nosave) {
+                        for(let d of weapon.Deployables) {
+                            await hooks.sync_deployable_nosave(d);
+                        }
+                    }
+                }
             }
         }
-        for (let g of [...loadout.gear, ...loadout.extendedGear]) {
-            if (g) {
-                await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_lid: g.id, id: ""}, hooks);
+        for (let data_gear of [...loadout.gear, ...loadout.extendedGear]) {
+            if (data_gear) {
+                let gear = await fallback_obtain_ref(stack, ctx, {type: EntryType.PILOT_GEAR, fallback_lid: data_gear.id, id: ""}, hooks);
+                // TODO: sync gear uses
+                if(gear){ 
+                    if(hooks.sync_pilot_gear)
+                        await hooks.sync_pilot_gear(gear, data_gear, gear.Flags[FALLBACK_WAS_INSINUATED]);
+                    await gear.writeback();
+
+                    // Also deployables
+                    if(hooks.sync_deployable_nosave) {
+                        for(let d of gear.Deployables) {
+                            await hooks.sync_deployable_nosave(d);
+                        }
+                    }
+                }
             }
         }
         pilot.Loadout = await PilotLoadout.unpack(loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
         await pilot.Loadout.ready();
+
+        // Hook, no writeback (would be meaningless)
+        if(hooks.sync_pilot_loadout) {
+            await hooks.sync_pilot_loadout(pilot.Loadout, loadout, true);
+        }
     }
     let ami = data.state?.active_mech_id ?? (data as any).active_mech;
     if(ami) {
@@ -998,7 +1107,15 @@ export async function cloud_sync(
         pilot.ActiveMechRef = null;
     }
 
-    // We writeback. We should still be in a stable state though, so no need to refresh
+    // We writeback. 
+    if(hooks.sync_pilot)
+        await hooks.sync_pilot(pilot, data, false);
     await pilot.writeback();
-    return { pilot, pilot_mechs };
+
+    // Final refresh-check, just in case
+    tmp_pilot = await pilot.refreshed();
+    if (!tmp_pilot) {
+        throw new Error("Pilot was unable to be refreshed. May have been deleted"); // This is fairly catastrophic
+    }
+    return tmp_pilot;
 }
