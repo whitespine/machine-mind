@@ -842,6 +842,7 @@ export abstract class RegEntry<T extends EntryType> {
         let orig_from = this.as_ref(); // Save this so callbacks can know what we used to be
         (this as any).RegistryID = new_entry.RegistryID;
         (this as any).Registry = new_entry.Registry;
+        (this as any).Flags = new_entry.Flags;
 
         // Mark our new item. Note that this "new_item" will be replaced later with a refreshed copy
         insinuation_hit_list.set(this, {
