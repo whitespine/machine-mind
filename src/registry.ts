@@ -60,6 +60,7 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
+import { assert } from "node:console";
 import {
     RegBonusData,
     PackedBonusData,
@@ -126,6 +127,7 @@ import {
     MidInsinuationRecord,
     InsinuateHooks,
     RelinkHook,
+    PackedNpcData,
 } from "./interface";
 
 ////////////////////////////////////////////////////////////////////////
@@ -204,9 +206,9 @@ export interface FixedRegEntryTypes extends _RegTypeMap {
 
 export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTypes
     ? FixedRegEntryTypes[T]
-    : object;
+    : never;
 
-// What compcon holds. Unsure how useful this is???
+// What compcon holds. 
 interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
@@ -219,6 +221,7 @@ interface FixedPackedEntryTypes {
     [EntryType.MECH]: PackedMechData;
     [EntryType.MECH_SYSTEM]: PackedMechSystemData;
     [EntryType.MECH_WEAPON]: PackedMechWeaponData;
+    [EntryType.NPC]: PackedNpcData;
     [EntryType.NPC_CLASS]: PackedNpcClassData;
     [EntryType.NPC_FEATURE]: AnyPackedNpcFeatureData;
     [EntryType.NPC_TEMPLATE]: PackedNpcTemplateData;
@@ -239,7 +242,7 @@ interface FixedPackedEntryTypes {
 
 export type PackedEntryTypes<T extends EntryType> = T extends keyof FixedPackedEntryTypes
     ? FixedPackedEntryTypes[T]
-    : object;
+    : never;
 
 // What our registries "revive" to, essentially wrapper types
 type FixedLiveEntryTypes = {
@@ -808,8 +811,8 @@ export abstract class RegEntry<T extends EntryType> {
             new_entry = await hooks.relinker(
                 (this as unknown) as LiveEntryTypes<T>,
                 to_new_reg,
-                to_new_reg.get_cat(this.Type)
-            );
+                to_new_reg.get_cat(this.Type) as any  // As eventually concluded in an hours-long discussion, there's no clean way around this shit
+            ) as LiveEntryTypes<T>;
             fun_relinked = !!new_entry;
         }
 
@@ -818,8 +821,8 @@ export abstract class RegEntry<T extends EntryType> {
             new_entry = await to_new_reg.hooks.relinker(
                 (this as unknown) as LiveEntryTypes<T>,
                 to_new_reg,
-                to_new_reg.get_cat(this.Type)
-            );
+                to_new_reg.get_cat(this.Type) as any
+            ) as LiveEntryTypes<T>;
             reg_relinked = !!new_entry;
         }
 
@@ -828,6 +831,10 @@ export abstract class RegEntry<T extends EntryType> {
             // Create an entry with the saved data. This is essentially a duplicate of this item on the other registry
             // however, this new item will (somewhat predictably) fail to resolve any of its references. We don't care - we just want its id
             new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
+        }
+
+        if(new_entry.Type != this.Type) {
+            throw new Error(`Insinuation hooks somehow produced an item of a different type (${this.Type} -> ${new_entry.Type}). Aborting.`);
         }
 
         // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
@@ -1111,16 +1118,11 @@ export abstract class Registry {
     }
 
     // In theory should never fail because of type bounding, so long as all cats were loaded that is
+    // Get a category
     public get_cat<T extends EntryType>(cat: T): RegCat<T> {
-        return this.try_get_cat(cat) as RegCat<T>;
-    }
-
-    // Fetch the specified category or error if it doesn't exist
-    private try_get_cat(cat: string): RegCat<any> | null {
         let v = this.cat_map.get(cat as EntryType);
         if (!v) {
-            console.error(`Error: Category "${cat}" does not exist`);
-            return null;
+            throw new Error(`Error: Category "${cat}" does not exist`);
         }
         return v;
     }
@@ -1188,7 +1190,7 @@ export abstract class Registry {
             if (!result && ref.fallback_lid) {
                 if (ref.type) {
                     result =
-                        (await this.try_get_cat(ref.type)?.lookup_lid_live(
+                        (await this.get_cat(ref.type).lookup_lid_live(
                             ctx,
                             ref.fallback_lid
                         )) ?? null;
