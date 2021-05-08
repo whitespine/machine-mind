@@ -54,8 +54,9 @@ describe("Static Registry Reference implementation", () => {
 
         expect(man).toBeTruthy();
 
-        // Make sure it has flags
-        expect(man.Flags?.test).toEqual("itworks");
+        // Make sure it has flags -- THIS IS NOW TESTED LATER -- IGNORE IT HERE, OLD API
+        // expect(man.Flags?.test).toEqual("itworks");
+        expect(true).toBeTruthy();
 
         // Try retreiving raw 
         let raw = await c.get_raw(man.RegistryID);
@@ -609,5 +610,22 @@ describe("Static Registry Reference implementation", () => {
         expect(p1.length).toEqual(orig.length);
         expect(p2.length).toEqual(orig.length);
         expect(p3.length).toEqual(orig.length + 1);
+    });
+
+    it("Isn't doing that weird flag transferrence thing", async () => {
+        expect.assertions(2);
+
+        // Create two setups
+        let setup = await init_basic_setup(true);
+        let source = setup.reg;
+        let dest = new StaticReg(setup.env, "Flaggy", () => ({
+            arbitrary: "value"
+        }));
+
+        // Move an arbitrary item through
+        let gms = await source.get_cat(EntryType.MANUFACTURER).lookup_lid_live(new OpCtx(), "GMS");
+        let new_gms = await gms.insinuate(dest);
+        expect(gms.Flags).toEqual({});
+        expect(new_gms.Flags.arbitrary).toEqual("value");
     });
 });

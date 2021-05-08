@@ -523,9 +523,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     // Grabs counters from the pilot, their gear, their active mech, etc etc
     public get AllCounters(): SourcedCounter<EntryType.TALENT | EntryType.CORE_BONUS | EntryType.PILOT>[] {
         return [
-            ...source_all_counters(this.Talents),
-            ...source_all_counters(this.CoreBonuses),
-            ...this.CustomCounters.map(c => c.mark_sourced(this))
+            ...source_all_counters<EntryType.TALENT>(this.Talents),
+            ...source_all_counters<EntryType.CORE_BONUS>(this.CoreBonuses),
+            ...this.CustomCounters.map(c => c.mark_sourced<EntryType.PILOT>(this))
         ];
     }
 

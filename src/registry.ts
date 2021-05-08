@@ -275,7 +275,7 @@ type FixedLiveEntryTypes = {
 
 export type LiveEntryTypes<T extends EntryType> = T extends keyof FixedLiveEntryTypes
     ? FixedLiveEntryTypes[T]
-    : RegEntry<T>;
+    : never;
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -662,7 +662,10 @@ export abstract class RegEntry<T extends EntryType> {
 
     // Convenience function to load this item as a live copy again. Null occurs if the item was destroyed out from beneath us
     // Generates a new opctx if none is provided, otherwise behaves just like getLive() on this items reg
-    public async refreshed(ctx?: OpCtx): Promise<LiveEntryTypes<T> | null> {
+    // NOTE: the `this` is a possible misnomer if we are to ever expand this system to be more generic
+    // in such a case, the registry would need to take as a type parameters a custom RegEntryType and LiveEntryType,
+    // and categories would need to infer things and stuff. It's overkill. For the time being we just trust the system
+    public async refreshed(ctx?: OpCtx): Promise<this | null> {
         if (ctx && this.OpCtx == ctx) {
             console.warn(
                 "Refreshing an item into its selfsame OpCtx will just give you the same object"
@@ -675,7 +678,8 @@ export abstract class RegEntry<T extends EntryType> {
         if (!refreshed) {
             console.error("Refresh failed - item was deleted from under MM");
         }
-        return refreshed;
+        // @ts-ignore
+        return refreshed as this;
     }
 
     // List all associated items of this item. We assume none by default
@@ -700,7 +704,7 @@ export abstract class RegEntry<T extends EntryType> {
         to_new_reg: Registry,
         ctx?: OpCtx | null,
         hooks?: InsinuateHooks
-    ): Promise<LiveEntryTypes<T>> {
+    ): Promise<this> {
         // The public exposure of insinuate, which ensures it is safe by refreshing before and after all operations
 
         // Create a fresh copy, free of any other context. This will be heavily mutated in order to migrate
@@ -735,17 +739,21 @@ export abstract class RegEntry<T extends EntryType> {
 
         // We do not want `fresh` itself, as its references will be wacky. Instead, re-fetch fresh from the new registry, with a new ctx (or into a provided ctx)
         ctx = ctx ?? new OpCtx();
-        let fresher = (await fresh.refreshed(ctx)) as LiveEntryTypes<T>;
+        let fresher = await fresh.refreshed(ctx);
+        if (!fresher) {
+            throw new Error(
+                "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted during insinuation."
+            );
+        }
 
         // Trigger post insinuation hook on the new reg for every item
         // One might thing "oh no won't this be expensive?". Nope! The refresh to get `fresher` has likely already prefetched most of them to ctx
         for (let record of hitlist.values()) {
             let new_v = await record.pending.refreshed(ctx);
             if (!new_v) {
-                console.error(
+                throw new Error(
                     "Something went wrong during insinuation: an item was not actually created properly, or an old item had been deleted during insinuation."
                 );
-                continue;
             }
             let final_record = {
                 from: { ...record.from },

@@ -431,7 +431,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             Deployables?: Deployable[];
             Counters?: Counter[];
         },
-        source: RegEntry<any>
+        source: Frame | MechSystem  | MechWeapon | WeaponMod 
     }> {
         if (!this.Frame) return [];
         let output: Array<{
@@ -442,7 +442,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
                 Deployables?: Deployable[];
                 Counters?: Counter[];
             },
-            source: RegEntry<any>
+            source: Frame | MechSystem | MechWeapon | WeaponMod
         }> = [];
 
         // Get from equipment
