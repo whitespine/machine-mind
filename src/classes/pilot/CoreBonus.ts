@@ -74,16 +74,16 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         merge_defaults(data, defaults.CORE_BONUS());
         this.LID = data.lid;
         this.Name = data.name;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
         this.Description = data.description;
         this.Effect = data.effect;
         this.MountedEffect = data.mounted_effect;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, data.name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
     }
 
     protected save_imp(): RegCoreBonusData {

@@ -560,7 +560,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         merge_defaults(data, defaults.MECH());
         let subreg = await this.get_inventory();
         this.LID = data.lid;
-        this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot) : null;
+        this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot, {wait_ctx_ready: false}) : null;
         this.Name = data.name;
         this.Notes = data.notes;
         this.GmNote = data.gm_note;

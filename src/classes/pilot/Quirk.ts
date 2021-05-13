@@ -39,7 +39,7 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
         this.Description = data.description;
 
         SerUtil.load_basd(this.Registry, data, this, this.Name);
-        this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
         this.Counters = SerUtil.process_counters(data.counters);
     }
     protected save_imp(): RegQuirkData {

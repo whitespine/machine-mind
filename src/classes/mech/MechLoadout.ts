@@ -95,7 +95,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         this.WepMounts = await Promise.all(
             data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).ready())
         );
-        this.Frame = data.frame ? await this.Registry.resolve(this.OpCtx, data.frame) : null;
+        this.Frame = data.frame ? await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false}) : null;
     }
 
     protected save_imp(): RegMechLoadoutData {
@@ -449,7 +449,7 @@ export class SystemMount extends RegSer<RegSysMountData> {
 
     public async load(data: RegSysMountData): Promise<void> {
         if (data.system) {
-            this.System = await this.Registry.resolve(this.OpCtx, data.system);
+            this.System = await this.Registry.resolve(this.OpCtx, data.system, {wait_ctx_ready: false});
         } else {
             this.System = null;
         }
@@ -751,9 +751,9 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         for (let i = 0; i < data.slots.length && i < this.Slots.length; i++) {
             let s = data.slots[i];
             this.Slots[i].Weapon = s.weapon
-                ? await this.Registry.resolve(this.OpCtx, s.weapon)
+                ? await this.Registry.resolve(this.OpCtx, s.weapon, {wait_ctx_ready: false})
                 : null;
-            this.Slots[i].Mod = s.mod ? await this.Registry.resolve(this.OpCtx, s.mod) : null;
+            this.Slots[i].Mod = s.mod ? await this.Registry.resolve(this.OpCtx, s.mod, {wait_ctx_ready: false}) : null;
         }
     }
 

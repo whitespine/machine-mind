@@ -104,8 +104,8 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         this.PassiveName = data.passive_name;
 
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 

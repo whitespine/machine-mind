@@ -197,7 +197,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.LID = data.lid;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
 
         this.Name = data.name;
         this.SP = data.sp;
@@ -222,7 +222,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Counters = SerUtil.process_counters(data.counters);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
-        this.Integrated = await this.Registry.resolve_many_rough(this.OpCtx, data.integrated);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
     }
 
     public static async unpack(

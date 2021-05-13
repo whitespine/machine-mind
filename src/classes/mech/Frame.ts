@@ -83,7 +83,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         merge_defaults(fd, defaults.FRAME());
         this.LID = fd.lid;
         this.LicenseLevel = fd.license_level;
-        this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source) : null;
+        this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source, {wait_ctx_ready: false}) : null;
         this.Name = fd.name;
         this.Description = fd.description;
         this.MechType = fd.mechtype;

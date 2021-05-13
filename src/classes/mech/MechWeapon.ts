@@ -159,14 +159,14 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         merge_defaults(data, defaults.MECH_WEAPON());
         this.LID = data.lid;
         this.Name = data.name;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source) : null;
+        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
         this.License = data.license;
         this.LicenseLevel = data.license_level;
 
         this.Size = data.size;
         this.SP = data.sp;
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
 
         this.Loaded = data.loaded;
         this.Destroyed = data.destroyed;

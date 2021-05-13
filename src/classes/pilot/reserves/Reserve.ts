@@ -74,9 +74,9 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         (this.Actions = SerUtil.process_actions(data.actions)),
             (this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name)),
             (this.Synergies = data.synergies.map(x => new Synergy(x)));
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables);
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
         this.Counters = data.counters.map(c => new Counter(c));
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
         this.Used = data.used;
     }
 

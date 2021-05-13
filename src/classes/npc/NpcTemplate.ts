@@ -43,10 +43,11 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         this.Name = data.name;
         this.Description = data.description;
         this.Power = data.power;
-        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features);
+        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features, {wait_ctx_ready: false});
         this.OptionalFeatures = await this.Registry.resolve_many(
             this.OpCtx,
-            data.optional_features
+            data.optional_features,
+            {wait_ctx_ready: false}
         );
     }
 

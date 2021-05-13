@@ -437,6 +437,7 @@ export abstract class SerUtil {
     }
 
     // Handles the bonuses, actions, synergies, deployables, but not tags, of an item
+    // Does not wait ready, as we expect to only ever use it internally
     public static async load_basd(
         reg: Registry,
         src: {
@@ -459,7 +460,7 @@ export abstract class SerUtil {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, bonus_src_text);
         target.Synergies = SerUtil.process_synergies(src.synergies);
-        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables);
+        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables, {wait_ctx_ready: false});
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
     }
 
@@ -552,7 +553,6 @@ export abstract class SimSer<S> {
 export abstract class RegSer<SourceType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
-    private _load_promise: Promise<any>;
 
     // Setup
     constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
@@ -560,12 +560,13 @@ export abstract class RegSer<SourceType> {
         this.OpCtx = ctx;
 
         // Load, and when done remove our pending entry
-        this._load_promise = this.load(data);
+        ctx._notify_loading(this);
+        this.load(data).finally(() => ctx._notify_done(this));
     }
 
     // Async ready check
     public async ready(): Promise<this> {
-        await this._load_promise;
+        await this.OpCtx.ready();
         return this;
     }
 
@@ -578,6 +579,12 @@ export abstract class RegSer<SourceType> {
     }
 
     protected abstract save_imp(): SourceType;
+}
+
+// Controls mechanisms of how a registry loads an item. You probably shouldn't mess with them if you don't have to!
+export interface LoadOptions {
+    // Whether we should wait for readiness of the OpCtx when doing get_live(), etc
+    wait_ctx_ready?: boolean;
 }
 
 // Serialization and deserialization requires a registry
@@ -612,11 +619,12 @@ export abstract class RegEntry<T extends EntryType> {
         ctx.set(id, this);
 
         // Load, and when done remove our pending entry
-        this._load_promise = this.load(reg_data);
+        ctx._notify_loading(this);
+        this._load_promise = this.load(reg_data).finally(() => ctx._notify_done(this));
     }
     // Async ready check
     public async ready(): Promise<this> {
-        await this._load_promise;
+        await this.OpCtx.ready();
         return this;
     }
 
@@ -676,7 +684,8 @@ export abstract class RegEntry<T extends EntryType> {
         }
         let refreshed = this.Registry.get_cat(this.Type).get_live(
             ctx ?? new OpCtx(),
-            this.RegistryID
+            this.RegistryID,
+            {wait_ctx_ready: true}
         ); // new opctx to refresh _everything_
         if (!refreshed) {
             console.error("Refresh failed - item was deleted from under MM");
@@ -938,7 +947,8 @@ export type ReviveFunc<T extends EntryType> = (
     ctx: OpCtx,
     id: string,
     raw: RegEntryTypes<T>,
-    init_flags: any // The initial flag values are set ere. If you don't want them to be anything, just leave as undefined
+    init_flags: any, // The initial flag values are set ere. If you don't want them to be anything, just leave as undefined
+    load_options: LoadOptions
 ) => Promise<LiveEntryTypes<T>>;
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
@@ -965,6 +975,44 @@ export class OpCtx {
     delete(id: string) {
         this.resolved.delete(id);
     }
+
+
+    // Readiness checking
+    private num_pending_operations: number = 0;  // Incremented whenever the db is entering into a state where not everything it maps to is necessarily loaaded
+    private _pending_readies: Array<(x?: any) => any> = [];  // Promise resolve functions that are 
+
+    // Await this to wait until all load functions are finished
+    ready(): Promise<void> {
+        // If any loading return a promise
+        if(this.num_pending_operations) {
+            return new Promise((succ, fail) => {
+                this._pending_readies.push(succ);
+            });
+        } else {
+            // If no pending operations just resolve
+            return Promise.resolve();
+        }
+    }
+
+    // Call this when beginning an operation that puts things into an invalid state-
+    _notify_loading(entry: RegEntry<any> | RegSer<any>) {
+        this.num_pending_operations++;
+    }
+
+    // And call this when you have settled the invalid state (or, at least, settled the part that that function was concerned with).
+    // When all settled, resolve all ready promises
+    _notify_done(entry: RegEntry<any> | RegSer<any>) {
+        this.num_pending_operations--;
+        if(this.num_pending_operations <= 0) {
+            this.num_pending_operations = 0;
+
+            // Call all successes and clear
+            for(let p of this._pending_readies) {
+                p();
+            }
+            this._pending_readies = [];
+        }
+    }
 }
 
 export abstract class RegCat<T extends EntryType> {
@@ -975,10 +1023,10 @@ export abstract class RegCat<T extends EntryType> {
     revive_func: ReviveFunc<T>;
 
     // Need this for like, basically everything
-    parent: Registry;
+    registry: Registry;
 
     constructor(parent: Registry, cat: T, creator: ReviveFunc<T>) {
-        this.parent = parent;
+        this.registry = parent;
         this.cat = cat;
         this.revive_func = creator;
     }
@@ -990,10 +1038,11 @@ export abstract class RegCat<T extends EntryType> {
 
     async lookup_live(
         ctx: OpCtx,
-        criteria: (e: RegEntryTypes<T>) => boolean
+        criteria: (e: RegEntryTypes<T>) => boolean,
+        options: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
         let lookup = await this.lookup_raw(criteria);
-        return lookup ? this.get_live(ctx, lookup.id) : null;
+        return lookup ? this.get_live(ctx, lookup.id, options) : null;
     }
 
     // Find a value by lid. Just wraps above - common enough to warrant its own helper
@@ -1001,8 +1050,8 @@ export abstract class RegCat<T extends EntryType> {
         return this.lookup_raw(e => (e as any).lid == lid);
     }
 
-    lookup_lid_live(ctx: OpCtx, lid: string): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, e => (e as any).lid == lid);
+    lookup_lid_live(ctx: OpCtx, lid: string, options: LoadOptions): Promise<LiveEntryTypes<T> | null> {
+        return this.lookup_live(ctx, e => (e as any).lid == lid, options);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1017,10 +1066,10 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract get_live(ctx: OpCtx, id: string): Promise<LiveEntryTypes<T> | null>;
+    abstract get_live(ctx: OpCtx, id: string, options: LoadOptions): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
-    abstract list_live(ctx: OpCtx): Promise<Array<LiveEntryTypes<T>>>;
+    abstract list_live(ctx: OpCtx, options?: LoadOptions): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item(s), propagating any changes made to it to the backend data source
     abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
@@ -1029,14 +1078,12 @@ export abstract class RegCat<T extends EntryType> {
     abstract delete_id(id: string): Promise<RegEntryTypes<T> | null>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
-    // The awaited item should be .,ready
     abstract create_many_live(
         ctx: OpCtx,
         ...vals: Array<RegEntryTypes<T>>
     ): Promise<LiveEntryTypes<T>[]>;
 
     // A simple singular form if you don't want to mess with arrays
-    // The awaited item should be .ready
     async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         // }
         let vs = await this.create_many_live(ctx, val);
@@ -1100,9 +1147,10 @@ export abstract class Registry {
     public async get_live<T extends EntryType>(
         type: T,
         ctx: OpCtx,
-        id: string
+        id: string,
+        options: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
-        return this.get_cat(type).get_live(ctx, id);
+        return this.get_cat(type).get_live(ctx, id, options);
     }
 
     // Shorthand for get_cat(type).get_raw(id);
@@ -1133,11 +1181,12 @@ export abstract class Registry {
     // As such its implementation is left up to the user.
     public async resolve_wildcard_lid(
         ctx: OpCtx,
-        lid: string
+        lid: string,
+        options: LoadOptions
     ): Promise<LiveEntryTypes<EntryType> | null> {
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
-            let attempt = await cat.lookup_lid_live(ctx, lid);
+            let attempt = await cat.lookup_lid_live(ctx, lid, options);
             if (attempt) {
                 // We found it!
                 return attempt;
@@ -1148,20 +1197,13 @@ export abstract class Registry {
         return null;
     }
 
-    // These functions are identical. Just typing distinctions so we can generally reason that typed RegRefs will produce the corresponding live entry type
     // Find the item corresponding to this ref
+    // This function (along with resolve_wildcard_lid) actually performs all of the resolution of references
     public async resolve<T extends EntryType>(
         ctx: OpCtx,
-        ref: RegRef<T>
+        ref: RegRef<T>,
+        options: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
-        return this.resolve_rough(ctx, ref) as any; // Trust me bro
-    }
-
-    // This function (along with resolve_wildcard_lid) actually performs all of the resolution of references
-    public async resolve_rough(
-        ctx: OpCtx,
-        ref: RegRef<any>
-    ): Promise<LiveEntryTypes<EntryType> | null> {
         // It's the damn wild west out there, so we first do a check that ref is a real ref, as best as we can tell
         if (!ref || !ref.reg_name) {
             return null;
@@ -1173,7 +1215,7 @@ export abstract class Registry {
             if (ref.reg_name != this.name()) {
                 let appropriate_reg = await this.switch_reg(ref.reg_name);
                 if (appropriate_reg) {
-                    return appropriate_reg.resolve_rough(ctx, ref);
+                    return appropriate_reg.resolve(ctx, ref, options);
                 } else {
                     return null;
                 }
@@ -1184,7 +1226,7 @@ export abstract class Registry {
 
             // First try standard by id
             if (ref.id && ref.type) {
-                result = await this.get_cat(ref.type!).get_live(ctx, ref.id);
+                result = await this.get_cat(ref.type!).get_live(ctx, ref.id, options);
             }
 
             // Failing that try fallback lid
@@ -1193,10 +1235,11 @@ export abstract class Registry {
                     result =
                         (await this.get_cat(ref.type).lookup_lid_live(
                             ctx,
-                            ref.fallback_lid
+                            ref.fallback_lid,
+                            options
                         )) ?? null;
                 } else {
-                    result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid);
+                    result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid, options);
                 }
             }
             return result;
@@ -1211,23 +1254,16 @@ export abstract class Registry {
         }
     }
 
-    // Similar to resolve above, this is just for type flavoring basically
+    // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat. Can be of mixed types, but types don't inherently support that
     public async resolve_many<T extends EntryType>(
         ctx: OpCtx,
-        refs: RegRef<T>[] | undefined
+        refs: RegRef<T>[] | undefined,
+        options: LoadOptions
     ): Promise<Array<LiveEntryTypes<T>>> {
-        return this.resolve_many_rough(ctx, refs) as any; // bro trust me
-    }
-
-    // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat. Can be of mixed types
-    public async resolve_many_rough(
-        ctx: OpCtx,
-        refs: RegRef<EntryType>[] | undefined
-    ): Promise<Array<LiveEntryTypes<EntryType>>> {
         if (!refs) {
             return [];
         }
-        let resolves = await Promise.all(refs.map(r => this.resolve_rough(ctx, r)));
+        let resolves = await Promise.all(refs.map(r => this.resolve(ctx, r, options)));
         resolves = resolves.filter(d => d != null);
         return resolves as LiveEntryTypes<any>[]; // We filtered the nulls
     }
@@ -1239,6 +1275,9 @@ export abstract class Registry {
     public abstract switch_reg_inv(
         for_inv_item: InventoriedRegEntry<EntryType>
     ): Registry | Promise<Registry>;
+
+    // If this is registry is representing an inventoried item
+    public abstract inventory_for(): RegRef<EntryType> | null;
 
     // Returns the name by which this reg would be fetched via switch_reg
     public abstract name(): string;
@@ -1309,7 +1348,10 @@ export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>
             if (src_item_val) {
                 let found = await dest_cat.lookup_live(
                     src_item.OpCtx,
-                    v => (v[kp[1]] as any) == src_item_val
+                    v => (v[kp[1]] as any) == src_item_val,
+                    {
+                        wait_ctx_ready: true // I honestly have no idea, but I think this is right
+                    }
                 );
                 if (found) {
                     return found;

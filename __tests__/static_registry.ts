@@ -628,4 +628,60 @@ describe("Static Registry Reference implementation", () => {
         expect(gms.Flags).toEqual({});
         expect(new_gms.Flags.arbitrary).toEqual("value");
     });
+
+    it("Can handle true circularity", async () => {
+        expect.assertions(8);
+
+        // Create two setups
+        let setup = await init_basic_setup(true);
+        let reg = setup.reg;
+        let ctx = new OpCtx();
+
+        // Create all
+        let pilot = await reg.get_cat(EntryType.PILOT).create_default(ctx);
+        let mech = await reg.get_cat(EntryType.MECH).create_default(ctx);
+        let deployable = await reg.get_cat(EntryType.DEPLOYABLE).create_default(ctx);
+        let pilot_inv = await pilot.get_inventory();
+        let system = await pilot_inv.get_cat(EntryType.MECH_SYSTEM).create_default(ctx);
+
+        // Set appropriate properties to create a bad time :TM:
+        await mech.Loadout.equip_system(system);
+        mech.Pilot = pilot;
+        deployable.Deployer = mech;
+        system.Deployables.push(deployable);
+
+        await mech.writeback();
+        await deployable.writeback();
+        await system.writeback();
+
+        // reload mech in new ctx. Should not hang
+        ctx = new OpCtx();
+        expect(await pilot.refreshed(ctx)).toBeTruthy();
+
+        // reload deployable in another new ctx. Should not hang
+        ctx = new OpCtx();
+        expect(await deployable.refreshed(ctx)).toBeTruthy();
+
+        // reload mech in another new ctx. Should not hang
+        ctx = new OpCtx();
+        expect(await mech.refreshed(ctx)).toBeTruthy();
+
+        // reload system in another new ctx. Should not hang
+        ctx = new OpCtx();
+        expect(await system.refreshed(ctx)).toBeTruthy();
+        let x = await system.refreshed();
+
+        // What if we rapid-fire refresh some weird pairings at once?
+        ctx = new OpCtx();
+        expect(await Promise.all([mech.refreshed(ctx), system.refreshed()])).toBeTruthy();
+
+        ctx = new OpCtx();
+        expect(await Promise.all([pilot.refreshed(ctx), system.refreshed()])).toBeTruthy();
+
+        ctx = new OpCtx();
+        expect(await Promise.all([system.refreshed(ctx), deployable.refreshed()])).toBeTruthy();
+
+        ctx = new OpCtx();
+        expect(await Promise.all([mech.refreshed(ctx), pilot.refreshed()])).toBeTruthy();
+    });
 });

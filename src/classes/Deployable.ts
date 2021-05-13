@@ -297,7 +297,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
 
         this.Deployer = data.deployer
-            ? await this.Registry.resolve(this.OpCtx, data.deployer)
+            ? await this.Registry.resolve(this.OpCtx, data.deployer, {wait_ctx_ready: false})
             : null;
     }
 

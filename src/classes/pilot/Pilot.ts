@@ -517,7 +517,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public async ActiveMech(): Promise<Mech | null> {
-        return this.ActiveMechRef ? this.Registry.resolve(this.OpCtx, this.ActiveMechRef) : null;
+        return this.ActiveMechRef ? this.Registry.resolve(this.OpCtx, this.ActiveMechRef, {wait_ctx_ready: false}) : null;
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc

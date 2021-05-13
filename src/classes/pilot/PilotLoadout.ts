@@ -107,19 +107,19 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
 
         // We're a little inconvenienced by the interspersing of nulls, but its not too big a deal
         this.Armor = await Promise.all(
-            data.armor.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
+            data.armor.map(a => (a ? this.Registry.resolve(this.OpCtx, a, {wait_ctx_ready: false}) : null))
         );
         this.Gear = await Promise.all(
-            data.gear.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
+            data.gear.map(a => (a ? this.Registry.resolve(this.OpCtx, a, {wait_ctx_ready: false}) : null))
         );
         this.Weapons = await Promise.all(
-            data.weapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
+            data.weapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a, {wait_ctx_ready: false}) : null))
         );
         this.ExtendedGear = await Promise.all(
-            data.extendedGear.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
+            data.extendedGear.map(a => (a ? this.Registry.resolve(this.OpCtx, a, {wait_ctx_ready: false}) : null))
         );
         this.ExtendedWeapons = await Promise.all(
-            data.extendedWeapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a) : null))
+            data.extendedWeapons.map(a => (a ? this.Registry.resolve(this.OpCtx, a, {wait_ctx_ready: false}) : null))
         );
     }
 
@@ -200,7 +200,7 @@ export class PilotLoadout extends RegSer<RegPilotLoadoutData> {
             return null;
         }
         // Get the item
-        let item = await reg.get_cat(expect_type).lookup_lid_live(ctx, item_state.id);
+        let item = await reg.get_cat(expect_type).lookup_lid_live(ctx, item_state.id, {wait_ctx_ready: false});
         if (!item) {
             console.warn(`Could not resolve item ${item_state.id}`);
             return null;

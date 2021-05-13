@@ -56,7 +56,7 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         this.Description = data.description;
         this.Use = data.use ?? null;
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated);
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
         this.Counters = SerUtil.process_counters(data.counters);
     }
 

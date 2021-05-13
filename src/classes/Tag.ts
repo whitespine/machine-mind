@@ -137,7 +137,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     public async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
-        let Tag = await this.Registry.resolve(this.OpCtx, data.tag);
+        let Tag = await this.Registry.resolve(this.OpCtx, data.tag, {wait_ctx_ready: false});
         if (!Tag) {
             Tag = new TagTemplate(EntryType.TAG, this.Registry, this.OpCtx, "error", {
                 description: "INVALID",

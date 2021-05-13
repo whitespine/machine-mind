@@ -53,12 +53,12 @@ export class License extends RegEntry<EntryType.LICENSE> {
         this.Name = data.name;
         this.Manufacturer = null;
         if (data.manufacturer) {
-            this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer);
+            this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer, {wait_ctx_ready: false});
         }
         this.CurrentRank = data.rank;
         this.Unlocks = [];
         for (let uarr of data.unlocks) {
-            let resolved = await this.Registry.resolve_many(this.OpCtx, uarr);
+            let resolved = await this.Registry.resolve_many(this.OpCtx, uarr, {wait_ctx_ready: false});
             this.Unlocks.push(resolved);
         }
     }
