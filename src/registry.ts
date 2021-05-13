@@ -566,8 +566,9 @@ export abstract class RegSer<SourceType> {
     }
 
     // Use this when we just need to be sure .load() has finished running, but nothing else really is especially important.
-    public async load_done(): Promise<void> {
+    public async load_done(): Promise<this> {
         await this.loading_promise;
+        return this;
     }
 
 
@@ -636,8 +637,9 @@ export abstract class RegEntry<T extends EntryType> {
     }
 
     // Use this when we just need to be sure .load() has finished running, but nothing else really is especially important.
-    public async load_done(): Promise<void> {
+    public async load_done(): Promise<this> {
         await this.loading_promise;
+        return this;
     }
 
     // Make a reference to this item

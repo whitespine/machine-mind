@@ -567,6 +567,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.Portrait = data.portrait;
         this.CloudPortrait = data.cloud_portrait;
         this.Loadout = new MechLoadout(subreg, this.OpCtx, data.loadout);
+        await this.Loadout.load_done();
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
         this.Overshield = data.overshield;

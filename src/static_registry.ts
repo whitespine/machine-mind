@@ -92,6 +92,7 @@ function simple_cat_builder<T extends EntryType>(
 
             // Waiat ready if necessary
             if(opts?.wait_ctx_ready ?? true) {
+                // await pre.load_done(); -- unnecessary 
                 await pre.ctx_ready();
             }
 

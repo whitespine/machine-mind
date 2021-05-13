@@ -89,9 +89,13 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         merge_defaults(data, defaults.MECH_LOADOUT());
-        this.SysMounts = data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s));
-        this.WepMounts = data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w));
-        this.Frame = data.frame ? await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false}) : null;
+        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).load_done()));
+        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).load_done()));
+        if(data.frame) {
+            this.Frame = (await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false})) || null;
+        } else {
+            this.Frame = null;
+        }
     }
 
     protected save_imp(): RegMechLoadoutData {

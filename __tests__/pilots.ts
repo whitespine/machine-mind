@@ -176,7 +176,6 @@ describe("Pilots", () => {
         await cloud_sync(pilot_data, pilots[0], [compendium.reg]);
 
         // We should have 3 deployables in our world right now
-        // p = await p.refreshed(ctx);
         let all_deployables = await world.reg.get_cat(EntryType.DEPLOYABLE).list_live(ctx);
         expect(all_deployables.length).toEqual(3);
 
@@ -216,7 +215,7 @@ describe("Pilots", () => {
         await intake_pack(pack, s.reg);
         
         // Load grygons
-        let ctx = new OpCtx();
+        ctx = new OpCtx();
         let gry: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
         let gry_data = await gist_io.download_pilot(GRYGONS);
         await cloud_sync(gry_data, gry, [s.reg]);

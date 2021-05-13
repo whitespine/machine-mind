@@ -46,6 +46,7 @@ import {
     EntryType,
     InventoriedRegEntry,
     LiveEntryTypes,
+    LoadOptions,
     RegEntry,
     Registry,
     RegRef,
@@ -516,8 +517,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return all_mechs.filter(m => m.Pilot == this);
     }
 
-    public async ActiveMech(): Promise<Mech | null> {
-        return this.ActiveMechRef ? this.Registry.resolve(this.OpCtx, this.ActiveMechRef, {wait_ctx_ready: false}) : null;
+    public async ActiveMech(opts?: LoadOptions): Promise<Mech | null> {
+        return this.ActiveMechRef ? this.Registry.resolve(this.OpCtx, this.ActiveMechRef, opts) : null;
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
