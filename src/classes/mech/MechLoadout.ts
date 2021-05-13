@@ -89,12 +89,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         merge_defaults(data, defaults.MECH_LOADOUT());
-        this.SysMounts = await Promise.all(
-            data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).ready())
-        );
-        this.WepMounts = await Promise.all(
-            data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).ready())
-        );
+        this.SysMounts = data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s));
+        this.WepMounts = data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w));
         this.Frame = data.frame ? await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false}) : null;
     }
 
@@ -180,25 +176,10 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         new_mount.System = system;
     }
 
-    // Good ol' unpacking funcs
-    /*
-    public static async unpack(
-        mech_frame_id: string,
-        mech_loadout: PackedMechLoadoutData,
-        reg: Registry,
-        ctx: OpCtx
-    ): Promise<MechLoadout> {
-        let base = new MechLoadout(reg, ctx, { frame: null, system_mounts: [], weapon_mounts: [] });
-        await base.ready(); // Eff no-op to make sure it doesn't override our stuff
-        await base.sync(mech_frame_id, mech_loadout, reg);
-        return base;
-    }
-    */
-
     // We do this quite often. Creates a new empty mount of the specified size
     async AddEmptyWeaponMount(type: MountType): Promise<WeaponMount> {
         let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] });
-        await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
+        await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
         mount.reset(); // Give it its default slots
         this.WepMounts.push(mount);
         return mount;
@@ -207,7 +188,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Sibling to the above
     async AddEmptySystemMount(): Promise<SystemMount> {
         let mount = new SystemMount(this.Registry, this.OpCtx, { system: null });
-        await mount.ready(); // Basically a no-op to make sure it doesn't override our stuff
+        await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
         this.SysMounts.push(mount);
         return mount;
     }
@@ -301,7 +282,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
             // Create a mount and check the corresponding
             let mount = await this.AddEmptySystemMount();
-            await mount.ready(); // Should be basically instant
+            await mount.load_done(); // Should be basically instant
 
             // If system already exists no need to fetch
             let sys: MechSystem | null = null;

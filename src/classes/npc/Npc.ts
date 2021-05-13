@@ -273,9 +273,10 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Subtitle = data.subtitle;
         this.Tag = data.tag;
 
-        this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx);
-        this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx);
-        this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx);
+        let _opt = {wait_ctx_ready: false};
+        this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx, _opt);
+        this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx, _opt);
+        this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx, _opt);
     }
 
     protected save_imp(): RegNpcData {

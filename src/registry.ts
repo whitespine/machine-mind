@@ -460,7 +460,7 @@ export abstract class SerUtil {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, bonus_src_text);
         target.Synergies = SerUtil.process_synergies(src.synergies);
-        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables, {wait_ctx_ready: false});
+        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables ?? [], {wait_ctx_ready: false});
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
     }
 
@@ -509,25 +509,19 @@ export abstract class SerUtil {
     }
 
     // Tags are also an exception I'm willing to make. These should ___maybe___ be moved to their respective classes, but for convenience we keeping here.
-    // A typescript wiz could probably abstract it somehow
+    // A typescript wiz could probably abstract it somehow. 
     public static async process_tags(
         reg: Registry,
         ctx: OpCtx,
         tags: RegTagInstanceData[] | undefined
     ): Promise<TagInstance[]> {
         let real_tags = tags?.map(c => new TagInstance(reg, ctx, c)) || [];
-        await this.all_ready(real_tags);
         return real_tags;
     }
 
     // We almost never have synced data
     public static unpack_counters_default(counters?: PackedCounterData[]): RegCounterData[] {
         return counters?.map(c => Counter.unpack(c)) || [];
-    }
-
-    // Awaitable for all items to be ready
-    public static async all_ready(items: Array<RegSer<any> | RegEntry<any>>): Promise<void> {
-        await Promise.all(items.map(i => i.ready() as Promise<any>)); // Since these promises self return we need to basically just ignore their type to avoid clashes.
     }
 
     public static chunk_string(id_string: string): string {
@@ -553,6 +547,7 @@ export abstract class SimSer<S> {
 export abstract class RegSer<SourceType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
+    private loading_promise: Promise<void>;
 
     // Setup
     constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
@@ -561,14 +556,20 @@ export abstract class RegSer<SourceType> {
 
         // Load, and when done remove our pending entry
         ctx._notify_loading(this);
-        this.load(data).finally(() => ctx._notify_done(this));
+        this.loading_promise = this.load(data).finally(() => ctx._notify_done(this));
     }
 
     // Async ready check
-    public async ready(): Promise<this> {
+    public async ctx_ready(): Promise<this> {
         await this.OpCtx.ready();
         return this;
     }
+
+    // Use this when we just need to be sure .load() has finished running, but nothing else really is especially important.
+    public async load_done(): Promise<void> {
+        await this.loading_promise;
+    }
+
 
     // Populate this item with stuff
     protected abstract load(data: SourceType): Promise<void>;
@@ -596,9 +597,10 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly OpCtx: OpCtx;
     public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
     public Flags: {[key: string]: any}; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
-    private _load_promise: Promise<any>;
 
     public abstract LID: string;
+    public loading: boolean;
+    private loading_promise: Promise<any>; // Just tracks the completion of .load
 
     // This constructor assumes that we've already got an entry in this registry.
     // If we don't, then just temporarily fool this item into thinking we do by giving a fake id then changing it via any (note: this is spooky. make sure you imp right)
@@ -620,12 +622,22 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Load, and when done remove our pending entry
         ctx._notify_loading(this);
-        this._load_promise = this.load(reg_data).finally(() => ctx._notify_done(this));
+        this.loading = true;
+        this.loading_promise = this.load(reg_data).finally(() => {
+            this.loading = false;
+            ctx._notify_done(this);
+        });
     }
+
     // Async ready check
-    public async ready(): Promise<this> {
+    public async ctx_ready(): Promise<this> {
         await this.OpCtx.ready();
         return this;
+    }
+
+    // Use this when we just need to be sure .load() has finished running, but nothing else really is especially important.
+    public async load_done(): Promise<void> {
+        await this.loading_promise;
     }
 
     // Make a reference to this item
@@ -682,7 +694,7 @@ export abstract class RegEntry<T extends EntryType> {
                 "Refreshing an item into its selfsame OpCtx will just give you the same object"
             );
         }
-        let refreshed = this.Registry.get_cat(this.Type).get_live(
+        let refreshed = await this.Registry.get_cat(this.Type).get_live(
             ctx ?? new OpCtx(),
             this.RegistryID,
             {wait_ctx_ready: true}
@@ -948,7 +960,7 @@ export type ReviveFunc<T extends EntryType> = (
     id: string,
     raw: RegEntryTypes<T>,
     init_flags: any, // The initial flag values are set ere. If you don't want them to be anything, just leave as undefined
-    load_options: LoadOptions
+    load_options?: LoadOptions
 ) => Promise<LiveEntryTypes<T>>;
 
 // This class deduplicates circular references by ensuring that any `resolve` calls can refer to already-instantiated objects wherever possible
@@ -1039,10 +1051,10 @@ export abstract class RegCat<T extends EntryType> {
     async lookup_live(
         ctx: OpCtx,
         criteria: (e: RegEntryTypes<T>) => boolean,
-        options: LoadOptions
+        load_options?: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
         let lookup = await this.lookup_raw(criteria);
-        return lookup ? this.get_live(ctx, lookup.id, options) : null;
+        return lookup ? this.get_live(ctx, lookup.id, load_options) : null;
     }
 
     // Find a value by lid. Just wraps above - common enough to warrant its own helper
@@ -1050,8 +1062,8 @@ export abstract class RegCat<T extends EntryType> {
         return this.lookup_raw(e => (e as any).lid == lid);
     }
 
-    lookup_lid_live(ctx: OpCtx, lid: string, options: LoadOptions): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, e => (e as any).lid == lid, options);
+    lookup_lid_live(ctx: OpCtx, lid: string, load_options?: LoadOptions): Promise<LiveEntryTypes<T> | null> {
+        return this.lookup_live(ctx, e => (e as any).lid == lid, load_options);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1066,10 +1078,10 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract get_live(ctx: OpCtx, id: string, options: LoadOptions): Promise<LiveEntryTypes<T> | null>;
+    abstract get_live(ctx: OpCtx, id: string, load_options?: LoadOptions): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
-    abstract list_live(ctx: OpCtx, options?: LoadOptions): Promise<Array<LiveEntryTypes<T>>>;
+    abstract list_live(ctx: OpCtx, load_options?: LoadOptions): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item(s), propagating any changes made to it to the backend data source
     abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
@@ -1085,7 +1097,6 @@ export abstract class RegCat<T extends EntryType> {
 
     // A simple singular form if you don't want to mess with arrays
     async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
-        // }
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
     }
@@ -1148,9 +1159,9 @@ export abstract class Registry {
         type: T,
         ctx: OpCtx,
         id: string,
-        options: LoadOptions
+        load_options?: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
-        return this.get_cat(type).get_live(ctx, id, options);
+        return this.get_cat(type).get_live(ctx, id, load_options);
     }
 
     // Shorthand for get_cat(type).get_raw(id);
@@ -1182,11 +1193,11 @@ export abstract class Registry {
     public async resolve_wildcard_lid(
         ctx: OpCtx,
         lid: string,
-        options: LoadOptions
+        load_options?: LoadOptions
     ): Promise<LiveEntryTypes<EntryType> | null> {
         // Otherwise we go a-huntin in all of our categories
         for (let cat of this.cat_map.values()) {
-            let attempt = await cat.lookup_lid_live(ctx, lid, options);
+            let attempt = await cat.lookup_lid_live(ctx, lid, load_options);
             if (attempt) {
                 // We found it!
                 return attempt;
@@ -1202,7 +1213,7 @@ export abstract class Registry {
     public async resolve<T extends EntryType>(
         ctx: OpCtx,
         ref: RegRef<T>,
-        options: LoadOptions
+        load_options?: LoadOptions
     ): Promise<LiveEntryTypes<T> | null> {
         // It's the damn wild west out there, so we first do a check that ref is a real ref, as best as we can tell
         if (!ref || !ref.reg_name) {
@@ -1215,7 +1226,7 @@ export abstract class Registry {
             if (ref.reg_name != this.name()) {
                 let appropriate_reg = await this.switch_reg(ref.reg_name);
                 if (appropriate_reg) {
-                    return appropriate_reg.resolve(ctx, ref, options);
+                    return appropriate_reg.resolve(ctx, ref, load_options);
                 } else {
                     return null;
                 }
@@ -1226,7 +1237,7 @@ export abstract class Registry {
 
             // First try standard by id
             if (ref.id && ref.type) {
-                result = await this.get_cat(ref.type!).get_live(ctx, ref.id, options);
+                result = await this.get_cat(ref.type!).get_live(ctx, ref.id, load_options);
             }
 
             // Failing that try fallback lid
@@ -1236,10 +1247,10 @@ export abstract class Registry {
                         (await this.get_cat(ref.type).lookup_lid_live(
                             ctx,
                             ref.fallback_lid,
-                            options
+                            load_options
                         )) ?? null;
                 } else {
-                    result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid, options);
+                    result = await this.resolve_wildcard_lid(ctx, ref.fallback_lid, load_options);
                 }
             }
             return result;
@@ -1257,13 +1268,13 @@ export abstract class Registry {
     // Resolves as many refs as it can. Filters null results. Errors naturally on invalid cat. Can be of mixed types, but types don't inherently support that
     public async resolve_many<T extends EntryType>(
         ctx: OpCtx,
-        refs: RegRef<T>[] | undefined,
-        options: LoadOptions
+        refs: RegRef<T>[],
+        load_options?: LoadOptions
     ): Promise<Array<LiveEntryTypes<T>>> {
         if (!refs) {
             return [];
         }
-        let resolves = await Promise.all(refs.map(r => this.resolve(ctx, r, options)));
+        let resolves = await Promise.all(refs.map(r => this.resolve(ctx, r, load_options)));
         resolves = resolves.filter(d => d != null);
         return resolves as LiveEntryTypes<any>[]; // We filtered the nulls
     }
@@ -1285,7 +1296,7 @@ export abstract class Registry {
 
 // "Refs" handle cross referencing of entries, and is used to establish ownership and heirarchy in static data store (where normal js refs dont' really work)
 // Usually, a ref has a specific type. For instance, a reference to a weapon would be a RegRef<EntryType.MECH_WEAPON>. They can/should be resolved via the `resolve` or `resolve_many` functions.
-// Sometimes we do not know the type. These are typed as RegRef<any>. Generally trying to `resolve` these gives wonky typing, so I would advise using `resolve_rough` and `resolve_many_rough`
+// Sometimes we do not know the type. These are typed as RegRef<any>.
 //
 // Sometimes, we don't even know the item's actual unique registry-id, and instead only know the compcon-provided id. Slightly perplexingly, I decided to call these "lid"s. I don't remember why. Just roll with it
 // These are typically encountered only on freshly unpacked daata, and provide a means of navigating tricky chicken-egg scenarios by leaving the references unresolved until the items are first loaded.

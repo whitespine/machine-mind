@@ -104,13 +104,13 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     let ctx = new OpCtx();
     let licenseables: LicensedItem[] = [];
     for (let m of d.manufacturers) {
-        Manufacturer.unpack(m, reg, ctx);
+        await Manufacturer.unpack(m, reg, ctx);
     }
     for (let f of d.factions) {
-        Faction.unpack(f, reg, ctx);
+        await Faction.unpack(f, reg, ctx);
     }
     for (let cb of d.coreBonuses) {
-        CoreBonus.unpack(cb, reg, ctx);
+        await CoreBonus.unpack(cb, reg, ctx);
     }
     for (let f of d.frames) {
         licenseables.push(await Frame.unpack(f, reg, ctx));
@@ -136,13 +136,13 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
         await TagTemplate.unpack(x, reg, ctx);
     }
     for (let x of d.npcClasses) {
-        NpcClass.unpack(x, reg, ctx);
+        await NpcClass.unpack(x, reg, ctx);
     }
     for (let x of d.npcTemplates) {
-        NpcTemplate.unpack(x, reg, ctx);
+        await NpcTemplate.unpack(x, reg, ctx);
     }
     for (let x of d.npcFeatures) {
-        NpcFeature.unpack(x, reg, ctx);
+        await NpcFeature.unpack(x, reg, ctx);
     }
 
     for (let x of d.environments ?? []) {

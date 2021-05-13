@@ -90,10 +90,8 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         this.YPosition = fd.y_pos || 30;
         this.Mounts = fd.mounts;
         this.Stats = fd.stats;
-        this.Traits = await Promise.all(
-            fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft).ready())
-        );
-        this.CoreSystem = await new CoreSystem(this.Registry, this.OpCtx, fd.core_system).ready();
+        this.Traits = await Promise.all(fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft)));
+        this.CoreSystem = new CoreSystem(this.Registry, this.OpCtx, fd.core_system);
         this.ImageUrl = fd.image_url;
         this.OtherArt = fd.other_art || [];
     }

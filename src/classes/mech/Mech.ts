@@ -566,7 +566,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.GmNote = data.gm_note;
         this.Portrait = data.portrait;
         this.CloudPortrait = data.cloud_portrait;
-        this.Loadout = await new MechLoadout(subreg, this.OpCtx, data.loadout).ready();
+        this.Loadout = new MechLoadout(subreg, this.OpCtx, data.loadout);
         this.CurrentStructure = data.current_structure;
         this.CurrentHP = data.current_hp;
         this.Overshield = data.overshield;
@@ -584,9 +584,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.Cc_ver = data.cc_ver;
 
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
-        this._statuses_and_conditions = await subreg
-            .get_cat(EntryType.STATUS)
-            .list_live(this.OpCtx);
+        let _opt = {wait_ctx_ready: false};
+        this._statuses_and_conditions = await subreg.get_cat(EntryType.STATUS).list_live(this.OpCtx, _opt);
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects

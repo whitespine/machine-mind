@@ -575,7 +575,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.LID = data.lid;
         this.LastCloudUpdate = data.lastCloudUpdate;
         this.Level = data.level;
-        this.Loadout = await new PilotLoadout(subreg, this.OpCtx, data.loadout).ready();
+        this.Loadout = new PilotLoadout(subreg, this.OpCtx, data.loadout);
         this.MechSkills = new MechSkills(data.mechSkills);
         this.ActiveMechRef = data.active_mech;
         this.Mounted = data.mounted;
@@ -588,21 +588,22 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Status = data.status;
         this.TextAppearance = data.text_appearance;
 
-        this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx);
-        this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx);
-        this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx);
-        this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx);
-        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx);
-        this._reserves = await subreg.get_cat(EntryType.RESERVE).list_live(this.OpCtx);
-        this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx);
-        this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx);
-        this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx);
-        this._owned_pilot_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx);
-        this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx);
-        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx);
-        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx);
-        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx);
-        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx);
+        let _opt = {wait_ctx_ready: false};
+        this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx, _opt);
+        this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx, _opt);
+        this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx, _opt);
+        this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx, _opt);
+        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx, _opt);
+        this._reserves = await subreg.get_cat(EntryType.RESERVE).list_live(this.OpCtx, _opt);
+        this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx, _opt);
+        this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx, _opt);
+        this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx, _opt);
+        this._owned_pilot_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx, _opt);
+        this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx, _opt);
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx, _opt);
+        this._owned_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx, _opt);
+        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx, _opt);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx, _opt);
     }
 
     protected save_imp(): RegPilotData {
@@ -1088,7 +1089,7 @@ export async function cloud_sync(
             }
         }
         pilot.Loadout = await PilotLoadout.unpack(loadout, pilot_inv, ctx); // Using reg stack here guarantees we'll grab stuff if we don't have it
-        await pilot.Loadout.ready();
+        await pilot.Loadout.load_done();
 
         // Hook, no writeback (would be meaningless)
         if(hooks.sync_pilot_loadout) {

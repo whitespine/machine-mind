@@ -13,4 +13,5 @@ module.exports = {
     testPathIgnorePatterns: ["/lib/", "/node_modules/", "/babyjail/", "/dist/"],
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
     collectCoverage: false,
+    setupFilesAfterEnv: ['./jest.setup.js']
 };

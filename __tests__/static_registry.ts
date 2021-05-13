@@ -36,7 +36,7 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Can manipulate a very simple item", async () => {
-        expect.assertions(15);
+        expect.assertions(16);
         let s = await init_basic_setup(false);
         let c = s.reg.get_cat(EntryType.MANUFACTURER);
         let ctx = new OpCtx();
@@ -67,6 +67,9 @@ describe("Static Registry Reference implementation", () => {
         expect(await c.lookup_lid_live(ctx, "bmw")).toBeTruthy();
         expect(await c.lookup_lid_live(ctx, "zoop")).toBeNull(); // 5
 
+        // Try retrieving by lid in alternate ctx
+        expect(await c.lookup_lid_live(new OpCtx(), "bmw")).toBeTruthy();
+
         // Check listing of both types
         expect(Array.from(await c.iter_raw()).length).toEqual(1);
         expect((await c.list_live(ctx)).length).toEqual(1);
@@ -81,7 +84,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Check listing of both types again
         expect(Array.from(await c.iter_raw()).length).toEqual(1);
-        expect((await c.list_live(ctx)).length).toEqual(1); // 10
+        expect((await c.list_live(ctx)).length).toEqual(1); // 11
 
         // Check raw matches expected updated value
         raw = await c.get_raw(man.RegistryID);
@@ -91,7 +94,7 @@ describe("Static Registry Reference implementation", () => {
 
         // Delete it, make sure it is gone
         await man.destroy_entry();
-        expect(Array.from(await c.iter_raw()).length).toEqual(0); // 14
+        expect(Array.from(await c.iter_raw()).length).toEqual(0); // 15
     });
 
     it("Initializes if given content packs", async () => {
@@ -395,7 +398,7 @@ describe("Static Registry Reference implementation", () => {
         let exp_val_ref = exp_val.as_ref();
         
         // Attempt to fetch from A
-        let found_val: CoreBonus = await reg_a.resolve_rough(new OpCtx(), exp_val_ref);
+        let found_val: CoreBonus = await reg_a.resolve(new OpCtx(), exp_val_ref);
 
         // Initial write should still have the field
         expect(found_val.Name).toEqual("foo");
@@ -509,7 +512,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0);
 
         // Pilot should have exactly 2 weapons
-        let pilots_weapons = await dest_pilots[0].get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx));
+        pilots_weapons = await dest_pilots[0].get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx));
         expect(pilots_weapons.length).toEqual(2);
     });
 
@@ -564,7 +567,7 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_weapons.length).toEqual(0);
 
         // Pilots should have 1 and 2 weapons, respectively.
-        let pilots_weapons = await Promise.all(dest_pilots.map(p => p.get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx))));
+        pilots_weapons = await Promise.all(dest_pilots.map(p => p.get_inventory().then(i => i.get_cat(EntryType.PILOT_WEAPON).list_live(ctx))));
         expect(pilots_weapons[0].length).toEqual(1);
         expect(pilots_weapons[1].length).toEqual(2); // Note: ordering not usually guaranteed. Fine for a static test, though
      });
