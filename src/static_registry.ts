@@ -84,13 +84,12 @@ function simple_cat_builder<T extends EntryType>(
             if (!pre) {
                 // Otherwise create
                 pre = new clazz(type, reg, ctx, id, raw);
-                ctx.set(id, pre);
 
                 // Flag with the some junk, doesn't really matter
                 pre.Flags = flag ?? {};
             }
 
-            // Waiat ready if necessary
+            // Wait ready if necessary
             if(opts?.wait_ctx_ready ?? true) {
                 // await pre.load_done(); -- unnecessary 
                 await pre.ctx_ready();
