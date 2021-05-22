@@ -83,7 +83,7 @@ function simple_cat_builder<T extends EntryType>(
             let pre: LiveEntryTypes<T> | undefined = ctx.get(id) as LiveEntryTypes<T>;
             if (!pre) {
                 // Otherwise create
-                pre = new clazz(type, reg, ctx, id, raw);
+                pre = new clazz(type, reg, ctx, id, raw, flag ?? {});
 
                 // Flag with the some junk, doesn't really matter
                 pre.Flags = flag ?? {};
@@ -285,10 +285,8 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         }
     }
 
-    async delete_id(id: string): Promise<RegEntryTypes<T> | null> {
-        let kept = this.reg_data.get(id);
+    async delete_id(id: string): Promise<void> {
         this.reg_data.delete(id);
-        return kept || null;
     }
 
     async create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>> {

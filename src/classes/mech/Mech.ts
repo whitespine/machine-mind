@@ -111,14 +111,41 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     Burn!: number;
     CoreActive!: boolean; // Are core bonuses currently in effect
 
-    // -- Owned item helpers --------------------------------------------------------------------------------------
+    // -- Owned item helpers. Populated at time of load --------------------------------------------------------------------------------------
     private _statuses_and_conditions!: Status[];
     public get StatusesAndConditions(): Status[] {
         return [...this._statuses_and_conditions];
     }
+    
+    private _owned_mech_weapons!: MechWeapon[];
+    public get OwnedMechWeapons(): MechWeapon[] {
+        return [...this._owned_mech_weapons];
+    }
+
+    private _owned_mech_systems!: MechSystem[];
+    public get OwnedSystems(): MechSystem[] {
+        return this._owned_mech_systems;
+    }
+
+    private _owned_weapon_mods!: WeaponMod[];
+    public get OwnedWeaponMods(): WeaponMod[] {
+        return this._owned_weapon_mods;
+    }
+
+    private _owned_frames!: Frame[];
+    public get OwnedFrames(): Frame[] {
+        return this._owned_frames;
+    }
+
 
     protected enumerate_owned_items(): RegEntry<EntryType>[] {
-        return this.StatusesAndConditions;
+        return [
+            ...this._owned_mech_weapons,
+            ...this._owned_mech_systems,
+            ...this._owned_weapon_mods,
+            ...this._owned_frames,
+            ...this._statuses_and_conditions,
+        ];
     }
 
     // Per turn data
@@ -587,6 +614,10 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
         let _opt = {wait_ctx_ready: false};
         this._statuses_and_conditions = await subreg.get_cat(EntryType.STATUS).list_live(this.OpCtx, _opt);
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx, _opt);
+        this._owned_mech_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx, _opt);
+        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx, _opt);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx, _opt);
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects
@@ -654,17 +685,18 @@ export async function mech_cloud_sync(
     sync_hooks: AllHooks,
     is_new: boolean = false // Is this a new mech? purely for  what to pass the sync_hook at the end
 ): Promise<void> {
-    // If no pilot, nowhere to read items from
-    if(!mech.Pilot) {
-        throw new Error("Cannot sync mech with no pilot");
-    }
-
     // Reg stuff
+    let mech_inv = await mech.get_inventory();
     let ctx = mech.OpCtx;
-    let stack: RegFallback = {
-        base: await mech.Pilot.get_inventory(),
-        fallbacks: [...fallback_source_regs],
-    };
+    let stack: RegFallback;
+    if (mech.Pilot) {
+        stack = {
+            base: mech_inv,
+            fallbacks: [await mech.Pilot.get_inventory(), ...fallback_source_regs],
+        };
+    } else {
+        stack = { base: mech_inv, fallbacks: [...fallback_source_regs] };
+    }
 
     // All of this is trivial
     mech.LID = data.id;

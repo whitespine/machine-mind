@@ -1088,8 +1088,8 @@ export abstract class RegCat<T extends EntryType> {
     // Save the given live item(s), propagating any changes made to it to the backend data source
     abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
 
-    // Delete the given id in the given category. Return deleted item, or null if not found
-    abstract delete_id(id: string): Promise<RegEntryTypes<T> | null>;
+    // Delete the given id in the given category. 
+    abstract delete_id(id: string): Promise<void>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
     abstract create_many_live(

@@ -155,12 +155,13 @@ describe("Mechs", () => {
         expect(drone.MaxHP).toEqual(drone.BaseMaxHP);
         expect(mine.MaxHP).toEqual(mine.BaseMaxHP);
 
-        // Give it to the pilot
+        // Give it to the mech
         // We'll also need to equip a frame - doesn't really matter
-        let p_inv = await p.get_inventory();
+        let m_inv = await m.get_inventory();
         let lanny: Frame = await s.reg.get_cat(EntryType.FRAME).lookup_lid_live(ctx, "mf_lancaster")
-        let owned_sys = await sys.insinuate(p_inv);
-        let owned_lanny = await lanny.insinuate(p_inv);
+        let owned_sys = await sys.insinuate(m_inv);
+        let owned_lanny = await lanny.insinuate(m_inv);
+
 
         // Equip, writeback, and then reload the mech
         m.Loadout.Frame = owned_lanny;
