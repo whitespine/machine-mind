@@ -759,36 +759,43 @@ export async function cloud_sync(
     pilot.Portrait = data.portrait; // Should this be a link or something? Mayabe just not sync it?
     pilot.TextAppearance = data.text_appearance;
 
-    // Fetch ALL registry + fallback stored licenses - need to inspect them to find frames
-    const stack_licenses: License[] = [];
-    for await (const i of finding_iterate(stack, ctx, EntryType.LICENSE)) {
-        stack_licenses.push(i);
+    // License lookup is kind of dumb, but thats more a result of how the data is provided.
+    // Scan through all frames
+    const stack_frames: Frame[] = [];
+    for await (const l of finding_iterate(stack, ctx, EntryType.FRAME)) {
+        stack_frames.push(l);
     }
 
     // Then, do lookups almost-as-normal. Can't just do gathering resolve because we dunno what the license will actually be called
     for (let cc_pilot_license of data.licenses) {
-        // Do a lazy convert of the id. Due to the way compcon stores licenses we can't just do by ID, though I expect with the release of alt frames this will change. Sort of TODO
-        // Find the corresponding license
-        for (let sl of stack_licenses) {
-            let found_corr_item = sl.FlatUnlocks.find(x => x.LID == cc_pilot_license.id);
-            if (found_corr_item) {
-                // We have found a local license corresponding to the new license.
-                // First, check if owned by pilot
-                let is_new = false;
-                if (sl.Registry.name() != pilot_inv.name()) {
-                    // Grab a copy for our pilot
-                    sl = await sl.insinuate(pilot_inv, ctx, hooks);
-                    is_new = true;
-                }
+        // Find the matching frame from our list, and use that to get the license name
+        let license_name: string = "";
+        for(let frame of stack_frames) {
+            if(frame.LID == cc_pilot_license.id) {
+                license_name = frame.License;
+                break;
+            }
+        }
 
-                // Then update lvl and save
-                sl.CurrentRank = cc_pilot_license.rank;
+        // Obtain this license
+        if(license_name) {
+            let deduced_lid = `lic_${license_name.toLowerCase()}`
+            let license = await fallback_obtain_ref(stack, ctx, {
+                fallback_lid: deduced_lid,
+                id: "",
+                type: EntryType.LICENSE
+            }, hooks);
+
+            // Might not be found
+            if(license) {
+                let is_new = license?.Flags[FALLBACK_WAS_INSINUATED] ?? false; // Track if this is new to the pilot, for hooks knowledge
+
+                // Set its level and save it
+                license.CurrentRank = cc_pilot_license.rank;
                 // await (sync_hooks.sync_license ?? noop)(sl, cc_pilot_license, is_new);
                 if(hooks.sync_license)
-                    await hooks.sync_license(sl, cc_pilot_license, is_new);
-                await sl.writeback();
-                // Got it - we can go
-                break;
+                    await hooks.sync_license(license, cc_pilot_license, is_new);
+                await license.writeback();
             }
         }
     }

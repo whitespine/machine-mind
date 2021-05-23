@@ -20,31 +20,79 @@ export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 // export type LicensedItem = RegEntry<LicensedItemType>;
 
 export interface RegLicenseData {
-    // Its internal identifier. Initially equal to name
+    // Its internal identifier. 
     lid: string;
 
-    // What's it called
+    // What's it called (user facing)
     name: string;
+
+    // What its called in item `License` fields
+    key: string;
 
     // Who made it
     manufacturer: RegRef<EntryType.MANUFACTURER> | null;
-
-    // What does it unlock? NOTE: These should generally point to "compendium" copies, not user owned. Haven't quite figured out the logistics on that bitty yet
-    unlocks: Array<Array<RegRef<LicensedItemType>>>;
 
     // If user owned, what rank is it? If not user owned, this should just be zero
     rank: number;
 }
 
+// The result of a license scanning a registry
+export class LicenseScan {
+    Registry: Registry; // The registry that was scanned
+    AllItems: Array<LicensedItem>;
+    ByLevel: Map<number, Array<LicensedItem>>;
+
+    constructor(reg: Registry, items: Array<LicensedItem>) {
+        this.Registry = reg;
+        this.AllItems = items;
+
+        // Groups the results by id. Does not generate arrays for levels which have nothing
+        this.ByLevel = new Map();
+        for(let entry of this.AllItems) {
+            // Find the existing array
+            let arr = this.ByLevel.get(entry.LicenseLevel) ?? [];
+            // Add the entry
+            arr.push(entry);
+            // Set the item in the map, if this is a new array
+            if(arr.length == 1) {
+                this.ByLevel.set(entry.LicenseLevel, arr);
+            }
+        }
+    }
+
+    // Lists all unlocked items up to the current level. Does not include negative LL items, which shouldn't really exist anyways
+    Unlocked(for_level: number): Array<LicensedItem> {
+        let result: LicensedItem[] = [];
+        for(let i=0; i <= for_level; i++) {
+            let al = this.ByLevel.get(i);
+            if(al) result.push(...al);
+        }
+        return result;
+    }
+}
+
+// Licenses are a bit weird. They don't track specific items, and instead just provide mechanisms for searching registries for all equipment that falls under their license
+// This can be expensive, so cache as appropriate to your context
 export class License extends RegEntry<EntryType.LICENSE> {
-    LID!: string;
-    Name!: string;
+    LID!: string; 
+    Name!: string; // The item's display name
+    LicenseKey!: string; // This is what will be seen in the "License" field of licensed items. Looser than a regref, because the association is indirect/dynamic/many-many or whatever
     Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
-    Unlocks!: Array<Array<LicensedItem>>;
     CurrentRank!: number;
 
-    public get AllUnlocks(): LicensedItem[] {
-        return this.Unlocks.flat();
+    // Scans all categories of the specified registry. Forces you to provide a ctx because otherwise this is ridiculously expensive for basically no reason
+    public async scan(reg: Registry, use_ctx: OpCtx): Promise<LicenseScan> {
+        // Get every possibility
+        let all_licensed_items: LicensedItem[] = [
+            ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(use_ctx)),
+            ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(use_ctx)),
+            ...(await reg.get_cat(EntryType.FRAME).list_live(use_ctx)),
+            ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(use_ctx)),
+        ];
+
+        // Cull to those with the desired license name
+        all_licensed_items = all_licensed_items.filter(i => i.License == this.LicenseKey);
+        return new LicenseScan(reg, all_licensed_items);
     }
 
     public async load(data: RegLicenseData): Promise<void> {
@@ -52,116 +100,45 @@ export class License extends RegEntry<EntryType.LICENSE> {
         this.LID = data.lid;
         this.Name = data.name;
         this.Manufacturer = null;
+        this.CurrentRank = data.rank;
+        this.LicenseKey = data.key;
         if (data.manufacturer) {
             this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer, {wait_ctx_ready: false});
-        }
-        this.CurrentRank = data.rank;
-        this.Unlocks = [];
-        for (let uarr of data.unlocks) {
-            let resolved = await this.Registry.resolve_many(this.OpCtx, uarr, {wait_ctx_ready: false});
-            this.Unlocks.push(resolved);
         }
     }
 
     protected save_imp(): RegLicenseData {
-        let unlocks: RegRef<LicensedItemType>[][] = [];
-        for (let uarr of this.Unlocks) {
-            let urow = SerUtil.ref_all(uarr);
-            unlocks.push(urow);
-        }
         return {
             lid: this.LID,
             name: this.Name,
             manufacturer: this.Manufacturer?.as_ref() || null,
             rank: this.CurrentRank,
-            unlocks: this.Unlocks.map(uarr => SerUtil.ref_all(uarr)),
+            key: this.LicenseKey
         };
     }
 
-    // TODO: this remains to be clarified once beef decides on how to handle alt frames
     public static async unpack(
         license_name: string,
         reg: Registry,
         ctx: OpCtx
-    ): Promise<License[]> {
-        // Get every possibility
-        let all_licensed_items: LicensedItem[] = [
-            ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx)),
-            ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(ctx)),
-            ...(await reg.get_cat(EntryType.FRAME).list_live(ctx)),
-            ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(ctx)),
-        ];
+    ): Promise<License> {
+        // Do an initial blank initialization
+        let rdata: RegLicenseData = {
+            lid: ("lic_" + license_name.toLowerCase()),
+            name: license_name,
+            key: license_name,
+            manufacturer: null,
+            rank: 1,
+        };
+        let created = await reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
 
-        // Cull to those with the desired license name
-        all_licensed_items = all_licensed_items.filter(i => i.License == license_name);
-
-        // Get the individual frames - this handles the alt frame case
-        let frames: Array<Frame | null> = all_licensed_items.filter(
-            x => x instanceof Frame
-        ) as Frame[];
-        if (frames.length == 0) {
-            frames = [null]; // Default to license name for mechless licenses
-        }
-
-        // Make a unique license for each frame
-        let licenses: License[] = [];
-        for (let frame of frames) {
-            // Copy items, filtering out "bad" mechs
-            let frame_id = frame?.LID ?? license_name;
-            let sub_licensed_items = all_licensed_items.filter(f =>
-                f instanceof Frame ? f.LID == frame_id : true
-            );
-
-            // Group into ranks
-            let grouped: LicensedItem[][] = [];
-            let i = 0;
-            while (sub_licensed_items.length) {
-                // Collect and remove all items of the current rank (i), then continue
-                let of_rank = sub_licensed_items.filter(
-                    x => x.LicenseLevel <= i || Number.isNaN(x.LicenseLevel)
-                ); // A stupid edge case but better to nip it here
-                sub_licensed_items = sub_licensed_items.filter(x => x.LicenseLevel > i);
-
-                // Keep going until out of items
-                grouped.push(of_rank);
-                i++;
-            }
-
-            let rdata: RegLicenseData = {
-                lid: ("lic_" + license_name.toLowerCase()),
-                name: frame?.Name ?? license_name,
-                manufacturer: frame?.Source?.as_ref() ?? null,
-                rank: 1,
-                unlocks: grouped.map(g => SerUtil.ref_all(g)),
-            };
-            let created = await reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
-            licenses.push(created);
-        }
-
-        return licenses;
+        // Get manufacturer from literally any of the items
+        let scan = await created.scan(reg, ctx);
+        let man = scan.AllItems[0]?.Source;
+        created.Manufacturer = man;
+        await created.writeback();
+        return created;
     }
-
-    // Shows all unlocks that the current rank affords
-    public get UnlockedItems(): LicensedItem[] {
-        let result: LicensedItem[] = [];
-        for (let i = 0; i <= this.CurrentRank; i++) {
-            if (this.Unlocks[i]) {
-                result.push(...this.Unlocks[i]);
-            }
-        }
-        return result;
-    }
-
-    // A simple flattened version of Unlocks
-    public get FlatUnlocks(): LicensedItem[] {
-        return this.Unlocks.flatMap(x => x);
-    }
-
-    // For the time being, this is disabled. There's no real sensible way for a license (owned by a pilot) to give systems/etc (which are owned by a mech)
-    // Much better to just show these items in the item window
-    // public get_child_entries(): RegEntry<any>[] {
-    // return this.Unlocks.flat();
-    // }
 
     public async emit(): Promise<null> {return null}
 }

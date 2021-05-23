@@ -93,7 +93,9 @@ export interface IContentPack {
 }
 
 export async function intake_pack(pack: IContentPack, to_registry: Registry) {
-    // Let us begin. Unpacking automatically adds the item to the registry in most cases
+    // Let us begin. Get rid of error frames/weapons/items
+    const error_predicate = <T extends {name: string}>(x: T) => x.name != "ERR: DATA NOT FOUND";
+    const wo_err = <T extends {name: string}>(x: T[]) => x.filter(error_predicate);
 
     // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise!
     // However, their reg data will be totally fine, as the reg's will still have the unresolved refs
@@ -109,39 +111,39 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     for (let f of d.factions) {
         await Faction.unpack(f, reg, ctx);
     }
-    for (let cb of d.coreBonuses) {
+    for (let cb of wo_err(d.coreBonuses)) {
         await CoreBonus.unpack(cb, reg, ctx);
     }
-    for (let f of d.frames) {
+    for (let f of wo_err(d.frames)) {
         licenseables.push(await Frame.unpack(f, reg, ctx));
     }
-    for (let mw of d.weapons) {
+    for (let mw of wo_err(d.weapons)) {
         licenseables.push(await MechWeapon.unpack(mw, reg, ctx));
     }
-    for (let ms of d.systems) {
+    for (let ms of wo_err(d.systems)) {
         licenseables.push(await MechSystem.unpack(ms, reg, ctx));
     }
-    for (let wm of d.mods) {
+    for (let wm of wo_err(d.mods)) {
         licenseables.push(await WeaponMod.unpack(wm, reg, ctx));
     }
-    for (let x of d.pilotGear) {
+    for (let x of wo_err(d.pilotGear)) {
         if (x.type == "Armor") await PilotArmor.unpack(x, reg, ctx);
         else if (x.type == "Gear") await PilotGear.unpack(x, reg, ctx);
         else if (x.type == "Weapon") await PilotWeapon.unpack(x, reg, ctx);
     }
-    for (let x of d.talents) {
+    for (let x of wo_err(d.talents)) {
         await Talent.unpack(x, reg, ctx);
     }
-    for (let x of d.tags) {
+    for (let x of wo_err(d.tags)) {
         await TagTemplate.unpack(x, reg, ctx);
     }
-    for (let x of d.npcClasses) {
+    for (let x of wo_err(d.npcClasses)) {
         await NpcClass.unpack(x, reg, ctx);
     }
-    for (let x of d.npcTemplates) {
+    for (let x of wo_err(d.npcTemplates)) {
         await NpcTemplate.unpack(x, reg, ctx);
     }
-    for (let x of d.npcFeatures) {
+    for (let x of wo_err(d.npcFeatures)) {
         await NpcFeature.unpack(x, reg, ctx);
     }
 
@@ -154,7 +156,7 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     for (let x of d.sitreps ?? []) {
         await Sitrep.unpack(x, reg, ctx);
     }
-    for (let x of d.skills ?? []) {
+    for (let x of wo_err(d.skills ?? [])) {
         await Skill.unpack(x, reg, ctx);
     }
     for (let x of d.statuses ?? []) {

@@ -259,6 +259,7 @@ export function FRAME(): RegFrameData {
         mechtype: ["BALANCED"],
         mounts: [],
         name: "New Mech",
+        license: "UNKNOWN",
         source: null,
         stats: {
             armor: 0,
@@ -287,10 +288,10 @@ export function FRAME(): RegFrameData {
 export function LICENSE(): RegLicenseData {
     return {
         lid: "lic_" + nanoid(),
+        key: "UNKNOWN",
         manufacturer: null,
         name: "New License",
         rank: 0,
-        unlocks: [],
     };
 }
 

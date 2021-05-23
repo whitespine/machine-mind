@@ -178,4 +178,46 @@ describe("Items Miscellania", () => {
 
         expect(balor.CoreSystem.Tags.length).toEqual(0);
     });
+
+    it("Licenses scan properly", async () => {
+        expect.assertions(1 + 29 + 12);
+        let s = await init_basic_setup(true);
+        let lic_cat = s.reg.get_cat(EntryType.LICENSE);
+        let ctx = new OpCtx();
+
+        // Get them all. In base code, every single non-gms one should have 7 items, and there are 28 in total
+        let all_licenses = await lic_cat.list_live(ctx);
+        expect(all_licenses.length).toEqual(29); // 7 for each faction + the gms
+        for(let l of all_licenses) {
+            let scan = await l.scan(s.reg, ctx)
+            let exp_count = l.Name == "GMS" ? 46 : 7;
+            expect(scan.AllItems.length).toEqual(exp_count); // 29
+        }
+
+        // Check a specific for its ranks being correct
+        let balor: License = await lic_cat.lookup_lid_live(ctx, "lic_balor");
+        expect(balor.LicenseKey).toEqual("BALOR"); // 1
+        let balor_scan = await balor.scan(s.reg, ctx);
+
+        // Validate numbers
+        expect(balor_scan.ByLevel.get(0)).toBeFalsy();
+        expect(balor_scan.ByLevel.get(1).length).toEqual(2);
+        expect(balor_scan.ByLevel.get(2).length).toEqual(3);
+        expect(balor_scan.ByLevel.get(3).length).toEqual(2); // 5
+
+        // Validate unlocks
+        expect(balor_scan.Unlocked(0).length).toEqual(0);
+        expect(balor_scan.Unlocked(1).length).toEqual(2);
+        expect(balor_scan.Unlocked(2).length).toEqual(5);
+        expect(balor_scan.Unlocked(3).length).toEqual(7); // 9
+
+        // I guess make sure things are in the right place
+        expect(balor_scan.ByLevel.get(3)[0].Name).toEqual("NANOBOT WHIP"); 
+        expect(balor_scan.ByLevel.get(3)[1].Name).toEqual("SWARM/HIVE NANITES"); // 11
+
+        // GMS stuff should all be accessible at lvl 0
+        let gms: License = await lic_cat.lookup_lid_live(ctx, "lic_gms");
+        let gms_scan = await gms.scan(s.reg, ctx);
+        expect(gms_scan.AllItems.length).toEqual(gms_scan.Unlocked(0).length); // 12
+    });
 });

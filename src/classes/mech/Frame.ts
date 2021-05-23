@@ -55,10 +55,12 @@ export interface PackedFrameData extends AllFrameData {
     traits: PackedFrameTraitData[];
     core_system: PackedCoreSystemData;
     source: string;
+    variant?: string; // If an alt frame, this is the primary license name
 }
 
 export interface RegFrameData extends Required<AllFrameData> {
     lid: string;
+    license: string;
     traits: RegFrameTraitData[];
     core_system: RegCoreSystemData;
     source: RegRef<EntryType.MANUFACTURER> | null;
@@ -66,6 +68,7 @@ export interface RegFrameData extends Required<AllFrameData> {
 
 export class Frame extends RegEntry<EntryType.FRAME> {
     LID!: string;
+    License!: string;
     LicenseLevel!: number;
     Source!: Manufacturer | null;
     Name!: string;
@@ -82,6 +85,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     public async load(fd: RegFrameData): Promise<void> {
         merge_defaults(fd, defaults.FRAME());
         this.LID = fd.lid;
+        this.License = fd.license;
         this.LicenseLevel = fd.license_level;
         this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source, {wait_ctx_ready: false}) : null;
         this.Name = fd.name;
@@ -100,6 +104,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         return {
             lid: this.LID,
             description: this.Description,
+            license: this.License,
             license_level: this.LicenseLevel,
             source: this.Source?.as_ref() ?? null,
             name: this.Name,
@@ -115,12 +120,19 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     }
 
     public static async unpack(frame: PackedFrameData, reg: Registry, ctx: OpCtx): Promise<Frame> {
+        // Tweak license to handle alt frames + so that GMS frames just becomes GMS
+        let license = frame.variant ?? frame.name;
+        if(license == "EVEREST") {
+            license = "GMS";
+        }
+
         let traits = await Promise.all(
             (frame.traits ?? []).map(i => FrameTrait.unpack(i, reg, ctx, frame.id))
         );
         let core_system = await CoreSystem.unpack(frame.core_system, reg, ctx);
         let fdata: RegFrameData = merge_defaults({
             description: frame.description,
+            license,
             license_level: frame.license_level,
             mechtype: frame.mechtype,
             mounts: frame.mounts,
@@ -152,11 +164,6 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         // return getImagePath(ImageTag.Frame, `${this.LID}.png`, true);
     }
 
-    // For consistency's sake
-    public get License(): string {
-        return this.Name;
-    }
-
     public get_assoc_entries(): RegEntry<any>[] {
         return [
             ...this.Traits.flatMap(t => t.get_assoc_entries()),
@@ -165,7 +172,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     }
 
     public async emit(): Promise<PackedFrameData> {
-        return {
+        let result: PackedFrameData = {
             core_system: await this.CoreSystem.emit(),
             description: this.Description,
             id: this.LID,
@@ -178,7 +185,11 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             traits: await SerUtil.emit_all(this.Traits),
             y_pos: this.YPosition,
             image_url: this.ImageUrl,
-            other_art: this.OtherArt
+            other_art: this.OtherArt,
+        };
+        if(this.Name != this.License) {
+            result.variant = this.License
         }
+        return result;
     }
 }
