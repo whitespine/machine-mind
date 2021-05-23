@@ -136,8 +136,8 @@ export class Action extends SimSer<RegActionData> {
         this.AvailableUnmounted = data.pilot;
         this.HeatCost = data.heat_cost ?? 0;
         this.SynergyLocations = (data.synergy_locations as SynergyLocation[]) ?? [];
-        this.Damage = data.damage.map(d => new Damage(d));
-        this.Range = data.range.map(r => new Range(r));
+        this.Damage = SerUtil.process_damages(data.damage);
+        this.Range = SerUtil.process_ranges(data.range);
         this.ConfirmText = data.confirm ? [...data.confirm] : [];
         this.IgnoreUsed = data.ignore_used;
         this.HideActive = data.hide_active;

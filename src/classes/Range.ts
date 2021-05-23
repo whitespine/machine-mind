@@ -84,13 +84,20 @@ export class Range extends SimSer<RegRangeData> {
         mech: Mech,
         mod?: WeaponMod
     ): Range[] {
-        // cut down to bonuses that affect ranges
+        // Cut down to bonuses that affect ranges
         let all_bonuses = mech.AllBonuses.concat(mod?.Bonuses ?? []).filter(x => x.LID === "range");
 
         // Start building our output
         const output: Range[] = [];
         const ctx = mech.Pilot ? Bonus.ContextFor(mech.Pilot) : {};
-        for (let base_range of profile.BaseRange) {
+        
+        // Combine the ranges 
+        let base_ranges = profile.BaseRange;
+        if(mod) {
+            base_ranges = Range.CombineLists(base_ranges, mod.AddedRange);
+        }
+
+        for (let base_range of base_ranges) {
             // Further narrow down to bonuses to this specific range/weapon combo
             let range_specific_bonuses = all_bonuses.filter(b =>
                 b.applies_to_weapon(weapon, profile, base_range)
