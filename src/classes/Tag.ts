@@ -146,6 +146,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
                 filter_ignore: true,
                 hidden: false, // Want it to be seen so it can be fixed
             });
+            await Tag.load_done();
         }
         this.Tag = Tag;
     }

@@ -516,7 +516,7 @@ export abstract class SerUtil {
         tags: RegTagInstanceData[] | undefined
     ): Promise<TagInstance[]> {
         let real_tags = tags?.map(c => new TagInstance(reg, ctx, c)) || [];
-        return real_tags;
+        return Promise.all(real_tags.map(t => t.load_done()));
     }
 
     // We almost never have synced data
