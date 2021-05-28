@@ -167,7 +167,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
     // public Locked!: boolean;
     public Tags!: TagInstance[];
     public FeatureType!: NpcFeatureType;
-    public TierOverride!: number;
+    public TierOverride!: number; // Default zero. If set, we use that tier for all of our computation
 
     // Henceforth we have things that may or may not actually be there! Defaults are provided, but meaningless
     public Range: Range[] = [];
@@ -213,10 +213,10 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
         return this.Effect;
     }
 
-    // Effect is our most accessed value, so we provide a quick accesser for it scaled by tier
+    // Effect is our most accessed value, so we provide a quick accesser for it scaled by tier. We use our own override if we've got one
     public FormattedEffectByTier(tier: number): string {
         if (!this.Effect) return "";
-        return NpcFeature.format_tiered_string(this.Effect, tier);
+        return NpcFeature.format_tiered_string(this.Effect, this.TierOverride || tier);
     }
 
     // Formats any {2/3/4} style blocks in fmt into just a bolded version of one of the values

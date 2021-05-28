@@ -130,7 +130,7 @@ export interface InsinuateHooks {
     pre_final_write?: PreInsinuateWriteHook<EntryType>;
 }
 
-export interface SyncHooks {
+export interface PilotSyncHooks {
     // We call these immediately prior to writing back any item written / encountered by this sync
     // Pre-existing items that are ignored/unaffected by the merge will in general be unaffected by the sync
     // - This will only occur for deployables associated with items from this import
@@ -166,4 +166,4 @@ export interface SyncHooks {
     sync_deployable_nosave?: (item: Deployable) => Promise<void> | void;
 }
 
-export type AllHooks = SyncHooks & InsinuateHooks
+export type AllPilotSyncHooks = PilotSyncHooks & InsinuateHooks

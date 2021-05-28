@@ -523,10 +523,6 @@ export abstract class SerUtil {
     public static unpack_counters_default(counters?: PackedCounterData[]): RegCounterData[] {
         return counters?.map(c => Counter.unpack(c)) || [];
     }
-
-    public static chunk_string(id_string: string): string {
-        return id_string.replace(/(\s|\/|-)+/g, "_").toLowerCase();
-    }
 }
 
 // Simple serialization and deserialization

@@ -21,7 +21,7 @@ import {
     PackedMechLoadoutData,
     RegMechLoadoutData,
     SourcedCounter,
-    SyncHooks,
+    PilotSyncHooks,
 } from "@src/interface";
 import {
     EntryType,
@@ -34,7 +34,7 @@ import {
 import { CC_VERSION, DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
 import { merge_defaults } from "../default_entries";
-import { AllHooks } from "../GeneralInterfaces";
+import { AllPilotSyncHooks } from "../GeneralInterfaces";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
@@ -682,7 +682,7 @@ export async function mech_cloud_sync(
     data: PackedMechData,
     mech: Mech,
     fallback_source_regs: Registry[],
-    sync_hooks: AllHooks,
+    sync_hooks: AllPilotSyncHooks,
     is_new: boolean = false // Is this a new mech? purely for  what to pass the sync_hook at the end
 ): Promise<void> {
     // Reg stuff

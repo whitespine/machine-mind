@@ -12,7 +12,7 @@ import { FittingSize, MountType, WeaponSize } from "@src/enums";
 import { fallback_obtain_ref, FALLBACK_WAS_INSINUATED, RegFallback as RegFallbackStack } from "../regstack";
 import { merge_defaults } from "../default_entries";
 import { nanoid } from "nanoid";
-import { AllHooks, PackedMechData, SyncHooks } from "@src/interface";
+import { AllPilotSyncHooks, PackedMechData, PilotSyncHooks } from "@src/interface";
 
 //todo: superheavies :<
 
@@ -203,7 +203,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         full_mech_data: PackedMechData,
         mech_loadout: PackedMechLoadoutData,
         stack: RegFallbackStack,
-        sync_hooks: AllHooks
+        sync_hooks: AllPilotSyncHooks
     ): Promise<void> {
         // Find the frame
         let frame = await fallback_obtain_ref(
@@ -535,7 +535,7 @@ export class WeaponSlot {
         dat: PackedWeaponSlotData,
         stack: RegFallbackStack,
         ctx: OpCtx,
-        hooks: AllHooks
+        hooks: AllPilotSyncHooks
     ): Promise<void> {
         // First we resolve the weapon
         if (dat.weapon) {
@@ -707,7 +707,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     // Match the provided mount data. Use the provided reg to facillitate lookup of required items from outside of mech
-    public async sync(mnt: PackedMountData, fallback: RegFallbackStack, sync_hooks: SyncHooks) {
+    public async sync(mnt: PackedMountData, fallback: RegFallbackStack, sync_hooks: PilotSyncHooks) {
         // Init slots based on our size
         this.MountType = mnt.mount_type as MountType;
         this.Slots = this._slots_for_mount(this.MountType);

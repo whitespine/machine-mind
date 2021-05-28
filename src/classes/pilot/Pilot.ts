@@ -39,8 +39,8 @@ import {
     RegPilotLoadoutData,
     PackedOrganizationData,
     SourcedCounter,
-    SyncHooks,
-    AllHooks,
+    PilotSyncHooks,
+    AllPilotSyncHooks,
 } from "@src/interface";
 import {
     EntryType,
@@ -728,7 +728,7 @@ export async function cloud_sync(
     data: PackedPilotData,
     pilot: Pilot,
     fallback_source_regs: Registry[],
-    hooks?: AllHooks,
+    hooks?: AllPilotSyncHooks,
 ): Promise<Pilot> {
     // Refresh the pilot
     let tmp_pilot = await pilot.refreshed();

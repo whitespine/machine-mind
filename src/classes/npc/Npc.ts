@@ -1,5 +1,3 @@
-import { nanoid } from "nanoid";
-
 import { Counter, NpcClass, NpcClassStats, NpcFeature, NpcTemplate } from "@src/class";
 import {
     INpcClassStats,
@@ -7,16 +5,20 @@ import {
     PackedCounterSaveData,
     RegCounterData,
 } from "@src/interface";
-import { EntryType, InventoriedRegEntry, RegEntry, SerUtil } from "@src/registry";
+import { EntryType, InventoriedRegEntry, RegEntry, Registry, SerUtil } from "@src/registry";
 import { defaults } from "@src/funcs";
 import { merge_defaults } from "../default_entries";
-import { CC_VERSION } from "@src/enums";
-
+import {
+    finding_iterate,
+    fallback_obtain_ref,
+    RegFallback,
+    FALLBACK_WAS_INSINUATED,
+} from "../regstack";
 interface INpcItemSaveData {
     // unsure if we really need this
     itemID: string;
     tier: number;
-    flavorName: string;
+    flavorName: string; // If user overrode name, it will be here
     description: string;
     destroyed: boolean;
     charged: boolean;
@@ -26,10 +28,10 @@ interface INpcItemSaveData {
 interface AllNpcData {
     tier: number | string;
     name: string;
-    subtitle: string;
+    subtitle: string; // Is the summary, really
     campaign: string;
     labels: string[];
-    tag: string;
+    tag: string; // Vehicle, squad, etc
     note: string;
     side: string;
     cloudImage: string;
@@ -41,7 +43,7 @@ interface AllNpcData {
     resistances: string[];
 }
 
-export interface PackedNpcData {
+export interface PackedNpcData extends AllNpcData {
     id: string;
     active: boolean;
     cc_ver: string;
@@ -55,6 +57,7 @@ export interface PackedNpcData {
     actions: number;
     stats: INpcStatComposite;
     currentStats: INpcStatComposite; // exact usage unclear
+    lastSync?: string | null
 }
 
 export interface RegNpcData extends AllNpcData {
@@ -73,7 +76,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     LID!: string;
     Tier!: number;
     Name!: string;
-    Subtitle!: string;
+    Summary!: string;
     Campaign!: string;
     Labels!: string[];
     Tag!: string;
@@ -233,7 +236,12 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
 
     public get Size(): number {
-        return this.stat("size");
+        let sz =this.stat("size");
+        if(Array.isArray(sz)) {
+            return sz[0];
+        } else {
+            return sz;
+        }
     }
 
     public get Speed(): number {
@@ -270,7 +278,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Overshield = data.overshield;
         this.Resistances = data.resistances;
         this.Side = data.side;
-        this.Subtitle = data.subtitle;
+        this.Summary = data.subtitle;
         this.Tag = data.tag;
 
         let _opt = {wait_ctx_ready: false};
@@ -298,7 +306,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             overshield: this.Overshield,
             resistances: this.Resistances,
             side: this.Side,
-            subtitle: this.Subtitle,
+            subtitle: this.Summary,
             tag: this.Tag,
             current_stress: this.CurrentStress,
             current_structure: this.CurrentStructure,
@@ -324,4 +332,159 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         }
         */
     }
+}
+
+export async function npc_cloud_sync(
+    data: PackedNpcData,
+    npc: Npc,
+    fallback_source_regs: Registry[],
+    // hooks?: AllHooks,
+): Promise<Npc> {
+    // Refresh the pilot
+    let tmp_npc = await npc.refreshed();
+    if (!tmp_npc) {
+        throw new Error("Npc was unable to be refreshed. May have been deleted"); // This is fairly catastrophic
+    }
+    npc = tmp_npc;
+    let npc_inv = await tmp_npc.get_inventory();
+
+    // Stub out pre-edit with a noop
+    // hooks = hooks || {};
+
+    // The simplest way to do this is to, for each entry, just look in a regstack and insinuate to the pilot inventory.
+    // if the item was already in the pilot inventory, then no harm!. If not, it is added.
+    let stack: RegFallback = {
+        base: npc_inv,
+        fallbacks: fallback_source_regs,
+    };
+    let ctx = npc.OpCtx;
+
+    // Identity
+    npc.LID = data.id;
+    npc.Labels = data.labels
+    npc.Name = data.name;
+    npc.Note = data.note;
+    npc.Side = data.side;
+    npc.Summary = data.subtitle;
+    npc.Tag = data.tag;
+    npc.Campaign = data.campaign;
+    data.cc_ver;
+
+    // Meta-combat info
+    npc.Tier = Number.parseInt(data.tier.toString()) || 1;
+    npc.Resistances = data.resistances;
+
+    // Statuses and conditions
+    // data.statuses;
+    // data.conditions;
+    // todo. Not like they do anything rn anyways
+
+    // Current stats. Ignore most, as they will just be derived
+    npc.Overshield = data.overshield;
+    npc.Burn = data.burn;
+    npc.CurrentHP = data.currentStats.hp;
+    npc.CurrentHeat = data.currentStats.heatcap; // Not sure on this, but I think it is right, strange as it looks
+    npc.CurrentStress = data.currentStats.stress ?? 1;
+    npc.CurrentStructure = data.currentStats.structure ?? 1;
+
+    // Counters
+    for(let ctr of data.counter_data) {
+        let corr = npc.CustomCounters.find(c => c.Name == ctr.id);
+        if(!corr) {
+            corr = new Counter({lid: ctr.id, name: ctr.id, default_value: 1, min: 0, max: 9999, val: ctr.val});
+            npc.CustomCounters.push(corr);
+        } else {
+            corr.Value = ctr.val;
+        }
+    }
+
+    // Item pulling
+    // Class
+    let clazz = await fallback_obtain_ref(stack, ctx, {
+        fallback_lid: data.class,
+        id: "",
+        type: EntryType.NPC_CLASS,
+    }, {});
+
+    // Npc class has no custom flavor compcon side. Just give a warning
+    if(!clazz) {
+        console.error("Couldn't find npc class: " + data.class);
+    } else {
+        // Destroy old class(es)
+        for(let c of npc.Classes) {
+            if(c.RegistryID != clazz.RegistryID) {
+                await c.destroy_entry(); 
+            }
+        }
+    }
+
+    // Templates. Still no styling, but there are several
+    for(let temp_id of data.templates) {
+        let temp = await fallback_obtain_ref(stack, ctx, {
+            fallback_lid: temp_id,
+            id: "",
+            type: EntryType.NPC_TEMPLATE,
+        }, {});
+
+        if(!temp) {
+            console.error("Couldn't find npc template: " + temp_id);
+        }
+    }
+
+    // Items. Have custom flavor and statuses to update
+    for(let packed_item of data.items) {
+        let item = await fallback_obtain_ref(stack, ctx, {
+            fallback_lid: packed_item.itemID,
+            id: "",
+            type: EntryType.NPC_FEATURE,
+        }, {});
+
+        if(item) {
+            // Set fields
+            // Name is simple - override if present
+            item.Name = packed_item.flavorName.trim() || item.Name;
+
+            // Description is weird. If provided, we prefix the item effect with it IFF the effect doesn't already contain the description
+            if(packed_item.description.trim() && !item.Effect.includes(packed_item.description)) {
+                item.Effect = `<i>${packed_item.description}</i><br>${item.Effect}`
+            }
+
+            // Set tier override iff the provided tier doesn't match
+            let item_tier = Number.parseInt(packed_item.tier.toString()) || 0;
+            if(item_tier != npc.Tier) {
+                item.TierOverride = item_tier;
+            } else {
+                item.TierOverride = 0;
+            }
+
+            // Set charged/uses/destroyed no matter whaat
+            item.Charged = packed_item.charged;
+            item.Uses = packed_item.uses;
+            item.Destroyed = packed_item.destroyed;
+
+            // Save it
+            await item.writeback();
+        } else {
+            console.error("Couldn't find npc feature: " + packed_item.itemID);
+        }
+    }
+
+    // Everything else isn't used. Left here for safekeeping i guess
+    // data.cloudImage;
+    // data.custom_counters;
+    // data.defeat;
+    // data.destroyed;
+    // data.lastSync;
+    // data.localImage;
+    // data.stats;
+
+    // Save changes
+    await npc.writeback();
+
+    // Final refresh-check, just in case
+    tmp_npc = await npc.refreshed();
+    if (!tmp_npc) {
+        throw new Error("Pilot was unable to be refreshed. May have been deleted"); // This is fairly catastrophic
+    }
+    return tmp_npc;
 }
