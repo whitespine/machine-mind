@@ -3,13 +3,18 @@ import { MechWeapon, TagInstance } from "@src/class";
 // Returns all tags on a mech equippable
 // Mech weapons returns across all profiles.
 // If you want more specific, provide a profile instead
-type TaggedEquippable = MechWeapon | { Tags: TagInstance[] };
+export type TaggedEquippable = MechWeapon | { Tags: TagInstance[] };
 function tags(item: TaggedEquippable): TagInstance[] {
     if (item instanceof MechWeapon) {
         return item.Profiles.flatMap(p => p.Tags);
     } else {
         return item.Tags;
     }
+}
+
+export function is_tagged(item: any): item is TaggedEquippable {
+    return item instanceof MechWeapon || Array.isArray((item as any).Tags);  // We trust that the tags are tags
+
 }
 
 export function is_loading(item: TaggedEquippable): boolean {
@@ -54,7 +59,7 @@ export function limited_max(item: TaggedEquippable): number {
 }
 
 // Returns 0 if not recharge
-export function get_recharge(item: TaggedEquippable): number {
+export function recharge_value(item: TaggedEquippable): number {
     let lim_tag = tags(item).find(t => t.Tag.IsRecharging);
     if (!lim_tag) {
         return 0;
