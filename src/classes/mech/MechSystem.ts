@@ -1,5 +1,5 @@
 import { Deployable, Synergy, Bonus, Action, TagInstance, Counter, Manufacturer } from "@src/class";
-import { defaults, tag_util } from "@src/funcs";
+import { defaults, limited_max } from "@src/funcs";
 import {
     RegActionData,
     PackedActionData,
@@ -91,9 +91,10 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     // Current uses
     Uses!: number;
 
+    /*
     // Is this mod an AI?
     get IsAI(): boolean {
-        return tag_util.is_ai(this);
+        return is_ai(this);
     }
 
     // Is it destructible?
@@ -110,10 +111,11 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
     get IsUnique(): boolean {
         return tag_util.is_unique(this);
     }
+    */
 
     // Returns the base max uses
     get BaseLimit(): number | null {
-        return tag_util.limited_max(this);
+        return limited_max(this);
     }
 
     public async load(data: RegMechSystemData): Promise<void> {

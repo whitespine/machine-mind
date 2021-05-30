@@ -12,7 +12,7 @@ export { mech_cloud_sync } from "@src/classes/mech/Mech";
 export { npc_cloud_sync } from "@src/classes/npc/Npc";
 export { validate_props } from "@src/classes/key_util";
 export * as defaults from "@src/classes/default_entries";
-export * as tag_util from "@src/classes/mech/EquipUtil";
+export * from "@src/classes/mech/EquipUtil";
 export { weapon_size_magnitude } from "@src/classes/mech/MechLoadout";
 export {nanoid} from "nanoid";
 

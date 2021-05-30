@@ -1,5 +1,5 @@
 import { Action, Bonus, Damage, Deployable, Synergy, TagInstance, Range } from "@src/class";
-import { defaults, tag_util } from "@src/funcs";
+import { defaults, limited_max } from "@src/funcs";
 import {
     PackedActionData,
     RegBonusData,
@@ -93,7 +93,7 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
     Deployables!: Deployable[];
 
     get BaseLimit(): number | null {
-        return tag_util.limited_max(this);
+        return limited_max(this);
     }
 
     public async load(data: RegPilotArmorData): Promise<void> {
@@ -164,7 +164,7 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
     Uses!: number; // How many we got remaining. Max determined by tag
     // Returns the base max uses
     get BaseLimit(): number | null {
-        return tag_util.limited_max(this);
+        return limited_max(this);
     }
 
     public async load(data: RegPilotGearData): Promise<void> {
@@ -238,7 +238,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
     Deployables!: Deployable[]; // these are only available to UNMOUNTED pilots
 
     get BaseLimit(): number | null {
-        return tag_util.limited_max(this);
+        return limited_max(this);
     }
 
     public async load(data: RegPilotWeaponData): Promise<void> {

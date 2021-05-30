@@ -22,7 +22,7 @@ import {
     RegSer,
     SerUtil,
 } from "@src/registry";
-import { defaults, tag_util } from "@src/funcs";
+import { defaults, limited_max } from "@src/funcs";
 import { merge_defaults } from "../default_entries";
 // TODO:
 // class WeaponAmmo {}
@@ -184,29 +184,9 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         this.Profiles = data.profiles.map(p => new MechWeaponProfile(this.Registry, this.OpCtx, p));
     }
 
-    // Is this mod an AI?
-    get IsAI(): boolean {
-        return tag_util.is_ai(this);
-    }
-
-    // Is it destructible?
-    get IsIndestructible(): boolean {
-        return true; // Does this make sense?
-    }
-
-    // Is it loading?
-    get IsLoading(): boolean {
-        return tag_util.is_loading(this);
-    }
-
-    // Is it unique?
-    get IsUnique(): boolean {
-        return tag_util.is_unique(this);
-    }
-
     // Returns the base max uses
     get BaseLimit(): number | null {
-        return tag_util.limited_max(this);
+        return limited_max(this);
     }
 
     protected save_imp(): RegMechWeaponData {

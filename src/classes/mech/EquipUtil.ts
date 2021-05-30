@@ -36,9 +36,26 @@ export function is_smart(item: TaggedEquippable): boolean {
     return !!tags(item).find(t => t.Tag.IsSmart);
 }
 
+export function is_overkill(item: TaggedEquippable): boolean {
+    return !!tags(item).find(t => t.Tag.IsOverkill);
+}
+
+export function is_recharge(item: TaggedEquippable): boolean {
+    return !!tags(item).find(t => t.Tag.IsRecharging);
+}
+
 // Returns 0 if not limited
 export function limited_max(item: TaggedEquippable): number {
     let lim_tag = tags(item).find(t => t.Tag.IsLimited);
+    if (!lim_tag) {
+        return 0;
+    }
+    return lim_tag.as_number(0);
+}
+
+// Returns 0 if not recharge
+export function get_recharge(item: TaggedEquippable): number {
+    let lim_tag = tags(item).find(t => t.Tag.IsRecharging);
     if (!lim_tag) {
         return 0;
     }
