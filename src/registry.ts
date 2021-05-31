@@ -1,25 +1,20 @@
 /**
  * Best practices:
  *
- * All regentries should have an "unpack" function to turn from Compcon (Packed) to Registry (Reg) style
+ * All regentries should have an "unpack" function to turn from Compcon (Packed) to Registry (Reg) style. Static generic interfaces are weird so this isn't an explicit typed thing
  *
- * Registry data should preferably be non-nullable. undefined -> 0, "", or [] as appropriate.
+ * Registry data should preferably be non-undefined. undefined -> 0, "", or [] as appropriate.
  * If a more sensible default exists, then it should be assigned during unpack.
  *
- * A unique situation we encounter is that in some cases, it only makes sense for an entity to know about certain other entities
- * (and more importantly, it is more efficient/easily logically to ask "Where is MY <lmg>" vs "Where is <lmg>")
- * We handle this by having pilots, mechs, and npcs each have their own inventory (in the form of a Registry). (maybe deployables? What would they own? statuses, maybe. Foundry supports regardless but begs the question of what the point is)
+ * "Actor" types, represented by InventoriedRegEntry, have the capability to recall their own unique sub-registry. 
+ * This functions like any other registry, but is uniquely associated to that actor
  *
- * When a field describes a list of allowed/forbidden fields, [] means NONE.
- * undefined should either mean None or does not apply, contextually.
- * It might be easier to just treat as null in those cases. However, never store as null
+ * When a field describes a list of allowed/forbidden fields, [] means NONE. 
+ * If you want to `allow` all, then all must be specified. 
+ * If you want to forbid none, provide []
  *
- * Resolving LID's is recommended to be done via unpacking from a static IContentPack array.
- * Though this might seem inefficient, note that this is only done on item/actor creation, where performance really isn't much of a concern
- *
- * RegEntries should define a heirarchy by which they can/should be deleted. Typically, only the "top" entry in any tree should allow normal deletion
- * Otherwise, should prompt to delete entire heirarchy
- * An exception to this is Frames, which are more likely to be customized to the point that they might want less/more integrated systems and traits
+ * When an item is written back and one of its reg-entry's failed to resolve, that reference will be removed. 
+ * This may be changed in the future to represent a sort of `Broken Link` state
  *
  * Use SerUtil generic functions where possible, as this will make mass behavior changes much simpler later
  */
@@ -169,6 +164,10 @@ export enum EntryType {
     TALENT = "talent",
     // CONDITION = "Condition", // Just use statuses
     QUIRK = "quirk",
+}
+
+export function is_inventoried_type(t: EntryType): boolean {
+    return t == EntryType.PILOT || t == EntryType.MECH || t == EntryType.NPC || t == EntryType.DEPLOYABLE;
 }
 
 type _RegTypeMap = { [key in EntryType]: object };
@@ -615,7 +614,7 @@ export abstract class RegEntry<T extends EntryType> {
         this.RegistryID = id;
         this.OrigData = reg_data;
         this.Flags = flags;
-        ctx.set(id, this);
+        ctx.add(this);
 
         // Load, and when done remove our pending entry
         ctx._notify_loading(this);
@@ -675,7 +674,7 @@ export abstract class RegEntry<T extends EntryType> {
     // TODO: Cleanup children? Need some sort of refcounting, maybe.
     public async destroy_entry(): Promise<void> {
         // Remove self from ctx first.
-        this.OpCtx.delete(this.RegistryID);
+        this.OpCtx.remove(this);
 
         // Then actually destroy
         await this.Registry.get_cat(this.Type).delete_id(this.RegistryID);
@@ -815,6 +814,11 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Before messing with things too much, retrieve our associated entites to recurse to
         let assoc = await this.get_assoc_entries();
+
+        // If this item is an inventoried type, make sure we promote to an actor level registry
+        if(this instanceof InventoriedRegEntry) {
+            to_new_reg = await to_new_reg.get_actor_level_reg();
+        }
 
         // To insinuate this specific item is fairly simple. Just save the data, then create a corresponding entry in the new reg
         // We change our registry before saving as a just-in-case. It shouldn't really matter
@@ -966,24 +970,29 @@ export class OpCtx {
     // We rely entirely on no collisions here. Luckily, they are nigh-on impossible with nanoids, and even with foundry's keys at the scale we are using
     private resolved: Map<string, any> = new Map(); // Maps lookups with a key in a specified registry to their results
 
-    get(id: string): RegEntry<any> | null {
-        return this.resolved.get(id) ?? null;
+    get(reg_name: string, id: string): RegEntry<any> | null {
+        return this.resolved.get(reg_name + "." + id) ?? null;
     }
 
     // Tell the ctx that we resolved <ref> as <val>
-    set(id: string, val: RegEntry<any>) {
+    set(reg_name: string, id: string, val: RegEntry<any>) {
         // Make the reg entry if not there
-        this.resolved.set(id, val);
-    }
-
-    // A helper on set. Has finicky behavior on lid resolution. Doesn't overwrite
-    add(item: RegEntry<any>) {
-        this.set(item.RegistryID, item);
+        this.resolved.set(reg_name + "." + id, val);
     }
 
     // Removes a quantity from a ctx, e.g. in case of deletion or migration (? not sure on migration. they maybe need to re-create selves????)
-    delete(id: string) {
-        this.resolved.delete(id);
+    delete(reg_name: string, id: string) {
+        this.resolved.delete(reg_name + "." + id);
+    }
+
+    // A helper on set, simply extracts the appropriate fields
+    add(item: RegEntry<any>) {
+        this.set(item.Registry.name(), item.RegistryID, item);
+    }
+
+    // A helper on delete, simply extracts the appropriate fields
+    remove(item: RegEntry<any>) {
+        this.delete(item.Registry.name(), item.RegistryID);
     }
 
 
@@ -1095,6 +1104,11 @@ export abstract class RegCat<T extends EntryType> {
 
     // A simple singular form if you don't want to mess with arrays
     async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
+        // TODO: remove this debug flag, probably
+        if(this.registry.is_inventory && is_inventoried_type(this.cat)) {
+            throw new Error(`Creating inventoried entry type "${this.cat}" inside another inventory is forbidden`);
+        }
+
         let vs = await this.create_many_live(ctx, val);
         return vs[0];
     }
@@ -1110,7 +1124,7 @@ export abstract class RegCat<T extends EntryType> {
     abstract create_default(ctx: OpCtx): Promise<LiveEntryTypes<T>>;
 }
 
-export abstract class Registry {
+export abstract class Registry /* <T extends RegCat<any> = RegCat<any>> */ {
     /**
      * A registry is fundamentally just a wrapper (or self contained) manager of RegEntry items.
      * It contains their raw data, indexed by IDs, and provides mechanisms for their creation, deletion, sorting, finding etc.
@@ -1278,15 +1292,27 @@ export abstract class Registry {
     }
 
     // Returns the inventory registry of the specified id. Implementation is highly domain specific - foundry needs specifiers for type _and_ id. In such cases, would recommend compound id, like "actor:123456789"
-    public abstract switch_reg(selector: string): Registry | null | Promise<Registry | null>;
+    public abstract switch_reg(selector: string): this | null | Promise<this | null>;
 
     // Wraps switch_reg. Provides an inventory for the given inventoried unit
     public abstract switch_reg_inv(
         for_inv_item: InventoriedRegEntry<EntryType>
     ): Registry | Promise<Registry>;
 
-    // If this is registry is representing an inventoried item
-    public abstract inventory_for(): RegRef<EntryType> | null;
+    // If this is registry is representing an inventoried item. Should be fast
+    public abstract get inventory_for_ref(): RegRef<EntryType> | null;
+
+    // True iff this is an inventory. Should never create actors in an inventory.
+    public get is_inventory(): boolean {
+        return this.inventory_for_ref != null;
+    }
+
+    // If this is not an actor-level registry, get the registry that holds that actor
+    public async get_actor_level_reg(): Promise<this> {
+        let ref = this.inventory_for_ref;
+        let reg = ref ? await this.switch_reg(ref.reg_name) : null;
+        return reg ?? this;
+    }
 
     // Returns the name by which this reg would be fetched via switch_reg
     public abstract name(): string;

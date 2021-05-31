@@ -808,8 +808,8 @@ export async function cloud_sync(
         let is_new = false;
 
         if (!corr_mech) {
-            // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one and add it to our tracker
-            corr_mech = await pilot_inv.get_cat(EntryType.MECH).create_default(ctx);
+            // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one (at same level as pilot) and add it to our tracker
+            corr_mech = await pilot.Registry.get_cat(EntryType.MECH).create_default(ctx);
             pilot_mechs.push(corr_mech);
             is_new = true;
         }
@@ -1072,13 +1072,13 @@ export async function cloud_sync(
             await hooks.sync_pilot_loadout(pilot.Loadout, loadout, true);
         }
     }
-    let ami = data.state?.active_mech_id ?? (data as any).active_mech;
-    if(ami) {
+    let fixed_active_mech_id = data.state?.active_mech_id ?? (data as any).active_mech;
+    if(fixed_active_mech_id) {
         pilot.ActiveMechRef = {
-            fallback_lid: ami,
+            fallback_lid: fixed_active_mech_id,
             id: "",
             type: EntryType.MECH,
-            reg_name: pilot_inv.name()
+            reg_name: pilot.Registry.name()
         }; 
     } else  {
         pilot.ActiveMechRef = null;

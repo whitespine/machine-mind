@@ -68,8 +68,7 @@ export class RegEnv {
 function simple_cat_builder<T extends EntryType>(
     type: T,
     reg: StaticReg,
-    clazz: EntryConstructor<T>,
-    data_source_override?: Map<string, RegEntryTypes<T>> | null
+    clazz: EntryConstructor<T>
 ): StaticRegCat<T> {
     let template = defaults.DEFAULT_FUNC_FOR(type);
     // Our outer builder, which is used during
@@ -80,7 +79,7 @@ function simple_cat_builder<T extends EntryType>(
         async (reg, ctx, id, raw, flag, opts) => { // <--- Revive func
             // Our actual revive function shared between all cats.
             // First check for existing item in ctx
-            let pre: LiveEntryTypes<T> | undefined = ctx.get(id) as LiveEntryTypes<T>;
+            let pre: LiveEntryTypes<T> | undefined = ctx.get(reg.name(), id) as LiveEntryTypes<T>;
             if (!pre) {
                 // Otherwise create
                 pre = new clazz(type, reg, ctx, id, raw, flag ?? {});
@@ -97,8 +96,7 @@ function simple_cat_builder<T extends EntryType>(
 
             // And we're done
             return pre;
-        },
-        data_source_override
+        }
     );
 }
 
@@ -109,8 +107,8 @@ export class StaticReg extends Registry {
     private _name: string;
     public readonly flagger: () => any;
 
-    public switch_reg(selector: string): Registry {
-        return this.env.registries.get(selector) ?? new StaticReg(this.env, selector);
+    public switch_reg(selector: string): this {
+        return (this.env.registries.get(selector) ?? new StaticReg(this.env, selector)) as this;
     }
 
     public switch_reg_inv(for_inv_item: InventoriedRegEntry<EntryType>): Registry {
@@ -122,7 +120,7 @@ export class StaticReg extends Registry {
         return reg;
     }
 
-    public inventory_for(): RegRef<EntryType> | null {
+    public get inventory_for_ref(): RegRef<EntryType> | null {
         return this.env.registry_inventory_lookup.get(this.name()) ?? null;
     }
 
@@ -141,35 +139,33 @@ export class StaticReg extends Registry {
         this.env = env;
         this._name = name ?? nanoid();
         this.flagger = flagger ?? (() => {});
-        this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus, null));
-        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment, null));
-        this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction, null));
-        this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame, null));
-        this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License, null));
-        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer, null));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem, null));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon, null));
-        this.init_set_cat(simple_cat_builder(EntryType.NPC_CLASS, this, NpcClass, null));
-        this.init_set_cat(simple_cat_builder(EntryType.NPC_FEATURE, this, NpcFeature, null));
-        this.init_set_cat(simple_cat_builder(EntryType.NPC_TEMPLATE, this, NpcTemplate, null));
-        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization, null));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor, null));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear, null));
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon, null));
-        this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk, null));
-        this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve, null));
-        this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep, null));
-        this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill, null));
-        this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status, null));
-        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate, null));
-        this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent, null));
-        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod, null));
-
-        // The inventoried things (actors!), which for this case we keep on a global scope (if we had compendiums as a distinct genre, would be diff)
-        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot, env.pilot_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable, env.dep_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech, env.mech_cat));
-        this.init_set_cat(simple_cat_builder(EntryType.NPC, this, Npc, env.npc_cat));
+        this.init_set_cat(simple_cat_builder(EntryType.CORE_BONUS, this, CoreBonus));
+        this.init_set_cat(simple_cat_builder(EntryType.ENVIRONMENT, this, Environment));
+        this.init_set_cat(simple_cat_builder(EntryType.FACTION, this, Faction));
+        this.init_set_cat(simple_cat_builder(EntryType.FRAME, this, Frame));
+        this.init_set_cat(simple_cat_builder(EntryType.LICENSE, this, License));
+        this.init_set_cat(simple_cat_builder(EntryType.MANUFACTURER, this, Manufacturer));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_SYSTEM, this, MechSystem));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH_WEAPON, this, MechWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.NPC_CLASS, this, NpcClass));
+        this.init_set_cat(simple_cat_builder(EntryType.NPC_FEATURE, this, NpcFeature));
+        this.init_set_cat(simple_cat_builder(EntryType.NPC_TEMPLATE, this, NpcTemplate));
+        this.init_set_cat(simple_cat_builder(EntryType.ORGANIZATION, this, Organization));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_ARMOR, this, PilotArmor));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_GEAR, this, PilotGear));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT_WEAPON, this, PilotWeapon));
+        this.init_set_cat(simple_cat_builder(EntryType.QUIRK, this, Quirk));
+        this.init_set_cat(simple_cat_builder(EntryType.RESERVE, this, Reserve));
+        this.init_set_cat(simple_cat_builder(EntryType.SITREP, this, Sitrep));
+        this.init_set_cat(simple_cat_builder(EntryType.SKILL, this, Skill));
+        this.init_set_cat(simple_cat_builder(EntryType.STATUS, this, Status));
+        this.init_set_cat(simple_cat_builder(EntryType.TAG, this, TagTemplate));
+        this.init_set_cat(simple_cat_builder(EntryType.TALENT, this, Talent));
+        this.init_set_cat(simple_cat_builder(EntryType.WEAPON_MOD, this, WeaponMod));
+        this.init_set_cat(simple_cat_builder(EntryType.PILOT, this, Pilot));
+        this.init_set_cat(simple_cat_builder(EntryType.DEPLOYABLE, this, Deployable));
+        this.init_set_cat(simple_cat_builder(EntryType.MECH, this, Mech));
+        this.init_set_cat(simple_cat_builder(EntryType.NPC, this, Npc));
 
         this.init_finalize();
 
@@ -187,17 +183,11 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         parent: Registry,
         cat: T,
         default_template: () => RegEntryTypes<T>,
-        creator: ReviveFunc<T>,
-        data_source_override?: Map<string, RegEntryTypes<T>> | null
+        creator: ReviveFunc<T>
     ) {
         super(parent, cat, creator);
         this.cat = cat;
         this.template = default_template;
-
-        // Use this for shared data pools
-        if (data_source_override) {
-            this.reg_data = data_source_override;
-        }
     }
 
     async lookup_raw(
