@@ -1091,7 +1091,17 @@ export abstract class RegCat<T extends EntryType> {
     abstract list_live(ctx: OpCtx, load_options?: LoadOptions): Promise<Array<LiveEntryTypes<T>>>;
 
     // Save the given live item(s), propagating any changes made to it to the backend data source
-    abstract update(...items: LiveEntryTypes<T>[]): Promise<void>;
+    // Implementation should enforce that items actually come from this reg...
+    abstract update_impl(...items: LiveEntryTypes<T>[]): Promise<void>;
+    update(...items: LiveEntryTypes<T>[]): Promise<void> {
+        // Sanity check
+        for(let i of items) {
+            if(i.Registry.name() != this.registry.name()) {
+                throw new Error("RegCat should only be tasked with updating items that came from its associated Registry");
+            }
+        }
+        return this.update_impl(...items);
+    }
 
     // Delete the given id in the given category. 
     abstract delete_id(id: string): Promise<void>;

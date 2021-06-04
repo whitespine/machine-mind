@@ -189,7 +189,7 @@ describe("Items Miscellania", () => {
         let all_licenses = await lic_cat.list_live(ctx);
         expect(all_licenses.length).toEqual(29); // 7 for each faction + the gms
         for(let l of all_licenses) {
-            let scan = await l.scan(s.reg, ctx)
+            let scan = await l.scan([s.reg], ctx)
             let exp_count = l.Name == "GMS" ? 46 : 7;
             expect(scan.AllItems.length).toEqual(exp_count); // 29
         }
@@ -197,7 +197,7 @@ describe("Items Miscellania", () => {
         // Check a specific for its ranks being correct
         let balor: License = await lic_cat.lookup_lid_live(ctx, "lic_balor");
         expect(balor.LicenseKey).toEqual("BALOR"); // 1
-        let balor_scan = await balor.scan(s.reg, ctx);
+        let balor_scan = await balor.scan([s.reg], ctx);
 
         // Validate numbers
         expect(balor_scan.ByLevel.get(0)).toBeFalsy();
@@ -217,7 +217,7 @@ describe("Items Miscellania", () => {
 
         // GMS stuff should all be accessible at lvl 0
         let gms: License = await lic_cat.lookup_lid_live(ctx, "lic_gms");
-        let gms_scan = await gms.scan(s.reg, ctx);
+        let gms_scan = await gms.scan([s.reg], ctx);
         expect(gms_scan.AllItems.length).toEqual(gms_scan.Unlocked(0).length); // 12
     });
 });

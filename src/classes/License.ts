@@ -38,12 +38,12 @@ export interface RegLicenseData {
 
 // The result of a license scanning a registry
 export class LicenseScan {
-    Registry: Registry; // The registry that was scanned
+    Registries: Registry[]; // The registries that we scanned
     AllItems: Array<LicensedItem>;
     ByLevel: Map<number, Array<LicensedItem>>;
 
-    constructor(reg: Registry, items: Array<LicensedItem>) {
-        this.Registry = reg;
+    constructor(regs: Registry[], items: Array<LicensedItem>) {
+        this.Registries = regs;
         this.AllItems = items;
 
         // Groups the results by id. Does not generate arrays for levels which have nothing
@@ -81,18 +81,21 @@ export class License extends RegEntry<EntryType.LICENSE> {
     CurrentRank!: number;
 
     // Scans all categories of the specified registry. Forces you to provide a ctx because otherwise this is ridiculously expensive for basically no reason
-    public async scan(reg: Registry, use_ctx: OpCtx): Promise<LicenseScan> {
-        // Get every possibility
-        let all_licensed_items: LicensedItem[] = [
-            ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(use_ctx)),
-            ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(use_ctx)),
-            ...(await reg.get_cat(EntryType.FRAME).list_live(use_ctx)),
-            ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(use_ctx)),
-        ];
+    public async scan(registries: Registry[], use_ctx: OpCtx): Promise<LicenseScan> {
+        // Get every possibility from this registry
+        let all_licensed_items: LicensedItem[] = [];
+        for(let reg of registries) {
+            all_licensed_items.push(
+                ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(use_ctx)),
+                ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(use_ctx)),
+                ...(await reg.get_cat(EntryType.FRAME).list_live(use_ctx)),
+                ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(use_ctx)),
+            );
+        }
 
         // Cull to those with the desired license name
         all_licensed_items = all_licensed_items.filter(i => i.License == this.LicenseKey);
-        return new LicenseScan(reg, all_licensed_items);
+        return new LicenseScan(registries, all_licensed_items);
     }
 
     public async load(data: RegLicenseData): Promise<void> {
@@ -117,6 +120,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
         };
     }
 
+
     public static async unpack(
         license_name: string,
         reg: Registry,
@@ -133,8 +137,10 @@ export class License extends RegEntry<EntryType.LICENSE> {
         let created = await reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
 
         // Get manufacturer from literally any of the items
-        let scan = await created.scan(reg, ctx);
-        let man = scan.AllItems[0]?.Source;
+        let scan = await created.scan([reg], ctx);
+        let man = scan.AllItems[0]?.Source ?? null;
+
+        // Save with updated information
         created.Manufacturer = man;
         await created.writeback();
         return created;
