@@ -128,6 +128,16 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     // We don't cache yet
     public recompute_bonuses() {}
 
+
+    // Repopulate all of our cached inventory lists
+    public async repopulate_inventory(): Promise<void> {
+        let _opt = {wait_ctx_ready: false};
+        let subreg = await this.get_inventory();
+        this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx, _opt);
+        this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx, _opt);
+        this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx, _opt);
+    }
+
     /* ------------- Class and feature filtering helpers ------------ */
     public get ActiveClass(): NpcClass | null {
         if (this.Classes.length) {
@@ -258,7 +268,6 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
 
     protected async load(data: RegNpcData): Promise<void> {
         merge_defaults(data, defaults.NPC());
-        let subreg = await this.get_inventory();
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Tier = data.tier;
         this.Burn = data.burn;
@@ -280,11 +289,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Side = data.side;
         this.Summary = data.subtitle;
         this.Tag = data.tag;
-
-        let _opt = {wait_ctx_ready: false};
-        this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx, _opt);
-        this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx, _opt);
-        this._classes = await subreg.get_cat(EntryType.NPC_CLASS).list_live(this.OpCtx, _opt);
+        await this.repopulate_inventory();
     }
 
     protected save_imp(): RegNpcData {

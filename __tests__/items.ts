@@ -7,6 +7,7 @@ import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { DamageType, RangeType, WeaponSize } from "@src/enums";
+import { LicenseScan } from "../src/classes/License";
 
 type DefSetup = {
     reg: StaticReg;
@@ -219,5 +220,46 @@ describe("Items Miscellania", () => {
         let gms: License = await lic_cat.lookup_lid_live(ctx, "lic_gms");
         let gms_scan = await gms.scan([s.reg], ctx);
         expect(gms_scan.AllItems.length).toEqual(gms_scan.Unlocked(0).length); // 12
+    });
+
+    it("Properly deduplicates LIDs", async () => {
+        expect.assertions(9);
+        let s = await init_basic_setup(true);
+        let lic_cat = s.reg.get_cat(EntryType.LICENSE);
+        let frame_cat = s.reg.get_cat(EntryType.FRAME);
+        let pilot_cat = s.reg.get_cat(EntryType.PILOT);
+        let ctx = new OpCtx();
+
+        let pilot = await pilot_cat.create_default(ctx);
+        let balor_lic = await lic_cat.lookup_lid_live(ctx, "lic_balor");
+        let balor_frame = await frame_cat.lookup_lid_live(ctx, "mf_balor");
+
+        let pilot_inv = await pilot.get_inventory();
+        let pilot_balor_lic = await balor_lic.insinuate(pilot_inv, ctx);
+        let pilot_balor_frame = await balor_frame.insinuate(pilot_inv, ctx); // this isn't how we'd typically do it, but fine for now
+
+
+        // Check that it shows up now. This is unnecessary for the test to work (the repopulation), but we're just checking its behavior generally
+        await pilot.repopulate_inventory();
+        expect(pilot.Licenses.length).toEqual(1);
+        expect(pilot.Licenses[0]).toBe(pilot_balor_lic); // 2
+
+        // Scan pilot license on source reg
+        let glob_scan: LicenseScan = await pilot_balor_lic.scan([s.reg], ctx);
+        let inv_scan: LicenseScan = await pilot_balor_lic.scan([pilot_inv], ctx);
+        let both_scan: LicenseScan = await pilot_balor_lic.scan([pilot_inv, s.reg], ctx);
+        let both_scan_allow_dup: LicenseScan = await pilot_balor_lic.scan([pilot_inv, s.reg], ctx, false);
+        let double_glob_scan: LicenseScan = await pilot_balor_lic.scan([s.reg, s.reg], ctx);
+        let double_glob_scan_allow_dup: LicenseScan = await pilot_balor_lic.scan([s.reg, s.reg], ctx, false);
+
+        expect(glob_scan.AllItems.length).toEqual(7);
+        expect(inv_scan.AllItems.length).toEqual(1);
+        expect(inv_scan.AllItems[0]).toBe(pilot_balor_frame);// 5
+        expect(both_scan.AllItems.length).toEqual(7); 
+        expect(both_scan_allow_dup.AllItems.length).toEqual(8);
+        expect(double_glob_scan.AllItems.length).toEqual(7);
+        expect(double_glob_scan_allow_dup.AllItems.length).toEqual(14); // 9
+
+
     });
 });

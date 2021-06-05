@@ -81,7 +81,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
     CurrentRank!: number;
 
     // Scans all categories of the specified registry. Forces you to provide a ctx because otherwise this is ridiculously expensive for basically no reason
-    public async scan(registries: Registry[], use_ctx: OpCtx): Promise<LicenseScan> {
+    public async scan(registries: Registry[], use_ctx: OpCtx, dedup_lids: boolean=true): Promise<LicenseScan> {
         // Get every possibility from this registry
         let all_licensed_items: LicensedItem[] = [];
         for(let reg of registries) {
@@ -95,6 +95,17 @@ export class License extends RegEntry<EntryType.LICENSE> {
 
         // Cull to those with the desired license name
         all_licensed_items = all_licensed_items.filter(i => i.License == this.LicenseKey);
+
+        // Deduplicate LIDs
+        if(dedup_lids) {
+            let new_result: LicensedItem[] = [];
+            for(let l of all_licensed_items) {
+                if(!new_result.find(x => x.LID == l.LID)) {
+                    new_result.push(l);
+                }
+            }
+            all_licensed_items = new_result;
+        }
         return new LicenseScan(registries, all_licensed_items);
     }
 

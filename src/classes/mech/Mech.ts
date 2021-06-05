@@ -165,35 +165,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         return this.Loadout.Frame;
     }
 
-    /*
-    public get RequiredLicenses(): ILicenseRequirement[] {
-        const requirements = this.Loadout.RequiredLicenses;
-
-        //TODO: change from GMS to LL0
-        if (this.Frame.LID === "mf_standard_pattern_i_everest") {
-            const gmsIdx = requirements.findIndex(x => x.source === "GMS");
-            if (gmsIdx > -1) requirements[gmsIdx].items.push('STANDARD PATTERN I "EVEREST" Frame');
-            else requirements.push(this.Frame.RequiredLicense);
-        } else {
-            const reqIdx = requirements.findIndex(
-                x => x.name === `${this.Frame.Name}` && x.rank === 2
-            );
-            if (reqIdx > -1)
-                requirements[reqIdx].items.push(`${this.Frame.Name.toUpperCase()} Frame`);
-            else requirements.push(this.Frame.RequiredLicense);
-        }
-
-        for (const l of requirements) {
-            if (l.source === "GMS") continue;
-            l.missing = !this.Pilot.has("License", l.name, l.rank);
-        }
-
-        return requirements.sort((a, b) => {
-            return a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : 0;
-        });
-    }
-    */
-
     // -- Attributes --------------------------------------------------------------------------------
     public get SizeIcon(): string {
         return `cci-size-${this.Size === 0.5 ? "half" : this.Size}`;
@@ -322,28 +293,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         return this.MaxSP - this.CurrentSP;
     }
 
-    /*
-    public AddHeat(heat: number): void {
-        heat = this.Resistances.includes("Heat") ? Math.ceil(heat / 2) : heat;
-        let newHeat = this.CurrentHeat + heat;
-        while (newHeat > this.Stats.heatcapacity) {
-            this.CurrentStress -= 1;
-            newHeat -= this.Stats.heatcapacity;
-        }
-        this.CurrentHeat = newHeat;
-    }
-
-    public ReduceHeat(heat: number, resist?: boolean): void {
-        if (resist) heat = this.Resistances.includes("Heat") ? Math.ceil(heat / 2) : heat;
-        while (heat > this.CurrentHeat) {
-            heat -= this.CurrentHeat;
-            this.CurrentStress += 1;
-            this.CurrentHeat = this.Stats.heatcapacity;
-        }
-        this.CurrentHeat -= heat;
-    }
-    */
-
     public get IsInDangerZone(): boolean {
         if (!this.Frame) return false;
         return this.CurrentHeat >= Math.ceil(this.HeatCapacity / 2);
@@ -372,13 +321,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         const idx = this.Reactions.findIndex(x => x === r);
         if (idx > -1) this.Reactions.splice(idx, 1);
     }
-
-    // Refresh our basic per-turns. More work definitely to be done here!
-    // public NewTurn(): void {
-    // this.Activations = 1;
-    // this.TurnActions = 2;
-    // this.CurrentMove = this.Speed;
-    // }
 
     // -- Statuses and Conditions -------------------------------------------------------------------
     public get StatusString(): string[] {
@@ -530,6 +472,17 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         }
     }
 
+    // Re-populate all of our cached items
+    public async repopulate_inventory(): Promise<void> {
+        let _opt = {wait_ctx_ready: false};
+        let subreg = await this.get_inventory();
+        this._statuses_and_conditions = await subreg.get_cat(EntryType.STATUS).list_live(this.OpCtx, _opt);
+        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx, _opt);
+        this._owned_mech_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx, _opt);
+        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx, _opt);
+        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx, _opt);
+    }
+
     public MechSynergies(): Synergy[] {
         return this.mech_feature_sources(false).flatMap(x => x.data.Synergies ?? []);
     }
@@ -610,14 +563,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.MeltdownImminent = data.meltdown_imminent;
         this.CoreActive = data.core_active;
         this.Cc_ver = data.cc_ver;
-
-        // Get our owned stuff. In order to equip something one must drag it from the pilot to the mech and then equip it there.
-        let _opt = {wait_ctx_ready: false};
-        this._statuses_and_conditions = await subreg.get_cat(EntryType.STATUS).list_live(this.OpCtx, _opt);
-        this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx, _opt);
-        this._owned_mech_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx, _opt);
-        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx, _opt);
-        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx, _opt);
+        await this.repopulate_inventory();
     }
 
     // All bonuses affecting this mech, from itself, its pilot, and (todo) any status effects

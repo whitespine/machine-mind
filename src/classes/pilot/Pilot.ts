@@ -519,6 +519,24 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         return this.cached_bonuses;
     }
 
+    // Force a repopulation of our inventory item helper lists
+    public async repopulate_inventory(): Promise<void> {
+        let subreg = await this.get_inventory();
+
+        let _opt = {wait_ctx_ready: false};
+        this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx, _opt);
+        this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx, _opt);
+        this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx, _opt);
+        this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx, _opt);
+        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx, _opt);
+        this._reserves = await subreg.get_cat(EntryType.RESERVE).list_live(this.OpCtx, _opt);
+        this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx, _opt);
+        this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx, _opt);
+        this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx, _opt);
+        this._owned_pilot_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx, _opt);
+        this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx, _opt);
+    }
+
     // Force a recompute of bonuses. Only needed if items/loadout are modified
     public recompute_bonuses(): void {
         this.cached_bonuses = null;
@@ -560,19 +578,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.SortIndex = data.sort_index;
         this.Status = data.status;
         this.TextAppearance = data.text_appearance;
-
-        let _opt = {wait_ctx_ready: false};
-        this._factions = await subreg.get_cat(EntryType.FACTION).list_live(this.OpCtx, _opt);
-        this._core_bonuses = await subreg.get_cat(EntryType.CORE_BONUS).list_live(this.OpCtx, _opt);
-        this._quirks = await subreg.get_cat(EntryType.QUIRK).list_live(this.OpCtx, _opt);
-        this._licenses = await subreg.get_cat(EntryType.LICENSE).list_live(this.OpCtx, _opt);
-        this._skills = await subreg.get_cat(EntryType.SKILL).list_live(this.OpCtx, _opt);
-        this._reserves = await subreg.get_cat(EntryType.RESERVE).list_live(this.OpCtx, _opt);
-        this._talents = await subreg.get_cat(EntryType.TALENT).list_live(this.OpCtx, _opt);
-        this._orgs = await subreg.get_cat(EntryType.ORGANIZATION).list_live(this.OpCtx, _opt);
-        this._owned_armor = await subreg.get_cat(EntryType.PILOT_ARMOR).list_live(this.OpCtx, _opt);
-        this._owned_pilot_weapons = await subreg.get_cat(EntryType.PILOT_WEAPON).list_live(this.OpCtx, _opt);
-        this._owned_gear = await subreg.get_cat(EntryType.PILOT_GEAR).list_live(this.OpCtx, _opt);
+        await this.repopulate_inventory();
     }
 
     protected save_imp(): RegPilotData {
