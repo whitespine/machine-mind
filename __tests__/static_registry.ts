@@ -495,8 +495,14 @@ describe("Static Registry Reference implementation", () => {
 
         // Ok, now we do it again, with gusto! And by gusto i mean a relinker that attempts to find pre-existing items with the same name
         let hooks = {
-            relinker: (orig, _, dest_cat) => {
-                return dest_cat.lookup_live(orig.OpCtx, (v) => v.name == orig.Name);
+            relinker: async (orig, _, dest_cat) => {
+                for(let [k, v] of await dest_cat.raw_map().then(m => m.entries())) {
+                    if(v.name == orig.Name) {
+                        let tmp = await dest_cat.get_live(orig.OpCtx, k);
+                        return tmp;
+                    }
+                } 
+                return null;
             }
         };
 

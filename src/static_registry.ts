@@ -190,18 +190,29 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         this.template = default_template;
     }
 
-    async lookup_raw(
-        criteria: (x: RegEntryTypes<T>) => boolean
-    ): Promise<{ id: string; val: RegEntryTypes<T> } | null> {
+    async lookup_raw(criteria: {[key: string]: any}): Promise<{ id: string; val: RegEntryTypes<T> }[]> {
+        let result: {id: string, val: RegEntryTypes<T>}[] = [];
         for (let [reg_id, reg_raw] of this.reg_data.entries()) {
-            if (criteria(reg_raw)) {
-                return {
+            let sat = true;
+            for(let [k, v] of Object.entries(criteria)) {
+                if(reg_raw[k] != v) {
+                    // Mismatch - fail!
+                    sat = false;
+                    break;
+                }
+            }
+
+            // No mismatches? Add it to the list
+            if (sat) {
+                result.push({
                     id: reg_id,
                     val: reg_raw,
-                };
+                });
             }
         }
-        return null;
+
+        // Return the list
+        return result;
     }
 
     async list_live(ctx: OpCtx, load_options?: LoadOptions): Promise<LiveEntryTypes<T>[]> {

@@ -1050,27 +1050,30 @@ export abstract class RegCat<T extends EntryType> {
         this.revive_func = creator;
     }
 
-    // Find a value by some arbitrary criteria
+    // Find value(s) by some set of key-value pairs, checked by == equality
+    // All returned values `r` will satisfy that for each `k,v` of criteria, `r[k] == v`
     abstract lookup_raw(
-        criteria: (e: RegEntryTypes<T>) => boolean
-    ): Promise<{ id: string; val: RegEntryTypes<T> } | null>;
+        criteria: {[key: string]: any}
+    ): Promise<{ id: string; val: RegEntryTypes<T> }[]>;
 
+    // Above but maps to get_live for convenience
     async lookup_live(
         ctx: OpCtx,
-        criteria: (e: RegEntryTypes<T>) => boolean,
+        criteria: {[key: string]: any},
         load_options?: LoadOptions
-    ): Promise<LiveEntryTypes<T> | null> {
+    ): Promise<Array<LiveEntryTypes<T>>> {
         let lookup = await this.lookup_raw(criteria);
-        return lookup ? this.get_live(ctx, lookup.id, load_options) : null;
+        let results = await Promise.all(lookup.map(l => this.get_live(ctx, l.id, load_options))); // TODO this could be more efficient by mapping directly to revive_func, somehow.
+        return results.filter(x=>x) as Array<LiveEntryTypes<T>>;
     }
 
-    // Find a value by lid. Just wraps above - common enough to warrant its own helper
+    // Find a value by lid. Just wraps above and returns a single result - common enough to warrant its own helper
     lookup_lid_raw(lid: string): Promise<{ id: string; val: RegEntryTypes<T> } | null> {
-        return this.lookup_raw(e => (e as any).lid == lid);
+        return this.lookup_raw({lid}).then(l => l[0] ?? null);
     }
 
     lookup_lid_live(ctx: OpCtx, lid: string, load_options?: LoadOptions): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, e => (e as any).lid == lid, load_options);
+        return this.lookup_live(ctx, {lid}, load_options).then(l => l[0] ?? null);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1079,7 +1082,7 @@ export abstract class RegCat<T extends EntryType> {
     // Fetches all raw items of a category
     abstract raw_map(): Promise<Map<string, RegEntryTypes<T>>>;
 
-    // The above, but as a list
+    // The above, but as a list of just the values
     async iter_raw(): Promise<Iterable<RegEntryTypes<T>>> {
         return (await this.raw_map()).values();
     }
@@ -1221,7 +1224,7 @@ export abstract class Registry /* <T extends RegCat<any> = RegCat<any>> */ {
         for (let cat of this.cat_map.values()) {
             let attempt = await cat.lookup_lid_live(ctx, lid, load_options);
             if (attempt) {
-                // We found it!
+                // We found it! Or one of them anyways!
                 return attempt;
             }
         }
@@ -1398,8 +1401,8 @@ export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>
                         wait_ctx_ready: true // I honestly have no idea, but I think this is right
                     }
                 );
-                if (found) {
-                    return found;
+                if (found[0]) {
+                    return found[0];
                 }
             }
         }
