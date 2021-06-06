@@ -1396,7 +1396,7 @@ export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>
             if (src_item_val) {
                 let found = await dest_cat.lookup_live(
                     src_item.OpCtx,
-                    v => (v[kp[1]] as any) == src_item_val,
+                    { [kp[1]]: src_item_val},
                     {
                         wait_ctx_ready: true // I honestly have no idea, but I think this is right
                     }
