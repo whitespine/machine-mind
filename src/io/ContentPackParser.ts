@@ -88,7 +88,7 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
     const manufacturers = await getZipData<PackedManufacturerData>(zip, "manufacturers.json");
     const factions = await getZipData<PackedFactionData>(zip, "factions.json");
     const coreBonuses = generateIDs(
-        await getZipData<PackedCoreBonusData>(zip, "core_bonus.json"),
+        await getZipData<PackedCoreBonusData>(zip, "core_bonuses.json"),
         "cb"
     );
     const frames = generateIDs(await getZipData<PackedFrameData>(zip, "frames.json"), "mf");
