@@ -602,16 +602,14 @@ describe("Static Registry Reference implementation", () => {
         let name_relinker = quick_relinker({
             key_pairs: [["Name", "name"]]
         });
-        setup_dest.reg.hooks.relinker = name_relinker;
-        await system.insinuate(setup_dest.reg);
+        await system.insinuate(setup_dest.reg, null, {relinker: name_relinker});
         const p2 = await get_dest_listing();
 
         let blacklist_id_relinker = quick_relinker({
             key_pairs: [["Name", "name"], ["LID", "lid"]], // Name will be checked first, but blacklist outprioritizes both. Should not relink
             blacklist: ["ms_neurospike"]
         });
-        setup_dest.reg.hooks.relinker = blacklist_id_relinker;
-        await system.insinuate(setup_dest.reg);
+        await system.insinuate(setup_dest.reg, null, {relinker: blacklist_id_relinker});
         const p3 = await get_dest_listing();
 
         // Only p3 should've gotten a new item, since it deliberately blocked relinking via the blacklist.

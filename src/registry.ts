@@ -750,9 +750,6 @@ export abstract class RegEntry<T extends EntryType> {
             if (hooks?.pre_final_write) {
                 await hooks?.pre_final_write(record, dest_reg, dest_cat);
             }
-            if (dest_reg.hooks.pre_final_write) {
-                await dest_reg.hooks.pre_final_write(record, dest_reg, dest_cat);
-            }
 
             // Then writeback. Even if the above hook doesn't exist, this is necessary to fix RegRefs
             await record.pending.writeback();
@@ -787,9 +784,6 @@ export abstract class RegEntry<T extends EntryType> {
             let dest_cat = dest_reg.get_cat(final_record.type);
             if (hooks?.post_final_write) {
                 hooks.post_final_write(final_record, dest_reg, dest_cat);
-            }
-            if (dest_reg.hooks.post_final_write) {
-                dest_reg.hooks.post_final_write(final_record, dest_reg, dest_cat);
             }
         }
 
@@ -829,7 +823,6 @@ export abstract class RegEntry<T extends EntryType> {
         // If we have a relink hook, apply it now
         let new_entry: LiveEntryTypes<T> | null = null;
         let fun_relinked = false;
-        let reg_relinked = false;
         if (hooks?.relinker) {
             new_entry = await hooks.relinker(
                 (this as unknown) as LiveEntryTypes<T>,
@@ -837,16 +830,6 @@ export abstract class RegEntry<T extends EntryType> {
                 to_new_reg.get_cat(this.Type) as any  // As eventually concluded in an hours-long discussion, there's no clean way around this shit
             ) as LiveEntryTypes<T>;
             fun_relinked = !!new_entry;
-        }
-
-        // Also try relinking using registry relinker if possible
-        if (to_new_reg.hooks.relinker && !fun_relinked) {
-            new_entry = await to_new_reg.hooks.relinker(
-                (this as unknown) as LiveEntryTypes<T>,
-                to_new_reg,
-                to_new_reg.get_cat(this.Type) as any
-            ) as LiveEntryTypes<T>;
-            reg_relinked = !!new_entry;
         }
 
         // If no relink hook / relink hook didn't produce anything useful
@@ -876,7 +859,7 @@ export abstract class RegEntry<T extends EntryType> {
 
         // Ask all of our live children to insinuate themselves. They will insinuate recursively. Don't if relinking, as we assume the relink target already has this basically handled.
         // If the user wants it to be regenerated, they can just delete the item
-        if (!fun_relinked && !reg_relinked) {
+        if (!fun_relinked) {
             for (let child of assoc) {
                 await child._insinuate_imp(to_new_reg, insinuation_hit_list, hooks); // Ensure that they don't get root call true. This prevents dumb save-thrashing
             }
@@ -884,8 +867,6 @@ export abstract class RegEntry<T extends EntryType> {
 
         if (fun_relinked && hooks?.skip_relinked_inventories) {
             return null; // Essentially drops the inventory
-        } else if (reg_relinked && to_new_reg.hooks.skip_relinked_inventories) {
-            return null; // Ditto
         } else {
             // Even if this didn't produce a new item, we still wish to return.
             // This return (right now) exclusively controls if we want to do inventory transfer or not. We do, unless relinker options say otherwise
@@ -1148,9 +1129,6 @@ export abstract class Registry /* <T extends RegCat<any> = RegCat<any>> */ {
      */
     // This just maps to the other cats below
     private cat_map: Map<EntryType, RegCat<any>> = new Map(); // We cannot definitively type this here, unfortunately. If you need definitives, use the below
-
-    // Our hooks, if we want them. Subclass constructors should populate as they see fit
-    public hooks: InsinuateHooks = {};
 
     // Use at initialization. Sets the provided category to its appropriate place in the cat map
     public init_set_cat<T extends EntryType>(cat: RegCat<T>) {
