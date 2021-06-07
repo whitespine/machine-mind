@@ -48,8 +48,10 @@ import {
     PackedTagTemplateData,
     PackedFactionData,
 } from "@src/interface";
-import { OpCtx, Registry } from "@src/registry";
+import { EntryType, LiveEntryTypes, OpCtx, PackedEntryTypes, RegEntry, RegEntryTypes, Registry } from "@src/registry";
+import { RegEnv, StaticReg } from "@src/static_registry";
 import { LicensedItem } from "./License";
+import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "./pilot/PilotEquipment";
 
 export interface IContentPackManifest {
     name: string;
@@ -92,10 +94,44 @@ export interface IContentPack {
     data: IContentPackData;
 }
 
-export async function intake_pack(pack: IContentPack, to_registry: Registry) {
+// Used for filtering while intaking
+type IntakeFilterFunc<T extends EntryType = EntryType> = (type: T, value: RegEntryTypes<T>) => boolean;
+type Unpacker<T extends EntryType> = ((dat: PackedEntryTypes<T>, reg: Registry, ctx: OpCtx) => Promise<LiveEntryTypes<T>>);
+
+async function intake_cat<T extends EntryType>(
+    type: T,
+    items: PackedEntryTypes<T>[], 
+    to_registry: Registry, 
+    in_ctx: OpCtx, 
+    unpacker: Unpacker<T>,
+    filter?: IntakeFilterFunc): Promise<LiveEntryTypes<T>[]> {
+
     // Let us begin. Get rid of error frames/weapons/items
-    const error_predicate = <T extends {name: string}>(x: T) => x.name != "ERR: DATA NOT FOUND";
-    const wo_err = <T extends {name: string}>(x: T[]) => x.filter(error_predicate);
+    const error_predicate = (x: any) => x.name != "ERR: DATA NOT FOUND";
+    items = items.filter(error_predicate);
+
+    let tmp_filter_reg = new StaticReg(new RegEnv());
+    let tmp_ctx = new OpCtx();
+
+    // Unpack all
+    let result: Promise<LiveEntryTypes<T>>[] = [];
+    for (let i of items) {
+        if(filter) {
+            let tmp = await unpacker(i, tmp_filter_reg, tmp_ctx);
+            // Don't save - use orig data. Saving/writebacking will destroy unresolved refs (for now)
+            if(!filter(type, tmp.OrigData)) {
+                continue;
+            }
+        }
+
+        result.push(unpacker(i, to_registry, in_ctx));
+    }
+    return Promise.all(result);
+}
+
+export async function intake_pack(pack: IContentPack, to_registry: Registry, filter?: IntakeFilterFunc) {
+    // If provided, the filter will let us decide if we should add the item. 
+    // If filter returns true, then we proceed
 
     // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise!
     // However, their reg data will be totally fine, as the reg's will still have the unresolved refs
@@ -105,66 +141,32 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry) {
     let reg = to_registry;
     let ctx = new OpCtx();
     let licenseables: LicensedItem[] = [];
-    for (let m of d.manufacturers) {
-        await Manufacturer.unpack(m, reg, ctx);
-    }
-    for (let f of d.factions) {
-        await Faction.unpack(f, reg, ctx);
-    }
-    for (let cb of wo_err(d.coreBonuses)) {
-        await CoreBonus.unpack(cb, reg, ctx);
-    }
-    for (let f of wo_err(d.frames)) {
-        licenseables.push(await Frame.unpack(f, reg, ctx));
-    }
-    for (let mw of wo_err(d.weapons)) {
-        licenseables.push(await MechWeapon.unpack(mw, reg, ctx));
-    }
-    for (let ms of wo_err(d.systems)) {
-        licenseables.push(await MechSystem.unpack(ms, reg, ctx));
-    }
-    for (let wm of wo_err(d.mods)) {
-        licenseables.push(await WeaponMod.unpack(wm, reg, ctx));
-    }
-    for (let x of wo_err(d.pilotGear)) {
-        if (x.type == "Armor") await PilotArmor.unpack(x, reg, ctx);
-        else if (x.type == "Gear") await PilotGear.unpack(x, reg, ctx);
-        else if (x.type == "Weapon") await PilotWeapon.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.talents)) {
-        await Talent.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.tags)) {
-        await TagTemplate.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.npcClasses)) {
-        await NpcClass.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.npcTemplates)) {
-        await NpcTemplate.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.npcFeatures)) {
-        await NpcFeature.unpack(x, reg, ctx);
-    }
 
-    for (let x of d.environments ?? []) {
-        await Environment.unpack(x, reg, ctx);
-    }
-    for (let x of d.reserves ?? []) {
-        await Reserve.unpack(x, reg, ctx);
-    }
-    for (let x of d.sitreps ?? []) {
-        await Sitrep.unpack(x, reg, ctx);
-    }
-    for (let x of wo_err(d.skills ?? [])) {
-        await Skill.unpack(x, reg, ctx);
-    }
-    for (let x of d.statuses ?? []) {
-        await Status.unpack(x, reg, ctx);
-    }
-    for (let x of d.quirks ?? []) {
-        await Quirk.unpack(x, reg, ctx);
-    }
+    const incat = <T extends EntryType>(type:T, items: PackedEntryTypes<T>[], unpacker: Unpacker<T>) => intake_cat(type, items, reg, ctx, unpacker, filter);
+    await incat(EntryType.MANUFACTURER, d.manufacturers, Manufacturer.unpack);
+    await incat(EntryType.FACTION, d.factions, Faction.unpack);
+    await incat(EntryType.CORE_BONUS, d.coreBonuses, CoreBonus.unpack);
+    licenseables = licenseables.concat(await incat(EntryType.FRAME, d.frames, Frame.unpack));
+    licenseables = licenseables.concat(await incat(EntryType.MECH_WEAPON, d.weapons, MechWeapon.unpack));
+    licenseables = licenseables.concat(await incat(EntryType.MECH_SYSTEM, d.systems, MechSystem.unpack));
+    licenseables = licenseables.concat(await incat(EntryType.WEAPON_MOD, d.mods, WeaponMod.unpack));
+    await incat(EntryType.TALENT, d.talents, Talent.unpack);
+    await incat(EntryType.TAG, d.tags, TagTemplate.unpack);
+    await incat(EntryType.NPC_CLASS, d.npcClasses, NpcClass.unpack);
+    await incat(EntryType.NPC_TEMPLATE, d.npcTemplates, NpcTemplate.unpack);
+    await incat(EntryType.NPC_FEATURE, d.npcFeatures, NpcFeature.unpack);
+    await incat(EntryType.ENVIRONMENT, d.environments ?? [], Environment.unpack);
+    await incat(EntryType.RESERVE, d.reserves ?? [], Reserve.unpack);
+    await incat(EntryType.SITREP, d.sitreps ?? [], Sitrep.unpack);
+    await incat(EntryType.SKILL, d.skills ?? [], Skill.unpack);
+    await incat(EntryType.STATUS, d.statuses ?? [], Status.unpack);
+    await incat(EntryType.QUIRK, d.quirks ?? [], Quirk.unpack);
+    let armors = d.pilotGear.filter(x => x.type == "Armor") as PackedPilotArmorData[];
+    let gears = d.pilotGear.filter(x => x.type == "Gear") as PackedPilotGearData[];
+    let weapons = d.pilotGear.filter(x => x.type == "Weapon") as PackedPilotWeaponData[];
+    await incat(EntryType.PILOT_ARMOR, armors, PilotArmor.unpack);
+    await incat(EntryType.PILOT_GEAR, gears, PilotGear.unpack);
+    await incat(EntryType.PILOT_WEAPON, weapons, PilotWeapon.unpack);
 
     // Find licenses
     let unique_license_names: Set<string> = new Set();

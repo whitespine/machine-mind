@@ -242,5 +242,40 @@ describe("Content pack handling", () => {
         expect(flayer.Profiles.some(p => p.WepType != "CQB")).toBeFalsy();
     });
 
+    it("Properly filters when importing", async () => {
+        expect.assertions(2);
+        let s = await init_basic_setup(false);
+        let ctx = new OpCtx();
+
+        // Do base
+        let pack = await get_long_rim();
+        await intake_pack(pack, s.reg);
+
+        // Count frames
+        let orig_frames = await s.reg.get_cat(EntryType.FRAME).list_live(ctx);
+        let frame_cnt = orig_frames.length;
+
+        // Import again
+        await intake_pack(pack, s.reg);
+
+        // Check again. Expect double
+        let dub_frames = await s.reg.get_cat(EntryType.FRAME).list_live(ctx);
+        let dub_frame_cnt = dub_frames.length;
+
+        expect(dub_frame_cnt).toEqual(frame_cnt * 2);
+
+        // Import once more, this time filtering for duplicates
+        await intake_pack(pack, s.reg, (t, v) => {
+            return !orig_frames.find(f => f.LID == v.lid);    
+        });
+
+        // Check again. Expect same as before
+        let trip_frames = await s.reg.get_cat(EntryType.FRAME).list_live(ctx);
+        let trip_frame_cnt = trip_frames.length;
+
+        expect(trip_frame_cnt).toEqual(dub_frame_cnt);
+    });
+
+
 
 });
