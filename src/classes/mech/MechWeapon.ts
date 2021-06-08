@@ -273,7 +273,8 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         for (let p of packed_profiles) {
             // Unpack sub components
             // We pluck out deployables and integrated
-            let dep_entries = await Promise.all((p.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, `${data.id}_${p.name}`)));
+            let filtered_deps = (p.deployables ?? []).filter(d => !parent_dep_entries.find(d2 => d2.Name == d.name));
+            let dep_entries = await Promise.all((filtered_deps).map(i => Deployable.unpack(i, reg, ctx, `${data.id}_${p.name}`)));
             let dep_refs = SerUtil.ref_all(dep_entries);
             let int_refs = SerUtil.unpack_integrated_refs(reg, p.integrated);
             parent_integrated.push(...int_refs);

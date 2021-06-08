@@ -24,7 +24,7 @@
     "axios": "^0.19.2",
     "filtrex": "^2.1.0",
     "jszip": "^3.5.0",
-    "lancer-data": "^3.0.31",
+    "lancer-data": "^3.0.34",
     "nanoid": "^3.1.12",
     "ts-reflection": "^0.3.0",
     "tslib": "^2.1.0"
