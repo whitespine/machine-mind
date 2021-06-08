@@ -95,6 +95,43 @@ describe("Content pack handling", () => {
         expect(frame_names).toContain("LUNAMOTH");
         expect(frame_names).toContain("DJINN");
         expect(frame_names).toContain("GAIUS"); // 5
+    });    
+    
+    it("Gives everything a proper manufacturer", async () => {
+        let s = await init_basic_setup(true);
+        let ctx = new OpCtx();
+
+        // Add it in
+        let pack = await get_long_rim();
+        await intake_pack(pack, s.reg);
+
+        for(let et of [EntryType.FRAME, EntryType.CORE_BONUS, EntryType.MECH_WEAPON, EntryType.MECH_SYSTEM, EntryType.WEAPON_MOD, EntryType.LICENSE]) {
+            let all = await s.reg.get_cat(et).list_live(ctx);
+            for(let i of all) {
+                // Some will not
+                if([
+                    "mw_fuel_rod_gun", 
+                    "mw_prototype_1", 
+                    "mw_prototype_2", 
+                    "mw_prototype_3", 
+                    "mw_lancaster_integrated", 
+                    "mw_raleigh_integrated", 
+                    "mw_sherman_integrated", 
+                    "mw_barbarossa_integrated", 
+                    "mw_caliban_integrated",
+                    "ms_technophile_1", 
+                    "ms_technophile_2", 
+                    "ms_technophile_3", 
+                    "ms_walking_armory_1", 
+                    "ms_walking_armory_2", 
+                    "ms_walking_armory_3", 
+                    "ms_spaceborn_1", 
+                ].includes(i.LID)) {
+                    continue;
+                }
+                expect(i.Source).toBeTruthy();
+            }
+        }
     });
 
     it("Generates deployable ids in a reasonable way", async () => {

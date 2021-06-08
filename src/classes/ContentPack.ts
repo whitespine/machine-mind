@@ -169,15 +169,21 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry, fil
     await incat(EntryType.PILOT_WEAPON, weapons, PilotWeapon.unpack);
 
     // Find licenses
-    let unique_license_names: Set<string> = new Set();
+    let unique_license_names: Map<string, Manufacturer | null> = new Map();
+    let man_cat = reg.get_cat(EntryType.MANUFACTURER);
     for (let x of licenseables) {
         if (x.License) {
-            unique_license_names.add(x.License);
+            // Lookup the source. Brittle but workable
+            let src_lid = x.OrigData.source.fallback_lid;
+            if(src_lid) {
+                let manufacturer = await man_cat.lookup_lid_live(ctx, src_lid);
+                unique_license_names.set(x.License, manufacturer);
+            }
         }
     }
 
     // Actually create them
-    for (let name of unique_license_names) {
-        await License.unpack(name, reg, ctx);
+    for (let name of unique_license_names.keys()) {
+        await License.unpack(name, reg, ctx, unique_license_names.get(name)!);
     }
 }

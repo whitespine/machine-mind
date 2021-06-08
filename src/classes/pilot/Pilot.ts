@@ -435,9 +435,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     // -- Licenses ----------------------------------------------------------------------------------
-    public CountLicenses(manufacturerID: string): number {
+    public count_licenses(manufacturer_lid: string): number {
         return this.Licenses.filter(
-            x => x.Manufacturer?.LID.toLowerCase() === manufacturerID.toLowerCase()
+            x => x.Source?.LID.toLowerCase() === manufacturer_lid.toLowerCase()
         ).reduce((a, b) => +a + +b.CurrentRank, 0);
     }
 

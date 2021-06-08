@@ -77,7 +77,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
     LID!: string; 
     Name!: string; // The item's display name
     LicenseKey!: string; // This is what will be seen in the "License" field of licensed items. Looser than a regref, because the association is indirect/dynamic/many-many or whatever
-    Manufacturer!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
+    Source!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     CurrentRank!: number;
 
     // Scans all categories of the specified registry. Forces you to provide a ctx because otherwise this is ridiculously expensive for basically no reason
@@ -113,11 +113,11 @@ export class License extends RegEntry<EntryType.LICENSE> {
         merge_defaults(data, defaults.LICENSE());
         this.LID = data.lid;
         this.Name = data.name;
-        this.Manufacturer = null;
+        this.Source = null;
         this.CurrentRank = data.rank;
         this.LicenseKey = data.key;
         if (data.manufacturer) {
-            this.Manufacturer = await this.Registry.resolve(this.OpCtx, data.manufacturer, {wait_ctx_ready: false});
+            this.Source = await this.Registry.resolve(this.OpCtx, data.manufacturer, {wait_ctx_ready: false});
         }
     }
 
@@ -125,7 +125,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
         return {
             lid: this.LID,
             name: this.Name,
-            manufacturer: this.Manufacturer?.as_ref() || null,
+            manufacturer: this.Source?.as_ref() || null,
             rank: this.CurrentRank,
             key: this.LicenseKey
         };
@@ -135,26 +135,18 @@ export class License extends RegEntry<EntryType.LICENSE> {
     public static async unpack(
         license_name: string,
         reg: Registry,
-        ctx: OpCtx
+        ctx: OpCtx,
+        man: Manufacturer | null
     ): Promise<License> {
         // Do an initial blank initialization
         let rdata: RegLicenseData = {
             lid: ("lic_" + license_name.toLowerCase()),
             name: license_name,
             key: license_name,
-            manufacturer: null,
+            manufacturer: man?.as_ref() || null,
             rank: 1,
         };
-        let created = await reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
-
-        // Get manufacturer from literally any of the items
-        let scan = await created.scan([reg], ctx);
-        let man = scan.AllItems[0]?.Source ?? null;
-
-        // Save with updated information
-        created.Manufacturer = man;
-        await created.writeback();
-        return created;
+        return reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
     }
 
     public async emit(): Promise<null> {return null}
