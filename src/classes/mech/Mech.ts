@@ -639,6 +639,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
 // Sync a mech. Subroutine of pilot sync
 export async function mech_cloud_sync(
+    pilot: Pilot,
     data: PackedMechData,
     mech: Mech,
     fallback_source_regs: Registry[],
@@ -686,7 +687,7 @@ export async function mech_cloud_sync(
     let packed_loadout = data.loadouts[data.active_loadout_index];
 
     // The loadout sync process does basically everything we need for items
-    await mech.Loadout.sync(data, packed_loadout, stack, sync_hooks);
+    await mech.Loadout.sync(pilot, data, packed_loadout, stack, sync_hooks);
     if (sync_hooks.sync_loadout)
         await sync_hooks.sync_loadout(mech.Loadout, packed_loadout, is_new);
 

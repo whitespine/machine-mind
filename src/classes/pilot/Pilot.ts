@@ -804,28 +804,6 @@ export async function cloud_sync(
             }
         }
     }
-
-    // Then do mechs
-    let pilot_mechs = await pilot.Mechs();
-    for (let md of data.mechs) {
-        // For each imported mech entry, find the corrseponding mech actor entity by matching compcon id
-        let corr_mech = pilot_mechs.find(m => m.LID == md.id);
-        let is_new = false;
-
-        if (!corr_mech) {
-            // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one (at same level as pilot) and add it to our tracker
-            corr_mech = await pilot.Registry.get_cat(EntryType.MECH).create_default(ctx);
-            pilot_mechs.push(corr_mech);
-            is_new = true;
-        }
-
-        // Tell it we own/pilot it
-        corr_mech.Pilot = pilot;
-
-        // Apply
-        await mech_cloud_sync(md, corr_mech, fallback_source_regs, hooks, is_new);
-    }
-
     // Try to find a quirk that matches, or create if not present
     // TODO: this is weird. compcon doesn't really do quirks. For now we just make new quirk if the quirk descriptions don't match?
     if (data.quirk) {
@@ -1004,6 +982,29 @@ export async function cloud_sync(
     for (let c of pilot.AllCounters) {
         c.counter.sync_state_from(data.counter_data);
     }
+
+    // Refresh our inventory, then do mechs
+    await pilot.repopulate_inventory();
+    let pilot_mechs = await pilot.Mechs();
+    for (let md of data.mechs) {
+        // For each imported mech entry, find the corrseponding mech actor entity by matching compcon id
+        let corr_mech = pilot_mechs.find(m => m.LID == md.id);
+        let is_new = false;
+
+        if (!corr_mech) {
+            // Seems like the pilot has a mech that we haven't accounted for yet. Make a new one (at same level as pilot) and add it to our tracker
+            corr_mech = await pilot.Registry.get_cat(EntryType.MECH).create_default(ctx);
+            pilot_mechs.push(corr_mech);
+            is_new = true;
+        }
+
+        // Tell it we own/pilot it
+        corr_mech.Pilot = pilot;
+
+        // Apply
+        await mech_cloud_sync(pilot, md, corr_mech, fallback_source_regs, hooks, is_new);
+    }
+
 
     // Fetch all weapons, armor, gear we will need
     let loadout: PackedPilotLoadoutData | null = null;

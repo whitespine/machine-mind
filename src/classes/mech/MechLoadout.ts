@@ -12,6 +12,9 @@ import { nanoid } from "nanoid";
 import { AllPilotSyncHooks, PackedMechData, PilotSyncHooks } from "@src/interface";
 
 //todo: superheavies :<
+const INTEGRATED_WEAPON = "cb_integrated_weapon";
+const IMPROVED_ARMAMENT = "cb_improved_armament";
+const MOUNT_RETROFITTING = "cb_mount_retrofitting";
 
 //////////////////////// PACKED INFO ////////////////////////
 export interface PackedEquipmentData {
@@ -248,10 +251,11 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
     // Sync this loadout with compcon style loadout data
     // There's no real reason to restrict this logic just to unpacking, as we never just want a loadout on its own - only useful as part of a mech sync
     public async sync(
+        pilot: Pilot, // Needed for core bonuses and stuff
         full_mech_data: PackedMechData,
         mech_loadout: PackedMechLoadoutData,
         stack: RegFallbackStack,
-        sync_hooks: AllPilotSyncHooks
+        sync_hooks: AllPilotSyncHooks,
     ): Promise<void> {
         // Find the frame
         let frame = await fallback_obtain_ref(
@@ -314,7 +318,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         }
 
         // Core bonus integrated auxilary weapon
-        if(mech_loadout.integratedWeapon) {
+        if(mech_loadout.integratedWeapon && pilot.CoreBonuses.some(cb => cb.LID == INTEGRATED_WEAPON)) {
             to_be_rendered.push({
                 ...mech_loadout.integratedWeapon,
                 mount_type: MountType.Integrated
@@ -324,7 +328,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         to_be_rendered.push(...mech_loadout.mounts);
 
         // Core bonus add a flex mount
-        if(mech_loadout.improved_armament && (frame?.Mounts.length ?? 0) < 3) {
+        if(mech_loadout.improved_armament && (frame?.Mounts.length ?? 0) < 3 && pilot.CoreBonuses.some(cb => cb.LID == IMPROVED_ARMAMENT)) {
             to_be_rendered.push(mech_loadout.improved_armament);
         }
 
@@ -812,7 +816,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     ) {
         // If cb_mount_retrofitting, override to main_aux
         let mount_type = mnt.mount_type as MountType;
-        if(mnt.bonus_effects.includes("cb_mount_retrofitting")) {
+        if(mnt.bonus_effects.includes(MOUNT_RETROFITTING)) {
             mount_type = MountType.MainAux;
         };
 
