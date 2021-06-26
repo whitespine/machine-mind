@@ -1,4 +1,4 @@
-import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment, Frame } from "@src/class";
+import { MechSystem, MechWeapon, WeaponMod, MechEquipment, Frame, Pilot } from "@src/class";
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
 import { FittingSize, MountType, WeaponSize } from "@src/enums";
@@ -162,14 +162,45 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         return this.WepMounts.some(wm => wm.Bracing);
     }
 
-    // Resets this mech's mounts to match what the frame should have
-    public async reset_weapon_mounts(): Promise<void> {
+    // Resets this mech's mounts to match what the frame should have. 
+    // Pilot core bonuses/talents can add extra mounts (specifically improved armament, engineer)
+    public async reset_weapon_mounts(using_pilot?: Pilot): Promise<void> {
         this.WepMounts = [];
         if (this.Frame) {
+            // Add frame integrated weps
+            for(let weapon of this.Frame.CoreSystem.IntegratedWeapons) {
+                let mnt = await this.AddEmptyWeaponMount(MountType.Integrated);
+                mnt.try_add_weapon(weapon);
+            }
+
+            // Add a slot for each frame mount
             for (let size of this.Frame.Mounts) {
                 await this.AddEmptyWeaponMount(size);
             }
+
+            // Add pilot specific junk
+            if(using_pilot) {
+                // Add integrated weapon mount
+                if(using_pilot.CoreBonuses.some(cb => cb.LID == "cb_integrated_weapon")) {
+                    await this.AddEmptyWeaponMount(MountType.Integrated);
+                }
+
+                // Add improved armament
+                if(this.Frame.Mounts.length < 3 && using_pilot.CoreBonuses.some(cb => cb.LID == "cb_improved_armament")) {
+                    await this.AddEmptyWeaponMount(MountType.Flex);
+                }
+
+
+                // Add talent weapons
+                // for(let talent of using_pilot.Talents) {
+                    // talent.Integrated
+                    // // let mnt = await this.AddEmptyWeaponMount(MountType.Integrated);
+                    // mnt.try_add_weapon(weapon);
+                // }
+                /// .... todo
+            }
         }
+        // Don't do anything if no frame
     }
 
     // Attempts to equip a weapon. Makes a new mount as necessary NOTE: This weapon does NOT handle insinuation. do that yourself, dummy!
