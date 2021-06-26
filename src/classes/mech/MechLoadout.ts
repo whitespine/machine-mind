@@ -31,7 +31,7 @@ export interface PackedMechWeaponSaveData extends PackedEquipmentData {
     maxUseOverride?: number;
 }
 export interface PackedWeaponSlotData {
-    size: string;
+    size: FittingSize; // Superheavy? look into that
     weapon: PackedMechWeaponSaveData | null;
 }
 
@@ -39,8 +39,8 @@ export interface PackedMountData {
     mount_type: string;
     lock: boolean;
     slots: PackedWeaponSlotData[];
-    extra: PackedWeaponSlotData[];
-    bonus_effects: string[];
+    extra: PackedWeaponSlotData[]; 
+    bonus_effects: string[]; // "cb_mount_retrofitting", "cb_auto_stabilizing_hardpoints"
 }
 
 export interface PackedMechLoadoutData {
@@ -282,17 +282,21 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             to_be_rendered.push(coerced);
         }
 
-        // TODO: fix core bonus based stuff. I admittedly forget why I didn't just do this earlier???
-        // if(mech_loadout.integratedWeapon) {
-        if (false) {
-            to_be_rendered.push(mech_loadout.integratedWeapon);
-        }
-        // if(mech_loadout.improved_armament) {
-        if (false) {
-            to_be_rendered.push(mech_loadout.improved_armament);
+        // Core bonus integrated auxilary weapon
+        if(mech_loadout.integratedWeapon) {
+            to_be_rendered.push({
+                ...mech_loadout.integratedWeapon,
+                mount_type: MountType.Integrated
+            });
         }
 
         to_be_rendered.push(...mech_loadout.mounts);
+
+        // Core bonus add a flex mount
+        if(mech_loadout.improved_armament && (frame?.Mounts.length ?? 0) < 3) {
+            to_be_rendered.push(mech_loadout.improved_armament);
+        }
+
 
         for (let tbr of to_be_rendered) {
             let mount = await this.AddEmptyWeaponMount(tbr.mount_type as MountType);
@@ -419,7 +423,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 mount_type: MountType.Aux,
                 slots: [
                     {
-                        size: WeaponSize.Aux,
+                        size: FittingSize.Auxiliary,
                         weapon: null,
                     },
                 ],
@@ -432,16 +436,15 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 mount_type: MountType.Flex,
                 slots: [
                     {
-                        size: WeaponSize.Aux,
+                        size: FittingSize.Flex,
                         weapon: null,
                     },
-                ],
-                extra: [
                     {
-                        size: WeaponSize.Aux,
+                        size: FittingSize.Auxiliary,
                         weapon: null,
                     },
                 ],
+                extra: []
             },
         };
     }
@@ -723,6 +726,11 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         return !this.Slots.some(x => x.Weapon || x.Mod);
     }
 
+    // Lists the weapons on this mount
+    public get Weapons(): MechWeapon[] {
+        return this.Slots.map(s => s.Weapon).filter(x => x) as MechWeapon[];
+    }
+
     // Clear all slots
     public reset() {
         this.Slots = this._slots_for_mount(this.MountType);
@@ -771,8 +779,16 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         fallback: RegFallbackStack,
         sync_hooks: PilotSyncHooks
     ) {
+        // If cb_mount_retrofitting, override to main_aux
+        let mount_type = mnt.mount_type as MountType;
+        if(mnt.bonus_effects.includes("cb_mount_retrofitting")) {
+            mount_type = MountType.MainAux;
+        };
+
+        // if(mnt.bonus_effects.include("cb_auto_stabilizing_hardpoints")) // todo: handle
+
         // Init slots based on our size
-        this.MountType = mnt.mount_type as MountType;
+        this.MountType = mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
 
         // Prepare to map them out

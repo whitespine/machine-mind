@@ -2,10 +2,11 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx , quick_relinker} from "../src/registry";
-import { Counter, Frame, MechWeapon, Pilot, Talent } from "../src/class";
+import { Counter, Frame, MechLoadout, MechWeapon, Pilot, Talent } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { gist_io, cloud_sync } from "../src/funcs";
+import { MountType } from "../src/enums";
 import { validate_props } from "../src/classes/key_util";
 import * as fs from "fs";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
@@ -16,6 +17,7 @@ let DEPLOYABLE_GUY = "674a75a9be41eaa32e0d4514b61af461";
 let BARB = "764bcd352a463074f3ec1bd79486bd71";
 let GRYGONS = "78d3c986d75b174f7a6627af63d6b24e";
 let GRYGONS_WITH_EVERYTHING = "73f483f63ef9312010aa1c859fa0732e";
+let MOUNT_MAN = "42d5ba11bfa0d9a371ac59a3af3cd874";
 
 type DefSetup = {
     reg: StaticReg;
@@ -312,4 +314,68 @@ describe("Pilots", () => {
         expect(sat.deployable).toBeTruthy(); // 19
     });
 
+    it("Handles core bonus mounts", async () => {
+        expect.assertions(31);
+        let s = await init_basic_setup(true);
+
+        // Load the mountman
+        let ctx = new OpCtx();
+        let pilot: Pilot = await s.reg.create_live(EntryType.PILOT, ctx);
+        let pilot_data = await gist_io.download_pilot(MOUNT_MAN);
+        await cloud_sync(pilot_data, pilot, [s.reg]);
+        pilot = await pilot.refreshed();
+
+        // Check his shit. He should have 3 mechs
+        let mechs = await pilot.Mechs();
+        expect(mechs.length).toEqual(3)
+
+        // Their names should be as follows
+        expect(mechs[0].Name).toEqual("Court In Session");
+        expect(mechs[1].Name).toEqual("Gotta Leave Somebody Behind");
+        expect(mechs[2].Name).toEqual("Fluctuating Values"); // 4
+
+        // Strip their loadouts
+        let ml0: MechLoadout = mechs[0].Loadout;
+        let ml1: MechLoadout = mechs[1].Loadout;
+        let ml2: MechLoadout = mechs[2].Loadout;
+
+        // Verify mount counts
+        expect(ml0.WepMounts.length).toEqual(4);
+        expect(ml1.WepMounts.length).toEqual(5);
+        expect(ml2.WepMounts.length).toEqual(4); // 7
+
+        // Verify mount types
+        expect(ml0.WepMounts[0].MountType).toEqual(MountType.Integrated);
+        expect(ml0.WepMounts[1].MountType).toEqual(MountType.MainAux);
+        expect(ml0.WepMounts[2].MountType).toEqual(MountType.Flex);
+        expect(ml0.WepMounts[3].MountType).toEqual(MountType.Heavy); // 11
+
+        expect(ml1.WepMounts[0].MountType).toEqual(MountType.Integrated);
+        expect(ml1.WepMounts[1].MountType).toEqual(MountType.Integrated);
+        expect(ml1.WepMounts[2].MountType).toEqual(MountType.MainAux);
+        expect(ml1.WepMounts[3].MountType).toEqual(MountType.Main);
+        expect(ml1.WepMounts[4].MountType).toEqual(MountType.Heavy); // 16
+
+        expect(ml2.WepMounts[0].MountType).toEqual(MountType.Integrated);
+        expect(ml2.WepMounts[1].MountType).toEqual(MountType.Flex);
+        expect(ml2.WepMounts[2].MountType).toEqual(MountType.Main);
+        expect(ml2.WepMounts[3].MountType).toEqual(MountType.Main); // 20
+
+        // Verify weapon configurations. But just for one, i'm not completely masochistic
+        expect(ml1.WepMounts[0].Weapons.length).toEqual(1);
+        expect(ml1.WepMounts[0].Weapons[0].Name).toEqual("ZF4 SOLIDCORE"); // 22
+
+        expect(ml1.WepMounts[1].Weapons.length).toEqual(1);
+        expect(ml1.WepMounts[1].Weapons[0].Name).toEqual("TACTICAL KNIFE");
+
+        expect(ml1.WepMounts[2].Weapons.length).toEqual(2);
+        expect(ml1.WepMounts[2].Weapons[0].Name).toEqual("ANNIHILATOR");
+        expect(ml1.WepMounts[2].Weapons[1].Name).toEqual("THERMAL PISTOL"); // 27
+
+        expect(ml1.WepMounts[3].Weapons.length).toEqual(1);
+        expect(ml1.WepMounts[3].Weapons[0].Name).toEqual("MORTAR");
+
+        expect(ml1.WepMounts[4].Weapons.length).toEqual(1);
+        expect(ml1.WepMounts[4].Weapons[0].Name).toEqual("HEAVY MACHINE GUN"); // 31
+    });
 });
