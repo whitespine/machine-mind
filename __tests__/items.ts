@@ -262,4 +262,16 @@ describe("Items Miscellania", () => {
 
 
     });
+
+    it("Auto names actions", async () => {
+        expect.assertions(1);
+        let s = await init_basic_setup(true);
+        // let wep_cat = s.reg.get_cat(EntryType.MECH_WEAPON);
+        let sys_cat = s.reg.get_cat(EntryType.MECH_SYSTEM);
+        let ctx = new OpCtx();
+
+        let argonaut: MechSystem = await sys_cat.lookup_lid_live(ctx, "ms_argonaut_shield");
+        // let  = await sys_cat.lookup_lid_live("ms_argonaut_shield");
+        expect(argonaut.Actions[0].Name).toEqual(argonaut.Name);
+    });
 });

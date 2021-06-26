@@ -45,7 +45,6 @@ import {
 import {
     EntryType,
     InventoriedRegEntry,
-    LiveEntryTypes,
     LoadOptions,
     RegEntry,
     Registry,
@@ -54,7 +53,6 @@ import {
 } from "@src/registry";
 import { bound_int, defaults, mech_cloud_sync, source_all_counters } from "@src/funcs";
 import { get_user_id } from "@src/hooks";
-import { CC_VERSION } from "@src/enums";
 import {
     finding_iterate,
     fallback_obtain_ref,
@@ -62,6 +60,7 @@ import {
     FALLBACK_WAS_INSINUATED,
 } from "../regstack";
 import { merge_defaults } from "../default_entries";
+import { CC_VERSION } from "@src/consts";
 
 // Note: we'll need to mogrify our pilot data a little bit to coerce it to this form
 

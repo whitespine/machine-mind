@@ -1,4 +1,3 @@
-export const CC_VERSION = "MchMnd2.0A";
 
 // Holds enums that are as of yet seen nowhere else
 export enum MountType {
@@ -46,10 +45,6 @@ export function getMountType(raw: string): MountType {
             return MountType.Integrated;
     }
 }
-
-export const CORE_BREW_ID = "core";
-export const USER_BREW_ID = "dyn";
-
 // governs what can be added to a mount (weapon slot)
 export enum FittingSize {
     Auxiliary = "Auxiliary",

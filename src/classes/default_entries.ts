@@ -50,7 +50,6 @@ import { EntryType, RegEntryTypes } from "@src/registry";
 import { nanoid } from "nanoid";
 import {
     ActivationType,
-    CC_VERSION,
     DamageType,
     FrameEffectUse,
     RangeType,
@@ -64,13 +63,9 @@ import {
     MountType,
     NpcTechType,
 } from "@src/enums";
+import { DEFAULT_ACTION_NAME, CC_VERSION, DEFAULT_COLOR, DEFAULT_DESCRIPTION, DEFAULT_ICON, DEFAULT_LOGO } from "../consts";
 import { DeployableType } from "./Deployable";
 
-// Some general defaults
-const description = "No description";
-const color = "#777777";
-const icon = "";
-const logo = icon;
 
 // Our default bonus basically does nothing but allows everything
 export function BONUS(): RegBonusData {
@@ -117,8 +112,8 @@ export function ACTION(): RegActionData {
     return {
         lid: "act_" + nanoid(),
         activation: ActivationType.Quick,
-        detail: description,
-        name: "New Action",
+        detail: DEFAULT_DESCRIPTION,
+        name: DEFAULT_ACTION_NAME,
         confirm: ["CONFIRM"],
         cost: 1,
         frequency: "",
@@ -144,7 +139,7 @@ export function CORE_BONUS(): RegCoreBonusData {
         synergies: [],
         counters: [],
         deployables: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         integrated: [],
         name: "New Core Bonus",
         effect: "",
@@ -157,7 +152,7 @@ export function CORE_BONUS(): RegCoreBonusData {
 export function CORE_SYSTEM(): RegCoreSystemData {
     return {
         name: "New Core System",
-        description,
+        description: DEFAULT_DESCRIPTION,
         use: FrameEffectUse.Unknown,
 
         activation: ActivationType.Quick,
@@ -220,7 +215,7 @@ export function DEPLOYABLE(): RegDeployableData {
 
 export function ENVIRONMENT(): Required<RegEnvironmentData> {
     return {
-        description,
+        description: DEFAULT_DESCRIPTION,
         lid: "env_" + nanoid(),
         name: "New Environment",
     };
@@ -228,10 +223,10 @@ export function ENVIRONMENT(): Required<RegEnvironmentData> {
 
 export function FACTION(): Required<RegFactionData> {
     return {
-        color,
-        description,
+        color: DEFAULT_COLOR,
+        description: DEFAULT_DESCRIPTION,
         lid: "fac_" + nanoid(),
-        logo,
+        logo: DEFAULT_LOGO,
         name: "New Faction",
         logo_url: "",
     };
@@ -245,7 +240,7 @@ export function FRAME_TRAIT(): RegFrameTraitData {
         synergies: [],
         deployables: [],
         integrated: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         name: "New Frame Trait",
         use: FrameEffectUse.Unknown,
     };
@@ -253,7 +248,7 @@ export function FRAME_TRAIT(): RegFrameTraitData {
 
 export function FRAME(): RegFrameData {
     return {
-        description,
+        description: DEFAULT_DESCRIPTION,
         lid: "mf_" + nanoid(),
         license_level: 2,
         mechtype: ["BALANCED"],
@@ -298,10 +293,10 @@ export function LICENSE(): RegLicenseData {
 export function MANUFACTURER(): RegManufacturerData {
     return {
         dark: "#000000",
-        description,
+        description: DEFAULT_DESCRIPTION,
         lid: "man_" + nanoid(),
         light: "#EEEEEE",
-        logo,
+        logo: DEFAULT_LOGO,
         name: "New Manufacturer",
         quote: "We sell mechs and mech accessories",
         logo_url: ""
@@ -399,7 +394,7 @@ export function MECH_SYSTEM(): RegMechSystemData {
         actions: [],
         bonuses: [],
         synergies: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         type: SystemType.System,
     };
 }
@@ -558,7 +553,7 @@ export function NPC_TEMPLATE(): RegNpcTemplateData {
     return {
         lid: "npct_" + nanoid(),
         base_features: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         name: "New Npc Template",
         optional_features: [],
         power: 0,
@@ -612,7 +607,7 @@ export function NPC_STATS(): Required<INpcStats> {
 export function ORGANIZATION(): Required<RegOrganizationData> {
     return {
         actions: "",
-        description,
+        description: DEFAULT_DESCRIPTION,
         efficiency: 0,
         influence: 0,
         name: "New Organization",
@@ -626,7 +621,7 @@ export function PILOT_GEAR(): RegPilotGearData {
         actions: [],
         bonuses: [],
         deployables: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         uses: 0,
         lid: "pg_" + nanoid(),
         name: "New Gear",
@@ -738,7 +733,7 @@ export function RESERVE(): RegReserveData {
         actions: [],
         bonuses: [],
         deployables: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         lid: "res_" + nanoid(),
         synergies: [],
     };
@@ -746,7 +741,7 @@ export function RESERVE(): RegReserveData {
 
 export function SITREP(): Required<RegSitrepData> {
     return {
-        description,
+        description: DEFAULT_DESCRIPTION,
         enemyVictory: "The enemy wins when ___",
         lid: "sit_" + nanoid(),
         name: "New Sitrep",
@@ -774,7 +769,7 @@ export function STATUS(): Required<RegStatusData> {
     return {
         lid: "cond_" + nanoid(),
         effects: [],
-        icon,
+        icon: DEFAULT_ICON,
         name: "New Status/Condition",
         type: "Status",
     };
@@ -782,7 +777,7 @@ export function STATUS(): Required<RegStatusData> {
 
 export function TAG_TEMPLATE(): Required<RegTagTemplateData> {
     return {
-        description,
+        description: DEFAULT_DESCRIPTION,
         lid: "tg_" + nanoid(),
         name: "New Tag",
         hidden: false,
@@ -793,8 +788,8 @@ export function TAG_TEMPLATE(): Required<RegTagTemplateData> {
 export function TALENT(): RegTalentData {
     return {
         curr_rank: 1,
-        description,
-        icon,
+        description: DEFAULT_DESCRIPTION,
+        icon: DEFAULT_ICON,
         lid: "t_" + nanoid(),
         name: "New Talent",
         ranks: [TALENT_RANK(), TALENT_RANK(), TALENT_RANK()],
@@ -809,7 +804,7 @@ export function TALENT_RANK(): RegTalentRank {
         synergies: [],
         counters: [],
         deployables: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         exclusive: false,
         integrated: [],
         name: "Rank X",
@@ -823,7 +818,7 @@ export function QUIRK(): RegQuirkData {
         bonuses: [],
         counters: [],
         deployables: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         integrated: [],
         name: "New Quirk",
         synergies: [],
@@ -844,7 +839,7 @@ export function WEAPON_PROFILE(): RegMechWeaponProfile {
         bonuses: [],
         counters: [],
         damage: [],
-        description,
+        description: DEFAULT_DESCRIPTION,
         effect: "",
         name: "New Profile",
         on_attack: "",
@@ -868,7 +863,7 @@ export function WEAPON_MOD(): RegWeaponModData {
         counters: [],
         deployables: [],
         destroyed: false,
-        description,
+        description: DEFAULT_DESCRIPTION,
         effect: "",
         lid: "wm_" + nanoid(),
         integrated: [],

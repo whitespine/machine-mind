@@ -55,7 +55,7 @@ import {
     NpcTemplate,
     Organization,
 } from "@src/class";
-import { assert } from "node:console";
+import { DEFAULT_ACTION_NAME } from "./consts";
 import {
     RegBonusData,
     PackedBonusData,
@@ -451,7 +451,6 @@ export abstract class SerUtil {
             Actions: Action[];
             Synergies: Synergy[];
             Deployables: Deployable[] /*, Tags: TagInstance[] */;
-            Name?: string;
             OpCtx: OpCtx;
         },
         bonus_src_text: string
@@ -468,6 +467,7 @@ export abstract class SerUtil {
     public static async unpack_basdt(
         src: {
             id: string;
+            name?: string;
             bonuses?: PackedBonusData[];
             actions?: PackedActionData[];
             synergies?: ISynergyData[];
@@ -497,6 +497,13 @@ export abstract class SerUtil {
 
         // Get actions
         let actions = (src.actions ?? []).map(a => Action.unpack(a));
+
+        // Default action names
+        for(let a of actions) {
+            if(a.name == DEFAULT_ACTION_NAME) {
+                a.name = src.name ?? a.name; // Make its activation action just its name
+            }
+        }
 
         return {
             bonuses,

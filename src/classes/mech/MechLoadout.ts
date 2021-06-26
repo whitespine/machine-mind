@@ -3,6 +3,7 @@ import { defaults } from "@src/funcs";
 import {
     EntryType,
     OpCtx,
+    Registry,
     RegRef,
     RegSer,
     SerUtil,
@@ -89,8 +90,8 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         merge_defaults(data, defaults.MECH_LOADOUT());
-        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s).load_done()));
-        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w).load_done()));
+        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s, this).load_done()));
+        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w, this).load_done()));
         if(data.frame) {
             this.Frame = (await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false})) || null;
         } else {
@@ -150,6 +151,11 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         return false;
     }
 
+    // Any bracing mounts
+    public get HasBracingMounts(): boolean {
+        return this.WepMounts.some(wm => wm.Bracing);
+    }
+
     // Resets this mech's mounts to match what the frame should have
     public async reset_weapon_mounts(): Promise<void> {
         this.WepMounts = [];
@@ -182,7 +188,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // We do this quite often. Creates a new empty mount of the specified size
     async AddEmptyWeaponMount(type: MountType): Promise<WeaponMount> {
-        let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] });
+        let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] }, this);
         await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
         mount.reset(); // Give it its default slots
         this.WepMounts.push(mount);
@@ -191,7 +197,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // Sibling to the above
     async AddEmptySystemMount(): Promise<SystemMount> {
-        let mount = new SystemMount(this.Registry, this.OpCtx, { system: null });
+        let mount = new SystemMount(this.Registry, this.OpCtx, { system: null }, this);
         await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
         this.SysMounts.push(mount);
         return mount;
@@ -432,6 +438,10 @@ export class SystemMount extends RegSer<RegSysMountData> {
     System!: MechSystem | null; // The system
     Integrated!: boolean; // Is it integrated?
 
+    constructor(reg: Registry, ctx: OpCtx, data: RegSysMountData, public readonly ParentLoadout: MechLoadout) {
+        super(reg, ctx, data);
+    }
+
     public async load(data: RegSysMountData): Promise<void> {
         if (data.system) {
             this.System = await this.Registry.resolve(this.OpCtx, data.system, {wait_ctx_ready: false});
@@ -452,19 +462,19 @@ export class WeaponSlot {
     Weapon: MechWeapon | null;
     Mod: WeaponMod | null;
     Size: FittingSize; // The size of this individual slot
-    Mount: WeaponMount;
+    ParentMount: WeaponMount;
 
     // Simple constructor
     constructor(
         weapon: MechWeapon | null,
         mod: WeaponMod | null,
         size: FittingSize,
-        mount: WeaponMount
+        public readonly mount: WeaponMount
     ) {
         this.Weapon = weapon;
         this.Mod = mod;
         this.Size = size;
-        this.Mount = mount;
+        this.ParentMount = mount;
     }
 
     // Return error string if this slot cant take the specified item (with or without replacement)
@@ -495,8 +505,11 @@ export class WeaponSlot {
         } else if (!wep) {
             return null; // Empty is fine
         } else if (weapon_size_magnitude(wep.Size) > weapon_size_magnitude(this.Size)) {
-            return "Weapon too large to fit";
-        } else if (this.Mount.Integrated && mod) {
+            // Is it non-superheavy/superheavy without bracing or something?
+            if(wep.Size != WeaponSize.Superheavy || !this.ParentMount.ParentLoadout.HasBracingMounts) {
+                return "Weapon too large to fit";
+            }
+        } else if (this.ParentMount.Integrated && mod) {
             return "Cannot mod integrated weapons";
         } else if (mod && !mod.accepts(wep)) {
             return "Mod cannot be applied to this weapon";
@@ -644,8 +657,8 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         }
 
         // Check that if we are bracing, all slots are empty
-        if (this.Bracing && this.Slots.some(s => s.Weapon)) {
-            return "Superheavy bracing must be empty of weapons";
+        if (this.Bracing && !this.IsEmpty) {
+            return "Superheavy bracing must be empty of weapons and mods";
         }
 
         return null;
@@ -673,9 +686,18 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         return false;
     }
 
+    // Returns true iff this mount is entirely empty
+    public get IsEmpty(): boolean {
+        return !this.Slots.some(x => x.Weapon || x.Mod);
+    }
+
     // Clear all slots
     public reset() {
         this.Slots = this._slots_for_mount(this.MountType);
+    }
+
+    constructor(reg: Registry, ctx: OpCtx, data: RegWepMountData, public readonly ParentLoadout: MechLoadout) {
+        super(reg, ctx, data);
     }
 
     // Pre-populate slots for a mount

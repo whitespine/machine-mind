@@ -21,7 +21,6 @@ import {
     PackedMechLoadoutData,
     RegMechLoadoutData,
     SourcedCounter,
-    PilotSyncHooks,
 } from "@src/interface";
 import {
     EntryType,
@@ -29,12 +28,12 @@ import {
     RegEntry,
     Registry,
     RegRef,
-    SerUtil,
 } from "@src/registry";
-import { CC_VERSION, DamageType } from "@src/enums";
+import {  DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
 import { merge_defaults } from "../default_entries";
 import { AllPilotSyncHooks } from "../GeneralInterfaces";
+import { CC_VERSION } from "@src/consts";
 // import { RegStack } from '../regstack';
 
 interface AllMechData {
