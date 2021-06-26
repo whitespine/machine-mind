@@ -1,5 +1,40 @@
-import { Frame, MechSystem, MechLoadout, MechWeapon, PilotWeapon, WeaponMount, Reserve, Skill, Talent, License, Mech, PilotArmor, PilotGear, Deployable, WeaponMod, Faction, CoreBonus, Organization, Pilot, PilotLoadout } from "@src/class";
-import { PackedPilotLoadoutData, PackedMechData, PackedFactionData, PackedMechLoadoutData, PackedMechSystemData, PackedMechWeaponSaveData, PackedMountData, PackedPilotEquipmentState, PackedReserveData, PackedPilotData, PackedEquipmentData, PackedSkillData, PackedOrganizationData } from "@src/interface";
+import {
+    Frame,
+    MechSystem,
+    MechLoadout,
+    MechWeapon,
+    PilotWeapon,
+    WeaponMount,
+    Reserve,
+    Skill,
+    Talent,
+    License,
+    Mech,
+    PilotArmor,
+    PilotGear,
+    Deployable,
+    WeaponMod,
+    Faction,
+    CoreBonus,
+    Organization,
+    Pilot,
+    PilotLoadout,
+} from "@src/class";
+import {
+    PackedPilotLoadoutData,
+    PackedMechData,
+    PackedFactionData,
+    PackedMechLoadoutData,
+    PackedMechSystemData,
+    PackedMechWeaponSaveData,
+    PackedMountData,
+    PackedPilotEquipmentState,
+    PackedReserveData,
+    PackedPilotData,
+    PackedEquipmentData,
+    PackedSkillData,
+    PackedOrganizationData,
+} from "@src/interface";
 import { EntryType, LiveEntryTypes, RegCat, Registry, RegRef } from "@src/registry";
 
 export interface IImageContainer {
@@ -41,29 +76,29 @@ export interface PackedRankedData {
     custom_detail?: string;
 }
 export interface IMechState {
-    active_mech_id: string,
-    stage: string,
-    turn: number,
-    actions: number,
-    braced: boolean,
-    overcharged: boolean,
-    prepare: boolean,
-    bracedCooldown: boolean,
-    redundant: boolean,
-    mounted: boolean,
+    active_mech_id: string;
+    stage: string;
+    turn: number;
+    actions: number;
+    braced: boolean;
+    overcharged: boolean;
+    prepare: boolean;
+    bracedCooldown: boolean;
+    redundant: boolean;
+    mounted: boolean;
     stats: {
-        moves: number,
-        kills: number,
-        damage: number,
-        hp_damage: number,
-        structure_damage: number,
-        overshield: number,
-        heat_damage: number,
-        reactor_damage: number,
-        overcharge_uses: number,
-        core_uses: number
-    },
-    deployed: []
+        moves: number;
+        kills: number;
+        damage: number;
+        hp_damage: number;
+        structure_damage: number;
+        overshield: number;
+        heat_damage: number;
+        reactor_damage: number;
+        overcharge_uses: number;
+        core_uses: number;
+    };
+    deployed: [];
 }
 export interface IHistoryItem {
     field: string;
@@ -137,33 +172,93 @@ export interface PilotSyncHooks {
 
     // The callbacks should edit the first argument in place before it is saved. Note that the packed data is provided for reference - edits to it will do nothing
     // - If is_new is specified, then that item was just created/insinuated
-    // 
+    //
     // pre_sync_save<T extends EntryType>(item: LiveEntryTypes<T>, is_new: boolean): Promise<void> | void;
 
     // Items are processed innermost -> outermost. So, weapons before mounts before loadouts before mechs
     sync_pilot?: (item: Pilot, from_raw: PackedPilotData, is_new: boolean) => Promise<void> | void;
     sync_mech?: (item: Mech, from_raw: PackedMechData, is_new: boolean) => Promise<void> | void;
-    sync_mech_weapon?: (item: MechWeapon, from_raw: PackedMechWeaponSaveData, is_new: boolean) => Promise<void> | void;
-    sync_mech_system?: (item: MechSystem, from_raw: PackedEquipmentData, is_new: boolean) => Promise<void> | void;
-    sync_frame?: (item: Frame, from_raw: PackedMechData , is_new: boolean) => Promise<void> | void; // raw is just an id. we don't get a lot to go on here
-    sync_core_bonus?: (item: CoreBonus, from_raw: PackedPilotData , is_new: boolean) => Promise<void> | void; // raw is just an id, so we provide full pilot as context. Maybe it'll help more, idk
-    sync_pilot_weapon?: (item: PilotWeapon, from_raw: PackedPilotEquipmentState, is_new: boolean) => Promise<void> | void;
-    sync_pilot_armor?: (item: PilotArmor, from_raw: PackedPilotEquipmentState, is_new: boolean) => Promise<void> | void;
-    sync_pilot_gear?: (item: PilotGear, from_raw: PackedPilotEquipmentState, is_new: boolean) => Promise<void> | void;
-    sync_loadout?: (item: MechLoadout, from_raw: PackedMechLoadoutData, is_new: boolean) => Promise<void> | void;
-    sync_pilot_loadout?: (item: PilotLoadout, from_raw: PackedPilotLoadoutData, is_new: boolean) => Promise<void> | void;
-    sync_weapon_mount?: (item: WeaponMount, from_raw: PackedMountData, is_new: boolean) => Promise<void> | void; // here is your chance to get mounts as well
-    sync_weapon_mod?: (item: WeaponMod, from_raw: PackedEquipmentData, is_new: boolean) => Promise<void> | void; // here is your chance to get mounts as well
-    sync_reserve?: (item: Reserve, from_raw: PackedReserveData, is_new: boolean) => Promise<void> | void;
+    sync_mech_weapon?: (
+        item: MechWeapon,
+        from_raw: PackedMechWeaponSaveData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_mech_system?: (
+        item: MechSystem,
+        from_raw: PackedEquipmentData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_frame?: (item: Frame, from_raw: PackedMechData, is_new: boolean) => Promise<void> | void; // raw is just an id. we don't get a lot to go on here
+    sync_core_bonus?: (
+        item: CoreBonus,
+        from_raw: PackedPilotData,
+        is_new: boolean
+    ) => Promise<void> | void; // raw is just an id, so we provide full pilot as context. Maybe it'll help more, idk
+    sync_pilot_weapon?: (
+        item: PilotWeapon,
+        from_raw: PackedPilotEquipmentState,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_pilot_armor?: (
+        item: PilotArmor,
+        from_raw: PackedPilotEquipmentState,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_pilot_gear?: (
+        item: PilotGear,
+        from_raw: PackedPilotEquipmentState,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_loadout?: (
+        item: MechLoadout,
+        from_raw: PackedMechLoadoutData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_pilot_loadout?: (
+        item: PilotLoadout,
+        from_raw: PackedPilotLoadoutData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_weapon_mount?: (
+        item: WeaponMount,
+        from_raw: PackedMountData,
+        is_new: boolean
+    ) => Promise<void> | void; // here is your chance to get mounts as well
+    sync_weapon_mod?: (
+        item: WeaponMod,
+        from_raw: PackedEquipmentData,
+        is_new: boolean
+    ) => Promise<void> | void; // here is your chance to get mounts as well
+    sync_reserve?: (
+        item: Reserve,
+        from_raw: PackedReserveData,
+        is_new: boolean
+    ) => Promise<void> | void;
     // sync_faction(item: Faction, from_raw: PackedFactionData, is_new: boolean): Promise<void> | void;
-    sync_organization?: (item: Organization, from_raw: PackedOrganizationData, is_new: boolean) => Promise<void> | void;
-    sync_trigger?: (item: Skill, from_raw: PackedPilotData["skills"][0], is_new: boolean) => Promise<void> | void;
-    sync_talent?: (item: Talent, from_raw: PackedRankedData, is_new: boolean) => Promise<void> | void;
-    sync_license?: (item: License, from_raw: PackedRankedData, is_new: boolean) => Promise<void> | void;
+    sync_organization?: (
+        item: Organization,
+        from_raw: PackedOrganizationData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_trigger?: (
+        item: Skill,
+        from_raw: PackedPilotData["skills"][0],
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_talent?: (
+        item: Talent,
+        from_raw: PackedRankedData,
+        is_new: boolean
+    ) => Promise<void> | void;
+    sync_license?: (
+        item: License,
+        from_raw: PackedRankedData,
+        is_new: boolean
+    ) => Promise<void> | void;
 
     // This callback is unique. it is called for any deployables attached to items affected by this synchronization process.
     // It does NOT automatically writeback - do it yourself in this callback if you really waant to
     sync_deployable_nosave?: (item: Deployable) => Promise<void> | void;
 }
 
-export type AllPilotSyncHooks = PilotSyncHooks & InsinuateHooks
+export type AllPilotSyncHooks = PilotSyncHooks & InsinuateHooks;

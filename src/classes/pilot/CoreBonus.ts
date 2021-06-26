@@ -74,16 +74,22 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
         merge_defaults(data, defaults.CORE_BONUS());
         this.LID = data.lid;
         this.Name = data.name;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
+        this.Source = data.source
+            ? await this.Registry.resolve(this.OpCtx, data.source, { wait_ctx_ready: false })
+            : null;
         this.Description = data.description;
         this.Effect = data.effect;
         this.MountedEffect = data.mounted_effect;
         this.Actions = SerUtil.process_actions(data.actions);
         this.Bonuses = SerUtil.process_bonuses(data.bonuses, data.name);
         this.Synergies = SerUtil.process_synergies(data.synergies);
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {
+            wait_ctx_ready: false,
+        });
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
     }
 
     protected save_imp(): RegCoreBonusData {
@@ -116,20 +122,23 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(data.counters);
-        let cbdata: RegCoreBonusData = merge_defaults({
-            lid: data.id,
-            name: data.name,
-            description: data.description,
-            effect: data.effect,
-            integrated,
-            deployables,
-            counters,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
-            mounted_effect: data.mounted_effect ?? "",
-            actions: (data.actions ?? []).map(Action.unpack),
-            bonuses: (data.bonuses ?? []).map(Bonus.unpack),
-            synergies: data.synergies ?? [],
-        }, defaults.CORE_BONUS());
+        let cbdata: RegCoreBonusData = merge_defaults(
+            {
+                lid: data.id,
+                name: data.name,
+                description: data.description,
+                effect: data.effect,
+                integrated,
+                deployables,
+                counters,
+                source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+                mounted_effect: data.mounted_effect ?? "",
+                actions: (data.actions ?? []).map(Action.unpack),
+                bonuses: (data.bonuses ?? []).map(Bonus.unpack),
+                synergies: data.synergies ?? [],
+            },
+            defaults.CORE_BONUS()
+        );
         return reg.get_cat(EntryType.CORE_BONUS).create_live(ctx, cbdata);
     }
 
@@ -153,6 +162,6 @@ export class CoreBonus extends RegEntry<EntryType.CORE_BONUS> {
             deployables: await SerUtil.emit_all(this.Deployables),
             synergies: await SerUtil.emit_all(this.Synergies),
             integrated: this.Integrated.map(i => (i as any).LID ?? ""),
-        }
+        };
     }
 }

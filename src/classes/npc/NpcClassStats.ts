@@ -28,7 +28,7 @@ export class NpcClassStats {
 
     public Stat<T extends keyof INpcClassStats>(key: T, tier: number): number {
         let res = this._stats?.[key]?.[tier - 1] ?? 1;
-        if(Array.isArray(res)) {
+        if (Array.isArray(res)) {
             res = res[0];
         }
         return res;

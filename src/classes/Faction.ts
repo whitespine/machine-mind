@@ -31,14 +31,17 @@ export class Faction extends RegEntry<EntryType.FACTION> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Faction> {
-        let fdata: RegFactionData = merge_defaults({
-            lid: data.id,
-            color: data.color,
-            description: data.description,
-            logo: data.logo,
-            logo_url: data.logo_url,
-            name: data.name,
-        }, defaults.FACTION());
+        let fdata: RegFactionData = merge_defaults(
+            {
+                lid: data.id,
+                color: data.color,
+                description: data.description,
+                logo: data.logo,
+                logo_url: data.logo_url,
+                name: data.name,
+            },
+            defaults.FACTION()
+        );
         return reg.get_cat(EntryType.FACTION).create_live(ctx, fdata);
     }
 
@@ -70,7 +73,7 @@ export class Faction extends RegEntry<EntryType.FACTION> {
             id: this.LID,
             logo: this.Logo,
             name: this.Name,
-            logo_url: this.LogoURL
-        }
+            logo_url: this.LogoURL,
+        };
     }
 }

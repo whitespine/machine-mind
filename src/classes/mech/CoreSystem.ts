@@ -104,8 +104,12 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         this.PassiveName = data.passive_name;
 
         this.Counters = SerUtil.process_counters(data.counters);
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {
+            wait_ctx_ready: false,
+        });
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
     }
 
@@ -159,31 +163,34 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
         let integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
 
         // Get and ref the deployables
-        let unpacked: RegCoreSystemData = merge_defaults({
-            name: data.name,
-            description: data.description,
-            use: data.use,
+        let unpacked: RegCoreSystemData = merge_defaults(
+            {
+                name: data.name,
+                description: data.description,
+                use: data.use,
 
-            activation: data.activation,
-            deactivation: data.deactivation,
+                activation: data.activation,
+                deactivation: data.deactivation,
 
-            active_effect: data.active_effect,
-            active_name: data.active_name,
-            active_synergies: (data.active_synergies ?? []),
-            active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
-            active_actions: (data.active_actions ?? []).map(Action.unpack),
+                active_effect: data.active_effect,
+                active_name: data.active_name,
+                active_synergies: data.active_synergies ?? [],
+                active_bonuses: (data.active_bonuses ?? []).map(Bonus.unpack),
+                active_actions: (data.active_actions ?? []).map(Action.unpack),
 
-            passive_effect: data.passive_effect,
-            passive_name: data.passive_name,
-            passive_synergies: (data.passive_synergies ?? []),
-            passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
-            passive_actions: (data.passive_actions ?? []).map(Action.unpack),
+                passive_effect: data.passive_effect,
+                passive_name: data.passive_name,
+                passive_synergies: data.passive_synergies ?? [],
+                passive_bonuses: (data.passive_bonuses ?? []).map(Bonus.unpack),
+                passive_actions: (data.passive_actions ?? []).map(Action.unpack),
 
-            tags,
-            counters,
-            deployables,
-            integrated,
-        }, defaults.CORE_SYSTEM());
+                tags,
+                counters,
+                deployables,
+                integrated,
+            },
+            defaults.CORE_SYSTEM()
+        );
         return unpacked;
     }
 
@@ -227,9 +234,7 @@ export class CoreSystem extends RegSer<RegCoreSystemData> {
             deactivation: this.Deactivation,
             deployables: await SerUtil.emit_all(this.Deployables),
             integrated: this.Integrated.map(i => (i as any).LID),
-            use: this.Use
-        }
-
-
+            use: this.Use,
+        };
     }
 }

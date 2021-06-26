@@ -50,7 +50,7 @@ export class Environment extends RegEntry<EntryType.ENVIRONMENT> {
         return {
             description: this.Description,
             id: this.LID,
-            name: this.Name
-        }
+            name: this.Name,
+        };
     }
 }

@@ -123,12 +123,15 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotArmor> {
-        let rdata: RegPilotArmorData = merge_defaults({
-            name: data.name,
-            description: data.description,
-            lid: data.id,
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        }, defaults.PILOT_ARMOR());
+        let rdata: RegPilotArmorData = merge_defaults(
+            {
+                name: data.name,
+                description: data.description,
+                lid: data.id,
+                ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            },
+            defaults.PILOT_ARMOR()
+        );
         return reg.get_cat(EntryType.PILOT_ARMOR).create_live(ctx, rdata);
     }
 
@@ -146,8 +149,8 @@ export class PilotArmor extends RegEntry<EntryType.PILOT_ARMOR> {
             bonuses: await SerUtil.emit_all(this.Bonuses),
             deployables: await SerUtil.emit_all(this.Deployables),
             synergies: await SerUtil.emit_all(this.Synergies),
-            tags: await SerUtil.emit_all(this.Tags)
-        }
+            tags: await SerUtil.emit_all(this.Tags),
+        };
     }
 }
 
@@ -194,12 +197,15 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotGear> {
-        let rdata: RegPilotGearData = merge_defaults({
-            lid: data.id,
-            name: data.name,
-            description: data.description,
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        }, defaults.PILOT_GEAR());
+        let rdata: RegPilotGearData = merge_defaults(
+            {
+                lid: data.id,
+                name: data.name,
+                description: data.description,
+                ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            },
+            defaults.PILOT_GEAR()
+        );
         return reg.get_cat(EntryType.PILOT_GEAR).create_live(ctx, rdata);
     }
 
@@ -217,8 +223,8 @@ export class PilotGear extends RegEntry<EntryType.PILOT_GEAR> {
             bonuses: await SerUtil.emit_all(this.Bonuses),
             deployables: await SerUtil.emit_all(this.Deployables),
             synergies: await SerUtil.emit_all(this.Synergies),
-            tags: await SerUtil.emit_all(this.Tags)
-        }
+            tags: await SerUtil.emit_all(this.Tags),
+        };
     }
 }
 
@@ -275,15 +281,18 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<PilotWeapon> {
-        let rdata: RegPilotWeaponData = merge_defaults({
-            name: data.name,
-            effect: data.description,
-            description: data.description,
-            lid: data.id,
-            damage: data.damage.map(d => Damage.unpack(d)),
-            range: data.range.map(Range.unpack),
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        }, defaults.PILOT_WEAPON());
+        let rdata: RegPilotWeaponData = merge_defaults(
+            {
+                name: data.name,
+                effect: data.description,
+                description: data.description,
+                lid: data.id,
+                damage: data.damage.map(d => Damage.unpack(d)),
+                range: data.range.map(Range.unpack),
+                ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            },
+            defaults.PILOT_WEAPON()
+        );
         return reg.get_cat(EntryType.PILOT_WEAPON).create_live(ctx, rdata);
     }
 
@@ -304,7 +313,7 @@ export class PilotWeapon extends RegEntry<EntryType.PILOT_WEAPON> {
             tags: await SerUtil.emit_all(this.Tags),
             damage: await SerUtil.emit_all(this.Damage),
             range: await SerUtil.emit_all(this.Range),
-            effect: this.Effect
-        }
+            effect: this.Effect,
+        };
     }
 }

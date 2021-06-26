@@ -57,7 +57,7 @@ export interface PackedNpcData extends AllNpcData {
     actions: number;
     stats: INpcStatComposite;
     currentStats: INpcStatComposite; // exact usage unclear
-    lastSync?: string | null
+    lastSync?: string | null;
 }
 
 export interface RegNpcData extends AllNpcData {
@@ -128,10 +128,9 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     // We don't cache yet
     public recompute_bonuses() {}
 
-
     // Repopulate all of our cached inventory lists
     public async repopulate_inventory(): Promise<void> {
-        let _opt = {wait_ctx_ready: false};
+        let _opt = { wait_ctx_ready: false };
         let subreg = await this.get_inventory();
         this._features = await subreg.get_cat(EntryType.NPC_FEATURE).list_live(this.OpCtx, _opt);
         this._templates = await subreg.get_cat(EntryType.NPC_TEMPLATE).list_live(this.OpCtx, _opt);
@@ -246,8 +245,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     }
 
     public get Size(): number {
-        let sz =this.stat("size");
-        if(Array.isArray(sz)) {
+        let sz = this.stat("size");
+        if (Array.isArray(sz)) {
             return sz[0];
         } else {
             return sz;
@@ -342,7 +341,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
 export async function npc_cloud_sync(
     data: PackedNpcData,
     npc: Npc,
-    fallback_source_regs: Registry[],
+    fallback_source_regs: Registry[]
     // hooks?: AllHooks,
 ): Promise<Npc> {
     // Refresh the pilot
@@ -366,7 +365,7 @@ export async function npc_cloud_sync(
 
     // Identity
     npc.LID = data.id;
-    npc.Labels = data.labels
+    npc.Labels = data.labels;
     npc.Name = data.name;
     npc.Note = data.note;
     npc.Side = data.side;
@@ -393,10 +392,17 @@ export async function npc_cloud_sync(
     npc.CurrentStructure = data.currentStats.structure ?? 1;
 
     // Counters
-    for(let ctr of data.counter_data) {
+    for (let ctr of data.counter_data) {
         let corr = npc.CustomCounters.find(c => c.Name == ctr.id);
-        if(!corr) {
-            corr = new Counter({lid: ctr.id, name: ctr.id, default_value: 1, min: 0, max: 9999, val: ctr.val});
+        if (!corr) {
+            corr = new Counter({
+                lid: ctr.id,
+                name: ctr.id,
+                default_value: 1,
+                min: 0,
+                max: 9999,
+                val: ctr.val,
+            });
             npc.CustomCounters.push(corr);
         } else {
             corr.Value = ctr.val;
@@ -405,58 +411,73 @@ export async function npc_cloud_sync(
 
     // Item pulling
     // Class
-    let clazz = await fallback_obtain_ref(stack, ctx, {
-        fallback_lid: data.class,
-        id: "",
-        type: EntryType.NPC_CLASS,
-    }, {});
+    let clazz = await fallback_obtain_ref(
+        stack,
+        ctx,
+        {
+            fallback_lid: data.class,
+            id: "",
+            type: EntryType.NPC_CLASS,
+        },
+        {}
+    );
 
     // Npc class has no custom flavor compcon side. Just give a warning
-    if(!clazz) {
+    if (!clazz) {
         console.error("Couldn't find npc class: " + data.class);
     } else {
         // Destroy old class(es)
-        for(let c of npc.Classes) {
-            if(c.RegistryID != clazz.RegistryID) {
-                await c.destroy_entry(); 
+        for (let c of npc.Classes) {
+            if (c.RegistryID != clazz.RegistryID) {
+                await c.destroy_entry();
             }
         }
     }
 
     // Templates. Still no styling, but there are several
-    for(let temp_id of data.templates) {
-        let temp = await fallback_obtain_ref(stack, ctx, {
-            fallback_lid: temp_id,
-            id: "",
-            type: EntryType.NPC_TEMPLATE,
-        }, {});
+    for (let temp_id of data.templates) {
+        let temp = await fallback_obtain_ref(
+            stack,
+            ctx,
+            {
+                fallback_lid: temp_id,
+                id: "",
+                type: EntryType.NPC_TEMPLATE,
+            },
+            {}
+        );
 
-        if(!temp) {
+        if (!temp) {
             console.error("Couldn't find npc template: " + temp_id);
         }
     }
 
     // Items. Have custom flavor and statuses to update
-    for(let packed_item of data.items) {
-        let item = await fallback_obtain_ref(stack, ctx, {
-            fallback_lid: packed_item.itemID,
-            id: "",
-            type: EntryType.NPC_FEATURE,
-        }, {});
+    for (let packed_item of data.items) {
+        let item = await fallback_obtain_ref(
+            stack,
+            ctx,
+            {
+                fallback_lid: packed_item.itemID,
+                id: "",
+                type: EntryType.NPC_FEATURE,
+            },
+            {}
+        );
 
-        if(item) {
+        if (item) {
             // Set fields
             // Name is simple - override if present
             item.Name = packed_item.flavorName.trim() || item.Name;
 
             // Description is weird. If provided, we prefix the item effect with it IFF the effect doesn't already contain the description
-            if(packed_item.description.trim() && !item.Effect.includes(packed_item.description)) {
-                item.Effect = `<i>${packed_item.description}</i><br>${item.Effect}`
+            if (packed_item.description.trim() && !item.Effect.includes(packed_item.description)) {
+                item.Effect = `<i>${packed_item.description}</i><br>${item.Effect}`;
             }
 
             // Set tier override iff the provided tier doesn't match
             let item_tier = Number.parseInt(packed_item.tier.toString()) || 0;
-            if(item_tier != npc.Tier) {
+            if (item_tier != npc.Tier) {
                 item.TierOverride = item_tier;
             } else {
                 item.TierOverride = 0;

@@ -49,7 +49,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
             dark: this.Dark,
             quote: this.Quote,
             description: this.Description,
-            logo_url: this.LogoURL
+            logo_url: this.LogoURL,
         };
     }
 
@@ -58,15 +58,21 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Manufacturer> {
-        return reg.get_cat(EntryType.MANUFACTURER).create_live(ctx, merge_defaults({
-            lid: pmd.id,
-            dark: pmd.dark,
-            description: pmd.description,
-            light: pmd.light,
-            logo: pmd.logo,
-            name: pmd.name,
-            quote: pmd.quote
-        }, defaults.MANUFACTURER()));
+        return reg.get_cat(EntryType.MANUFACTURER).create_live(
+            ctx,
+            merge_defaults(
+                {
+                    lid: pmd.id,
+                    dark: pmd.dark,
+                    description: pmd.description,
+                    light: pmd.light,
+                    logo: pmd.logo,
+                    name: pmd.name,
+                    quote: pmd.quote,
+                },
+                defaults.MANUFACTURER()
+            )
+        );
     }
 
     public GetColor(dark?: boolean): string {
@@ -82,7 +88,7 @@ export class Manufacturer extends RegEntry<EntryType.MANUFACTURER> {
             logo: this.Logo,
             name: this.Name,
             quote: this.Quote,
-            logo_url: this.Logo
-        }
+            logo_url: this.Logo,
+        };
     }
 }

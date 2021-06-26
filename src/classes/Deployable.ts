@@ -60,7 +60,7 @@ export interface PackedDeployableData {
 export enum DeployableType {
     Deployable = "Deployable",
     Drone = "Drone",
-    Mine = "Mine"
+    Mine = "Mine",
 }
 
 export interface RegDeployableData {
@@ -104,7 +104,7 @@ export interface RegDeployableData {
 export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     LID!: string;
     Name!: string;
-    DeployableType!: DeployableType; 
+    DeployableType!: DeployableType;
     Detail!: string;
     Cost!: number; // The limited cost of deploying this
     Instances!: number; // How many should be created in a single deployment
@@ -180,10 +180,10 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         // Filter down to only relevant bonuses
         let filtered: Bonus[];
         // Are we a drone? Then also include drone_ variants
-        if(this.DeployableType === DeployableType.Deployable) {
+        if (this.DeployableType === DeployableType.Deployable) {
             let deployable_lid = "deployable_" + lid;
             filtered = this.AllBonuses.filter(b => b.LID == deployable_lid);
-        } else if(this.DeployableType === DeployableType.Drone) {
+        } else if (this.DeployableType === DeployableType.Drone) {
             let drone_lid = "drone_" + lid;
             filtered = this.AllBonuses.filter(b => b.LID == drone_lid);
         } else {
@@ -245,7 +245,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         return [];
     }
 
-     // Get the most probably activation action. Order of priority is Activate -> Redeploy -> Quick Action
+    // Get the most probably activation action. Order of priority is Activate -> Redeploy -> Quick Action
     get PrimaryActivation(): ActivationType {
         if (this.Activation && this.Activation !== ActivationType.None) {
             return this.Activation;
@@ -297,7 +297,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Counters = data.counters?.map(x => new Counter(x)) || [];
 
         this.Deployer = data.deployer
-            ? await this.Registry.resolve(this.OpCtx, data.deployer, {wait_ctx_ready: false})
+            ? await this.Registry.resolve(this.OpCtx, data.deployer, { wait_ctx_ready: false })
             : null;
     }
 
@@ -349,37 +349,40 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     ): Promise<Deployable> {
         let tags = SerUtil.unpack_tag_instances(reg, dep.tags);
         let counters = SerUtil.unpack_counters_default(dep.counters);
-        let unpacked: RegDeployableData = merge_defaults({
-            lid: `dep_${source_id}_${lid_format_name(dep.name)}`,
-            activation: dep.activation,
-            armor: dep.armor,
-            deactivation: dep.deactivation,
-            deployer: null,
-            detail: dep.detail,
-            edef: dep.edef,
-            evasion: dep.evasion,
-            heatcap: dep.heatcap,
-            instances: dep.instances,
-            name: dep.name,
-            recall: dep.recall,
-            redeploy: dep.redeploy,
-            repcap: dep.repcap,
-            save: dep.save,
-            sensor_range: dep.sensor_range,
-            size: dep.size,
-            speed: dep.speed,
-            synergies: dep.synergies ?? [],
-            tech_attack: dep.tech_attack,
-            type: SerUtil.restrict_enum(DeployableType, DeployableType.Deployable, dep.type),
-            bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
-            actions: (dep.actions ?? []).map(Action.unpack),
-            max_hp: dep.hp,
-            current_hp: dep.hp,
-            avail_mounted: dep.mech ?? true,
-            avail_unmounted: dep.pilot ?? false,
-            counters,
-            tags,
-        }, defaults.DEPLOYABLE());
+        let unpacked: RegDeployableData = merge_defaults(
+            {
+                lid: `dep_${source_id}_${lid_format_name(dep.name)}`,
+                activation: dep.activation,
+                armor: dep.armor,
+                deactivation: dep.deactivation,
+                deployer: null,
+                detail: dep.detail,
+                edef: dep.edef,
+                evasion: dep.evasion,
+                heatcap: dep.heatcap,
+                instances: dep.instances,
+                name: dep.name,
+                recall: dep.recall,
+                redeploy: dep.redeploy,
+                repcap: dep.repcap,
+                save: dep.save,
+                sensor_range: dep.sensor_range,
+                size: dep.size,
+                speed: dep.speed,
+                synergies: dep.synergies ?? [],
+                tech_attack: dep.tech_attack,
+                type: SerUtil.restrict_enum(DeployableType, DeployableType.Deployable, dep.type),
+                bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
+                actions: (dep.actions ?? []).map(Action.unpack),
+                max_hp: dep.hp,
+                current_hp: dep.hp,
+                avail_mounted: dep.mech ?? true,
+                avail_unmounted: dep.pilot ?? false,
+                counters,
+                tags,
+            },
+            defaults.DEPLOYABLE()
+        );
         return reg.get_cat(EntryType.DEPLOYABLE).create_live(ctx, unpacked);
     }
 
@@ -412,7 +415,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             speed: this.BaseSpeed,
             synergies: await SerUtil.emit_all(this.Synergies),
             tags: await SerUtil.emit_all(this.Tags),
-            tech_attack: this.BaseTechAttack
+            tech_attack: this.BaseTechAttack,
         };
     }
 }

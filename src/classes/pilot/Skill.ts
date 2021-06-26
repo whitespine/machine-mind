@@ -87,19 +87,24 @@ export class Skill extends RegEntry<EntryType.SKILL> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<Skill> {
-        let rdata: RegSkillData = merge_defaults({
-            lid: packed_skill.id,
-            description: packed_skill.description,
-            detail: packed_skill.detail,
-            family: packed_skill.family,
-            rank: packed_skill.rank ?? 1,
-            name: packed_skill.name ?? packed_skill.id
-        }, defaults.SKILL());
+        let rdata: RegSkillData = merge_defaults(
+            {
+                lid: packed_skill.id,
+                description: packed_skill.description,
+                detail: packed_skill.detail,
+                family: packed_skill.family,
+                rank: packed_skill.rank ?? 1,
+                name: packed_skill.name ?? packed_skill.id,
+            },
+            defaults.SKILL()
+        );
         return reg.get_cat(EntryType.SKILL).create_live(ctx, rdata);
     }
 
     public async emit(): Promise<PackedSkillData> {
-        console.warn("Currently don't support any waay of determining if a skill is native, so we just assume the answer is yes");
+        console.warn(
+            "Currently don't support any waay of determining if a skill is native, so we just assume the answer is yes"
+        );
         return {
             description: this.Description,
             detail: this.Detail,
@@ -109,7 +114,7 @@ export class Skill extends RegEntry<EntryType.SKILL> {
             rank: this.CurrentRank,
             custom_desc: this.Description,
             custom_detail: this.Detail,
-            custom: true
-        }
+            custom: true,
+        };
     }
 }

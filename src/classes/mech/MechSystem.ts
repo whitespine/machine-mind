@@ -122,7 +122,9 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         merge_defaults(data, defaults.MECH_SYSTEM());
         this.LID = data.lid;
         this.Name = data.name;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
+        this.Source = data.source
+            ? await this.Registry.resolve(this.OpCtx, data.source, { wait_ctx_ready: false })
+            : null;
         this.SysType = data.type;
         this.License = data.license;
         this.LicenseLevel = data.license_level;
@@ -137,7 +139,9 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
         this.Counters = data.counters.map(c => new Counter(c));
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
     }
 
     protected save_imp(): RegMechSystemData {
@@ -168,19 +172,22 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<MechSystem> {
-        let rdata: RegMechSystemData = merge_defaults({
-            name: data.name,
-            sp: data.sp,
-            effect: data.effect,
-            license: data.license,
-            license_level: data.license_level,
-            description: data.description,
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-            lid: data.id,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
-            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
-            counters: SerUtil.unpack_counters_default(data.counters),
-        }, defaults.MECH_SYSTEM());
+        let rdata: RegMechSystemData = merge_defaults(
+            {
+                name: data.name,
+                sp: data.sp,
+                effect: data.effect,
+                license: data.license,
+                license_level: data.license_level,
+                description: data.description,
+                ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+                lid: data.id,
+                source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+                integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
+                counters: SerUtil.unpack_counters_default(data.counters),
+            },
+            defaults.MECH_SYSTEM()
+        );
 
         return reg.get_cat(EntryType.MECH_SYSTEM).create_live(ctx, rdata);
     }
@@ -209,6 +216,6 @@ export class MechSystem extends RegEntry<EntryType.MECH_SYSTEM> {
             tags: await SerUtil.emit_all(this.Tags),
             synergies: await SerUtil.emit_all(this.Synergies),
             integrated: this.Integrated.map(i => (i as any).LID ?? ""),
-        }
+        };
     }
 }

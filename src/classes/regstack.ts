@@ -25,12 +25,12 @@ export async function fallback_resolve_ref<T extends EntryType>(
     ref: Omit<RegRef<T>, "reg_name">
 ): Promise<LiveEntryTypes<T> | null> {
     let rcp: RegRef<T> = { ...ref, reg_name: from.base.name() };
-    let d = await from.base.resolve(ctx, rcp, {wait_ctx_ready: false}); // Don't wait ready here
+    let d = await from.base.resolve(ctx, rcp, { wait_ctx_ready: false }); // Don't wait ready here
     if (!d) {
         // Try all fallbacks
         for (let f of from.fallbacks) {
             rcp.reg_name = f.name();
-            d = await f.resolve(ctx, rcp, {wait_ctx_ready: true}); // Do wait ready 
+            d = await f.resolve(ctx, rcp, { wait_ctx_ready: true }); // Do wait ready
             if (d) {
                 break;
             }
@@ -54,7 +54,7 @@ export async function fallback_obtain_ref<T extends EntryType>(
     if (found && found.Registry.name() != from.base.name()) {
         found = (await found.insinuate(from.base, ctx, hooks)) as LiveEntryTypes<T>;
         found.Flags[FALLBACK_WAS_INSINUATED] = true;
-    } else if(found) {
+    } else if (found) {
         found.Flags[FALLBACK_WAS_INSINUATED] = false;
     }
     return found;

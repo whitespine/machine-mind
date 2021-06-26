@@ -6,14 +6,14 @@
  * Registry data should preferably be non-undefined. undefined -> 0, "", or [] as appropriate.
  * If a more sensible default exists, then it should be assigned during unpack.
  *
- * "Actor" types, represented by InventoriedRegEntry, have the capability to recall their own unique sub-registry. 
+ * "Actor" types, represented by InventoriedRegEntry, have the capability to recall their own unique sub-registry.
  * This functions like any other registry, but is uniquely associated to that actor
  *
- * When a field describes a list of allowed/forbidden fields, [] means NONE. 
- * If you want to `allow` all, then all must be specified. 
+ * When a field describes a list of allowed/forbidden fields, [] means NONE.
+ * If you want to `allow` all, then all must be specified.
  * If you want to forbid none, provide []
  *
- * When an item is written back and one of its reg-entry's failed to resolve, that reference will be removed. 
+ * When an item is written back and one of its reg-entry's failed to resolve, that reference will be removed.
  * This may be changed in the future to represent a sort of `Broken Link` state
  *
  * Use SerUtil generic functions where possible, as this will make mass behavior changes much simpler later
@@ -167,7 +167,12 @@ export enum EntryType {
 }
 
 export function is_inventoried_type(t: EntryType): boolean {
-    return t == EntryType.PILOT || t == EntryType.MECH || t == EntryType.NPC || t == EntryType.DEPLOYABLE;
+    return (
+        t == EntryType.PILOT ||
+        t == EntryType.MECH ||
+        t == EntryType.NPC ||
+        t == EntryType.DEPLOYABLE
+    );
 }
 
 type _RegTypeMap = { [key in EntryType]: object };
@@ -207,7 +212,7 @@ export type RegEntryTypes<T extends EntryType> = T extends keyof FixedRegEntryTy
     ? FixedRegEntryTypes[T]
     : never;
 
-// What compcon holds. 
+// What compcon holds.
 interface FixedPackedEntryTypes {
     // [EntryType.CONDITION]: IStatusData;
     [EntryType.CORE_BONUS]: PackedCoreBonusData;
@@ -381,7 +386,7 @@ export abstract class SerUtil {
     public static restrict_enum<T extends string>(
         enum_: { [key: string]: T },
         default_choice: T,
-        provided?: string 
+        provided?: string
     ): T {
         let choices = this.list_enum(enum_);
         return this.restrict_choices(choices, default_choice, provided);
@@ -458,7 +463,9 @@ export abstract class SerUtil {
         target.Actions = SerUtil.process_actions(src.actions);
         target.Bonuses = SerUtil.process_bonuses(src.bonuses, bonus_src_text);
         target.Synergies = SerUtil.process_synergies(src.synergies);
-        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables ?? [], {wait_ctx_ready: false});
+        target.Deployables = await reg.resolve_many(target.OpCtx, src.deployables ?? [], {
+            wait_ctx_ready: false,
+        });
         // target.Tags = await SerUtil.process_tags(reg, src.tags);
     }
 
@@ -499,8 +506,8 @@ export abstract class SerUtil {
         let actions = (src.actions ?? []).map(a => Action.unpack(a));
 
         // Default action names
-        for(let a of actions) {
-            if(a.name == DEFAULT_ACTION_NAME) {
+        for (let a of actions) {
+            if (a.name == DEFAULT_ACTION_NAME) {
                 a.name = src.name ?? a.name; // Make its activation action just its name
             }
         }
@@ -515,7 +522,7 @@ export abstract class SerUtil {
     }
 
     // Tags are also an exception I'm willing to make. These should ___maybe___ be moved to their respective classes, but for convenience we keeping here.
-    // A typescript wiz could probably abstract it somehow. 
+    // A typescript wiz could probably abstract it somehow.
     public static async process_tags(
         reg: Registry,
         ctx: OpCtx,
@@ -573,7 +580,6 @@ export abstract class RegSer<SourceType> {
         return this;
     }
 
-
     // Populate this item with stuff
     protected abstract load(data: SourceType): Promise<void>;
 
@@ -599,7 +605,7 @@ export abstract class RegEntry<T extends EntryType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
     public readonly OrigData: any; // What was loaded for this reg-entry. Is copied back out on save(), but will be clobbered by any conflicting fields. We make no suppositions about what it is
-    public Flags: {[key: string]: any}; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
+    public Flags: { [key: string]: any }; // Ephemeral data stored on an object. Use however you want. In foundry, we use this to associate with corr. Document
 
     public abstract LID: string;
     public loading: boolean;
@@ -701,7 +707,7 @@ export abstract class RegEntry<T extends EntryType> {
         let refreshed = await this.Registry.get_cat(this.Type).get_live(
             ctx ?? new OpCtx(),
             this.RegistryID,
-            {wait_ctx_ready: true}
+            { wait_ctx_ready: true }
         ); // new opctx to refresh _everything_
         if (!refreshed) {
             console.error("Refresh failed - item was deleted from under MM");
@@ -817,7 +823,7 @@ export abstract class RegEntry<T extends EntryType> {
         let assoc = await this.get_assoc_entries();
 
         // If this item is an inventoried type, make sure we promote to an actor level registry
-        if(this instanceof InventoriedRegEntry) {
+        if (this instanceof InventoriedRegEntry) {
             to_new_reg = await to_new_reg.get_actor_level_reg();
         }
 
@@ -831,11 +837,11 @@ export abstract class RegEntry<T extends EntryType> {
         let new_entry: LiveEntryTypes<T> | null = null;
         let fun_relinked = false;
         if (hooks?.relinker) {
-            new_entry = await hooks.relinker(
+            new_entry = (await hooks.relinker(
                 (this as unknown) as LiveEntryTypes<T>,
                 to_new_reg,
-                to_new_reg.get_cat(this.Type) as any  // As eventually concluded in an hours-long discussion, there's no clean way around this shit
-            ) as LiveEntryTypes<T>;
+                to_new_reg.get_cat(this.Type) as any // As eventually concluded in an hours-long discussion, there's no clean way around this shit
+            )) as LiveEntryTypes<T>;
             fun_relinked = !!new_entry;
         }
 
@@ -846,8 +852,10 @@ export abstract class RegEntry<T extends EntryType> {
             new_entry = await to_new_reg.create_live(this.Type, this.OpCtx, saved);
         }
 
-        if(new_entry.Type != this.Type) {
-            throw new Error(`Insinuation hooks somehow produced an item of a different type (${this.Type} -> ${new_entry.Type}). Aborting.`);
+        if (new_entry.Type != this.Type) {
+            throw new Error(
+                `Insinuation hooks somehow produced an item of a different type (${this.Type} -> ${new_entry.Type}). Aborting.`
+            );
         }
 
         // Update our ID to mimic the new entry's registry id. Note that we might not be a valid live entry at this point - any number of data integrity issues could happen from this hacky transition
@@ -983,15 +991,14 @@ export class OpCtx {
         this.delete(item.Registry.name(), item.RegistryID);
     }
 
-
     // Readiness checking
-    private num_pending_operations: number = 0;  // Incremented whenever the db is entering into a state where not everything it maps to is necessarily loaaded
-    private _pending_readies: Array<(x?: any) => any> = [];  // Promise resolve functions that are 
+    private num_pending_operations: number = 0; // Incremented whenever the db is entering into a state where not everything it maps to is necessarily loaaded
+    private _pending_readies: Array<(x?: any) => any> = []; // Promise resolve functions that are
 
     // Await this to wait until all load functions are finished
     ready(): Promise<void> {
         // If any loading return a promise
-        if(this.num_pending_operations) {
+        if (this.num_pending_operations) {
             return new Promise((succ, fail) => {
                 this._pending_readies.push(succ);
             });
@@ -1010,11 +1017,11 @@ export class OpCtx {
     // When all settled, resolve all ready promises
     _notify_done(entry: RegEntry<any> | RegSer<any>) {
         this.num_pending_operations--;
-        if(this.num_pending_operations <= 0) {
+        if (this.num_pending_operations <= 0) {
             this.num_pending_operations = 0;
 
             // Call all successes and clear
-            for(let p of this._pending_readies) {
+            for (let p of this._pending_readies) {
                 p();
             }
             this._pending_readies = [];
@@ -1040,28 +1047,32 @@ export abstract class RegCat<T extends EntryType> {
 
     // Find value(s) by some set of key-value pairs, checked by == equality
     // All returned values `r` will satisfy that for each `k,v` of criteria, `r[k] == v`
-    abstract lookup_raw(
-        criteria: {[key: string]: any}
-    ): Promise<{ id: string; val: RegEntryTypes<T> }[]>;
+    abstract lookup_raw(criteria: {
+        [key: string]: any;
+    }): Promise<{ id: string; val: RegEntryTypes<T> }[]>;
 
     // Above but maps to get_live for convenience
     async lookup_live(
         ctx: OpCtx,
-        criteria: {[key: string]: any},
+        criteria: { [key: string]: any },
         load_options?: LoadOptions
     ): Promise<Array<LiveEntryTypes<T>>> {
         let lookup = await this.lookup_raw(criteria);
         let results = await Promise.all(lookup.map(l => this.get_live(ctx, l.id, load_options))); // TODO this could be more efficient by mapping directly to revive_func, somehow.
-        return results.filter(x=>x) as Array<LiveEntryTypes<T>>;
+        return results.filter(x => x) as Array<LiveEntryTypes<T>>;
     }
 
     // Find a value by lid. Just wraps above and returns a single result - common enough to warrant its own helper
     lookup_lid_raw(lid: string): Promise<{ id: string; val: RegEntryTypes<T> } | null> {
-        return this.lookup_raw({lid}).then(l => l[0] ?? null);
+        return this.lookup_raw({ lid }).then(l => l[0] ?? null);
     }
 
-    lookup_lid_live(ctx: OpCtx, lid: string, load_options?: LoadOptions): Promise<LiveEntryTypes<T> | null> {
-        return this.lookup_live(ctx, {lid}, load_options).then(l => l[0] ?? null);
+    lookup_lid_live(
+        ctx: OpCtx,
+        lid: string,
+        load_options?: LoadOptions
+    ): Promise<LiveEntryTypes<T> | null> {
+        return this.lookup_live(ctx, { lid }, load_options).then(l => l[0] ?? null);
     }
 
     // Fetches the specific raw item of a category by its ID
@@ -1076,7 +1087,11 @@ export abstract class RegCat<T extends EntryType> {
     }
 
     // Instantiates a live interface of the specific raw item. Convenience wrapper
-    abstract get_live(ctx: OpCtx, id: string, load_options?: LoadOptions): Promise<LiveEntryTypes<T> | null>;
+    abstract get_live(
+        ctx: OpCtx,
+        id: string,
+        load_options?: LoadOptions
+    ): Promise<LiveEntryTypes<T> | null>;
 
     // Fetches all live items of a category. Little expensive but fine when you really need it, e.g. when unpacking
     abstract list_live(ctx: OpCtx, load_options?: LoadOptions): Promise<Array<LiveEntryTypes<T>>>;
@@ -1086,15 +1101,17 @@ export abstract class RegCat<T extends EntryType> {
     abstract update_impl(...items: LiveEntryTypes<T>[]): Promise<void>;
     update(...items: LiveEntryTypes<T>[]): Promise<void> {
         // Sanity check
-        for(let i of items) {
-            if(i.Registry.name() != this.registry.name()) {
-                throw new Error("RegCat should only be tasked with updating items that came from its associated Registry");
+        for (let i of items) {
+            if (i.Registry.name() != this.registry.name()) {
+                throw new Error(
+                    "RegCat should only be tasked with updating items that came from its associated Registry"
+                );
             }
         }
         return this.update_impl(...items);
     }
 
-    // Delete the given id in the given category. 
+    // Delete the given id in the given category.
     abstract delete_id(id: string): Promise<void>;
 
     // Create a new entry(s) in the database with the specified data. Generally, you cannot control the output ID
@@ -1106,8 +1123,10 @@ export abstract class RegCat<T extends EntryType> {
     // A simple singular form if you don't want to mess with arrays
     async create_live(ctx: OpCtx, val: RegEntryTypes<T>): Promise<LiveEntryTypes<T>> {
         // TODO: remove this debug flag, probably
-        if(this.registry.is_inventory && is_inventoried_type(this.cat)) {
-            throw new Error(`Creating inventoried entry type "${this.cat}" inside another inventory is forbidden`);
+        if (this.registry.is_inventory && is_inventoried_type(this.cat)) {
+            throw new Error(
+                `Creating inventoried entry type "${this.cat}" inside another inventory is forbidden`
+            );
         }
 
         let vs = await this.create_many_live(ctx, val);
@@ -1381,9 +1400,9 @@ export function quick_relinker<T extends EntryType>(params: QuickRelinkParams<T>
             if (src_item_val) {
                 let found = await dest_cat.lookup_live(
                     src_item.OpCtx,
-                    { [kp[1]]: src_item_val},
+                    { [kp[1]]: src_item_val },
                     {
-                        wait_ctx_ready: true // I honestly have no idea, but I think this is right
+                        wait_ctx_ready: true, // I honestly have no idea, but I think this is right
                     }
                 );
                 if (found[0]) {

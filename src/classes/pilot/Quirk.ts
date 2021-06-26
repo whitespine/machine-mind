@@ -39,7 +39,9 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
         this.Description = data.description;
 
         SerUtil.load_basd(this.Registry, data, this, this.Name);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
         this.Counters = SerUtil.process_counters(data.counters);
     }
     protected save_imp(): RegQuirkData {
@@ -54,21 +56,24 @@ export class Quirk extends RegEntry<EntryType.QUIRK> {
     }
 
     public static async unpack(raw_quirk: string, reg: Registry, ctx: OpCtx): Promise<Quirk> {
-        let qdata: RegQuirkData = merge_defaults({
-            name: `Quirk: ${raw_quirk
-                .split(" ")
-                .slice(0, 6)
-                .join(" ")}...`, // Show the first 6 words in the name
-            description: raw_quirk,
-        }, defaults.QUIRK());
+        let qdata: RegQuirkData = merge_defaults(
+            {
+                name: `Quirk: ${raw_quirk
+                    .split(" ")
+                    .slice(0, 6)
+                    .join(" ")}...`, // Show the first 6 words in the name
+                description: raw_quirk,
+            },
+            defaults.QUIRK()
+        );
 
         return reg.get_cat(EntryType.QUIRK).create_live(ctx, qdata);
     }
 
     public get_assoc_entries(): RegEntry<any>[] {
         return [...this.Deployables, ...this.Integrated];
-    }    
-    
+    }
+
     public async emit(): Promise<string> {
         return this.Description;
     }

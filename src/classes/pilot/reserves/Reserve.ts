@@ -74,9 +74,13 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
         (this.Actions = SerUtil.process_actions(data.actions)),
             (this.Bonuses = SerUtil.process_bonuses(data.bonuses, this.Name)),
             (this.Synergies = data.synergies.map(x => new Synergy(x)));
-        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {wait_ctx_ready: false});
+        this.Deployables = await this.Registry.resolve_many(this.OpCtx, data.deployables, {
+            wait_ctx_ready: false,
+        });
         this.Counters = data.counters.map(c => new Counter(c));
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
         this.Used = data.used;
     }
 
@@ -139,27 +143,30 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
 
         // Get the counters
         let counters = SerUtil.unpack_counters_default(data.counters);
-        let rdata: RegReserveData = merge_defaults({
-            lid: data.id,
-            consumable: data.consumable,
-            description: data.description,
-            label: data.label,
-            name: data.name,
-            resource_cost: data.resource_cost,
-            resource_name: data.resource_name,
-            resource_note: data.resource_note,
-            type: data.type,
-            used: data.used,
-            bonuses: (data.bonuses ?? []).map(Bonus.unpack),
-            actions: (data.actions ?? []).map(Action.unpack),
-            synergies: data.synergies ?? [],
-            integrated,
-            deployables,
-            counters,
-        }, defaults.RESERVE());
+        let rdata: RegReserveData = merge_defaults(
+            {
+                lid: data.id,
+                consumable: data.consumable,
+                description: data.description,
+                label: data.label,
+                name: data.name,
+                resource_cost: data.resource_cost,
+                resource_name: data.resource_name,
+                resource_note: data.resource_note,
+                type: data.type,
+                used: data.used,
+                bonuses: (data.bonuses ?? []).map(Bonus.unpack),
+                actions: (data.actions ?? []).map(Action.unpack),
+                synergies: data.synergies ?? [],
+                integrated,
+                deployables,
+                counters,
+            },
+            defaults.RESERVE()
+        );
         return reg.get_cat(EntryType.RESERVE).create_live(ctx, rdata);
-    }    
-    
+    }
+
     public async emit(): Promise<PackedReserveData> {
         return {
             id: this.LID,
@@ -179,6 +186,6 @@ export class Reserve extends RegEntry<EntryType.RESERVE> {
             deployables: await SerUtil.emit_all(this.Deployables),
             synergies: await SerUtil.emit_all(this.Synergies),
             integrated: this.Integrated.map(i => (i as any).LID ?? ""),
-        }
+        };
     }
 }

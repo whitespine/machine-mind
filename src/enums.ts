@@ -1,4 +1,3 @@
-
 // Holds enums that are as of yet seen nowhere else
 export enum MountType {
     Main = "Main",

@@ -106,10 +106,14 @@ export class Talent extends RegEntry<EntryType.TALENT> {
                     `TALENT ${r.name} RANK ${this.Ranks.length + 1}`
                 ),
                 Counters: SerUtil.process_counters(r.counters),
-                Deployables: await this.Registry.resolve_many(this.OpCtx, r.deployables, {wait_ctx_ready: false}),
+                Deployables: await this.Registry.resolve_many(this.OpCtx, r.deployables, {
+                    wait_ctx_ready: false,
+                }),
                 Description: r.description,
                 Exclusive: r.exclusive,
-                Integrated: await this.Registry.resolve_many(this.OpCtx, r.integrated, {wait_ctx_ready: false}),
+                Integrated: await this.Registry.resolve_many(this.OpCtx, r.integrated, {
+                    wait_ctx_ready: false,
+                }),
                 Name: r.name,
                 Synergies: SerUtil.process_synergies(r.synergies),
             });
@@ -148,25 +152,33 @@ export class Talent extends RegEntry<EntryType.TALENT> {
         // Process talent ranks
         let ranks: RegTalentRank[] = [];
         for (let r of data.ranks) {
-            ranks.push(merge_defaults({
-                name: r.name,
-                description: r.description,
-                ...(await SerUtil.unpack_basdt({ id: data.id, ...r }, reg, ctx)),
-                counters: SerUtil.unpack_counters_default(r.counters),
-                integrated: SerUtil.unpack_integrated_refs(reg, r.integrated),
-            }, defaults.TALENT_RANK()));
+            ranks.push(
+                merge_defaults(
+                    {
+                        name: r.name,
+                        description: r.description,
+                        ...(await SerUtil.unpack_basdt({ id: data.id, ...r }, reg, ctx)),
+                        counters: SerUtil.unpack_counters_default(r.counters),
+                        integrated: SerUtil.unpack_integrated_refs(reg, r.integrated),
+                    },
+                    defaults.TALENT_RANK()
+                )
+            );
         }
 
         // Finish with entire reg
-        let rdata: RegTalentData = merge_defaults({
-            description: data.description,
-            icon: data.icon,
-            name: data.name,
-            terse: data.terse,
-            lid: data.id,
-            ranks,
-            curr_rank: 1,
-        }, defaults.TALENT());
+        let rdata: RegTalentData = merge_defaults(
+            {
+                description: data.description,
+                icon: data.icon,
+                name: data.name,
+                terse: data.terse,
+                lid: data.id,
+                ranks,
+                curr_rank: 1,
+            },
+            defaults.TALENT()
+        );
         return reg.get_cat(EntryType.TALENT).create_live(ctx, rdata);
     }
     // Get the rank at the specified number, or null if it doesn't exist. One indexed
@@ -216,7 +228,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
 
     public async emit(): Promise<PackedTalentData> {
         let ranks: PackedTalentRank[] = [];
-        for(let rank of this.Ranks) {
+        for (let rank of this.Ranks) {
             ranks.push({
                 description: rank.Description,
                 exclusive: rank.Exclusive,
@@ -235,7 +247,7 @@ export class Talent extends RegEntry<EntryType.TALENT> {
             id: this.LID,
             name: this.Name,
             terse: this.Terse,
-            ranks
+            ranks,
         };
     }
 }

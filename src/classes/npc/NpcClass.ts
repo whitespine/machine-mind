@@ -53,11 +53,13 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         this.Info = data.info;
         this.Stats = data.base_stats; // new NpcClassStats(data.base_stats);
         this.Power = data.power;
-        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features, {wait_ctx_ready: false});
+        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features, {
+            wait_ctx_ready: false,
+        });
         this.OptionalFeatures = await this.Registry.resolve_many(
             this.OpCtx,
             data.optional_features,
-            {wait_ctx_ready: false}
+            { wait_ctx_ready: false }
         );
     }
 
@@ -79,22 +81,25 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcClass> {
-        let rdata: RegNpcClassData = merge_defaults({
-            // ...data,
-            info: data.info,
-            lid: data.id,
-            name: data.name,
-            power: data.power,
-            role: data.role,
-            base_stats: { ...data.stats },
+        let rdata: RegNpcClassData = merge_defaults(
+            {
+                // ...data,
+                info: data.info,
+                lid: data.id,
+                name: data.name,
+                power: data.power,
+                role: data.role,
+                base_stats: { ...data.stats },
 
-            base_features: data.base_features.map(f =>
-                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
-            ),
-            optional_features: data.optional_features.map(f =>
-                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
-            ),
-        }, defaults.NPC_CLASS());
+                base_features: data.base_features.map(f =>
+                    quick_local_ref(reg, EntryType.NPC_FEATURE, f)
+                ),
+                optional_features: data.optional_features.map(f =>
+                    quick_local_ref(reg, EntryType.NPC_FEATURE, f)
+                ),
+            },
+            defaults.NPC_CLASS()
+        );
         return reg.get_cat(EntryType.NPC_CLASS).create_live(ctx, rdata);
     }
 
@@ -116,7 +121,7 @@ export class NpcClass extends RegEntry<EntryType.NPC_CLASS> {
             name: this.Name,
             power: this.Power,
             role: this.Role,
-            stats: this.Stats
-        }
+            stats: this.Stats,
+        };
     }
 }

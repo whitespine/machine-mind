@@ -63,9 +63,8 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
             influence: this.Influence,
             actions: this.Actions,
         };
-    }    
-    
-    
+    }
+
     public async emit(): Promise<PackedOrganizationData> {
         return {
             name: this.Name,
@@ -73,7 +72,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
             efficiency: this.Efficiency,
             influence: this.Influence,
             purpose: this.Purpose,
-            actions: this.Actions
-        }
+            actions: this.Actions,
+        };
     }
 }

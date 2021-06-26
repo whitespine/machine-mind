@@ -108,21 +108,21 @@ export class Counter extends SimSer<RegCounterData> {
             custom: false,
             default_value: this.Default,
             max: this.Max ?? undefined,
-            min: this.Min
-        }
+            min: this.Min,
+        };
     }
 
     public mark_sourced<T extends EntryType>(from_source: LiveEntryTypes<T>): SourcedCounter<T> {
         // Use this so we can track where counters came from when merging them into lists
         return {
             counter: this,
-            source: from_source
-        }
+            source: from_source,
+        };
     }
 }
 
 /* Represents a counter sourced from a specific entity */
 export interface SourcedCounter<T extends EntryType> {
     counter: Counter;
-    source: LiveEntryTypes<T>
+    source: LiveEntryTypes<T>;
 }

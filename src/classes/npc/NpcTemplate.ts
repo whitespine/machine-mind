@@ -43,11 +43,13 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         this.Name = data.name;
         this.Description = data.description;
         this.Power = data.power;
-        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features, {wait_ctx_ready: false});
+        this.BaseFeatures = await this.Registry.resolve_many(this.OpCtx, data.base_features, {
+            wait_ctx_ready: false,
+        });
         this.OptionalFeatures = await this.Registry.resolve_many(
             this.OpCtx,
             data.optional_features,
-            {wait_ctx_ready: false}
+            { wait_ctx_ready: false }
         );
     }
 
@@ -67,18 +69,21 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
         reg: Registry,
         ctx: OpCtx
     ): Promise<NpcTemplate> {
-        let rdata: RegNpcTemplateData = merge_defaults({
-            description: data.description,
-            lid: data.id,
-            name: data.name,
-            power:  data.power,
-            base_features: data.base_features.map(f =>
-                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
-            ),
-            optional_features: data.optional_features.map(f =>
-                quick_local_ref(reg, EntryType.NPC_FEATURE, f)
-            ),
-        }, defaults.NPC_TEMPLATE());
+        let rdata: RegNpcTemplateData = merge_defaults(
+            {
+                description: data.description,
+                lid: data.id,
+                name: data.name,
+                power: data.power,
+                base_features: data.base_features.map(f =>
+                    quick_local_ref(reg, EntryType.NPC_FEATURE, f)
+                ),
+                optional_features: data.optional_features.map(f =>
+                    quick_local_ref(reg, EntryType.NPC_FEATURE, f)
+                ),
+            },
+            defaults.NPC_TEMPLATE()
+        );
         return reg.get_cat(EntryType.NPC_TEMPLATE).create_live(ctx, rdata);
     }
 
@@ -89,7 +94,7 @@ export class NpcTemplate extends RegEntry<EntryType.NPC_TEMPLATE> {
             id: this.LID,
             description: this.Description,
             name: this.Name,
-            power: this.Power
-        }
+            power: this.Power,
+        };
     }
 }

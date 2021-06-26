@@ -72,32 +72,28 @@ function simple_cat_builder<T extends EntryType>(
 ): StaticRegCat<T> {
     let template = defaults.DEFAULT_FUNC_FOR(type);
     // Our outer builder, which is used during
-    return new StaticRegCat(
-        reg,
-        type,
-        template,
-        async (reg, ctx, id, raw, flag, opts) => { // <--- Revive func
-            // Our actual revive function shared between all cats.
-            // First check for existing item in ctx
-            let pre: LiveEntryTypes<T> | undefined = ctx.get(reg.name(), id) as LiveEntryTypes<T>;
-            if (!pre) {
-                // Otherwise create
-                pre = new clazz(type, reg, ctx, id, raw, flag ?? {});
+    return new StaticRegCat(reg, type, template, async (reg, ctx, id, raw, flag, opts) => {
+        // <--- Revive func
+        // Our actual revive function shared between all cats.
+        // First check for existing item in ctx
+        let pre: LiveEntryTypes<T> | undefined = ctx.get(reg.name(), id) as LiveEntryTypes<T>;
+        if (!pre) {
+            // Otherwise create
+            pre = new clazz(type, reg, ctx, id, raw, flag ?? {});
 
-                // Flag with the some junk, doesn't really matter
-                pre.Flags = flag ?? {};
-            }
-
-            // Wait ready if necessary
-            if(opts?.wait_ctx_ready ?? true) {
-                // await pre.load_done(); -- unnecessary 
-                await pre.ctx_ready();
-            }
-
-            // And we're done
-            return pre;
+            // Flag with the some junk, doesn't really matter
+            pre.Flags = flag ?? {};
         }
-    );
+
+        // Wait ready if necessary
+        if (opts?.wait_ctx_ready ?? true) {
+            // await pre.load_done(); -- unnecessary
+            await pre.ctx_ready();
+        }
+
+        // And we're done
+        return pre;
+    });
 }
 
 // We need this to facillitate items with inventories
@@ -134,7 +130,7 @@ export class StaticReg extends Registry {
     }
 
     // Just delegates to std_builders, as we need
-    constructor(env: RegEnv, name?: string, flagger?: () => {[key: string]: any}) {
+    constructor(env: RegEnv, name?: string, flagger?: () => { [key: string]: any }) {
         super();
         this.env = env;
         this._name = name ?? nanoid();
@@ -190,12 +186,14 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         this.template = default_template;
     }
 
-    async lookup_raw(criteria: {[key: string]: any}): Promise<{ id: string; val: RegEntryTypes<T> }[]> {
-        let result: {id: string, val: RegEntryTypes<T>}[] = [];
+    async lookup_raw(criteria: {
+        [key: string]: any;
+    }): Promise<{ id: string; val: RegEntryTypes<T> }[]> {
+        let result: { id: string; val: RegEntryTypes<T> }[] = [];
         for (let [reg_id, reg_raw] of this.reg_data.entries()) {
             let sat = true;
-            for(let [k, v] of Object.entries(criteria)) {
-                if(reg_raw[k] != v) {
+            for (let [k, v] of Object.entries(criteria)) {
+                if (reg_raw[k] != v) {
                     // Mismatch - fail!
                     sat = false;
                     break;
@@ -219,7 +217,16 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         // We don't really need async, but we would in a normal situation like foundry
         let result: Promise<LiveEntryTypes<T>>[] = [];
         for (let [id, val] of this.reg_data.entries()) {
-            result.push(this.revive_func(this.registry, ctx, id, val, (<StaticReg>this.registry).flagger(), load_options));
+            result.push(
+                this.revive_func(
+                    this.registry,
+                    ctx,
+                    id,
+                    val,
+                    (<StaticReg>this.registry).flagger(),
+                    load_options
+                )
+            );
         }
         return Promise.all(result);
     }
@@ -231,7 +238,13 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
         for (let raw of vals) {
             let new_id = nanoid();
             this.reg_data.set(new_id, raw); // It's just that easy!
-            let viv = this.revive_func(this.registry, ctx, new_id, raw, (<StaticReg>this.registry).flagger());
+            let viv = this.revive_func(
+                this.registry,
+                ctx,
+                new_id,
+                raw,
+                (<StaticReg>this.registry).flagger()
+            );
             revived.push(viv);
         }
 
@@ -267,12 +280,23 @@ export class StaticRegCat<T extends EntryType> extends RegCat<T> {
     }
 
     // Easy, just retrieve from map and revive
-    async get_live(ctx: OpCtx, id: string, load_options: LoadOptions): Promise<LiveEntryTypes<T> | null> {
+    async get_live(
+        ctx: OpCtx,
+        id: string,
+        load_options: LoadOptions
+    ): Promise<LiveEntryTypes<T> | null> {
         let raw = this.reg_data.get(id);
         if (!raw) {
             return null;
         }
-        return this.revive_func(this.registry, ctx, id, raw, (<StaticReg>this.registry).flagger(), load_options);
+        return this.revive_func(
+            this.registry,
+            ctx,
+            id,
+            raw,
+            (<StaticReg>this.registry).flagger(),
+            load_options
+        );
     }
 
     // Just a simple .set call. Check if ID exists first

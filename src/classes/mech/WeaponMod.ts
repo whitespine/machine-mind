@@ -177,7 +177,9 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         this.License = data.license;
         this.LicenseLevel = data.license_level;
         this.LID = data.lid;
-        this.Source = data.source ? await this.Registry.resolve(this.OpCtx, data.source, {wait_ctx_ready: false}) : null;
+        this.Source = data.source
+            ? await this.Registry.resolve(this.OpCtx, data.source, { wait_ctx_ready: false })
+            : null;
 
         this.Name = data.name;
         this.SP = data.sp;
@@ -202,7 +204,9 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
         this.Counters = SerUtil.process_counters(data.counters);
         this.Tags = await SerUtil.process_tags(this.Registry, this.OpCtx, data.tags);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
     }
 
     public static async unpack(
@@ -240,25 +244,28 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             allowed_sizes = allowed_sizes.filter(x => data.allowed_sizes?.includes(x));
         }
 
-        let rdata: RegWeaponModData = merge_defaults({
-            sp: data.sp,
-            effect: data.effect,
-            lid: data.id,
-            name: data.name,
-            license: data.license,
-            license_level: data.license_level,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
-            added_damage: data.added_damage?.map(Damage.unpack) ?? [],
-            added_range: data.added_range?.map(Range.unpack) ?? [],
-            added_tags: SerUtil.unpack_tag_instances(reg, data.added_tags),
-            allowed_sizes: MechWeapon.MakeSizeChecklist(allowed_sizes),
-            allowed_types: MechWeapon.MakeTypeChecklist(allowed_types),
+        let rdata: RegWeaponModData = merge_defaults(
+            {
+                sp: data.sp,
+                effect: data.effect,
+                lid: data.id,
+                name: data.name,
+                license: data.license,
+                license_level: data.license_level,
+                source: quick_local_ref(reg, EntryType.MANUFACTURER, data.source),
+                added_damage: data.added_damage?.map(Damage.unpack) ?? [],
+                added_range: data.added_range?.map(Range.unpack) ?? [],
+                added_tags: SerUtil.unpack_tag_instances(reg, data.added_tags),
+                allowed_sizes: MechWeapon.MakeSizeChecklist(allowed_sizes),
+                allowed_types: MechWeapon.MakeTypeChecklist(allowed_types),
 
-            // Boring stuff
-            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
-            counters: SerUtil.unpack_counters_default(data.counters),
-            ...(await SerUtil.unpack_basdt(data, reg, ctx)),
-        }, defaults.WEAPON_MOD());
+                // Boring stuff
+                integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
+                counters: SerUtil.unpack_counters_default(data.counters),
+                ...(await SerUtil.unpack_basdt(data, reg, ctx)),
+            },
+            defaults.WEAPON_MOD()
+        );
         return reg.get_cat(EntryType.WEAPON_MOD).create_live(ctx, rdata);
     }
 
@@ -276,7 +283,7 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             license: this.License,
             license_level: this.LicenseLevel,
             sp: this.SP,
-        
+
             added_damage: await SerUtil.emit_all(this.AddedDamage),
             added_range: await SerUtil.emit_all(this.AddedRange),
             added_tags: await SerUtil.emit_all(this.AddedTags),
@@ -293,6 +300,6 @@ export class WeaponMod extends RegEntry<EntryType.WEAPON_MOD> {
             tags: await SerUtil.emit_all(this.Tags),
             synergies: await SerUtil.emit_all(this.Synergies),
             integrated: this.Integrated.map(i => (i as any).LID ?? ""),
-        }
+        };
     }
 }

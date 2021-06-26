@@ -48,10 +48,22 @@ import {
     PackedTagTemplateData,
     PackedFactionData,
 } from "@src/interface";
-import { EntryType, LiveEntryTypes, OpCtx, PackedEntryTypes, RegEntry, RegEntryTypes, Registry } from "@src/registry";
+import {
+    EntryType,
+    LiveEntryTypes,
+    OpCtx,
+    PackedEntryTypes,
+    RegEntry,
+    RegEntryTypes,
+    Registry,
+} from "@src/registry";
 import { RegEnv, StaticReg } from "@src/static_registry";
 import { LicensedItem } from "./License";
-import { PackedPilotArmorData, PackedPilotGearData, PackedPilotWeaponData } from "./pilot/PilotEquipment";
+import {
+    PackedPilotArmorData,
+    PackedPilotGearData,
+    PackedPilotWeaponData,
+} from "./pilot/PilotEquipment";
 
 export interface IContentPackManifest {
     name: string;
@@ -95,17 +107,24 @@ export interface IContentPack {
 }
 
 // Used for filtering while intaking
-type IntakeFilterFunc<T extends EntryType = EntryType> = (type: T, value: RegEntryTypes<T>) => boolean;
-type Unpacker<T extends EntryType> = ((dat: PackedEntryTypes<T>, reg: Registry, ctx: OpCtx) => Promise<LiveEntryTypes<T>>);
+type IntakeFilterFunc<T extends EntryType = EntryType> = (
+    type: T,
+    value: RegEntryTypes<T>
+) => boolean;
+type Unpacker<T extends EntryType> = (
+    dat: PackedEntryTypes<T>,
+    reg: Registry,
+    ctx: OpCtx
+) => Promise<LiveEntryTypes<T>>;
 
 async function intake_cat<T extends EntryType>(
     type: T,
-    items: PackedEntryTypes<T>[], 
-    to_registry: Registry, 
-    in_ctx: OpCtx, 
+    items: PackedEntryTypes<T>[],
+    to_registry: Registry,
+    in_ctx: OpCtx,
     unpacker: Unpacker<T>,
-    filter?: IntakeFilterFunc): Promise<LiveEntryTypes<T>[]> {
-
+    filter?: IntakeFilterFunc
+): Promise<LiveEntryTypes<T>[]> {
     // Let us begin. Get rid of error frames/weapons/items
     const error_predicate = (x: any) => x.name != "ERR: DATA NOT FOUND";
     items = items.filter(error_predicate);
@@ -116,10 +135,10 @@ async function intake_cat<T extends EntryType>(
     // Unpack all
     let result: Promise<LiveEntryTypes<T>>[] = [];
     for (let i of items) {
-        if(filter) {
+        if (filter) {
             let tmp = await unpacker(i, tmp_filter_reg, tmp_ctx);
             // Don't save - use orig data. Saving/writebacking will destroy unresolved refs (for now)
-            if(!filter(type, tmp.OrigData)) {
+            if (!filter(type, tmp.OrigData)) {
                 continue;
             }
         }
@@ -129,8 +148,12 @@ async function intake_cat<T extends EntryType>(
     return Promise.all(result);
 }
 
-export async function intake_pack(pack: IContentPack, to_registry: Registry, filter?: IntakeFilterFunc) {
-    // If provided, the filter will let us decide if we should add the item. 
+export async function intake_pack(
+    pack: IContentPack,
+    to_registry: Registry,
+    filter?: IntakeFilterFunc
+) {
+    // If provided, the filter will let us decide if we should add the item.
     // If filter returns true, then we proceed
 
     // A small (actually HUGE) note: These things will in all likelihood be super busted ref-wise!
@@ -142,13 +165,21 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry, fil
     let ctx = new OpCtx();
     let licenseables: LicensedItem[] = [];
 
-    const incat = <T extends EntryType>(type:T, items: PackedEntryTypes<T>[], unpacker: Unpacker<T>) => intake_cat(type, items, reg, ctx, unpacker, filter);
+    const incat = <T extends EntryType>(
+        type: T,
+        items: PackedEntryTypes<T>[],
+        unpacker: Unpacker<T>
+    ) => intake_cat(type, items, reg, ctx, unpacker, filter);
     await incat(EntryType.MANUFACTURER, d.manufacturers, Manufacturer.unpack);
     await incat(EntryType.FACTION, d.factions, Faction.unpack);
     await incat(EntryType.CORE_BONUS, d.coreBonuses, CoreBonus.unpack);
     licenseables = licenseables.concat(await incat(EntryType.FRAME, d.frames, Frame.unpack));
-    licenseables = licenseables.concat(await incat(EntryType.MECH_WEAPON, d.weapons, MechWeapon.unpack));
-    licenseables = licenseables.concat(await incat(EntryType.MECH_SYSTEM, d.systems, MechSystem.unpack));
+    licenseables = licenseables.concat(
+        await incat(EntryType.MECH_WEAPON, d.weapons, MechWeapon.unpack)
+    );
+    licenseables = licenseables.concat(
+        await incat(EntryType.MECH_SYSTEM, d.systems, MechSystem.unpack)
+    );
     licenseables = licenseables.concat(await incat(EntryType.WEAPON_MOD, d.mods, WeaponMod.unpack));
     await incat(EntryType.TALENT, d.talents, Talent.unpack);
     await incat(EntryType.TAG, d.tags, TagTemplate.unpack);
@@ -175,7 +206,7 @@ export async function intake_pack(pack: IContentPack, to_registry: Registry, fil
         if (x.License) {
             // Lookup the source. Brittle but workable
             let src_lid = x.OrigData.source.fallback_lid;
-            if(src_lid) {
+            if (src_lid) {
                 let manufacturer = await man_cat.lookup_lid_live(ctx, src_lid);
                 unique_license_names.set(x.License, manufacturer);
             }

@@ -87,14 +87,18 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         this.LID = fd.lid;
         this.License = fd.license;
         this.LicenseLevel = fd.license_level;
-        this.Source = fd.source ? await this.Registry.resolve(this.OpCtx, fd.source, {wait_ctx_ready: false}) : null;
+        this.Source = fd.source
+            ? await this.Registry.resolve(this.OpCtx, fd.source, { wait_ctx_ready: false })
+            : null;
         this.Name = fd.name;
         this.Description = fd.description;
         this.MechType = fd.mechtype;
         this.YPosition = fd.y_pos || 30;
         this.Mounts = fd.mounts;
         this.Stats = fd.stats;
-        this.Traits = await Promise.all(fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft)));
+        this.Traits = await Promise.all(
+            fd.traits.map(ft => new FrameTrait(this.Registry, this.OpCtx, ft))
+        );
         this.CoreSystem = new CoreSystem(this.Registry, this.OpCtx, fd.core_system);
         this.ImageUrl = fd.image_url;
         this.OtherArt = fd.other_art || [];
@@ -122,7 +126,7 @@ export class Frame extends RegEntry<EntryType.FRAME> {
     public static async unpack(frame: PackedFrameData, reg: Registry, ctx: OpCtx): Promise<Frame> {
         // Tweak license to handle alt frames + so that GMS frames just becomes GMS
         let license = frame.variant ?? frame.name;
-        if(license == "EVEREST") {
+        if (license == "EVEREST") {
             license = "GMS";
         }
 
@@ -130,22 +134,25 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             (frame.traits ?? []).map(i => FrameTrait.unpack(i, reg, ctx, frame.id))
         );
         let core_system = await CoreSystem.unpack(frame.core_system, reg, ctx);
-        let fdata: RegFrameData = merge_defaults({
-            description: frame.description,
-            license,
-            license_level: frame.license_level,
-            mechtype: frame.mechtype,
-            mounts: frame.mounts,
-            name: frame.name,
-            stats: frame.stats,
-            y_pos: frame.y_pos,
-            lid: frame.id,
-            source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
-            traits,
-            core_system,
-            image_url: frame.image_url ?? "",
-            other_art: frame.other_art ?? [],
-        }, defaults.FRAME());
+        let fdata: RegFrameData = merge_defaults(
+            {
+                description: frame.description,
+                license,
+                license_level: frame.license_level,
+                mechtype: frame.mechtype,
+                mounts: frame.mounts,
+                name: frame.name,
+                stats: frame.stats,
+                y_pos: frame.y_pos,
+                lid: frame.id,
+                source: quick_local_ref(reg, EntryType.MANUFACTURER, frame.source),
+                traits,
+                core_system,
+                image_url: frame.image_url ?? "",
+                other_art: frame.other_art ?? [],
+            },
+            defaults.FRAME()
+        );
         return reg.get_cat(EntryType.FRAME).create_live(ctx, fdata);
     }
 
@@ -187,8 +194,8 @@ export class Frame extends RegEntry<EntryType.FRAME> {
             image_url: this.ImageUrl,
             other_art: this.OtherArt,
         };
-        if(this.Name != this.License) {
-            result.variant = this.License
+        if (this.Name != this.License) {
+            result.variant = this.License;
         }
         return result;
     }

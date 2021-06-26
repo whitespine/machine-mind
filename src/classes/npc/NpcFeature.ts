@@ -442,13 +442,13 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             locked: false,
             name: this.Name,
             origin: this.Origin,
-            tags: await SerUtil.emit_all(this.Tags) as PackedTagInstanceData[],
+            tags: (await SerUtil.emit_all(this.Tags)) as PackedTagInstanceData[],
             bonus: this.Bonus,
             effect: this.Effect,
-            override: this.Override
-        }
-        switch(this.FeatureType) {
-            case NpcFeatureType.Reaction: 
+            override: this.Override,
+        };
+        switch (this.FeatureType) {
+            case NpcFeatureType.Reaction:
                 let react_result: PackedNpcReactionData = {
                     ...commons,
                     type: NpcFeatureType.Reaction,
@@ -458,47 +458,49 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
             case NpcFeatureType.System:
                 let sys_result: PackedNpcSystemData = {
                     ...commons,
-                    type: NpcFeatureType.System
+                    type: NpcFeatureType.System,
                 };
                 return sys_result;
-            case NpcFeatureType.Tech: 
+            case NpcFeatureType.Tech:
                 let tech_result: PackedNpcTechData = {
                     ...commons,
                     type: NpcFeatureType.Tech,
                     attack_bonus: this.AttackBonus,
                     accuracy: this.Accuracy,
-                    tech_type: this.TechType
+                    tech_type: this.TechType,
                 };
                 return tech_result;
             case NpcFeatureType.Trait:
                 let trait_result: PackedNpcTraitData = {
                     ...commons,
-                    type: NpcFeatureType.Trait
+                    type: NpcFeatureType.Trait,
                 };
                 return trait_result;
             case NpcFeatureType.Weapon:
                 // Gotta coerce backwards
                 let emit_damage: PackedNpcDamageData[] = [];
-                for(let tier=0; tier<this.Damage.length; tier++) {
+                for (let tier = 0; tier < this.Damage.length; tier++) {
                     // This is all damage at this tier
                     let tier_damage = this.Damage[tier];
-                    for(let tier_damage_portion of tier_damage) {
+                    for (let tier_damage_portion of tier_damage) {
                         // This is an individual damage at this tier
-                        let existing = emit_damage.find(d => d.type == tier_damage_portion.DamageType);
+                        let existing = emit_damage.find(
+                            d => d.type == tier_damage_portion.DamageType
+                        );
 
                         // If it exists then we append to it. If it doesnt, we create it
-                        let val = Number.parseInt(tier_damage_portion.Value) || 0
-                        if(existing) {
+                        let val = Number.parseInt(tier_damage_portion.Value) || 0;
+                        if (existing) {
                             existing.damage.push(val);
                         } else {
                             let mt_array: number[] = [];
-                            for(let i=0; i<tier; i++) {
+                            for (let i = 0; i < tier; i++) {
                                 mt_array.push(0);
                             }
                             mt_array.push(val);
                             emit_damage.push({
-                                type:  tier_damage_portion.DamageType,
-                                damage: mt_array
+                                type: tier_damage_portion.DamageType,
+                                damage: mt_array,
                             });
                         }
                     }

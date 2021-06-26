@@ -69,8 +69,8 @@ export class Damage extends SimSer<RegDamageData> {
     public async emit(): Promise<PackedDamageData> {
         return {
             type: this.DamageType,
-            val: this.Value
-        }
+            val: this.Value,
+        };
     }
 
     public copy(): Damage {

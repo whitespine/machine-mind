@@ -13,8 +13,7 @@ function tags(item: TaggedEquippable): TagInstance[] {
 }
 
 export function is_tagged(item: any): item is TaggedEquippable {
-    return item instanceof MechWeapon || Array.isArray((item as any).Tags);  // We trust that the tags are tags
-
+    return item instanceof MechWeapon || Array.isArray((item as any).Tags); // We trust that the tags are tags
 }
 
 export function is_loading(item: TaggedEquippable): boolean {

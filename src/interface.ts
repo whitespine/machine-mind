@@ -8,7 +8,12 @@ export { PackedActionData, RegActionData } from "@src/classes/Action";
 export { PackedBackground, RegBackground } from "@src/classes/Background";
 export { PackedBonusData, RegBonusData, BonusSummary, BonusContext } from "@src/classes/Bonus";
 export { IContentPackManifest, IContentPack, IContentPackData } from "./classes/ContentPack";
-export { PackedCounterData, PackedCounterSaveData, RegCounterData, SourcedCounter } from "./classes/Counter";
+export {
+    PackedCounterData,
+    PackedCounterSaveData,
+    RegCounterData,
+    SourcedCounter,
+} from "./classes/Counter";
 export { PackedCoreBonusData, RegCoreBonusData } from "./classes/pilot/CoreBonus";
 
 export { ISynergyData, SynergyLocation } from "@src/classes/Synergy";

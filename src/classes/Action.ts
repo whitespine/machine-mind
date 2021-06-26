@@ -1,7 +1,13 @@
 import { SerUtil, SimSer } from "@src/registry";
 import { typed_lancer_data } from "@src/data";
 import { ActivationType } from "@src/enums";
-import { SynergyLocation, PackedDamageData, PackedRangeData, RegDamageData, RegRangeData } from "@src/interface";
+import {
+    SynergyLocation,
+    PackedDamageData,
+    PackedRangeData,
+    RegDamageData,
+    RegRangeData,
+} from "@src/interface";
 import { defaults, lid_format_name, remove_null } from "@src/funcs";
 import { nanoid } from "nanoid";
 import { Damage, Range } from "@src/class";
@@ -65,7 +71,7 @@ export class Action extends SimSer<RegActionData> {
 
     // Miscellaneous stuff predominantly used in compcon only. We expose for module devs I guess
     HideActive!: boolean;
-    IgnoreUsed!: boolean
+    IgnoreUsed!: boolean;
     Log!: string;
 
     // Frequency we set as string
@@ -93,28 +99,31 @@ export class Action extends SimSer<RegActionData> {
                 lid = "act_" + nanoid();
             }
         }
-        return merge_defaults({
-            activation: action.activation,
-            detail: action.detail,
-            name: action.name,
-            confirm: action.confirm ?? [`CONFIRM ${action.name}`],
-            cost: action.cost,
-            frequency: action.frequency,
-            heat_cost: action.heat_cost,
-            hide_active: action.hide_active,
-            ignore_used: action.ignore_used,
-            init: action.init,
-            log: action.log,
-            mech: action.mech ?? (action.pilot ? false : true),
-            pilot: action.pilot ?? (action.mech === false),
-            synergy_locations: action.synergy_locations,
+        return merge_defaults(
+            {
+                activation: action.activation,
+                detail: action.detail,
+                name: action.name,
+                confirm: action.confirm ?? [`CONFIRM ${action.name}`],
+                cost: action.cost,
+                frequency: action.frequency,
+                heat_cost: action.heat_cost,
+                hide_active: action.hide_active,
+                ignore_used: action.ignore_used,
+                init: action.init,
+                log: action.log,
+                mech: action.mech ?? (action.pilot ? false : true),
+                pilot: action.pilot ?? action.mech === false,
+                synergy_locations: action.synergy_locations,
 
-            terse: action.terse,
-            trigger: action.trigger,
-            damage: (action.damage ?? []).map(Damage.unpack),
-            range: (action.range ?? []).map(Range.unpack),
-            lid,
-        }, defaults.ACTION());
+                terse: action.terse,
+                trigger: action.trigger,
+                damage: (action.damage ?? []).map(Damage.unpack),
+                range: (action.range ?? []).map(Range.unpack),
+                lid,
+            },
+            defaults.ACTION()
+        );
     }
 
     public load(data: RegActionData): void {
@@ -126,11 +135,11 @@ export class Action extends SimSer<RegActionData> {
             ActivationType.Quick,
             data.activation
         );
-        this.Terse = data.terse ;
+        this.Terse = data.terse;
         this.Detail = data.detail;
-        this.Cost = data.cost ;
+        this.Cost = data.cost;
         this.RawFrequency = data.frequency;
-        this.Init = data.init ;
+        this.Init = data.init;
         this.Trigger = data.trigger;
         this.AvailableMounted = data.mech;
         this.AvailableUnmounted = data.pilot;
@@ -164,10 +173,10 @@ export class Action extends SimSer<RegActionData> {
             confirm: this.ConfirmText,
             hide_active: this.HideActive,
             ignore_used: this.IgnoreUsed,
-            log: this.Log
+            log: this.Log,
         };
     }
-    
+
     public async emit(): Promise<PackedActionData> {
         return remove_null({
             // TODO: Include _all_ fields
@@ -189,7 +198,7 @@ export class Action extends SimSer<RegActionData> {
             damage: await SerUtil.emit_all(this.Damage),
             synergy_locations: this.SynergyLocations,
             terse: this.Terse,
-            trigger: this.Trigger
+            trigger: this.Trigger,
         });
     }
 }

@@ -64,20 +64,23 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
     }
 
     public static async unpack(psd: PackedSitrepData, reg: Registry, ctx: OpCtx): Promise<Sitrep> {
-        let data: RegSitrepData = merge_defaults({
-            description: psd.description,
-            enemyVictory: psd.enemyVictory,
-            name: psd.name,
-            pcVictory: psd.pcVictory,
-            controlZone: psd.controlZone,
-            deployment: psd.deployment,
-            extraction: psd.extraction,
-            noVictory: psd.noVictory,
-            objective: psd.objective,
-            lid: psd.id,
-        }, defaults.SITREP());
+        let data: RegSitrepData = merge_defaults(
+            {
+                description: psd.description,
+                enemyVictory: psd.enemyVictory,
+                name: psd.name,
+                pcVictory: psd.pcVictory,
+                controlZone: psd.controlZone,
+                deployment: psd.deployment,
+                extraction: psd.extraction,
+                noVictory: psd.noVictory,
+                objective: psd.objective,
+                lid: psd.id,
+            },
+            defaults.SITREP()
+        );
         return reg.get_cat(EntryType.SITREP).create_live(ctx, data);
-    }    
+    }
 
     public async emit(): Promise<PackedSitrepData> {
         return {
@@ -85,12 +88,12 @@ export class Sitrep extends RegEntry<EntryType.SITREP> {
             id: this.LID,
             name: this.Name,
             enemyVictory: this.EnemyVictory,
-            pcVictory: this. PcVictory,
+            pcVictory: this.PcVictory,
             controlZone: this.ControlZone,
             deployment: this.Deployment,
             extraction: this.Extraction,
             noVictory: this.NoVictory,
             objective: this.Objective,
-        }
+        };
     }
 }

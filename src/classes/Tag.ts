@@ -117,8 +117,8 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
             name: this.Name,
             description: this.Description,
             filter_ignore: this.FilterIgnore,
-            hidden: this.Hidden
-        }
+            hidden: this.Hidden,
+        };
     }
 }
 
@@ -137,7 +137,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
 
     public async load(data: RegTagInstanceData): Promise<void> {
         this.Value = data.val ?? null;
-        let Tag = await this.Registry.resolve(this.OpCtx, data.tag, {wait_ctx_ready: false});
+        let Tag = await this.Registry.resolve(this.OpCtx, data.tag, { wait_ctx_ready: false });
         if (!Tag) {
             Tag = new TagTemplate(EntryType.TAG, this.Registry, this.OpCtx, "error", {
                 description: "INVALID",
@@ -172,7 +172,7 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
     public async emit(): Promise<PackedTagInstanceData> {
         return {
             id: this.Tag.LID,
-            val: this.Value ?? undefined
-        }
+            val: this.Value ?? undefined,
+        };
     }
 }

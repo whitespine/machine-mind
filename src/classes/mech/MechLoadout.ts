@@ -1,16 +1,12 @@
 import { MechSystem, Mech, MechWeapon, WeaponMod, MechEquipment, Frame } from "@src/class";
 import { defaults } from "@src/funcs";
-import {
-    EntryType,
-    OpCtx,
-    Registry,
-    RegRef,
-    RegSer,
-    SerUtil,
-    SimSer,
-} from "@src/registry";
+import { EntryType, OpCtx, Registry, RegRef, RegSer, SerUtil, SimSer } from "@src/registry";
 import { FittingSize, MountType, WeaponSize } from "@src/enums";
-import { fallback_obtain_ref, FALLBACK_WAS_INSINUATED, RegFallback as RegFallbackStack } from "../regstack";
+import {
+    fallback_obtain_ref,
+    FALLBACK_WAS_INSINUATED,
+    RegFallback as RegFallbackStack,
+} from "../regstack";
 import { merge_defaults } from "../default_entries";
 import { nanoid } from "nanoid";
 import { AllPilotSyncHooks, PackedMechData, PilotSyncHooks } from "@src/interface";
@@ -90,10 +86,20 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async load(data: RegMechLoadoutData): Promise<void> {
         merge_defaults(data, defaults.MECH_LOADOUT());
-        this.SysMounts = await Promise.all(data.system_mounts.map(s => new SystemMount(this.Registry, this.OpCtx, s, this).load_done()));
-        this.WepMounts = await Promise.all(data.weapon_mounts.map(w => new WeaponMount(this.Registry, this.OpCtx, w, this).load_done()));
-        if(data.frame) {
-            this.Frame = (await this.Registry.resolve(this.OpCtx, data.frame, {wait_ctx_ready: false})) || null;
+        this.SysMounts = await Promise.all(
+            data.system_mounts.map(s =>
+                new SystemMount(this.Registry, this.OpCtx, s, this).load_done()
+            )
+        );
+        this.WepMounts = await Promise.all(
+            data.weapon_mounts.map(w =>
+                new WeaponMount(this.Registry, this.OpCtx, w, this).load_done()
+            )
+        );
+        if (data.frame) {
+            this.Frame =
+                (await this.Registry.resolve(this.OpCtx, data.frame, { wait_ctx_ready: false })) ||
+                null;
         } else {
             this.Frame = null;
         }
@@ -188,7 +194,12 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     // We do this quite often. Creates a new empty mount of the specified size
     async AddEmptyWeaponMount(type: MountType): Promise<WeaponMount> {
-        let mount = new WeaponMount(this.Registry, this.OpCtx, { mount_type: type, slots: [] }, this);
+        let mount = new WeaponMount(
+            this.Registry,
+            this.OpCtx,
+            { mount_type: type, slots: [] },
+            this
+        );
         await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
         mount.reset(); // Give it its default slots
         this.WepMounts.push(mount);
@@ -224,18 +235,22 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         );
 
         // Hooksave it
-        if(frame) {
-            if(sync_hooks.sync_frame)
-                await sync_hooks.sync_frame(frame, full_mech_data, frame.Flags[FALLBACK_WAS_INSINUATED]);
+        if (frame) {
+            if (sync_hooks.sync_frame)
+                await sync_hooks.sync_frame(
+                    frame,
+                    full_mech_data,
+                    frame.Flags[FALLBACK_WAS_INSINUATED]
+                );
             await frame.writeback();
 
             // Hook its deployaables
-            if(sync_hooks.sync_deployable_nosave) {
-                for(let d of frame.CoreSystem.Deployables) {
+            if (sync_hooks.sync_deployable_nosave) {
+                for (let d of frame.CoreSystem.Deployables) {
                     await sync_hooks.sync_deployable_nosave(d);
                 }
-                for(let t of frame.Traits) {
-                    for(let d of t.Deployables) {
+                for (let t of frame.Traits) {
+                    for (let d of t.Deployables) {
                         await sync_hooks.sync_deployable_nosave(d);
                     }
                 }
@@ -318,13 +333,13 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 sys.Destroyed = mls.destroyed ?? sys.Destroyed;
                 sys.Cascading = mls.cascading ?? sys.Cascading;
                 sys.Uses = mls.uses ?? sys.Uses;
-                if(sync_hooks.sync_mech_system)
+                if (sync_hooks.sync_mech_system)
                     await sync_hooks.sync_mech_system(sys, mls, sys.Flags[FALLBACK_WAS_INSINUATED]);
                 await sys.writeback();
 
                 // Hook its deployables
-                if(sync_hooks.sync_deployable_nosave) {
-                    for(let d of sys.Deployables) {
+                if (sync_hooks.sync_deployable_nosave) {
+                    for (let d of sys.Deployables) {
                         await sync_hooks.sync_deployable_nosave(d);
                     }
                 }
@@ -340,9 +355,9 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
 
     public async emit(): Promise<PackedMechLoadoutData> {
         let cc_mounts: PackedMountData[] = [];
-        for(let mount of this.WepMounts) {
+        for (let mount of this.WepMounts) {
             let cc_slots: PackedWeaponSlotData[] = [];
-            for(let slot of mount.Slots) {
+            for (let slot of mount.Slots) {
                 // Init an empty slot
                 let cc_slot: PackedWeaponSlotData = {
                     size: slot.Size,
@@ -350,7 +365,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 };
 
                 // Set weapon if it exists
-                if(slot.Weapon) {
+                if (slot.Weapon) {
                     cc_slot.weapon = {
                         cascading: slot.Weapon.Cascading,
                         destroyed: slot.Weapon.Destroyed,
@@ -358,15 +373,15 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                         id: slot.Weapon.LID,
                         note: "",
                         uses: slot.Weapon.Uses,
-                    }
-                    if(slot.Mod) {
+                    };
+                    if (slot.Mod) {
                         cc_slot.weapon.mod = {
                             cascading: slot.Mod.Cascading,
                             destroyed: slot.Mod.Destroyed,
                             id: slot.Mod.LID,
                             note: "",
                             uses: slot.Mod.Uses,
-                        }
+                        };
                     }
                 }
 
@@ -377,7 +392,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 extra: [],
                 lock: false,
                 mount_type: mount.MountType,
-                slots: cc_slots
+                slots: cc_slots,
             });
         }
 
@@ -386,7 +401,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             cascading: s.Cascading,
             destroyed: s.Destroyed,
             note: "",
-        }))
+        }));
 
         return {
             id: `loadout_${nanoid()}`,
@@ -401,35 +416,34 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
                 bonus_effects: [],
                 extra: [],
                 lock: false,
-                mount_type:  MountType.Aux,
+                mount_type: MountType.Aux,
                 slots: [
                     {
                         size: WeaponSize.Aux,
-                        weapon: null 
-                    }
-                ]
+                        weapon: null,
+                    },
+                ],
             },
 
             // Until we properly support this, just back default empty
             improved_armament: {
                 bonus_effects: [],
                 lock: false,
-                mount_type:  MountType.Flex,
+                mount_type: MountType.Flex,
                 slots: [
                     {
                         size: WeaponSize.Aux,
-                        weapon: null
-                    }
+                        weapon: null,
+                    },
                 ],
                 extra: [
                     {
                         size: WeaponSize.Aux,
-                        weapon: null
-                    }
+                        weapon: null,
+                    },
                 ],
-
-            }
-        }
+            },
+        };
     }
 }
 
@@ -438,13 +452,20 @@ export class SystemMount extends RegSer<RegSysMountData> {
     System!: MechSystem | null; // The system
     Integrated!: boolean; // Is it integrated?
 
-    constructor(reg: Registry, ctx: OpCtx, data: RegSysMountData, public readonly ParentLoadout: MechLoadout) {
+    constructor(
+        reg: Registry,
+        ctx: OpCtx,
+        data: RegSysMountData,
+        public readonly ParentLoadout: MechLoadout
+    ) {
         super(reg, ctx, data);
     }
 
     public async load(data: RegSysMountData): Promise<void> {
         if (data.system) {
-            this.System = await this.Registry.resolve(this.OpCtx, data.system, {wait_ctx_ready: false});
+            this.System = await this.Registry.resolve(this.OpCtx, data.system, {
+                wait_ctx_ready: false,
+            });
         } else {
             this.System = null;
         }
@@ -506,7 +527,10 @@ export class WeaponSlot {
             return null; // Empty is fine
         } else if (weapon_size_magnitude(wep.Size) > weapon_size_magnitude(this.Size)) {
             // Is it non-superheavy/superheavy without bracing or something?
-            if(wep.Size != WeaponSize.Superheavy || !this.ParentMount.ParentLoadout.HasBracingMounts) {
+            if (
+                wep.Size != WeaponSize.Superheavy ||
+                !this.ParentMount.ParentLoadout.HasBracingMounts
+            ) {
                 return "Weapon too large to fit";
             }
         } else if (this.ParentMount.Integrated && mod) {
@@ -575,13 +599,17 @@ export class WeaponSlot {
                 this.Weapon.Destroyed = dat.weapon.destroyed ?? this.Weapon.Destroyed;
                 this.Weapon.Cascading = dat.weapon.cascading ?? this.Weapon.Cascading;
                 this.Weapon.Loaded = dat.weapon.loaded ?? this.Weapon.Loaded;
-                if(hooks.sync_mech_weapon)
-                    await hooks.sync_mech_weapon(this.Weapon, dat.weapon, this.Weapon.Flags[FALLBACK_WAS_INSINUATED]);
+                if (hooks.sync_mech_weapon)
+                    await hooks.sync_mech_weapon(
+                        this.Weapon,
+                        dat.weapon,
+                        this.Weapon.Flags[FALLBACK_WAS_INSINUATED]
+                    );
                 await this.Weapon.writeback();
 
                 // Hook its deployables
-                if(hooks.sync_deployable_nosave) {
-                    for(let d of this.Weapon.Deployables) {
+                if (hooks.sync_deployable_nosave) {
+                    for (let d of this.Weapon.Deployables) {
                         await hooks.sync_deployable_nosave(d);
                     }
                 }
@@ -612,11 +640,15 @@ export class WeaponSlot {
                         this.Mod.Uses = mod.uses ?? this.Mod.Uses;
                         this.Mod.Destroyed = mod.destroyed ?? this.Mod.Destroyed;
                         this.Mod.Cascading = mod.cascading ?? this.Mod.Cascading;
-                        if(hooks.sync_weapon_mod)
-                            await hooks.sync_weapon_mod(this.Mod, dat.weapon.mod, this.Weapon.Flags[FALLBACK_WAS_INSINUATED]);
+                        if (hooks.sync_weapon_mod)
+                            await hooks.sync_weapon_mod(
+                                this.Mod,
+                                dat.weapon.mod,
+                                this.Weapon.Flags[FALLBACK_WAS_INSINUATED]
+                            );
                         await this.Mod.writeback();
-                        if(hooks.sync_deployable_nosave) {
-                            for(let d of this.Mod.Deployables) {
+                        if (hooks.sync_deployable_nosave) {
+                            for (let d of this.Mod.Deployables) {
                                 await hooks.sync_deployable_nosave(d);
                             }
                         }
@@ -696,7 +728,12 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         this.Slots = this._slots_for_mount(this.MountType);
     }
 
-    constructor(reg: Registry, ctx: OpCtx, data: RegWepMountData, public readonly ParentLoadout: MechLoadout) {
+    constructor(
+        reg: Registry,
+        ctx: OpCtx,
+        data: RegWepMountData,
+        public readonly ParentLoadout: MechLoadout
+    ) {
         super(reg, ctx, data);
     }
 
@@ -729,7 +766,11 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     }
 
     // Match the provided mount data. Use the provided reg to facillitate lookup of required items from outside of mech
-    public async sync(mnt: PackedMountData, fallback: RegFallbackStack, sync_hooks: PilotSyncHooks) {
+    public async sync(
+        mnt: PackedMountData,
+        fallback: RegFallbackStack,
+        sync_hooks: PilotSyncHooks
+    ) {
         // Init slots based on our size
         this.MountType = mnt.mount_type as MountType;
         this.Slots = this._slots_for_mount(this.MountType);
@@ -746,8 +787,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
             }
         }
 
-        if(sync_hooks.sync_weapon_mount) 
-            await sync_hooks.sync_weapon_mount(this, mnt, true);
+        if (sync_hooks.sync_weapon_mount) await sync_hooks.sync_weapon_mount(this, mnt, true);
     }
 
     public async load(data: RegWepMountData): Promise<void> {
@@ -758,9 +798,11 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         for (let i = 0; i < data.slots.length && i < this.Slots.length; i++) {
             let s = data.slots[i];
             this.Slots[i].Weapon = s.weapon
-                ? await this.Registry.resolve(this.OpCtx, s.weapon, {wait_ctx_ready: false})
+                ? await this.Registry.resolve(this.OpCtx, s.weapon, { wait_ctx_ready: false })
                 : null;
-            this.Slots[i].Mod = s.mod ? await this.Registry.resolve(this.OpCtx, s.mod, {wait_ctx_ready: false}) : null;
+            this.Slots[i].Mod = s.mod
+                ? await this.Registry.resolve(this.OpCtx, s.mod, { wait_ctx_ready: false })
+                : null;
         }
     }
 

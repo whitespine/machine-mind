@@ -64,6 +64,6 @@ export class Status extends RegEntry<EntryType.STATUS> {
             effects: this.Effects,
             icon: this.Icon,
             type: this.Subtype,
-        }
+        };
     }
 }

@@ -22,14 +22,8 @@ import {
     RegMechLoadoutData,
     SourcedCounter,
 } from "@src/interface";
-import {
-    EntryType,
-    InventoriedRegEntry,
-    RegEntry,
-    Registry,
-    RegRef,
-} from "@src/registry";
-import {  DamageType } from "@src/enums";
+import { EntryType, InventoriedRegEntry, RegEntry, Registry, RegRef } from "@src/registry";
+import { DamageType } from "@src/enums";
 import { fallback_obtain_ref, RegFallback } from "../regstack";
 import { merge_defaults } from "../default_entries";
 import { AllPilotSyncHooks } from "../GeneralInterfaces";
@@ -115,7 +109,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public get StatusesAndConditions(): Status[] {
         return [...this._statuses_and_conditions];
     }
-    
+
     private _owned_mech_weapons!: MechWeapon[];
     public get OwnedMechWeapons(): MechWeapon[] {
         return [...this._owned_mech_weapons];
@@ -135,7 +129,6 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public get OwnedFrames(): Frame[] {
         return this._owned_frames;
     }
-
 
     protected enumerate_owned_items(): RegEntry<EntryType>[] {
         return [
@@ -398,8 +391,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             Synergies?: Synergy[];
             Deployables?: Deployable[];
             Counters?: Counter[];
-        },
-        source: Frame | MechSystem  | MechWeapon | WeaponMod 
+        };
+        source: Frame | MechSystem | MechWeapon | WeaponMod;
     }> {
         if (!this.Frame) return [];
         let output: Array<{
@@ -409,8 +402,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
                 Synergies?: Synergy[];
                 Deployables?: Deployable[];
                 Counters?: Counter[];
-            },
-            source: Frame | MechSystem | MechWeapon | WeaponMod
+            };
+            source: Frame | MechSystem | MechWeapon | WeaponMod;
         }> = [];
 
         // Get from equipment
@@ -418,16 +411,18 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             if (include_destroyed || (!item.Destroyed && !item.Cascading)) {
                 output.push({
                     data: item,
-                    source: item 
+                    source: item,
                 });
             }
         }
 
         // Get from frame traits
-        output.push(...this.Frame.Traits.map(t => ({
-            data: t,
-            source: this.Frame!
-        })));
+        output.push(
+            ...this.Frame.Traits.map(t => ({
+                data: t,
+                source: this.Frame!,
+            }))
+        );
 
         // Get from core passive/active. Gotta do a remap
         if (this.Frame.CoreSystem) {
@@ -437,7 +432,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
                     Actions: this.Frame.CoreSystem.PassiveActions ?? [],
                     Synergies: this.Frame.CoreSystem.PassiveSynergies ?? [],
                 },
-                source: this.Frame!
+                source: this.Frame!,
             });
 
             if (this.CoreActive) {
@@ -447,7 +442,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
                         Actions: this.Frame.CoreSystem.ActiveActions ?? [],
                         Synergies: this.Frame.CoreSystem.ActiveSynergies ?? [],
                     },
-                    source: this.Frame!
+                    source: this.Frame!,
                 });
             }
         }
@@ -458,7 +453,9 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     private cached_bonuses: Bonus[] | null = null;
     public get MechBonuses(): Bonus[] {
         if (!this.cached_bonuses) {
-            this.cached_bonuses = this.mech_feature_sources(false).flatMap(x => x.data.Bonuses ?? []);
+            this.cached_bonuses = this.mech_feature_sources(false).flatMap(
+                x => x.data.Bonuses ?? []
+            );
         }
         return this.cached_bonuses;
     }
@@ -473,13 +470,21 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
 
     // Re-populate all of our cached items
     public async repopulate_inventory(): Promise<void> {
-        let _opt = {wait_ctx_ready: false};
+        let _opt = { wait_ctx_ready: false };
         let subreg = await this.get_inventory();
-        this._statuses_and_conditions = await subreg.get_cat(EntryType.STATUS).list_live(this.OpCtx, _opt);
+        this._statuses_and_conditions = await subreg
+            .get_cat(EntryType.STATUS)
+            .list_live(this.OpCtx, _opt);
         this._owned_frames = await subreg.get_cat(EntryType.FRAME).list_live(this.OpCtx, _opt);
-        this._owned_mech_systems = await subreg.get_cat(EntryType.MECH_SYSTEM).list_live(this.OpCtx, _opt);
-        this._owned_mech_weapons = await subreg.get_cat(EntryType.MECH_WEAPON).list_live(this.OpCtx, _opt);
-        this._owned_weapon_mods = await subreg.get_cat(EntryType.WEAPON_MOD).list_live(this.OpCtx, _opt);
+        this._owned_mech_systems = await subreg
+            .get_cat(EntryType.MECH_SYSTEM)
+            .list_live(this.OpCtx, _opt);
+        this._owned_mech_weapons = await subreg
+            .get_cat(EntryType.MECH_WEAPON)
+            .list_live(this.OpCtx, _opt);
+        this._owned_weapon_mods = await subreg
+            .get_cat(EntryType.WEAPON_MOD)
+            .list_live(this.OpCtx, _opt);
     }
 
     public MechSynergies(): Synergy[] {
@@ -495,16 +500,16 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
-    public MechCounters(): SourcedCounter<EntryType.MECH_WEAPON | EntryType.MECH_SYSTEM | EntryType.FRAME | EntryType.WEAPON_MOD>[] {
+    public MechCounters(): SourcedCounter<
+        EntryType.MECH_WEAPON | EntryType.MECH_SYSTEM | EntryType.FRAME | EntryType.WEAPON_MOD
+    >[] {
         let result: SourcedCounter<any>[] = [];
-        for(let s_data of this.mech_feature_sources(true)) {
+        for (let s_data of this.mech_feature_sources(true)) {
             let counters = s_data.data.Counters ?? [];
             result.push(...counters.map(c => c.mark_sourced(s_data.source)));
-
         }
         return result;
     }
-
 
     // -- I/O ---------------------------------------------------------------------------------------
     protected save_imp(): RegMechData {
@@ -539,7 +544,9 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         merge_defaults(data, defaults.MECH());
         let subreg = await this.get_inventory();
         this.LID = data.lid;
-        this.Pilot = data.pilot ? await subreg.resolve(this.OpCtx, data.pilot, {wait_ctx_ready: false}) : null;
+        this.Pilot = data.pilot
+            ? await subreg.resolve(this.OpCtx, data.pilot, { wait_ctx_ready: false })
+            : null;
         this.Name = data.name;
         this.Notes = data.notes;
         this.GmNote = data.gm_note;
@@ -593,8 +600,12 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             burn: this.Burn,
             cc_ver: this.Cc_ver,
             cloud_portrait: this.CloudPortrait,
-            conditions: this.StatusesAndConditions.filter(sc => sc.Subtype == "Condition").map(c => c.Name),
-            statuses: this.StatusesAndConditions.filter(sc => sc.Subtype == "Status").map(s => s.Name),
+            conditions: this.StatusesAndConditions.filter(sc => sc.Subtype == "Condition").map(
+                c => c.Name
+            ),
+            statuses: this.StatusesAndConditions.filter(sc => sc.Subtype == "Status").map(
+                s => s.Name
+            ),
             core_active: this.CoreActive,
             current_core_energy: this.CurrentCoreEnergy,
             current_heat: this.CurrentHeat,
@@ -603,7 +614,11 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             current_repairs: this.CurrentRepairs,
             current_stress: this.CurrentStress,
             current_structure: this.CurrentStructure,
-            defeat: this.Destroyed ? "Destroyed" : this.ReactorDestroyed ? "Reactor Destroyed" : "Unknown",
+            defeat: this.Destroyed
+                ? "Destroyed"
+                : this.ReactorDestroyed
+                ? "Reactor Destroyed"
+                : "Unknown",
             destroyed: this.Destroyed,
             ejected: this.Ejected,
             frame: this.Frame?.LID ?? "mf_everest",
@@ -617,8 +632,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             portrait: this.Portrait,
             reactions: this.Reactions,
             reactor_destroyed: this.ReactorDestroyed,
-            resistances: Damage.FlattenChecklist(this.Resistances)
-        }
+            resistances: Damage.FlattenChecklist(this.Resistances),
+        };
     }
 }
 
@@ -672,7 +687,7 @@ export async function mech_cloud_sync(
 
     // The loadout sync process does basically everything we need for items
     await mech.Loadout.sync(data, packed_loadout, stack, sync_hooks);
-    if(sync_hooks.sync_loadout) 
+    if (sync_hooks.sync_loadout)
         await sync_hooks.sync_loadout(mech.Loadout, packed_loadout, is_new);
 
     // Finally, statuses are _kind of_ simple. Yeet the old ones (TODO: We want to only destroy effects that compcon produces, so as not to destroy custom active effects)
@@ -696,7 +711,6 @@ export async function mech_cloud_sync(
     }
 
     // We always want to insinuate and writeback to be sure we own all of these items
-    if(sync_hooks.sync_mech) 
-        await sync_hooks.sync_mech(mech, data, is_new);
+    if (sync_hooks.sync_mech) await sync_hooks.sync_mech(mech, data, is_new);
     await mech.writeback();
 }

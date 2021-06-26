@@ -20,7 +20,7 @@ export type LicensedItem = LiveEntryTypes<LicensedItemType>;
 // export type LicensedItem = RegEntry<LicensedItemType>;
 
 export interface RegLicenseData {
-    // Its internal identifier. 
+    // Its internal identifier.
     lid: string;
 
     // What's it called (user facing)
@@ -48,13 +48,13 @@ export class LicenseScan {
 
         // Groups the results by id. Does not generate arrays for levels which have nothing
         this.ByLevel = new Map();
-        for(let entry of this.AllItems) {
+        for (let entry of this.AllItems) {
             // Find the existing array
             let arr = this.ByLevel.get(entry.LicenseLevel) ?? [];
             // Add the entry
             arr.push(entry);
             // Set the item in the map, if this is a new array
-            if(arr.length == 1) {
+            if (arr.length == 1) {
                 this.ByLevel.set(entry.LicenseLevel, arr);
             }
         }
@@ -63,9 +63,9 @@ export class LicenseScan {
     // Lists all unlocked items up to the current level. Does not include negative LL items, which shouldn't really exist anyways
     Unlocked(for_level: number): Array<LicensedItem> {
         let result: LicensedItem[] = [];
-        for(let i=0; i <= for_level; i++) {
+        for (let i = 0; i <= for_level; i++) {
             let al = this.ByLevel.get(i);
-            if(al) result.push(...al);
+            if (al) result.push(...al);
         }
         return result;
     }
@@ -74,22 +74,26 @@ export class LicenseScan {
 // Licenses are a bit weird. They don't track specific items, and instead just provide mechanisms for searching registries for all equipment that falls under their license
 // This can be expensive, so cache as appropriate to your context
 export class License extends RegEntry<EntryType.LICENSE> {
-    LID!: string; 
+    LID!: string;
     Name!: string; // The item's display name
     LicenseKey!: string; // This is what will be seen in the "License" field of licensed items. Looser than a regref, because the association is indirect/dynamic/many-many or whatever
     Source!: Manufacturer | null; // This hopefully never really be null, but it is good to be cognizant of the possibility
     CurrentRank!: number;
 
     // Scans all categories of the specified registry. Forces you to provide a ctx because otherwise this is ridiculously expensive for basically no reason
-    public async scan(registries: Registry[], use_ctx: OpCtx, dedup_lids: boolean=true): Promise<LicenseScan> {
+    public async scan(
+        registries: Registry[],
+        use_ctx: OpCtx,
+        dedup_lids: boolean = true
+    ): Promise<LicenseScan> {
         // Get every possibility from this registry
         let all_licensed_items: LicensedItem[] = [];
-        for(let reg of registries) {
+        for (let reg of registries) {
             all_licensed_items.push(
                 ...(await reg.get_cat(EntryType.MECH_WEAPON).list_live(use_ctx)),
                 ...(await reg.get_cat(EntryType.MECH_SYSTEM).list_live(use_ctx)),
                 ...(await reg.get_cat(EntryType.FRAME).list_live(use_ctx)),
-                ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(use_ctx)),
+                ...(await reg.get_cat(EntryType.WEAPON_MOD).list_live(use_ctx))
             );
         }
 
@@ -97,10 +101,10 @@ export class License extends RegEntry<EntryType.LICENSE> {
         all_licensed_items = all_licensed_items.filter(i => i.License == this.LicenseKey);
 
         // Deduplicate LIDs
-        if(dedup_lids) {
+        if (dedup_lids) {
             let new_result: LicensedItem[] = [];
-            for(let l of all_licensed_items) {
-                if(!new_result.find(x => x.LID == l.LID)) {
+            for (let l of all_licensed_items) {
+                if (!new_result.find(x => x.LID == l.LID)) {
                     new_result.push(l);
                 }
             }
@@ -117,7 +121,9 @@ export class License extends RegEntry<EntryType.LICENSE> {
         this.CurrentRank = data.rank;
         this.LicenseKey = data.key;
         if (data.manufacturer) {
-            this.Source = await this.Registry.resolve(this.OpCtx, data.manufacturer, {wait_ctx_ready: false});
+            this.Source = await this.Registry.resolve(this.OpCtx, data.manufacturer, {
+                wait_ctx_ready: false,
+            });
         }
     }
 
@@ -127,10 +133,9 @@ export class License extends RegEntry<EntryType.LICENSE> {
             name: this.Name,
             manufacturer: this.Source?.as_ref() || null,
             rank: this.CurrentRank,
-            key: this.LicenseKey
+            key: this.LicenseKey,
         };
     }
-
 
     public static async unpack(
         license_name: string,
@@ -140,7 +145,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
     ): Promise<License> {
         // Do an initial blank initialization
         let rdata: RegLicenseData = {
-            lid: ("lic_" + license_name.toLowerCase()),
+            lid: "lic_" + license_name.toLowerCase(),
             name: license_name,
             key: license_name,
             manufacturer: man?.as_ref() || null,
@@ -149,5 +154,7 @@ export class License extends RegEntry<EntryType.LICENSE> {
         return reg.get_cat(EntryType.LICENSE).create_live(ctx, rdata);
     }
 
-    public async emit(): Promise<null> {return null}
+    public async emit(): Promise<null> {
+        return null;
+    }
 }

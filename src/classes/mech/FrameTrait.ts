@@ -56,7 +56,9 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         this.Description = data.description;
         this.Use = data.use ?? null;
         await SerUtil.load_basd(this.Registry, data, this, this.Name);
-        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {wait_ctx_ready: false});
+        this.Integrated = await this.Registry.resolve_many(this.OpCtx, data.integrated, {
+            wait_ctx_ready: false,
+        });
         this.Counters = SerUtil.process_counters(data.counters);
     }
 
@@ -77,14 +79,17 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
         ctx: OpCtx,
         frame_id: string
     ): Promise<RegFrameTraitData> {
-        let rdata: RegFrameTraitData = merge_defaults({
-            name: data.name,
-            use: data.use, 
-            description: data.description,
-            ...(await SerUtil.unpack_basdt({ id: frame_id, ...data }, reg, ctx)),
-            counters: SerUtil.unpack_counters_default(data.counters),
-            integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
-        }, defaults.FRAME_TRAIT());
+        let rdata: RegFrameTraitData = merge_defaults(
+            {
+                name: data.name,
+                use: data.use,
+                description: data.description,
+                ...(await SerUtil.unpack_basdt({ id: frame_id, ...data }, reg, ctx)),
+                counters: SerUtil.unpack_counters_default(data.counters),
+                integrated: SerUtil.unpack_integrated_refs(reg, data.integrated),
+            },
+            defaults.FRAME_TRAIT()
+        );
         return rdata;
     }
     public get_assoc_entries(): RegEntry<any>[] {
@@ -92,7 +97,7 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
     }
 
     public async emit(): Promise<PackedFrameTraitData> {
-        return  {
+        return {
             name: this.Name,
             description: this.Description,
 
@@ -104,6 +109,6 @@ export class FrameTrait extends RegSer<RegFrameTraitData> {
             deployables: await SerUtil.emit_all(this.Deployables),
             synergies: await SerUtil.emit_all(this.Synergies),
             integrated: this.Integrated.map(i => (i as any).LID ?? ""),
-        }
+        };
     }
 }

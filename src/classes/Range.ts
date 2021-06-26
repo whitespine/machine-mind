@@ -40,8 +40,8 @@ export class Range extends SimSer<RegRangeData> {
         let parsed = parseInt(this.Value);
         return {
             type: this.RangeType,
-            val: Number.isNaN(parsed) ? this.Value as unknown as number : parsed,
-        }
+            val: Number.isNaN(parsed) ? ((this.Value as unknown) as number) : parsed,
+        };
     }
 
     public copy(): Range {
@@ -90,10 +90,10 @@ export class Range extends SimSer<RegRangeData> {
         // Start building our output
         const output: Range[] = [];
         const ctx = mech.Pilot ? Bonus.ContextFor(mech.Pilot) : {};
-        
-        // Combine the ranges 
+
+        // Combine the ranges
         let base_ranges = profile.BaseRange;
-        if(mod) {
+        if (mod) {
             base_ranges = Range.CombineLists(base_ranges, mod.AddedRange);
         }
 
