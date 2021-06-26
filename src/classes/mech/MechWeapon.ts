@@ -238,6 +238,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         let parent_integrated = SerUtil.unpack_integrated_refs(reg, data.integrated);
         let parent_dep_entries = await Promise.all((data.deployables ?? []).map(i => Deployable.unpack(i, reg, ctx, data.id)));
         let parent_deployables = SerUtil.ref_all(parent_dep_entries);
+        let parent_tags = SerUtil.unpack_tag_instances(reg, data.tags ?? []);
 
         let unpacked: RegMechWeaponData = merge_defaults({
             lid: data.id,
@@ -270,56 +271,56 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
         }
 
         // Unpack them
-        for (let p of packed_profiles) {
+        for (let prof of packed_profiles) {
             // Unpack sub components
             // We pluck out deployables and integrated
-            let filtered_deps = (p.deployables ?? []).filter(d => !parent_dep_entries.find(d2 => d2.Name == d.name));
-            let dep_entries = await Promise.all((filtered_deps).map(i => Deployable.unpack(i, reg, ctx, `${data.id}_${p.name}`)));
+            let filtered_deps = (prof.deployables ?? []).filter(d => !parent_dep_entries.find(d2 => d2.Name == d.name));
+            let dep_entries = await Promise.all((filtered_deps).map(i => Deployable.unpack(i, reg, ctx, `${data.id}_${prof.name}`)));
             let dep_refs = SerUtil.ref_all(dep_entries);
-            let int_refs = SerUtil.unpack_integrated_refs(reg, p.integrated);
+            let int_refs = SerUtil.unpack_integrated_refs(reg, prof.integrated);
             parent_integrated.push(...int_refs);
             parent_deployables.push(...dep_refs);
 
             // Barrageable have a weird interaction.
             let barrageable: boolean;
             let skirmishable: boolean;
-            if(p.barrage == undefined && p.skirmish == undefined) {
+            if(prof.barrage == undefined && prof.skirmish == undefined) {
                 // Neither set. Go with defaults
                 barrageable = true;
                 skirmishable = unpacked.size != WeaponSize.Superheavy;
-            } else if(p.barrage == undefined) {
+            } else if(prof.barrage == undefined) {
                 // Only skirmish set. We assume barrage to be false, in this case. (should we? the data spec is unclear)
-                skirmishable = p.skirmish!;
+                skirmishable = prof.skirmish!;
                 barrageable = false;
-            } else if(p.skirmish == undefined) {
+            } else if(prof.skirmish == undefined) {
                 // Only barrage set. We assume skirmish to be false, in this case.
                 skirmishable = false;
-                barrageable = p.barrage!;
+                barrageable = prof.barrage!;
             } else {
-                skirmishable = p.skirmish!;
-                barrageable = p.barrage!;
+                skirmishable = prof.skirmish!;
+                barrageable = prof.barrage!;
             }
 
             // The rest is left to the profile
-            let tags = SerUtil.unpack_tag_instances(reg, p.tags);
+            let tags = [...parent_tags, ...SerUtil.unpack_tag_instances(reg, prof.tags)];
             let unpacked_profile: RegMechWeaponProfile = {
-                damage: (p.damage || []).map(Damage.unpack),
-                range: (p.range || []).map(Range.unpack),
+                damage: (prof.damage || []).map(Damage.unpack),
+                range: (prof.range || []).map(Range.unpack),
                 tags,
-                effect: p.effect || "",
-                on_attack: p.on_attack || "",
-                on_crit: p.on_crit || "",
-                on_hit: p.on_hit || "",
-                cost: p.cost ?? 1,
+                effect: prof.effect || "",
+                on_attack: prof.on_attack || "",
+                on_crit: prof.on_crit || "",
+                on_hit: prof.on_hit || "",
+                cost: prof.cost ?? 1,
                 barrageable,
                 skirmishable,
-                actions: (p.actions ?? []).map(Action.unpack),
-                bonuses: (p.bonuses ?? []).map(Bonus.unpack),
-                counters: SerUtil.unpack_counters_default(p.counters),
-                description: p.description ?? data.description,
-                name: p.name ?? `${data.name} :: ${unpacked.profiles.length + 1}`,
-                synergies: p.synergies || [],
-                type: SerUtil.restrict_enum(WeaponType, WeaponType.Rifle, p.type ?? data.type)
+                actions: (prof.actions ?? []).map(Action.unpack),
+                bonuses: (prof.bonuses ?? []).map(Bonus.unpack),
+                counters: SerUtil.unpack_counters_default(prof.counters),
+                description: prof.description ?? data.description,
+                name: prof.name ?? `${data.name} :: ${unpacked.profiles.length + 1}`,
+                synergies: prof.synergies || [],
+                type: SerUtil.restrict_enum(WeaponType, WeaponType.Rifle, prof.type ?? data.type)
 
             };
             unpacked.profiles.push(unpacked_profile);
