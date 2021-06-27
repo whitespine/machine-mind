@@ -768,7 +768,8 @@ export function SKILL(): RegSkillData {
 export function STATUS(): Required<RegStatusData> {
     return {
         lid: "cond_" + nanoid(),
-        effects: [],
+        effects: "Unknown effect",
+        terse: "Unknown",
         icon: DEFAULT_ICON,
         name: "New Status/Condition",
         type: "Status",
