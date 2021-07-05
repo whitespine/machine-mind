@@ -110,6 +110,9 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     get IsReliable(): boolean {
         return this.LID === "tg_reliable";
     }
+    get IsSelfHeat(): boolean {
+        return this.LID === "tg_heat_self";
+    }
 
     public async emit(): Promise<PackedTagTemplateData> {
         return {

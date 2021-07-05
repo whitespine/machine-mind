@@ -74,3 +74,12 @@ export function get_reliable(item: TaggedEquippable): number {
     }
     return rel_tag.as_number(0);
 }
+
+// Returns 0 if not heat
+export function get_self_heat(item: TaggedEquippable): number {
+    let rel_tag = tags(item).find(t => t.Tag.IsSelfHeat);
+    if (!rel_tag) {
+        return 0;
+    }
+    return rel_tag.as_number(0);
+}
