@@ -1,6 +1,6 @@
 {
   "name": "machine-mind",
-  "version": "0.2.0-beta.116",
+  "version": "0.2.0-beta.117",
   "description": "Backing data processing types for compcon - total rewrite of existing code from the official project",
   "license": "GPL-3.0-or-later",
   "author": "whitespine",
