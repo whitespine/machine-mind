@@ -40,7 +40,7 @@ export interface PackedWeaponSlotData {
 
 export interface PackedMountData {
     mount_type: string;
-    lock: boolean;
+    lock: boolean; // Superheavy bracing
     slots: PackedWeaponSlotData[];
     extra: PackedWeaponSlotData[]; 
     bonus_effects: string[]; // "cb_mount_retrofitting", "cb_auto_stabilizing_hardpoints"
@@ -80,6 +80,7 @@ export interface RegWepMountData {
         mod: RegRef<EntryType.WEAPON_MOD> | null;
         size: FittingSize;
     }>;
+    bracing: boolean;
 }
 
 export class MechLoadout extends RegSer<RegMechLoadoutData> {
@@ -231,7 +232,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
         let mount = new WeaponMount(
             this.Registry,
             this.OpCtx,
-            { mount_type: type, slots: [] },
+            { mount_type: type, slots: [], bracing: false },
             this
         );
         await mount.load_done(); // Basically a no-op to make sure it doesn't override our stuff
@@ -823,6 +824,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         // if(mnt.bonus_effects.include("cb_auto_stabilizing_hardpoints")) // todo: handle
 
         // Init slots based on our size
+        this.Bracing = mnt.lock;
         this.MountType = mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
 
@@ -845,6 +847,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         merge_defaults(data, defaults.WEAPON_MOUNT_DATA());
         this.MountType = data.mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
+        this.Bracing = data.bracing;
 
         for (let i = 0; i < data.slots.length && i < this.Slots.length; i++) {
             let s = data.slots[i];
@@ -860,6 +863,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
     protected save_imp(): RegWepMountData {
         return {
             mount_type: this.MountType,
+            bracing: this.Bracing,
             slots: this.Slots.map(s => {
                 return {
                     mod: s.Mod?.as_ref() ?? null,

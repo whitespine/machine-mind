@@ -830,6 +830,7 @@ export function WEAPON_MOUNT_DATA(): RegWepMountData {
     return {
         mount_type: MountType.Main,
         slots: [],
+        bracing: false
     };
 }
 
