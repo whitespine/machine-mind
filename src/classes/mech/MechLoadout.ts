@@ -40,7 +40,7 @@ export interface PackedWeaponSlotData {
 
 export interface PackedMountData {
     mount_type: string;
-    lock: boolean; // Superheavy bracing
+    lock?: boolean; // Superheavy bracing
     slots: PackedWeaponSlotData[];
     extra: PackedWeaponSlotData[]; 
     bonus_effects: string[]; // "cb_mount_retrofitting", "cb_auto_stabilizing_hardpoints"
@@ -306,7 +306,7 @@ export class MechLoadout extends RegSer<RegMechLoadoutData> {
             let coerced: PackedMountData = {
                 bonus_effects: [],
                 extra: [],
-                lock: true,
+                lock: false,
                 mount_type: MountType.Integrated,
                 slots: [
                     {
@@ -824,7 +824,7 @@ export class WeaponMount extends RegSer<RegWepMountData> {
         // if(mnt.bonus_effects.include("cb_auto_stabilizing_hardpoints")) // todo: handle
 
         // Init slots based on our size
-        this.Bracing = mnt.lock;
+        this.Bracing = !!mnt.lock;
         this.MountType = mount_type;
         this.Slots = this._slots_for_mount(this.MountType);
 
