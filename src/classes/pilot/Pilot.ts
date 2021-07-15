@@ -870,12 +870,12 @@ export async function cloud_sync(
 
     // These are more user customized items, and need a bit more finagling (a bit like the mech)
     // For reserves, as they lack a meaningful way of identification we just clobber.
+    // TODO - don't clobber?
+    for (let ur of pilot.Reserves) {
+        ur.destroy_entry();
+    }
     for (let data_reserve of data.reserves) {
         // Though we could ref, almost always better to unpack due to custom data
-        // TODO - don't clobber?
-        for (let ur of pilot.Reserves) {
-            ur.destroy_entry();
-        }
         let reserve = await Reserve.unpack(data_reserve, pilot_inv, ctx);
 
         // Do a sync save writeback
