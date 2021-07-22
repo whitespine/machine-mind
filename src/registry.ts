@@ -556,12 +556,20 @@ export abstract class SimSer<S> {
 export abstract class RegSer<SourceType> {
     public readonly Registry: Registry;
     public readonly OpCtx: OpCtx;
-    private loading_promise: Promise<void>;
+    protected loading_promise: Promise<void>;
 
     // Setup
-    constructor(registry: Registry, ctx: OpCtx, data: SourceType) {
+    constructor(registry: Registry, ctx: OpCtx, data: SourceType);
+    constructor(registry: Registry, ctx: OpCtx, override: "override", override_ready_promise: Promise<any>);
+    constructor(registry: Registry, ctx: OpCtx, data: SourceType | "override", override_ready_promise?: Promise<any>) {
         this.Registry = registry;
         this.OpCtx = ctx;
+
+        if(data == "override") {
+            // Child constructor performs actual load
+            this.loading_promise = override_ready_promise ?? Promise.resolve();
+            return;
+        }
 
         // Load, and when done remove our pending entry
         ctx._notify_loading(this);

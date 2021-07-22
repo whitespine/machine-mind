@@ -321,7 +321,6 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
                 name: prof.name ?? `${data.name} :: ${unpacked.profiles.length + 1}`,
                 synergies: prof.synergies || [],
                 type: SerUtil.restrict_enum(WeaponType, WeaponType.Rifle, prof.type ?? data.type)
-
             };
             unpacked.profiles.push(unpacked_profile);
         }

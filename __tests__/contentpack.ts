@@ -196,7 +196,7 @@ describe("Content pack handling", () => {
 
         expect(petrify.Accuracy).toEqual([0,0,0]);
         expect(petrify.AttackBonus).toEqual([2,4,6]);
-        expect(petrify.Tags.some(x => x.Tag.IsRecharging)).toBeTruthy();
+        expect(petrify.Tags.some(x => x.Tag.IsRecharge)).toBeTruthy();
         // 10
 
         // Now Check the berserker, focusing on its chain axe

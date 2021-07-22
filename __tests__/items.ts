@@ -3,7 +3,8 @@
 import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
-import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage } from "../src/class";
+import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage, TagInstance, TagTemplate } from "../src/class";
+import * as funcs from "../src/funcs";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
 import { intake_pack } from '../src/classes/ContentPack';
 import { DamageType, RangeType, WeaponSize } from "@src/enums";
@@ -273,5 +274,111 @@ describe("Items Miscellania", () => {
         let argonaut: MechSystem = await sys_cat.lookup_lid_live(ctx, "ms_argonaut_shield");
         // let  = await sys_cat.lookup_lid_live("ms_argonaut_shield");
         expect(argonaut.Actions[0].Name).toEqual(argonaut.Name);
+    });
+
+    it("Tags check selves properly", async () => {
+        expect.assertions(32);
+        // Get our shit, lol
+        let s = await init_basic_setup(true);
+
+        // Streamline our later code
+        let ctx = new OpCtx();
+        let tag_cat = s.reg.get_cat(EntryType.TAG);
+        let all_tags = await tag_cat.list_live(ctx);
+        let gt = (lid: string) => all_tags.find((t: TagTemplate) => t.LID == lid)!;
+
+        // Could I get uhhhhh one of everything. Check tag-self things
+        expect(gt("tg_loading").IsLoading).toBeTruthy();
+        expect(gt("tg_accurate").IsAccurate).toBeTruthy();
+        expect(gt("tg_ap").IsAP).toBeTruthy();
+        expect(gt("tg_inaccurate").IsInaccurate).toBeTruthy();
+        expect(gt("tg_knockback").IsKnockback).toBeTruthy();
+
+        expect(gt("tg_ordnance").IsOrdnance).toBeTruthy();
+        expect(gt("tg_overkill").IsOverkill).toBeTruthy();
+        expect(gt("tg_overshield").IsOvershield).toBeTruthy();
+        expect(gt("tg_reliable").IsReliable).toBeTruthy();
+        expect(gt("tg_smart").IsSmart).toBeTruthy();
+
+        expect(gt("tg_seeking").IsSeeking).toBeTruthy();
+        expect(gt("tg_ai").IsAI).toBeTruthy();
+        expect(gt("tg_heat_self").IsSelfHeat).toBeTruthy();
+        expect(gt("tg_recharge").IsRecharge).toBeTruthy();
+        expect(gt("tg_indestructible").IsIndestructible).toBeTruthy();
+
+        expect(gt("tg_no_cascade").IsCascadeResistant).toBeTruthy();
+
+        // Test the same, but on items using equiputil helpers
+        const quick_item_with_tag = async (lid: string) => {
+            let weapon_cat = s.reg.get_cat(EntryType.MECH_WEAPON);
+            return weapon_cat.create_live(ctx, {
+                profiles: [{
+                    tags: [{
+                        tag: {
+                            type: EntryType.TAG,
+                            fallback_lid: lid,
+                            reg_name: s.reg.name()
+                        }
+                    }]
+                }]
+            });
+        };
+
+        expect(funcs.is_loading(await quick_item_with_tag("tg_loading"))).toBeTruthy();
+        expect(funcs.is_accurate(await quick_item_with_tag("tg_accurate"))).toBeTruthy();
+        expect(funcs.is_ap(await quick_item_with_tag("tg_ap"))).toBeTruthy();
+        expect(funcs.is_inaccurate(await quick_item_with_tag("tg_inaccurate"))).toBeTruthy();
+        expect(funcs.is_knockback(await quick_item_with_tag("tg_knockback"))).toBeTruthy();
+        expect(funcs.is_ordnance(await quick_item_with_tag("tg_ordnance"))).toBeTruthy();
+        expect(funcs.is_overkill(await quick_item_with_tag("tg_overkill"))).toBeTruthy();
+        expect(funcs.is_overshield(await quick_item_with_tag("tg_overshield"))).toBeTruthy();
+        expect(funcs.is_reliable(await quick_item_with_tag("tg_reliable"))).toBeTruthy();
+        expect(funcs.is_smart(await quick_item_with_tag("tg_smart"))).toBeTruthy();
+        expect(funcs.is_seeking(await quick_item_with_tag("tg_seeking"))).toBeTruthy();
+        expect(funcs.is_ai(await quick_item_with_tag("tg_ai"))).toBeTruthy();
+        expect(funcs.is_self_heat(await quick_item_with_tag("tg_heat_self"))).toBeTruthy();
+        expect(funcs.is_recharge(await quick_item_with_tag("tg_recharge"))).toBeTruthy();
+        expect(funcs.is_indestructible(await quick_item_with_tag("tg_indestructible"))).toBeTruthy();
+        expect(funcs.is_cascade_resistant(await quick_item_with_tag("tg_no_cascade"))).toBeTruthy();
+    });
+
+    it("Tags merge properly", async () => {
+        expect.assertions(5 + 4*2 + 2 + 2);
+        // Get our shit, lol
+        let s = await init_basic_setup(true);
+
+        // Streamline our later code
+        let ctx = new OpCtx();
+        let tag_cat = s.reg.get_cat(EntryType.TAG);
+        let all_tags = await tag_cat.list_live(ctx);
+        let gt = (lid: string) => all_tags.find((t: TagTemplate) => t.LID == lid)!;
+        let gti = (lid: string, val?: string | number | null) => gt(lid).instance(val);
+
+        // Accs/diffs shouldn't merge
+        expect(funcs.merge_tags([gti("tg_accurate"), gti("tg_inaccurate")], [gti("tg_accurate")]).length).toEqual(3);
+
+        // Should merge in self-same array
+        let arr1 = funcs.merge_tags([gti("tg_knockback", 3), gti("tg_knockback", 5) ], [gti("tg_accurate")]);
+        expect(arr1.length).toEqual(2);
+        expect(arr1[0].Tag.IsKnockback).toBeTruthy();
+        expect(arr1[0].as_number()).toEqual(8);
+        expect(arr1[1].Tag.IsAccurate).toBeTruthy();
+
+        // Should merge all of these
+        for(let lid of ["tg_knockback", "tg_heat_self", "tg_reliable", "tg_overshield"]) {
+            let arr2 = funcs.merge_tags([gti(lid, 3)], [gti(lid, 2)], [gti(lid)]);
+            expect(arr2.length).toEqual(1);
+            expect(arr2[0].as_number()).toEqual(5);
+        }
+
+        // Should take highest of these
+        let arr3 = funcs.merge_tags([gti("tg_recharge", 3)], [gti("tg_recharge", 5)]);
+        expect(arr3.length).toEqual(1);
+        expect(arr3[0].as_number()).toEqual(5);
+
+        // Should take lowest of these
+        let arr4 = funcs.merge_tags([gti("tg_limited", 3)], [gti("tg_limited", 5)]);
+        expect(arr4.length).toEqual(1);
+        expect(arr4[0].as_number()).toEqual(3);
     });
 });

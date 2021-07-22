@@ -83,13 +83,16 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     get IsAI(): boolean {
         return this.LID === "tg_ai";
     }
+    get IsAP(): boolean {
+        return this.LID === "tg_ap";
+    }
     get IsLimited(): boolean {
         return this.LID === "tg_limited";
     }
     get IsLoading(): boolean {
         return this.LID === "tg_loading";
     }
-    get IsRecharging(): boolean {
+    get IsRecharge(): boolean {
         return this.LID === "tg_recharge";
     }
     get IsIndestructible(): boolean {
@@ -97,6 +100,9 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     }
     get IsSmart(): boolean {
         return this.LID === "tg_smart";
+    }
+    get IsSeeking(): boolean {
+        return this.LID === "tg_seeking";
     }
     get IsOverkill(): boolean {
         return this.LID === "tg_overkill";
@@ -113,6 +119,18 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
     get IsSelfHeat(): boolean {
         return this.LID === "tg_heat_self";
     }
+    get IsKnockback(): boolean {
+        return this.LID === "tg_knockback";
+    }
+    get IsOvershield(): boolean {
+        return this.LID === "tg_overshield";
+    }
+    get IsCascadeResistant(): boolean {
+        return this.LID === "tg_no_cascade";
+    }
+    get IsOrdnance(): boolean {
+        return this.LID === "tg_ordnance";
+    }
 
     public async emit(): Promise<PackedTagTemplateData> {
         return {
@@ -123,11 +141,29 @@ export class TagTemplate extends RegEntry<EntryType.TAG> {
             hidden: this.Hidden,
         };
     }
+
+    // Create an instance of this tag
+    public instance(val?: string | number | null): TagInstance {
+        return new TagInstance(this, val);
+    }
 }
 
 export class TagInstance extends RegSer<RegTagInstanceData> {
     Tag!: TagTemplate;
     Value!: string | number | null;
+
+    constructor(reg: Registry, ctx: OpCtx, dat: RegTagInstanceData);
+    constructor(tag: TagTemplate, val?: string | number | null);
+    constructor(reg_or_tag: Registry | TagTemplate, ctx_or_val: OpCtx | string | number | null | undefined, dat?: RegTagInstanceData) {
+        // Making an instance of a pre-fetched TagTemplate
+        if(reg_or_tag instanceof TagTemplate) {
+            super(reg_or_tag.Registry, reg_or_tag.OpCtx, "override", reg_or_tag.load_done());
+            this.Tag = reg_or_tag;
+            this.Value = (ctx_or_val instanceof OpCtx) ? null : (ctx_or_val ?? null); // Dodge some weird potential edge cases
+        } else {
+            super(reg_or_tag, ctx_or_val as OpCtx, dat!)
+        }
+    }
 
     public as_number(default_num: number = 0): number {
         let parsed = Number.parseInt(`${this.Value}`);
@@ -177,5 +213,10 @@ export class TagInstance extends RegSer<RegTagInstanceData> {
             id: this.Tag.LID,
             val: this.Value ?? undefined,
         };
+    }
+
+    // Sync duplicate
+    public dup(): TagInstance {
+        return new TagInstance(this.Tag, this.Value);
     }
 }

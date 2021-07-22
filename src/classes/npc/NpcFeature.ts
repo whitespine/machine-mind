@@ -191,7 +191,7 @@ export class NpcFeature extends RegEntry<EntryType.NPC_FEATURE> {
 
     // Get our recharge number, or 0 if none exists
     public get Recharge(): number {
-        let tag = this.Tags.find(t => t.Tag.IsRecharging);
+        let tag = this.Tags.find(t => t.Tag.IsRecharge);
         if (tag) {
             return tag.as_number(0);
         } else {
