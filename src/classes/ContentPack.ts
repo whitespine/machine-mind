@@ -192,9 +192,9 @@ export async function intake_pack(
     await incat(EntryType.SKILL, d.skills ?? [], Skill.unpack);
     await incat(EntryType.STATUS, d.statuses ?? [], Status.unpack);
     await incat(EntryType.QUIRK, d.quirks ?? [], Quirk.unpack);
-    let armors = d.pilotGear.filter(x => x.type == "Armor") as PackedPilotArmorData[];
-    let gears = d.pilotGear.filter(x => x.type == "Gear") as PackedPilotGearData[];
-    let weapons = d.pilotGear.filter(x => x.type == "Weapon") as PackedPilotWeaponData[];
+    let armors = d.pilotGear.filter(x => x.type.toLowerCase() == "armor") as PackedPilotArmorData[];
+    let gears = d.pilotGear.filter(x => x.type.toLowerCase() == "gear") as PackedPilotGearData[];
+    let weapons = d.pilotGear.filter(x => x.type.toLowerCase() == "weapon") as PackedPilotWeaponData[];
     await incat(EntryType.PILOT_ARMOR, armors, PilotArmor.unpack);
     await incat(EntryType.PILOT_GEAR, gears, PilotGear.unpack);
     await incat(EntryType.PILOT_WEAPON, weapons, PilotWeapon.unpack);
