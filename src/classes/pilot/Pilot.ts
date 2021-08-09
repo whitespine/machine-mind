@@ -135,7 +135,8 @@ export interface RegPilotData extends Required<BothPilotData> {
     active_mech: RegRef<EntryType.MECH> | null;
 
     // Compcon doesn't (but should) track these
-    current_overshield: number;
+    overshield: number;
+    burn: number;
 
     // We do own these, though
     custom_counters: RegCounterData[];
@@ -173,6 +174,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     Status!: string; // I honestly have no idea what this is
     CurrentHP!: number;
     Overshield!: number;
+    Burn!: number;
     Loadout!: PilotLoadout;
     ActiveMechRef!: RegRef<EntryType.MECH> | null;
     Mounted!: boolean;
@@ -571,7 +573,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
-        this.Overshield = data.current_overshield;
+        this.Overshield = data.overshield;
+        this.Burn = data.burn;
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
         this.SortIndex = data.sort_index;
@@ -591,7 +594,8 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,
             current_hp: this.CurrentHP,
-            current_overshield: this.Overshield,
+            overshield: this.Overshield,
+            burn: this.Burn,
             custom_counters: SerUtil.save_all(this.CustomCounters),
             group: this.Group,
             history: this.History,
