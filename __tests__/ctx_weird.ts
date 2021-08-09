@@ -25,7 +25,7 @@ async function init_basic_setup(include_base: boolean = true): Promise<DefSetup>
 
 describe("OpCtx weird stuff", () => {
     it("Do readonly copies actually like, yknow, readonly", async () => {
-        expect.assertions(7);
+        expect.assertions(8);
         let s = await init_basic_setup(true);
         let r = s.reg;
 
@@ -62,7 +62,7 @@ describe("OpCtx weird stuff", () => {
         let sys_cat = r.get_cat(EntryType.MECH_SYSTEM);
         let der_argo = await sys_cat.lookup_lid_live(der_ctx, "ms_argonaut_shield");
 
-        expect(() => {base_argo.Name = "foobar";}).toReturn();
+        expect(() => {base_argo.Name = "foobar";}).not.toThrowError();
     });
 
 });
