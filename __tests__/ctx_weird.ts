@@ -62,7 +62,7 @@ describe("OpCtx weird stuff", () => {
         let sys_cat = r.get_cat(EntryType.MECH_SYSTEM);
         let der_argo = await sys_cat.lookup_lid_live(der_ctx, "ms_argonaut_shield");
 
-        expect(() => {base_argo.Name = "foobar";}).not.toThrowError();
+        expect(() => {der_argo.Name = "foobar";}).not.toThrowError();
     });
 
 });

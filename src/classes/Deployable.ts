@@ -94,8 +94,8 @@ export interface RegDeployableData {
     tags: RegTagInstanceData[];
 
     overshield: number;
-    current_hp: number;
-    current_heat: number;
+    hp: number;
+    heat: number;
     burn: number;
 
     deployer: RegRef<EntryType.PILOT | EntryType.MECH | EntryType.NPC> | null;
@@ -273,8 +273,8 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.Redeploy = data.redeploy;
         this.Deactivation = data.deactivation;
 
-        this.CurrentHP = data.current_hp;
-        this.CurrentHeat = data.current_heat;
+        this.CurrentHP = data.hp;
+        this.CurrentHeat = data.heat;
         this.Overshield = data.overshield;
         this.Burn = data.burn;
 
@@ -317,9 +317,9 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             cost: this.Cost,
             armor: this.BaseArmor,
             max_hp: this.BaseMaxHP,
-            current_hp: this.CurrentHP,
+            hp: this.CurrentHP,
             overshield: this.Overshield,
-            current_heat: this.CurrentHeat,
+            heat: this.CurrentHeat,
             evasion: this.BaseEvasion,
             edef: this.BaseEDefense,
             heatcap: this.BaseHeatCapacity,
@@ -375,7 +375,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
                 bonuses: (dep.bonuses ?? []).map(Bonus.unpack),
                 actions: (dep.actions ?? []).map(Action.unpack),
                 max_hp: dep.hp,
-                current_hp: dep.hp,
+                hp: dep.hp,
                 avail_mounted: dep.mech ?? true,
                 avail_unmounted: dep.pilot ?? false,
                 counters,

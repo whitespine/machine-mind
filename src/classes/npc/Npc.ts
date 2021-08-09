@@ -64,10 +64,10 @@ export interface RegNpcData extends AllNpcData {
     lid: string;
     tier: number; // Custom tiering is handled on a per item basis
     custom_counters: RegCounterData[];
-    current_hp: number;
-    current_heat: number;
-    current_stress: number;
-    current_structure: number;
+    hp: number;
+    heat: number;
+    stress: number;
+    structure: number;
     // Other stuff held in inventory
 }
 
@@ -275,10 +275,10 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         this.Defeat = data.defeat;
         this.Destroyed = data.destroyed;
         this.LID = data.lid;
-        this.CurrentHP = data.current_hp;
-        this.CurrentHeat = data.current_heat;
-        this.CurrentStress = data.current_stress;
-        this.CurrentStructure = data.current_structure;
+        this.CurrentHP = data.hp;
+        this.CurrentHeat = data.heat;
+        this.CurrentStress = data.stress;
+        this.CurrentStructure = data.structure;
         this.Labels = data.labels;
         this.LocalImage = data.localImage;
         this.Name = data.name;
@@ -301,8 +301,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             defeat: this.Defeat,
             destroyed: this.Destroyed,
             lid: this.LID,
-            current_hp: this.CurrentHP,
-            current_heat: this.CurrentHeat,
+            hp: this.CurrentHP,
+            heat: this.CurrentHeat,
             labels: this.Labels,
             localImage: this.LocalImage,
             name: this.Name,
@@ -312,8 +312,8 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
             side: this.Side,
             subtitle: this.Summary,
             tag: this.Tag,
-            current_stress: this.CurrentStress,
-            current_structure: this.CurrentStructure,
+            stress: this.CurrentStress,
+            structure: this.CurrentStructure,
         };
     }
 

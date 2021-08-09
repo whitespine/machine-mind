@@ -81,7 +81,6 @@ interface BothPilotData {
     history: string;
     portrait: string;
     cloud_portrait: string;
-    current_hp: number;
     background: string;
     mechSkills: [number, number, number, number];
     cc_ver: string;
@@ -127,6 +126,7 @@ export interface PackedPilotData extends BothPilotData {
     core_bonuses: string[];
     factionID: string;
     quirk: string;
+    current_hp: number;
 }
 
 // This just gets converted into owned items
@@ -137,6 +137,9 @@ export interface RegPilotData extends Required<BothPilotData> {
     // Compcon doesn't (but should) track these
     overshield: number;
     burn: number;
+
+    // Renamed
+    hp: number;
 
     // We do own these, though
     custom_counters: RegCounterData[];
@@ -560,7 +563,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.CloudID = data.cloudID;
         this.CloudOwnerID = data.cloudOwnerID;
         this.CloudPortrait = data.cloud_portrait;
-        this.CurrentHP = data.current_hp;
+        this.CurrentHP = data.hp;
         this.CustomCounters = SerUtil.process_counters(data.custom_counters);
         this.Group = data.group;
         this.History = data.history;
@@ -593,7 +596,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             cloudID: this.CloudID,
             cloudOwnerID: this.CloudOwnerID,
             cloud_portrait: this.CloudPortrait,
-            current_hp: this.CurrentHP,
+            hp: this.CurrentHP,
             overshield: this.Overshield,
             burn: this.Burn,
             custom_counters: SerUtil.save_all(this.CustomCounters),

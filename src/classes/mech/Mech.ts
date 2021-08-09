@@ -36,14 +36,8 @@ interface AllMechData {
     gm_note: string;
     portrait: string;
     cloud_portrait: string;
-    current_structure: number;
-    current_hp: number;
     overshield: number;
-    current_stress: number;
-    current_heat: number;
-    current_repairs: number;
     current_overcharge: number;
-    current_core_energy: number;
     burn: number;
     ejected: boolean;
     meltdown_imminent: boolean; // TODO: Make this active effect
@@ -54,6 +48,12 @@ interface AllMechData {
 export interface PackedMechData extends AllMechData {
     id: string;
     active: boolean;
+    current_structure: number;
+    current_hp: number;
+    current_stress: number;
+    current_heat: number;
+    current_repairs: number;
+    current_core_energy: number;
     frame: string;
     statuses: string[];
     conditions: string[];
@@ -76,6 +76,12 @@ export interface RegMechData extends AllMechData {
     //reactions: RegRef<EntryType.ACTION>[]
     reactions: string[];
     loadout: RegMechLoadoutData; // We only support one, for now
+    structure: number;
+    hp: number;
+    stress: number;
+    heat: number;
+    repairs: number;
+    core_energy: number;
 }
 
 export class Mech extends InventoriedRegEntry<EntryType.MECH> {
@@ -521,14 +527,14 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             gm_note: this.GmNote,
             portrait: this.Portrait,
             cloud_portrait: this.CloudPortrait,
-            current_structure: this.CurrentStructure,
-            current_hp: this.CurrentHP,
+            structure: this.CurrentStructure,
+            hp: this.CurrentHP,
             overshield: this.Overshield,
-            current_stress: this.CurrentStress,
-            current_heat: this.CurrentHeat,
-            current_repairs: this.CurrentRepairs,
+            stress: this.CurrentStress,
+            heat: this.CurrentHeat,
+            repairs: this.CurrentRepairs,
             current_overcharge: this.CurrentOvercharge,
-            current_core_energy: this.CurrentCoreEnergy,
+            core_energy: this.CurrentCoreEnergy,
             core_active: this.CoreActive,
             resistances: this.Resistances,
             reactions: this.Reactions,
@@ -554,14 +560,14 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CloudPortrait = data.cloud_portrait;
         this.Loadout = new MechLoadout(subreg, this.OpCtx, data.loadout);
         await this.Loadout.load_done();
-        this.CurrentStructure = data.current_structure;
-        this.CurrentHP = data.current_hp;
+        this.CurrentStructure = data.structure;
+        this.CurrentHP = data.hp;
         this.Overshield = data.overshield;
-        this.CurrentStress = data.current_stress;
-        this.CurrentHeat = data.current_heat;
-        this.CurrentRepairs = data.current_repairs;
+        this.CurrentStress = data.stress;
+        this.CurrentHeat = data.heat;
+        this.CurrentRepairs = data.repairs;
         this.CurrentOvercharge = data.current_overcharge;
-        this.CurrentCoreEnergy = data.current_core_energy;
+        this.CurrentCoreEnergy = data.core_energy;
         this.Resistances = { ...data.resistances };
         this.Reactions = data.reactions;
         this.Burn = data.burn;
