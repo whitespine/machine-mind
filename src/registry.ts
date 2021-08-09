@@ -124,6 +124,7 @@ import {
     RelinkHook,
     PackedNpcData,
 } from "./interface";
+import {readonlyProxyOf} from "readonly-proxy";
 
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -1034,6 +1035,17 @@ export class OpCtx {
             }
             this._pending_readies = [];
         }
+    }
+
+    // Create a copy of this opctx with every entry readonly-proxied
+    // Waits for ready. Any new items will not be readonly
+    async readonly_copy(): Promise<OpCtx> {
+        await this.ready();
+        let new_ctx = new OpCtx();
+        for(let [k, v] of this.resolved) {
+            new_ctx.resolved.set(k, readonlyProxyOf(v));
+        }
+        return new_ctx;
     }
 }
 

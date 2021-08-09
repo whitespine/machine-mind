@@ -5266,6 +5266,11 @@ readable-stream@^2.0.1, readable-stream@~2.3.6:
     string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
+readonly-proxy@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/readonly-proxy/-/readonly-proxy-0.0.1.tgz#eb0ce19da0352061f79e7bb644cac4e237a4b989"
+  integrity sha512-gREV8eM+sgt53NbPa3tvHoLQMiidLn2Ym7gablma9Ovxk69pezMwjFew/+H6d5p+9lrprKKVlEnIkcWmkrPchg==
+
 rechoir@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/rechoir/-/rechoir-0.6.2.tgz#85204b54dba82d5742e28c96756ef43af50e3384"
