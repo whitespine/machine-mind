@@ -37,7 +37,6 @@ interface AllMechData {
     portrait: string;
     cloud_portrait: string;
     overshield: number;
-    current_overcharge: number;
     burn: number;
     ejected: boolean;
     meltdown_imminent: boolean; // TODO: Make this active effect
@@ -54,6 +53,7 @@ export interface PackedMechData extends AllMechData {
     current_heat: number;
     current_repairs: number;
     current_core_energy: number;
+    current_overcharge: number;
     frame: string;
     statuses: string[];
     conditions: string[];
@@ -81,7 +81,8 @@ export interface RegMechData extends AllMechData {
     stress: number;
     heat: number;
     repairs: number;
-    core_energy: number;
+    overcharge: number; // Current overcharge index / how many times this mech has overcharged. Starts at 0
+    core_energy: number; // 1 or 0, depending on if core is powered
 }
 
 export class Mech extends InventoriedRegEntry<EntryType.MECH> {
@@ -99,7 +100,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     CurrentHP!: number;
     CurrentRepairs!: number;
     CurrentCoreEnergy!: number;
-    CurrentOvercharge!: number;
+    OverchargeCount!: number; // How many times this mech has overcharged since last full repair (for the purpose of determining heat cost)
     // Activations!: number;
     Pilot!: Pilot | null; // We want to avoid the null case whenever possible
     Cc_ver!: string;
@@ -370,7 +371,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentHeat = 0;
         this.CurrentRepairs = this.RepairCapacity;
         this.CurrentCoreEnergy = 1;
-        this.CurrentOvercharge = 0;
+        this.OverchargeCount = 0;
         this.Loadout.Equipment.forEach(y => {
             y.Destroyed = false;
             // let lim_max =
@@ -533,7 +534,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             stress: this.CurrentStress,
             heat: this.CurrentHeat,
             repairs: this.CurrentRepairs,
-            current_overcharge: this.CurrentOvercharge,
+            overcharge: this.OverchargeCount,
             core_energy: this.CurrentCoreEnergy,
             core_active: this.CoreActive,
             resistances: this.Resistances,
@@ -566,7 +567,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.CurrentStress = data.stress;
         this.CurrentHeat = data.heat;
         this.CurrentRepairs = data.repairs;
-        this.CurrentOvercharge = data.current_overcharge;
+        this.OverchargeCount = data.overcharge;
         this.CurrentCoreEnergy = data.core_energy;
         this.Resistances = { ...data.resistances };
         this.Reactions = data.reactions;
@@ -616,7 +617,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             current_core_energy: this.CurrentCoreEnergy,
             current_heat: this.CurrentHeat,
             current_hp: this.CurrentHP,
-            current_overcharge: this.CurrentOvercharge,
+            current_overcharge: this.OverchargeCount,
             current_repairs: this.CurrentRepairs,
             current_stress: this.CurrentStress,
             current_structure: this.CurrentStructure,
@@ -678,7 +679,7 @@ export async function mech_cloud_sync(
     mech.Overshield = data.overshield;
     mech.CurrentHeat = data.current_heat;
     mech.CurrentRepairs = data.current_repairs;
-    mech.CurrentOvercharge = data.current_overcharge;
+    mech.OverchargeCount = data.current_overcharge;
     mech.CurrentCoreEnergy = data.current_core_energy;
     mech.Burn = data.burn;
     mech.Ejected = data.ejected;

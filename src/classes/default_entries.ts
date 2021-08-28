@@ -312,7 +312,7 @@ export function MECH(): RegMechData {
         core_energy: 1,
         heat: 0,
         hp: 0,
-        current_overcharge: 0,
+        overcharge: 0,
         repairs: 0,
         stress: 0,
         structure: 0,
