@@ -220,15 +220,15 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         return this.stat("hull");
     }
 
-    public get Agility(): number {
+    public get Agi(): number {
         return this.stat("agility");
     }
 
-    public get Systems(): number {
+    public get Sys(): number {
         return this.stat("systems");
     }
 
-    public get Engineering(): number {
+    public get Eng(): number {
         return this.stat("engineering");
     }
 

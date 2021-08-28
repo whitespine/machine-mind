@@ -74,15 +74,15 @@ export class NpcClassStats {
         return this._stats.hull[tier - 1];
     }
 
-    public Agility(tier: number): number {
+    public Agi(tier: number): number {
         return this._stats.agility[tier - 1];
     }
 
-    public Systems(tier: number): number {
+    public Sys(tier: number): number {
         return this._stats.systems[tier - 1];
     }
 
-    public Engineering(tier: number): number {
+    public Eng(tier: number): number {
         return this._stats.engineering[tier - 1];
     }
 

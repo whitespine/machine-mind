@@ -50,9 +50,9 @@ function check_opfor(npc: Npc) {
 
     // Stat check!
     expect(npc.Hull).toEqual(3);
-    expect(npc.Agility).toEqual(3);
-    expect(npc.Systems).toEqual(3);
-    expect(npc.Engineering).toEqual(3); // Maybe operator wasn't the best choice for this...
+    expect(npc.Agi).toEqual(3);
+    expect(npc.Sys).toEqual(3);
+    expect(npc.Eng).toEqual(3); // Maybe operator wasn't the best choice for this...
     expect(npc.MaxStructure).toEqual(4);  // 20
 
     expect(npc.CurrentStructure).toEqual(4);
