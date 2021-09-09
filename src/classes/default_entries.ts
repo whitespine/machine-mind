@@ -1,4 +1,4 @@
-import { Bonus, MechWeapon } from "@src/class";
+import { Bonus, Damage, MechWeapon } from "@src/class";
 import type {
     AnyRegNpcFeatureData,
     BaseRegNpcFeatureData,
@@ -415,7 +415,7 @@ export function NPC(): RegNpcData {
         name: "New Npc",
         note: "",
         overshield: 0,
-        resistances: [],
+        resistances: Damage.MakeChecklist([]),
         side: "Enemy",
         subtitle: "",
         tag: "",

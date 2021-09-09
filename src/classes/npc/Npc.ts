@@ -1,5 +1,6 @@
-import { Counter, NpcClass, NpcClassStats, NpcFeature, NpcTemplate } from "@src/class";
+import { Counter, Damage, NpcClass, NpcClassStats, NpcFeature, NpcTemplate } from "@src/class";
 import {
+    DamageTypeChecklist,
     INpcClassStats,
     INpcStatComposite,
     PackedCounterSaveData,
@@ -14,6 +15,7 @@ import {
     RegFallback,
     FALLBACK_WAS_INSINUATED,
 } from "../regstack";
+import { DamageType } from "@src/enums";
 interface INpcItemSaveData {
     // unsure if we really need this
     itemID: string;
@@ -40,7 +42,6 @@ interface AllNpcData {
     overshield: number;
     destroyed: boolean;
     defeat: string;
-    resistances: string[];
 }
 
 export interface PackedNpcData extends AllNpcData {
@@ -58,6 +59,7 @@ export interface PackedNpcData extends AllNpcData {
     stats: INpcStatComposite;
     currentStats: INpcStatComposite; // exact usage unclear
     lastSync?: string | null;
+    resistances?: string[];
 }
 
 export interface RegNpcData extends AllNpcData {
@@ -68,6 +70,7 @@ export interface RegNpcData extends AllNpcData {
     heat: number;
     stress: number;
     structure: number;
+    resistances: DamageTypeChecklist;
     // Other stuff held in inventory
 }
 
@@ -92,7 +95,7 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
     Overshield!: number;
     Destroyed!: boolean;
     Defeat!: string;
-    Resistances!: string[];
+    Resistances!: DamageTypeChecklist;
     CustomCounters!: Counter[];
 
     // Derived items
@@ -376,7 +379,7 @@ export async function npc_cloud_sync(
 
     // Meta-combat info
     npc.Tier = Number.parseInt(data.tier.toString()) || 1;
-    npc.Resistances = data.resistances;
+    npc.Resistances = Damage.MakeChecklist((data.resistances ?? []) as DamageType[]);
 
     // Statuses and conditions
     // data.statuses;
