@@ -972,12 +972,12 @@ export async function cloud_sync(
         }
 
         // Update / init
-        corr_org.Actions ??= org.actions;
-        corr_org.Description ??= org.description;
-        corr_org.Efficiency ??= org.efficiency;
-        corr_org.Influence ??= org.influence;
-        corr_org.Name ??= org.name;
-        corr_org.Purpose ??= org.purpose;
+        corr_org.Actions = org.actions;
+        corr_org.Description = org.description;
+        corr_org.Efficiency = org.efficiency;
+        corr_org.Influence = org.influence;
+        corr_org.Name = org.name;
+        corr_org.Purpose = org.purpose;
 
         // hook/writeback
         if(hooks.sync_organization)
