@@ -1,4 +1,4 @@
-import { bound_int } from "@src/funcs";
+import { bound } from "@src/funcs";
 import { EntryType, LiveEntryTypes, RegEntry, SimSer } from "@src/registry";
 
 /* eslint-disable @typescript-eslint/camelcase */
@@ -62,7 +62,7 @@ export class Counter extends SimSer<RegCounterData> {
     }
 
     public set Value(new_val: number) {
-        this._value = bound_int(new_val, this.Min, this.Max || Number.MAX_SAFE_INTEGER);
+        this._value = bound(new_val, this.Min, this.Max || Number.MAX_SAFE_INTEGER);
     }
 
     // Easy bois

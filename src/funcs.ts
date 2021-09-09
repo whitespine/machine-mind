@@ -17,7 +17,7 @@ export { weapon_size_magnitude } from "@src/classes/mech/MechLoadout";
 export {nanoid} from "nanoid";
 
 // We oftentimes need to make sure we don't go outside of allowed ranges
-export function bound_int(x: number, min: number, max: number) {
+export function bound(x: number, min: number, max: number) {
     if (x < min) {
         return min;
     } else if (x > max) {

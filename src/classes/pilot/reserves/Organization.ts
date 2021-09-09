@@ -1,6 +1,6 @@
 import { merge_defaults } from "@src/classes/default_entries";
 import { OrgType } from "@src/enums";
-import { bound_int, defaults } from "@src/funcs";
+import { bound, defaults } from "@src/funcs";
 import { EntryType, RegEntry } from "@src/registry";
 
 interface AllOrganizationData {
@@ -27,11 +27,11 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
 
     // Get set to bound
     public get Efficiency(): number {
-        return bound_int(this._efficiency, 1, 6);
+        return bound(this._efficiency, 1, 6);
     }
 
     public set Efficiency(n: number) {
-        this._efficiency = bound_int(n, 1, 6);
+        this._efficiency = bound(n, 1, 6);
     }
 
     // Get set to bound
@@ -40,7 +40,7 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
     }
 
     public set Influence(n: number) {
-        this._influence = bound_int(n, 1, 6);
+        this._influence = bound(n, 1, 6);
     }
 
     public async load(data: RegOrganizationData): Promise<void> {
@@ -48,8 +48,8 @@ export class Organization extends RegEntry<EntryType.ORGANIZATION> {
         this.LID = data.lid;
         this.Name = data.name;
         this.Purpose = data.purpose as OrgType;
-        this.Efficiency = bound_int(data.efficiency, 0, 6);
-        this.Influence = bound_int(data.influence, 0, 6);
+        this.Efficiency = bound(data.efficiency, 0, 6);
+        this.Influence = bound(data.influence, 0, 6);
         this.Description = data.description;
         this.Actions = data.actions;
     }

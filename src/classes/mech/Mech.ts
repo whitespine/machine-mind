@@ -14,7 +14,7 @@ import {
     Synergy,
     WeaponMod,
 } from "@src/class";
-import { bound_int, defaults } from "@src/funcs";
+import { bound, defaults } from "@src/funcs";
 import {
     BonusContext,
     DamageTypeChecklist,
@@ -172,13 +172,18 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
     public get Size(): number {
         if (!this.Frame) return 0;
         let bonus = this.sum_bonuses(this.Frame.Stats.size, "size");
-        return bound_int(bonus, 0.5, Rules.MaxFrameSize);
+        let prospective = bound(bonus, 0.5, Rules.MaxFrameSize);
+        if(prospective != 0.5) {
+            return Math.floor(prospective + 0.01); // Just to avoid any absurd rounding issues, we add an epsilon to make sure floor always behaves reliably
+        } else {
+            return 0.5; // To eliminate any other bizarro options
+        }
     }
 
     public get Armor(): number {
         if (!this.Frame) return 0;
         let bonus = this.sum_bonuses(this.Frame.Stats.armor, "armor");
-        return bound_int(bonus, 0, Rules.MaxMechArmor);
+        return bound(bonus, 0, Rules.MaxMechArmor);
     }
 
     public get SaveTarget(): number {

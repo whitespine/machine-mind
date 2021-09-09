@@ -51,7 +51,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { bound_int, defaults, mech_cloud_sync, source_all_counters } from "@src/funcs";
+import { bound, defaults, mech_cloud_sync, source_all_counters } from "@src/funcs";
 import { get_user_id } from "@src/hooks";
 import {
     finding_iterate,
@@ -351,7 +351,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public get Armor(): number {
-        return bound_int(this.sum_bonuses("pilot_armor"), 0, Rules.MaxPilotArmor);
+        return bound(this.sum_bonuses("pilot_armor"), 0, Rules.MaxPilotArmor);
     }
 
     public get Speed(): number {
