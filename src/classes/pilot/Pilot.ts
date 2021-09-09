@@ -498,7 +498,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
-    public get AllCounters(): SourcedCounter<EntryType.TALENT | EntryType.CORE_BONUS | EntryType.PILOT>[] {
+    public get PilotCounters(): SourcedCounter<EntryType.TALENT | EntryType.CORE_BONUS | EntryType.PILOT>[] {
         return [
             ...source_all_counters<EntryType.TALENT>(this.Talents),
             ...source_all_counters<EntryType.CORE_BONUS>(this.CoreBonuses),
@@ -986,7 +986,7 @@ export async function cloud_sync(
     }
 
     // Sync counters
-    for (let c of pilot.AllCounters) {
+    for (let c of pilot.PilotCounters) {
         c.counter.sync_state_from(data.counter_data);
     }
 

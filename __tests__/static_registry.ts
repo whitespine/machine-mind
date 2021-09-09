@@ -286,7 +286,7 @@ describe("Static Registry Reference implementation", () => {
     });
 
     it("Properly brings along child entries", async () => {
-        expect.assertions(5);
+        expect.assertions(6);
         let src_env = await init_basic_setup(true);
         let dest_env = await init_basic_setup(false);
 
@@ -297,9 +297,10 @@ describe("Static Registry Reference implementation", () => {
         expect(dest_frames.length).toEqual(0);
         expect(dest_weapons.length).toEqual(0); // 2
 
-        // Take the sherman, which has a native weapon
+        // Take the sherman, which has a native weapon + counter
         let sherman = await src_env.reg.get_cat(EntryType.FRAME).lookup_lid_live(new OpCtx(), "mf_sherman");
         expect(sherman.CoreSystem.Integrated.length).toEqual(1); // 3
+        expect(sherman.CoreSystem.Counters.length).toEqual(1); // 4
 
         // Send it over
         let dest_sherman = await sherman.insinuate(dest_env.reg);
@@ -309,7 +310,7 @@ describe("Static Registry Reference implementation", () => {
         dest_frames = await dest_env.reg.get_cat(EntryType.FRAME).list_live(ctx_final);
         dest_weapons = await dest_env.reg.get_cat(EntryType.MECH_WEAPON).list_live(ctx_final);
         expect(dest_frames.length).toEqual(1);
-        expect(dest_weapons.length).toEqual(1); // 5
+        expect(dest_weapons.length).toEqual(1); // 6
     });
 
     it("Doesn't drag along parent entries", async () => {

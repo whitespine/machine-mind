@@ -2,6 +2,7 @@ import { CoreSystem, FrameTrait, Manufacturer } from "@src/class";
 import { defaults } from "@src/funcs";
 import {
     PackedCoreSystemData,
+    PackedCounterData,
     PackedFrameTraitData,
     RegCoreSystemData,
     RegFrameTraitData,
@@ -128,6 +129,12 @@ export class Frame extends RegEntry<EntryType.FRAME> {
         let license = frame.variant ?? frame.name;
         if (license == "EVEREST") {
             license = "GMS";
+        }
+
+        // Some frames have counters outside core. This is out of spec but we still gotta deal with it
+        if((frame as any).counters) {
+            frame.core_system.counters = (frame.core_system.counters ?? []).concat((frame as any).counters);
+            delete (frame as any).counters;
         }
 
         let traits = await Promise.all(

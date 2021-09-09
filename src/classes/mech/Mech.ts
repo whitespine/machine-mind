@@ -499,20 +499,20 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             .list_live(this.OpCtx, _opt);
     }
 
-    public MechSynergies(): Synergy[] {
+    public get MechSynergies(): Synergy[] {
         return this.mech_feature_sources(false).flatMap(x => x.data.Synergies ?? []);
     }
 
-    public MechActions(): Action[] {
+    public get MechActions(): Action[] {
         return this.mech_feature_sources(false).flatMap(x => x.data.Actions ?? []);
     }
 
-    public MechDeployables(): Deployable[] {
+    public get MechDeployables(): Deployable[] {
         return this.mech_feature_sources(true).flatMap(x => x.data.Deployables ?? []);
     }
 
     // Grabs counters from the pilot, their gear, their active mech, etc etc
-    public MechCounters(): SourcedCounter<
+    public get MechCounters(): SourcedCounter<
         EntryType.MECH_WEAPON | EntryType.MECH_SYSTEM | EntryType.FRAME | EntryType.WEAPON_MOD
     >[] {
         let result: SourcedCounter<any>[] = [];
@@ -521,6 +521,14 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             result.push(...counters.map(c => c.mark_sourced(s_data.source)));
         }
         return result;
+    }
+
+    public get AllCounters(): Array<this["MechCounters"][0] | Pilot["PilotCounters"][0]> {
+        if(this.Pilot) {
+            return (this.MechCounters as Array<this["MechCounters"][0] | Pilot["PilotCounters"][0]>).concat(this.Pilot.PilotCounters) ;
+        } else {
+            return this.MechCounters;
+        }
     }
 
     // -- I/O ---------------------------------------------------------------------------------------
