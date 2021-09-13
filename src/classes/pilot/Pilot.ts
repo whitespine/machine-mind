@@ -367,7 +367,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     }
 
     public get LimitedBonus(): number {
-        return this.sum_bonuses("limited_bonus");
+        return 0; // This got removed, lol this.sum_bonuses("limited_bonus");
     }
 
     public get AICapacity(): number {
