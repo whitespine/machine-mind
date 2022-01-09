@@ -268,6 +268,7 @@ export class MechWeapon extends RegEntry<EntryType.MECH_WEAPON> {
             packed_profiles = data.profiles;
         } else {
             packed_profiles = [data]; // Treat the item itself as a profile
+            parent_tags = [];
         }
 
         // Unpack them
