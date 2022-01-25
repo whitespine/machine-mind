@@ -23,7 +23,6 @@ import {
 } from "@src/registry";
 import { Manufacturer } from "@src/class";
 import { merge_defaults } from "../default_entries";
-import { threadId } from "node:worker_threads";
 
 // These attrs are shared
 interface AllCoreBonusData {

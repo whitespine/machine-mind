@@ -38,7 +38,6 @@ const readZipJSON = async function<T>(zip: JSZip, filename: string): Promise<T |
 };
 
 const getPackID = async function(manifest: IContentPackManifest): Promise<string> {
-    const enc = new TextEncoder();
     return `${manifest.author}/${manifest.name}`;
 };
 
