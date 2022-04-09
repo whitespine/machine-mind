@@ -550,8 +550,8 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
             overcharge: this.OverchargeCount,
             core_energy: this.CurrentCoreEnergy,
             core_active: this.CoreActive,
-            resistances: this.Resistances,
-            reactions: this.Reactions,
+            resistances: { ...this.Resistances },
+            reactions: { ...this.Reactions },
             burn: this.Burn,
             ejected: this.Ejected,
             meltdown_imminent: this.MeltdownImminent,
@@ -583,7 +583,7 @@ export class Mech extends InventoriedRegEntry<EntryType.MECH> {
         this.OverchargeCount = data.overcharge;
         this.CurrentCoreEnergy = data.core_energy;
         this.Resistances = { ...data.resistances };
-        this.Reactions = data.reactions;
+        this.Reactions = { ...data.reactions };
         this.Burn = data.burn;
         this.Ejected = data.ejected || false;
         this.MeltdownImminent = data.meltdown_imminent;

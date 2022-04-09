@@ -21,6 +21,7 @@ import {
     WeaponMod,
     Status,
     Frame,
+    Damage,
 } from "@src/class";
 import * as gistApi from "@src/io/apis/gist";
 import {
@@ -41,6 +42,7 @@ import {
     SourcedCounter,
     PilotSyncHooks,
     AllPilotSyncHooks,
+    DamageTypeChecklist
 } from "@src/interface";
 import {
     EntryType,
@@ -127,6 +129,7 @@ export interface PackedPilotData extends BothPilotData {
     factionID: string;
     quirk: string;
     current_hp: number;
+    resistances?: string[];
 }
 
 // This just gets converted into owned items
@@ -149,6 +152,9 @@ export interface RegPilotData extends Required<BothPilotData> {
 
     // We don't really track active state much here. We do at least track mounted state
     mounted: boolean;
+
+    // Ideally these will eventually just come from equipment, once appropriate bonuses are supported
+    resistances: DamageTypeChecklist;
 }
 
 export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
@@ -181,6 +187,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     Loadout!: PilotLoadout;
     ActiveMechRef!: RegRef<EntryType.MECH> | null;
     Mounted!: boolean;
+    Resistances!: DamageTypeChecklist;
     // State!: ActiveState;
 
     MechSkills!: MechSkills;
@@ -556,7 +563,9 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
     public async load(data: RegPilotData): Promise<void> {
         merge_defaults(data, defaults.PILOT());
         let subreg = await this.get_inventory();
+        this.ActiveMechRef = data.active_mech;
         this.Background = data.background;
+        this.Burn = data.burn;
         this.Callsign = data.callsign;
         this.Campaign = data.campaign;
         this.CCVersion = data.cc_ver;
@@ -572,14 +581,13 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
         this.Level = data.level;
         this.Loadout = new PilotLoadout(subreg, this.OpCtx, data.loadout);
         this.MechSkills = new MechSkills(data.mechSkills);
-        this.ActiveMechRef = data.active_mech;
         this.Mounted = data.mounted;
         this.Name = data.name;
         this.Notes = data.notes;
         this.Overshield = data.overshield;
-        this.Burn = data.burn;
         this.PlayerName = data.player_name;
         this.Portrait = data.portrait;
+        this.Resistances = { ...data.resistances };
         this.SortIndex = data.sort_index;
         this.Status = data.status;
         this.TextAppearance = data.text_appearance;
@@ -616,6 +624,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             sort_index: this.SortIndex,
             status: this.Status,
             text_appearance: this.TextAppearance,
+            resistances: { ...this.Resistances }
         };
     }
 
@@ -693,6 +702,7 @@ export class Pilot extends InventoriedRegEntry<EntryType.PILOT> {
             player_name: this.PlayerName,
             portrait: this.Portrait,
             quirk: this.Quirks[0]?.Description ?? "",
+            resistances: Damage.FlattenChecklist(this.Resistances),
             reserves: await SerUtil.emit_all(this.Reserves),
             skills,
             talents,

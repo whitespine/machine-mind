@@ -118,19 +118,6 @@ export class Npc extends InventoriedRegEntry<EntryType.NPC> {
         return [...this._classes, ...this._features, ...this._templates];
     }
 
-    // this._tag = this.Class.Role.toLowerCase() === "biological" ? "Biological" : "Mech";
-
-    /*
-    public get Power(): number {
-        // TODO: calc stat power for custom
-        const multiplier = typeof this.Tier === "number" ? this.Tier : 3.5;
-        return (this.Class.Power + this.Templates.reduce((a, b) => +a + +b.Power, 0)) * multiplier;
-    }
-    */
-
-    // We don't cache yet
-    public recompute_bonuses() {}
-
     // Repopulate all of our cached inventory lists
     public async repopulate_inventory(): Promise<void> {
         let _opt = { wait_ctx_ready: false };

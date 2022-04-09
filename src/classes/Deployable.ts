@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Mech, Pilot, Synergy, TagInstance } from "@src/class";
+import { Action, Bonus, Counter, Damage, Mech, Pilot, Synergy, TagInstance } from "@src/class";
 import { defaults, lid_format_name } from "@src/funcs";
 import {
     RegBonusData,
@@ -10,6 +10,7 @@ import {
     RegCounterData,
     PackedActionData,
     RegActionData,
+    DamageTypeChecklist
 } from "@src/interface";
 import {
     EntryType,
@@ -50,6 +51,7 @@ export interface PackedDeployableData {
     tech_attack?: number;
     save?: number;
     speed?: number;
+    resistances?: string[];
     actions?: PackedActionData[];
     bonuses?: PackedBonusData[];
     synergies?: ISynergyData[];
@@ -87,6 +89,7 @@ export interface RegDeployableData {
     tech_attack: number;
     save: number; // Mandatory - a 0 means use inherited, or 10 if default
     speed: number;
+    resistances: DamageTypeChecklist;
     actions: RegActionData[];
     bonuses: RegBonusData[]; // Why does this exist, again?
     synergies: ISynergyData[];
@@ -134,6 +137,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     BaseTechAttack!: number;
     BaseSaveTarget!: number;
     BaseSpeed!: number;
+    BaseResistances!: DamageTypeChecklist;
 
     // Availability info.
     AvailableMounted!: boolean;
@@ -161,18 +165,6 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
 
         // In case of no deployer / deployer is npc, cannot compute any additional bonuses
         return this.Bonuses;
-    }
-
-    // Cached version of above. Must be manually invalidated
-    private cached_bonuses: Bonus[] | null = null;
-
-    // Makes the cache need re-computation. Since we don't do any work ourselves, this is more about
-    // asking our deployer to recompute
-    public recompute_bonuses(include_deployer: boolean = true) {
-        this.cached_bonuses = null;
-        if (this.Deployer && include_deployer) {
-            this.Deployer.recompute_bonuses();
-        }
     }
 
     // Sum our pilot bonuses and our intrinsic bonuses for one big honkin bonus for the specified id, return the number
@@ -239,6 +231,9 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
     get Speed(): number {
         return this.sum_typed_bonuses(this.BaseSpeed, "speed");
     }
+    get Resistances(): DamageTypeChecklist {
+        return this.BaseResistances; // Bonus resistances not yet supported
+    }
 
     // They don't own anything yet, but statuses will maybe change this? or if they have systems? idk, they're actors so it made sense at the time
     protected enumerate_owned_items(): RegEntry<any>[] {
@@ -285,6 +280,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
         this.BaseEDefense = data.edef;
         this.BaseHeatCapacity = data.heatcap;
         this.BaseRepairCapacity = data.repcap;
+        this.BaseResistances = { ...data.resistances };
         this.BaseSaveTarget = data.save;
         this.BaseSpeed = data.speed;
         this.BaseSensorRange = data.sensor_range;
@@ -324,6 +320,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             edef: this.BaseEDefense,
             heatcap: this.BaseHeatCapacity,
             repcap: this.BaseRepairCapacity,
+            resistances: { ...this.BaseResistances },
             sensor_range: this.BaseSensorRange,
             tech_attack: this.BaseTechAttack,
             save: this.BaseSaveTarget,
@@ -411,6 +408,7 @@ export class Deployable extends InventoriedRegEntry<EntryType.DEPLOYABLE> {
             recall: this.Recall,
             redeploy: this.Redeploy,
             repcap: this.BaseRepairCapacity,
+            resistances: Damage.FlattenChecklist(this.BaseResistances),
             save: this.BaseSaveTarget,
             speed: this.BaseSpeed,
             synergies: await SerUtil.emit_all(this.Synergies),

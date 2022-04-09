@@ -206,6 +206,7 @@ export function DEPLOYABLE(): RegDeployableData {
         speed: 0,
         tech_attack: 0,
         type: DeployableType.Deployable,
+        resistances: Damage.MakeChecklist([]),
         avail_unmounted: false,
         avail_mounted: true,
         deployer: null,
@@ -703,7 +704,8 @@ export function PILOT(): RegPilotData {
         status: "",
         text_appearance: "",
         overshield: 0,
-        burn: 0
+        burn: 0,
+        resistances: Damage.MakeChecklist([])
     };
 }
 
