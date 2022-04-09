@@ -11,7 +11,7 @@ import {
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, SerUtil } from "@src/registry";
 import { merge_defaults } from "../default_entries";
-import { PackedTagTemplateData } from "../Tag";
+import { PackedTagTemplateData } from "../components/Tag";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rider types

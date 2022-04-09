@@ -8,7 +8,7 @@ import {
     RegRef,
     RegSer,
 } from "@src/registry";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 interface AllTagTemplateData {
     name: string;

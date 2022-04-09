@@ -56,10 +56,10 @@ import {
     RegTagTemplateData,
     RegTalentData,
     RegWeaponModData,
+    AnyRegNpcFeatureData,
 } from "@src/interface";
 import { EntryType, RegEntry, RegEntryTypes } from "@src/registry";
 import { keys } from "ts-transformer-keys";
-import { AnyRegNpcFeatureData } from "./npc/NpcFeature";
 
 // Expected keys for live types
 let pending_live_keyset: any = null;

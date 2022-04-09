@@ -1,11 +1,13 @@
-import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter } from "@src/class";
-import { RegActionData, PackedActionData, Action } from "@src/classes/Action";
-import { PackedBonusData, Bonus, RegBonusData } from "@src/classes/Bonus";
+import { Synergy, MechEquipment, MechWeapon, MechSystem, Deployable, Counter, Action, Bonus } from "@src/class";
 import {
     ISynergyData,
     PackedCounterData,
     RegCounterData,
     PackedDeployableData,
+    PackedBonusData,
+    PackedActionData,
+    RegActionData,
+    RegBonusData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil, SimSer } from "@src/registry";
 import { ReserveType } from "@src/enums";

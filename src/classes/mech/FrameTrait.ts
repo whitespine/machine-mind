@@ -8,10 +8,10 @@ import {
     PackedCounterData,
     PackedDeployableData,
     RegCounterData,
+    PackedActionData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, RegSer, SerUtil } from "@src/registry";
 import { FrameEffectUse } from "@src/enums";
-import { PackedActionData } from "../Action";
 import { merge_defaults } from "../default_entries";
 
 // const TraitUseList: TraitUse[] = Object.keys(TraitUse).map(k => TraitUse[k as any])

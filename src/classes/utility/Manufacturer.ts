@@ -1,7 +1,7 @@
 import { defaults } from "@src/funcs";
 import { imageManagement, ImageTag } from "@src/hooks";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 interface AllManufacturerData {
     name: string;

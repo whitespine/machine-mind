@@ -6,7 +6,7 @@ import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "
 import { CoreBonus, Range, Counter, Frame, Range, MechSystem, MechWeapon, Damage, TagInstance, TagTemplate } from "../src/class";
 import * as funcs from "../src/funcs";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
-import { intake_pack } from '../src/classes/ContentPack';
+import { intake_pack } from '../src/classes/utility/ContentPack';
 import { DamageType, RangeType, WeaponSize } from "@src/enums";
 import { LicenseScan } from "../src/classes/License";
 

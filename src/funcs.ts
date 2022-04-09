@@ -4,13 +4,13 @@ import { EntryType, LiveEntryTypes } from "./registry";
 
 // Same logic as interfaces, classes, etc.
 export { parseContentPack } from "@src/io/ContentPackParser";
-export { intake_pack } from "@src/classes/ContentPack";
+export { intake_pack } from "@src/classes/utility/ContentPack";
 export { get_base_content_pack } from "@src/io/ContentPackParser";
 export * as gist_io from "@src/io/apis/gist";
 export { cloud_sync } from "@src/classes/pilot/Pilot";
 export { mech_cloud_sync } from "@src/classes/mech/Mech";
 export { npc_cloud_sync } from "@src/classes/npc/Npc";
-export { validate_props } from "@src/classes/key_util";
+export { validate_props } from "@src/classes/utility/key_util";
 export * as defaults from "@src/classes/default_entries";
 export * from "@src/classes/mech/EquipUtil";
 export { weapon_size_magnitude } from "@src/classes/mech/MechLoadout";

@@ -1,6 +1,6 @@
 import { defaults } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry, SimSer } from "@src/registry";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 interface AllFactionData {
     name: string;

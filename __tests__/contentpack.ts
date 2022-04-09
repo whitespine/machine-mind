@@ -3,7 +3,7 @@ import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { EntryType, OpCtx,  OpCtx } from "../src/registry";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
-import { IContentPack, intake_pack } from '../src/classes/ContentPack';
+import { IContentPack, intake_pack } from '../src/classes/utility/ContentPack';
 import * as fs from "fs";
 import { Damage, MechWeapon } from "../src/class";
 import { DamageType } from "@src/enums";

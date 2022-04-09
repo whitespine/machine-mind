@@ -14,7 +14,7 @@ import {
     RegActionData,
 } from "@src/interface";
 import { EntryType, OpCtx, RegEntry, Registry, RegRef, SerUtil } from "@src/registry";
-import { RegDamageData } from "../Damage";
+import { RegDamageData } from "../components/Damage";
 import { merge_defaults } from "../default_entries";
 
 ///////////////////////////////////////////////////////////

@@ -206,3 +206,4 @@ export enum EncounterSide {
 }
 
 export { SkillFamily } from "@src/classes/pilot/Skill";
+export { DeployableType } from "@src/classes/mech/Deployable";

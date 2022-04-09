@@ -11,7 +11,7 @@ import {
 import { defaults, lid_format_name, remove_null } from "@src/funcs";
 import { nanoid } from "nanoid";
 import { Damage, Range } from "@src/class";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 interface AllActionData {
     name?: string;

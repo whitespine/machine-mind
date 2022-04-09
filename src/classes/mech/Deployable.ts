@@ -1,4 +1,4 @@
-import { Action, Bonus, Counter, Damage, Mech, Pilot, Synergy, TagInstance } from "@src/class";
+import { Action, Bonus, Counter, Damage, Mech, Npc, Pilot, Synergy, TagInstance } from "@src/class";
 import { defaults, lid_format_name } from "@src/funcs";
 import {
     RegBonusData,
@@ -10,7 +10,8 @@ import {
     RegCounterData,
     PackedActionData,
     RegActionData,
-    DamageTypeChecklist
+    DamageTypeChecklist,
+    BonusContext
 } from "@src/interface";
 import {
     EntryType,
@@ -22,9 +23,7 @@ import {
     SerUtil,
 } from "@src/registry";
 import { ActivationType } from "@src/enums";
-import { BonusContext } from "./Bonus";
-import { Npc } from "./npc/Npc";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 export interface PackedDeployableData {
     name: string;

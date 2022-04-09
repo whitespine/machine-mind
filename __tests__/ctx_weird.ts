@@ -4,7 +4,7 @@ import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx, quick_relinker } from "../src/registry";
 import { CoreBonus, Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
-import { intake_pack } from '../src/classes/ContentPack';
+import { intake_pack } from '../src/classes/utility/ContentPack';
 
 type DefSetup = {
     reg: StaticReg;

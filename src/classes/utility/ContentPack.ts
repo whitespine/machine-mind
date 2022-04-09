@@ -47,6 +47,10 @@ import {
     PackedStatusData,
     PackedTagTemplateData,
     PackedFactionData,
+    PackedPilotArmorData,
+    PackedPilotWeaponData,
+    PackedPilotGearData,
+    LicensedItem,
 } from "@src/interface";
 import {
     EntryType,
@@ -58,12 +62,7 @@ import {
     Registry,
 } from "@src/registry";
 import { RegEnv, StaticReg } from "@src/static_registry";
-import { LicensedItem } from "./License";
-import {
-    PackedPilotArmorData,
-    PackedPilotGearData,
-    PackedPilotWeaponData,
-} from "./pilot/PilotEquipment";
+
 
 export interface IContentPackManifest {
     name: string;

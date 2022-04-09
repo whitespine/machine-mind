@@ -9,7 +9,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 export type LicensedItemType =
     | EntryType.FRAME

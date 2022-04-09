@@ -3,7 +3,7 @@ import "jest";
 import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
 import { get_base_content_pack, parseContentPack } from '../src/io/ContentPackParser';
-import { intake_pack } from '../src/classes/ContentPack';
+import { intake_pack } from '../src/classes/utility/ContentPack';
 import * as fs from "fs";
 import { Npc, npc_cloud_sync } from "../src/classes/npc/Npc";
 

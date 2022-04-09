@@ -62,9 +62,9 @@ import {
     NpcFeatureType,
     MountType,
     NpcTechType,
+    DeployableType,
 } from "@src/enums";
 import { DEFAULT_ACTION_NAME, CC_VERSION, DEFAULT_COLOR, DEFAULT_DESCRIPTION, DEFAULT_ICON, DEFAULT_LOGO } from "../consts";
-import { DeployableType } from "./Deployable";
 
 
 // Our default bonus basically does nothing but allows everything

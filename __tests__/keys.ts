@@ -4,9 +4,9 @@ import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
 import { Counter, Frame, MechSystem, MechWeapon } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
-import { intake_pack } from '../src/classes/ContentPack';
+import { intake_pack } from '../src/classes/utility/ContentPack';
 import { DEFAULT_PILOT } from "../src/classes/default_entries";
-import { validate_props, trimmed } from "../src/classes/key_util";
+import { validate_props, trimmed } from "../src/classes/utility/key_util";
 import { defaults } from "../src/funcs";
 
 type DefSetup = {

@@ -16,7 +16,7 @@ import {
     RegRef,
     SerUtil,
 } from "@src/registry";
-import { IArtLocation } from "../Art";
+import { IArtLocation } from "../utility/Art";
 import { MechType, MountType } from "@src/enums";
 import { merge_defaults } from "../default_entries";
 

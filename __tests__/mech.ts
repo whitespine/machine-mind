@@ -4,9 +4,9 @@ import { StaticReg, RegEnv } from "../src/static_registry";
 import { RegCat, OpCtx, Registry, InventoriedRegEntry, EntryType, OpCtx } from "../src/registry";
 import { Counter, Deployable, Frame, Mech, MechWeapon, Pilot, Talent, Bonus } from "../src/class";
 import { get_base_content_pack } from '../src/io/ContentPackParser';
-import { intake_pack } from '../src/classes/ContentPack';
+import { intake_pack } from '../src/classes/utility/ContentPack';
 import { gist_io, cloud_sync } from "../src/funcs";
-import { validate_props } from "../src/classes/key_util";
+import { validate_props } from "../src/classes/utility/key_util";
 
 let DONKEY_KONG = "1152ee13a1143ba3e5439560fe207336";
 

@@ -1,6 +1,6 @@
 import { defaults, lid_format_name } from "@src/funcs";
 import { EntryType, OpCtx, RegEntry, Registry } from "@src/registry";
-import { merge_defaults } from "./default_entries";
+import { merge_defaults } from "../default_entries";
 
 interface AllStatusData {
     name: string;
