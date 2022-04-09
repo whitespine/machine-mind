@@ -21,7 +21,7 @@
     "prepublishOnly": "yarn test"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "filtrex": "^2.1.0",
     "jszip": "^3.5.0",
     "lancer-data": "^3.0.34",
