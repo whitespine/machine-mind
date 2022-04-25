@@ -73,12 +73,10 @@ export async function parseContentPack(binString: Buffer | string): Promise<ICon
         // return `${type}_${sanitizedName}`;
     };
 
-    function generateIDs<T extends { id: string }>(data: T[], dataPrefix?: string): T[] {
+    function generateIDs<T extends { id: string, name: string }>(data: T[], dataPrefix?: string): T[] {
         if (dataPrefix) {
             for (let d of data) {
-                if (d.id) {
-                    d.id = generateItemID(dataPrefix, d.id);
-                }
+                d.id = d.id || generateItemID(dataPrefix, d.name);
             }
         }
         return data;
