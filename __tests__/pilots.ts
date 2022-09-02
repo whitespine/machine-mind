@@ -366,16 +366,16 @@ describe("Pilots", () => {
         expect(ml1.WepMounts[0].Weapons[0].Name).toEqual("ZF4 SOLIDCORE"); // 22
 
         expect(ml1.WepMounts[1].Weapons.length).toEqual(1);
-        expect(ml1.WepMounts[1].Weapons[0].Name).toEqual("TACTICAL KNIFE");
+        expect(ml1.WepMounts[1].Weapons[0].Name).toEqual("Tactical Knife");
 
         expect(ml1.WepMounts[2].Weapons.length).toEqual(2);
-        expect(ml1.WepMounts[2].Weapons[0].Name).toEqual("ANNIHILATOR");
-        expect(ml1.WepMounts[2].Weapons[1].Name).toEqual("THERMAL PISTOL"); // 27
+        expect(ml1.WepMounts[2].Weapons[0].Name).toEqual("Annihilator");
+        expect(ml1.WepMounts[2].Weapons[1].Name).toEqual("Thermal Pistol"); // 27
 
         expect(ml1.WepMounts[3].Weapons.length).toEqual(1);
-        expect(ml1.WepMounts[3].Weapons[0].Name).toEqual("MORTAR");
+        expect(ml1.WepMounts[3].Weapons[0].Name).toEqual("Mortar");
 
         expect(ml1.WepMounts[4].Weapons.length).toEqual(1);
-        expect(ml1.WepMounts[4].Weapons[0].Name).toEqual("HEAVY MACHINE GUN"); // 31
+        expect(ml1.WepMounts[4].Weapons[0].Name).toEqual("Heavy Machine Gun"); // 31
     });
 });

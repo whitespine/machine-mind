@@ -43,8 +43,8 @@ describe("OpCtx weird stuff", () => {
         let der_mimic_gun = await wep_cat.lookup_lid_live(der_ctx, "mw_mimic_gun");
 
         // Validate names match
-        expect(base_mimic_gun.Name).toEqual("MIMIC GUN");
-        expect(der_mimic_gun.Name).toEqual("MIMIC GUN");
+        expect(base_mimic_gun.Name).toEqual("Mimic Gun");
+        expect(der_mimic_gun.Name).toEqual("Mimic Gun");
 
         // Rename on base. It A: should work, and B: should be reflected by der since its the same object
         base_mimic_gun.Name = "newgun";

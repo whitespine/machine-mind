@@ -61,20 +61,20 @@ describe("Mechs", () => {
         expect(mech.Loadout.WepMounts.length).toEqual(2); // Integrated and mainaux
         expect(mech.Loadout.Weapons.length).toEqual(3); // Integrated (1) and mainaux (2, 3)
         expect(mech.Loadout.Weapons[0].Name).toEqual("Latch Drone"); 
-        expect(mech.Loadout.Weapons[1].Name).toEqual("ROCKET-PROPELLED GRENADE"); 
+        expect(mech.Loadout.Weapons[1].Name).toEqual("Rocket-Propelled Grenade"); 
         // expect(mech.Loadout.Weapons[1].Loaded).toBeFalsy(); -- this isn't stored in cloud data properly >:(
             expect(true).toBeTruthy();
         expect(mech.Loadout.Weapons[1].Destroyed).toBeFalsy();
-        expect(mech.Loadout.Weapons[2].Name).toEqual("NEXUS (LIGHT)"); 
+        expect(mech.Loadout.Weapons[2].Name).toEqual("Nexus (Light)"); 
         expect(mech.Loadout.Weapons[2].Destroyed).toBeTruthy(); // 10
 
 
         // Systems?
-        expect(mech.Loadout.Systems[0].Name).toEqual("AGNI-CLASS NHP");
+        expect(mech.Loadout.Systems[0].Name).toEqual("AGNI-Class NHP");
         expect(mech.Loadout.Systems[0].Uses).toEqual(0);
-        expect(mech.Loadout.Systems[1].Name).toEqual("MULE HARNESS");
+        expect(mech.Loadout.Systems[1].Name).toEqual("MULE Harness");
         expect(mech.Loadout.Systems[1].Destroyed).toBeTruthy();
-        expect(mech.Loadout.Systems[2].Name).toEqual("PATTERN-B HEX CHARGES");
+        expect(mech.Loadout.Systems[2].Name).toEqual("Pattern-B HEX Charges");
         expect(mech.Loadout.Systems[2].Uses).toEqual(2); // 16
     });
 

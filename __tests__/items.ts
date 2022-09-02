@@ -214,8 +214,8 @@ describe("Items Miscellania", () => {
         expect(balor_scan.Unlocked(3).length).toEqual(7); // 9
 
         // I guess make sure things are in the right place
-        expect(balor_scan.ByLevel.get(3)[0].Name).toEqual("NANOBOT WHIP"); 
-        expect(balor_scan.ByLevel.get(3)[1].Name).toEqual("SWARM/HIVE NANITES"); // 11
+        expect(balor_scan.ByLevel.get(3)[0].Name).toEqual("Nanobot Whip"); 
+        expect(balor_scan.ByLevel.get(3)[1].Name).toEqual("Swarm/Hive Nanites"); // 11
 
         // GMS stuff should all be accessible at lvl 0
         let gms: License = await lic_cat.lookup_lid_live(ctx, "lic_gms");
