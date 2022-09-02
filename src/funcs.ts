@@ -45,7 +45,7 @@ export function lid_format_name(name: string): string {
 }
 
 // Remove all undefined from an object
-export function remove_undefined<T>(item: T): {
+export function remove_undefined<T extends {}>(item: T): {
     [K in keyof T]: Exclude<T[K], undefined>;
 } {
     for(let key of Object.keys(item)) {
@@ -56,7 +56,7 @@ export function remove_undefined<T>(item: T): {
     return item as any;
 }
 
-export function remove_null<T>(item: T): {
+export function remove_null<T extends {}>(item: T): {
     [K in keyof T]: Exclude<T[K], null>;
 } {
     for(let key of Object.keys(item)) {
@@ -67,7 +67,7 @@ export function remove_null<T>(item: T): {
     return item as any;
 }
 
-export function remove_nullish<T>(item: T): {
+export function remove_nullish<T extends {}>(item: T): {
     [K in keyof T]: Exclude<T[K], undefined | null>;
 } {
     for(let key of Object.keys(item)) {
